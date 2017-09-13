@@ -1,0 +1,28 @@
+\documentclass[border=10pt]{article}
+\usepackage{graphicx, tikz, pgfplots}
+
+\title{\LaTeX{} Example}
+\author{John Doe}
+
+\begin{document}
+\maketitle
+
+\section{Plots}
+\begin{figure}[htbp]
+    \centering
+    \input{example_raw.pgf}
+\end{figure}
+\begin{figure}[htbp]
+    \centering
+    \input{example_stats.pgf}
+\end{figure}
+\begin{figure}[htbp]
+    \centering
+    \input{example_dist.pgf}
+\end{figure}
+\begin{figure}[htbp]
+    \centering
+    \input{example_violin.pgf} \\
+\end{figure}
+
+\end{document}

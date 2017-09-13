@@ -1,0 +1,15 @@
+{
+    "align": false,
+    "all_pairs": false,
+    "align": true,
+    "correct_scale": false,
+    "delta": 1,
+    "delta_unit": "f",
+    "pose_relation": "trans_part",
+    "t_max_diff": 0.01,
+    "t_offset": 0.0,
+    "plot": true,
+    "plot_mode": "xy",
+    "verbose": true,
+    "silent": false
+}

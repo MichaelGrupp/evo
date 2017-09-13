@@ -1,0 +1,11 @@
+{
+    "align": true,
+    "correct_scale": false,
+    "pose_relation": "trans_part",
+    "t_max_diff": 0.01,
+    "t_offset": 0.0,
+    "plot": true,
+    "plot_mode": "xy",
+    "verbose": true,
+    "silent": false
+}

@@ -1,0 +1,4 @@
+build/
+evo.egg-info/
+dist/
+*.pyc

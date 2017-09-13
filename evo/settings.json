@@ -1,0 +1,26 @@
+{
+    "logfile_enabled": true,
+    "logging_format": "%(message)s",
+    "plot_backend": "Qt4Agg",
+    "plot_export_format": "pdf",
+    "plot_figsize": [
+        8,
+        8
+    ],
+    "plot_fontfamily": "sans-serif",
+    "plot_fontsize": 12,
+    "plot_hideref": false,
+    "plot_info_text": false,
+    "plot_invert_xaxis": false,
+    "plot_invert_yaxis": false,
+    "plot_linewidth": 1.5,
+    "plot_multi_cmap": "none",
+    "plot_seaborn_style": "darkgrid",
+    "plot_split": false,
+    "plot_trajectory_cmap": "cool",
+    "plot_usetex": false,
+    "plot_xyz_realistic": true,
+    "save_traj_in_zip": true,
+    "table_export_format": "csv",
+    "table_export_transpose": true
+}

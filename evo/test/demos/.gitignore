@@ -1,0 +1,14 @@
+*.bag
+*.tum
+*.kitti
+*.pgf
+*.pdf
+*.png
+*.jpg
+*.svg
+*.csv
+*.xlsx
+*.json
+*.aux
+*.log
+*.zip

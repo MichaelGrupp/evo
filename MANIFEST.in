@@ -1,0 +1,9 @@
+# fastentrypoints for setup
+include fastentrypoints.py
+
+# documentation
+recursive-include evo/doc
+recursive-include README.rst
+
+# test folder
+# recursive-include evo/test *

@@ -58,7 +58,7 @@ DEFAULT_SETTINGS_DICT = {
     "plot_export_format": "pdf",
     "table_export_format": "csv",
     "table_export_transpose": True,
-    "save_traj_in_zip": True,
+    "save_traj_in_zip": False,
     "logging_format": "%(message)s",
     "logfile_enabled": False
 }

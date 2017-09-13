@@ -41,14 +41,14 @@ infos.append("APE with KITTI files")
 cmds.append(".././main_ape.py kitti ../test/data/KITTI_00_gt.txt ../test/data/KITTI_00_ORB.txt")
 if test_bag:
     infos.append("APE with ROS bag")
-    cmds.append(".././main_ape.py bag ../test/data/ROS_example.bag ground_truth_pose optimized_pose")
+    cmds.append(".././main_ape.py bag ../test/data/ROS_example.bag groundtruth ORB-SLAM")
 infos.append("RPE with TUM files")
 cmds.append(".././main_rpe.py tum ../test/data/freiburg1_xyz-groundtruth.txt ../test/data/freiburg1_xyz-rgbdslam.txt")
 infos.append("RPE with KITTI files")
 cmds.append(".././main_rpe.py kitti ../test/data/KITTI_00_gt.txt ../test/data/KITTI_00_ORB.txt")
 if test_bag:
     infos.append("RPE with ROS bag")
-    cmds.append(".././main_rpe.py bag ../test/data/ROS_example.bag ground_truth_pose optimized_pose")
+    cmds.append(".././main_rpe.py bag ../test/data/ROS_example.bag groundtruth ORB-SLAM")
 
 try:
     for info, cmd in zip(infos, cmds):

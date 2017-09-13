@@ -16,13 +16,13 @@ if [[ $* == *--no_plots* ]]; then
 fi
 
 log "hard way: specify parameters in command"
-echo_and_run evo_rpe-for-each bag ../data/ROS_example.bag ground_truth_pose initial_pose -v $p --mode path --bins 10 20 30 40 50 --tols 0.1 0.1 0.1 0.1 0.1
+echo_and_run evo_rpe-for-each bag ../data/ROS_example.bag groundtruth ORB-SLAM -v $p --mode path --bins 10 20 30 40 50 --tols 0.1 0.1 0.1 0.1 0.1
 
 log "smart way: store parameters in a config .json..."
 echo_and_run evo_config generate -o cfg.json --mode path --bins 10 20 30 40 50 --tols 0.1 0.1 0.1 0.1 0.1
 
 log "...and use it to run the executable"
-echo_and_run evo_rpe-for-each bag ../data/ROS_example.bag ground_truth_pose initial_pose -c cfg.json -v $p --save_results initial_rpe-for-each.zip
+echo_and_run evo_rpe-for-each bag ../data/ROS_example.bag groundtruth ORB-SLAM -c cfg.json -v $p --save_results orb_rpe-for-each.zip
 
 log "save results of another trajectory"
-echo_and_run evo_rpe-for-each bag ../data/ROS_example.bag ground_truth_pose optimized_pose -c cfg.json -v $p --save_results optimized_rpe-for-each.zip
+echo_and_run evo_rpe-for-each bag ../data/ROS_example.bag groundtruth S-PTAM -c cfg.json -v $p --save_results sptam_rpe-for-each.zip

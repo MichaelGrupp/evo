@@ -73,7 +73,7 @@ class PlotCollection:
         self.root_window = None  # for now: init later in tabbed_qt_window
         if deserialize is not None:
             logging.debug("deserializing PlotCollection from " + deserialize + "...")
-            self.figures = pickle.load(open(deserialize, 'r'))
+            self.figures = pickle.load(open(deserialize, 'rb'))
 
     def __str__(self):
         return self.title + " (" + str(len(self.figures)) + " figure(s))"
@@ -159,7 +159,7 @@ class PlotCollection:
         else:
             if os.name == "nt":
                 raise PlotException("plot serialization not supported on Windows")
-            pickle.dump(self.figures, open(dest, 'w'))
+            pickle.dump(self.figures, open(dest, 'wb'))
 
     def export(self, file_path, confirm_overwrite=True):
         fmt = SETTINGS.plot_export_format.lower()

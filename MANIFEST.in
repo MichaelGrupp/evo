@@ -3,7 +3,8 @@ include fastentrypoints.py
 
 # documentation
 recursive-include evo/doc
-recursive-include README.rst LICENSE
+include README.rst 
+include LICENSE
 
 # test folder
 # recursive-include evo/test *

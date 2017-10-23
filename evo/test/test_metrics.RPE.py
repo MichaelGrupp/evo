@@ -45,8 +45,6 @@ traj_ref, traj_est = file_interface.load_assoc_tum_trajectories(
     max_diff,
     offset,
 )
-poses_ref = traj_ref.poses_se3
-poses_est = traj_est.poses_se3
 
 stop = time.clock()
 load_time = stop - start
@@ -61,7 +59,7 @@ delta_unit = metrics.Unit.frames
 
 for pose_relation in metrics.PoseRelation:
 
-    data = (poses_ref, poses_est)
+    data = (traj_ref, traj_est)
     print("\n------------------------------------------------------------------\n")
     start = time.clock()
 

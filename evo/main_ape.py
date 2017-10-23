@@ -127,7 +127,7 @@ def main_ape(traj_ref, traj_est, pose_relation, align=True, correct_scale=False,
     logging.debug(SEP)
 
     # calculate APE
-    data = (traj_ref.poses_se3, traj_est.poses_se3)
+    data = (traj_ref, traj_est)
     ape_metric = metrics.APE(pose_relation)
     ape_metric.process_data(data)
     ape_statistics = ape_metric.get_all_statistics()

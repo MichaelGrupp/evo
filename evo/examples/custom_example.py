@@ -1,23 +1,31 @@
 #!/usr/bin/env python
 
-import matplotlib.pyplot as plt
+from __future__ import print_function
 
-from evo.algorithms import trajectory
+print("loading required evo modules")
 from evo.algorithms import trajectory, sync, metrics
-from evo.tools import file_interface, plot
+from evo.tools import file_interface
 
+print("loading trajectories")
 traj_ref = file_interface.read_tum_trajectory_file("../test/data/fr2_desk_groundtruth.txt")
 traj_est = file_interface.read_tum_trajectory_file("../test/data/fr2_desk_ORB.txt")
 
+print("registering trajectories")
 traj_ref, traj_est = sync.associate_trajectories(traj_ref, traj_est)
 traj_est = trajectory.align_trajectory(traj_est, traj_ref, correct_scale=False)
 
-# calculate APE
-data = (traj_ref.poses_se3, traj_est.poses_se3)
+print("calculating APE")
+data = (traj_ref, traj_est)
 ape_metric = metrics.APE(metrics.PoseRelation.translation_part)
 ape_metric.process_data(data)
 ape_statistics = ape_metric.get_all_statistics()
+print("mean:", ape_statistics["mean"])
 
+print("loading plot modules")
+from evo.tools import plot
+import matplotlib.pyplot as plt
+
+print("plotting")
 plot_collection = plot.PlotCollection("Example")
 # metric values
 fig_1 = plt.figure(figsize=(8, 8))

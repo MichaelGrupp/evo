@@ -334,26 +334,24 @@ class RPE(Metric):
     def process_data(self, data, id_pairs=None):
         """
         calculate relative poses on a batch of SE(3) poses
-        :param data: tuple (poses_ref, poses_est) with:
-        poses_ref: list of reference pose matrices in SE(3)
-        poses_est: list of estimated pose matrices in SE(3)
+        :param data: tuple (traj_ref, traj_est) with:
+        traj_ref: reference evo.trajectory.PosePath or derived
+        traj_est: estimated evo.trajectory.PosePath or derived
         :param id_pairs: pre-computed pair indices if you know what you're doing (ignores delta)
         """
         if len(data) != 2:
-            raise MetricsException("please provide data tuple as: (poses_ref, poses_est)")
-        poses_ref, poses_est = data
-        if len(poses_ref) != len(poses_est):
-            raise MetricsException("pose lists must have same length")
-        if np.shape(poses_ref)[1] != 4 or np.shape(poses_est)[1] != 4:
-            raise MetricsException("data must be SE(3) matrices "
-                                   "for pose relation mode ", self.pose_relation)
+            raise MetricsException("please provide data tuple as: (traj_ref, traj_est)")
+        traj_ref, traj_est = data
+        if traj_ref.num_poses != traj_est.num_poses:
+            raise MetricsException("trajectories must have same number of poses")
 
         if id_pairs is None:
-            id_pairs = id_pairs_from_delta(poses_est, self.delta, self.delta_unit,
+            id_pairs = id_pairs_from_delta(traj_est.poses_se3, self.delta, self.delta_unit,
                                            self.rel_delta_tol, all_pairs=self.all_pairs)
         if not self.all_pairs:
             self.delta_ids = [j for i, j in id_pairs]  # store flat id list e.g. for plotting
-        self.E = [self.rpe_base(poses_ref[i], poses_ref[j], poses_est[i], poses_est[j])
+        self.E = [self.rpe_base(traj_ref.poses_se3[i], traj_ref.poses_se3[j],
+                                traj_est.poses_se3[i], traj_est.poses_se3[j])
                   for i, j in id_pairs]
         logging.debug("compared " + str(len(self.E)) + " relative pose pairs, delta = "
                       + str(self.delta) + " (" + str(self.delta_unit.value) + ") "
@@ -462,23 +460,26 @@ class APE(Metric):
     def process_data(self, data):
         """
         calculate APE metric on a batch of poses
-        :param data: tuple (poses_ref, poses_est) with:
-        poses_ref: list of reference poses - SE(3)
-        poses_est: list of estimated poses - SE(3)
+        :param data: tuple (traj_ref, traj_est) with:
+        traj_ref: reference evo.trajectory.PosePath or derived
+        traj_est: estimated evo.trajectory.PosePath or derived
         """
         if len(data) != 2:
-            raise MetricsException("please provide data tuple as: (poses_ref, poses_est)")
-        poses_ref, poses_est = data
-        if len(poses_ref) != len(poses_est):
-            raise MetricsException("pose lists must have same length")
-        if np.shape(poses_ref)[1] != 4 or np.shape(poses_est)[1] != 4:
-            raise MetricsException("data must be SE(3) matrices "
-                                   "for pose relation mode ", self.pose_relation)
-        self.E = [self.ape_base(x_t, x_t_star) for x_t, x_t_star in zip(poses_est, poses_ref)]
+            raise MetricsException("please provide data tuple as: (traj_ref, traj_est)")
+        traj_ref, traj_est = data
+        if traj_ref.num_poses != traj_est.num_poses:
+            raise MetricsException("trajectories must have same number of poses")
+
+        if self.pose_relation == PoseRelation.translation_part:
+            # don't require full SE(3) matrices for faster computation
+            self.E = traj_est.positions_xyz - traj_ref.positions_xyz
+        else:
+            self.E = [self.ape_base(x_t, x_t_star) for x_t, x_t_star in zip(traj_est.poses_se3, traj_ref.poses_se3)]
         logging.debug("compared " + str(len(self.E)) + " absolute pose pairs")
         logging.debug("calculating APE for " + str(self.pose_relation.value) + " pose relation...")
         if self.pose_relation == PoseRelation.translation_part:
-            self.error = [np.linalg.norm(E_i[:3, 3]) for E_i in self.E]
+            # E is an array of position vectors only in this case
+            self.error = [np.linalg.norm(E_i) for E_i in self.E]
         elif self.pose_relation == PoseRelation.rotation_part:
             self.error = np.array(
                 [np.linalg.norm(lie.so3_from_se3(E_i) - np.eye(3)) for E_i in self.E])

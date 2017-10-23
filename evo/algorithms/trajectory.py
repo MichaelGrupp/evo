@@ -39,38 +39,85 @@ class PosePath3D(object):
     also: base class for real trajectory
     """
 
-    def __init__(self, positions_xyz, orientations_quat_wxyz, poses_se3=None):
+    def __init__(self, positions_xyz=None, orientations_quat_wxyz=None, poses_se3=None):
         """
         :param positions_xyz: nx3 list of x,y,z positions
         :param orientations_quat_wxyz: nx4 list of quaternions (w,x,y,z format)
-        :param poses_se3: optional pre-computed list of SE(3) poses
+        :param poses_se3: list of SE(3) poses
         """
-        if len(positions_xyz) != len(orientations_quat_wxyz):
-            raise TrajectoryException("position and orientation lists must have same length")
-        self.positions_xyz = np.array(positions_xyz)
-        self.orientations_quat_wxyz = np.array(orientations_quat_wxyz)
+        if (positions_xyz is None and orientations_quat_wxyz is None) and poses_se3 is None:
+            raise TrajectoryException("must provide at least positions_xyz "
+                                      "& orientations_quat_wxyz or poses_se3")
+        if positions_xyz is not None:
+            self._positions_xyz = np.array(positions_xyz)
+        if orientations_quat_wxyz is not None:
+            self._orientations_quat_wxyz = np.array(orientations_quat_wxyz)
         if poses_se3 is not None:
-            self.poses_se3 = poses_se3
+            self._poses_se3 = poses_se3
+
+    @property
+    def positions_xyz(self):
+        if not hasattr(self, "_positions_xyz"):
+            assert hasattr(self, "_poses_se3")
+            self._positions_xyz = np.array([p[:3, 3] for p in self._poses_se3])
+        return self._positions_xyz
+
+    @property
+    def orientations_quat_wxyz(self):
+        if not hasattr(self, "_orientations_quat_wxyz"):
+            assert hasattr(self, "_poses_se3")
+            self._orientations_quat_wxyz \
+                = np.array([tr.quaternion_from_matrix(p) for p in self._poses_se3])
+        return self._orientations_quat_wxyz
+
+    @property
+    def poses_se3(self):
+        if not hasattr(self, "_poses_se3"):
+            assert hasattr(self, "_positions_xyz")
+            assert hasattr(self, "_orientations_quat_wxyz")
+            self._poses_se3 \
+                = xyz_quat_wxyz_to_se3_poses(self.positions_xyz, self.orientations_quat_wxyz)
+        return self._poses_se3
+
+    @property
+    def num_poses(self):
+        if hasattr(self, "_poses_se3"):
+            return len(self._poses_se3)
         else:
-            self.poses_se3 = xyz_quat_wxyz_to_se3_poses(positions_xyz, orientations_quat_wxyz)
+            return self.positions_xyz.shape[0]
 
     def transform(self, t, right_mul=False):
         """
         apply a left or right multiplicative SE(3) transformation to the whole path
         :param t: a valid SE(3) matrix
+        :param right_mul: whether to apply it right-multiplicative or not
         """
         if not lie.is_se3(t):
             raise TrajectoryException("transformation is not a valid SE(3) matrix")
         if right_mul:
-            self.poses_se3 = [np.dot(p, t) for p in self.poses_se3]
+            self._poses_se3 = [np.dot(p, t) for p in self.poses_se3]
         else:
-            self.poses_se3 = [np.dot(t, p) for p in self.poses_se3]
-        self.positions_xyz, self.orientations_quat_wxyz = se3_poses_to_xyz_quat_wxyz(self.poses_se3)
+            self._poses_se3 = [np.dot(t, p) for p in self.poses_se3]
+        self._positions_xyz, self._orientations_quat_wxyz \
+            = se3_poses_to_xyz_quat_wxyz(self.poses_se3)
+    
+    def scale(self, s):
+        """
+        apply a scaling to the whole path
+        :param s: scale factor
+        """
+        if hasattr(self, "_poses_se3"):
+            self._poses_se3 = [lie.se3(p[:3, :3], s*p[:3, 3]) for p in self._poses_se3]
+        if hasattr(self, "_positions_xyz"):
+            self._positions_xyz = s * self._positions_xyz
 
     def reduce_to_ids(self, ids):
-        self.positions_xyz = self.positions_xyz[ids]
-        self.orientations_quat_wxyz = self.orientations_quat_wxyz[ids]
-        self.poses_se3 = [self.poses_se3[idx] for idx in ids]
+        if hasattr(self, "_positions_xyz"):
+            self._positions_xyz = self._positions_xyz[ids]
+        if hasattr(self, "_orientations_quat_wxyz"):
+            self._orientations_quat_wxyz = self._orientations_quat_wxyz[ids]
+        if hasattr(self, "_poses_se3"):
+            self._poses_se3 = [self._poses_se3[idx] for idx in ids]
 
     def check(self):
         """
@@ -96,7 +143,7 @@ class PosePath3D(object):
         :return: dictionary with some infos about the path
         """
         return {
-            "nr. of poses": len(self.poses_se3),
+            "nr. of poses": self.num_poses,
             "path length (m)": geometry.arc_len(self.positions_xyz),
             "pos_start (m)": self.positions_xyz[0],
             "pos_end (m)": self.positions_xyz[-1]
@@ -227,17 +274,13 @@ def align_trajectory(traj, traj_ref, correct_scale=False, correct_only_scale=Fal
         logging.debug("rotation of alignment:\n" + str(r_a)
                       + "\ntranslation of alignment:\n" + str(t_a))
     logging.debug("scale correction: " + str(s))
+
     if correct_only_scale:
-        traj_aligned.poses_se3 = [lie.sim3(np.eye(3), [0, 0, 0], s).dot(p) for p in
-                                  traj_aligned.poses_se3]
-        for p_a, p in zip(traj_aligned.poses_se3, traj.poses_se3):
-            p_a[:3, :3] = p[:3, :3]  # use de-scaled SO(3) rotation again
+        traj_aligned.scale(s)
     elif correct_scale:
-        traj_aligned.poses_se3 = [lie.sim3(r_a, t_a, s).dot(p) for p in traj_aligned.poses_se3]
-        for p_a, p in zip(traj_aligned.poses_se3, traj.poses_se3):
-            p_a[:3, :3] = r_a.dot(p[:3, :3])  # use aligned, but de-scaled SO(3) rotation again
+        traj_aligned.scale(s)
+        traj_aligned.transform(lie.se3(r_a, t_a))
     else:
-        traj_aligned.poses_se3 = [lie.se3(r_a, t_a).dot(p) for p in traj_aligned.poses_se3]
-    traj_aligned.positions_xyz, traj_aligned.orientations_quat_wxyz \
-        = se3_poses_to_xyz_quat_wxyz(traj_aligned.poses_se3)
+        traj_aligned.transform(lie.se3(r_a, t_a))
+
     return traj_aligned

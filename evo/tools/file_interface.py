@@ -117,8 +117,7 @@ def read_kitti_poses_file(file_path):
                        [0, 0, 0, 1]]) for r in mat]
     if not hasattr(file_path, 'read'):  # if not file handle
         logging.debug("loaded " + str(len(poses)) + " poses from: " + file_path)
-    xyz, quat = trajectory.se3_poses_to_xyz_quat_wxyz(poses)
-    return PosePath3D(xyz, quat, poses_se3=poses)
+    return PosePath3D(poses_se3=poses)
 
 
 def write_kitti_poses_file(file_path, traj, confirm_overwrite=False):

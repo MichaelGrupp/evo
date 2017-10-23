@@ -182,7 +182,7 @@ def main_rpe_for_each(traj_ref, traj_est, pose_relation, mode, bins, rel_tols,
                                + "produced empty index list - try other values")
 
         # calculate RPE with all IDs (delta 1 frames)
-        data = (traj_ref.poses_se3, traj_est.poses_se3)
+        data = (traj_ref, traj_est)
         # the delta here has nothing to do with the bin - 1f delta just to use all poses of the bin
         rpe_metric = metrics.RPE(pose_relation, delta=1, delta_unit=metrics.Unit.frames,
                                  all_pairs=True)

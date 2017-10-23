@@ -141,7 +141,7 @@ def main_rpe(traj_ref, traj_est, pose_relation, delta, delta_unit,
     logging.debug(SEP)
 
     # calculate RPE
-    data = (traj_ref.poses_se3, traj_est.poses_se3)
+    data = (traj_ref, traj_est)
     rpe_metric = metrics.RPE(pose_relation, delta, delta_unit, rel_delta_tol, all_pairs)
     rpe_metric.process_data(data)
     rpe_statistics = rpe_metric.get_all_statistics()

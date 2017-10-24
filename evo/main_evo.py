@@ -59,14 +59,15 @@ def main():
     shared_parser.add_argument("--clear_log", help="clear package logfile", action="store_true")
     sub_parsers = main_parser.add_subparsers(dest="subcommand")
     sub_parsers.required = True
-    show_parser = sub_parsers.add_parser("pkg", description="show infos of the package", 
+    pkg_parser = sub_parsers.add_parser("pkg", description="show infos of the package",
                                          parents=[shared_parser])
-    show_parser.add_argument("--info", help="show the package description", action="store_true")
-    show_parser.add_argument("--version", help="print the package version", action="store_true")
-    show_parser.add_argument("--license", help="print the package license", action="store_true")
-    show_parser.add_argument("--location", help="print the package path", action="store_true")
-    show_parser.add_argument("--logfile", help="print the logfile path", action="store_true")
-    show_parser.add_argument("--open_log", help="open the package logfile", action="store_true")
+    pkg_parser.add_argument("--info", help="show the package description", action="store_true")
+    pkg_parser.add_argument("--version", help="print the package version", action="store_true")
+    pkg_parser.add_argument("--pyversion", help="print the Python version", action="store_true")
+    pkg_parser.add_argument("--license", help="print the package license", action="store_true")
+    pkg_parser.add_argument("--location", help="print the package path", action="store_true")
+    pkg_parser.add_argument("--logfile", help="print the logfile path", action="store_true")
+    pkg_parser.add_argument("--open_log", help="open the package logfile", action="store_true")
     cat_parser = sub_parsers.add_parser("cat_log", description="pipe stdin to evo logfile"
                                         " or print logfile to stdout (if no stdin)",
                                         parents=[shared_parser])
@@ -88,16 +89,21 @@ def main():
             open(settings.DEFAULT_LOGFILE_PATH, mode='w')
 
     if args.subcommand == "pkg":
+        if not len(sys.argv) > 2:
+            pkg_parser.print_help()
+            sys.exit(1)
         if args.license:
             print(open(os.path.join(settings.PACKAGE_BASE_PATH, "LICENSE")).read())
-            sys.exit()
+        if args.info:
+            main_parser.print_usage()
+            print(DESC)
         if args.version:
             here = os.path.dirname(os.path.abspath(__file__))
             version_path = os.path.join(here, "version")
             print(" ".join(open(version_path).read().splitlines()), end=line_end)
-        if args.info:
-            main_parser.print_usage()
-            print(DESC)
+        if args.pyversion:
+            import platform as pf
+            print(pf.python_version(), end=line_end)
         if args.location:
             print(settings.PACKAGE_BASE_PATH, end=line_end)
         if args.logfile or args.open_log:

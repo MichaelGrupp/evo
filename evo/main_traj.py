@@ -336,5 +336,4 @@ def run(args):
 
 if __name__ == '__main__':
     from evo import entry_points
-
     entry_points.traj()

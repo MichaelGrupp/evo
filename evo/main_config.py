@@ -226,7 +226,7 @@ def main():
             logging.info(settings.DEFAULT_SETTINGS_HELP)
             logging.info(SEP + "\n" + config + "\n" + SEP)
         show(config, colored=args.no_color)
-        if not args.brief:
+        if config == settings.DEFAULT_PATH and not args.brief:
             logging.info(SEP + "\nsee text above for parameter descriptions")
 
     elif args.subcommand == "set":

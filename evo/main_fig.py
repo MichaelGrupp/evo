@@ -55,6 +55,7 @@ def main():
         logging.warning("Please note that this tool is experimental and not guranteed to work.\n"
                         "Only works if the same matplotlib backend is used as for serialization.\n"
                         "If not, try: evo_config set plot_backend <backend_name>\n" + SEP)
+    
     plot_collection = plot.PlotCollection(title, deserialize=args.in_file)
     logging.debug("deserialized PlotCollection: " + str(plot_collection))
     plot_collection.show()

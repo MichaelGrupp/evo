@@ -24,7 +24,7 @@ Supported trajectory formats:
 
 ## Installation
 
-**Python 3.4+** and **Python 2.7** are both supported. If you want to use the ROS bagfile interface, first check which Python version is used by your ROS installation and install the dependencies accordingly, if required.
+**Python 3.4+** and **Python 2.7** are both supported. If you want to use the ROS bagfile interface, first check which Python version is used by your ROS installation and install accordingly.
 You might also want to use a [virtual environment](evo/doc/install_in_virtualenv.md).
 
 ### From PyPi
@@ -32,7 +32,7 @@ If you just want to use the executables of the latest release version, the easie
 ```bash
 pip install evo --upgrade
 ```
-This will download the package and its dependencies from PyPi and install them. Tab completion for Bash terminals is supported via the argcomplete package on most UNIX systems - open a new shell after the installation to use it.
+This will download the package and its dependencies from PyPi and install them. Depending on your OS, you might be able to use `pip2`or `pip3` to specify the Python version you want. Tab completion for Bash terminals is supported via the argcomplete package on most UNIX systems - open a new shell after the installation to use it.
 
 ### From Source
 Run this in the repository's base folder:

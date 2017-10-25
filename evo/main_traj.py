@@ -132,7 +132,7 @@ def print_traj_info(name, traj, with_stats=False):
                 else:
                     stat_str += value
         except trajectory.TrajectoryException as e:
-            stat_str += "\terror - " + str(e)
+            stat_str += "\n\terror - " + str(e)
         logging.debug("stats" + stat_str)
 
 

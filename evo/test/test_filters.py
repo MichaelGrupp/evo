@@ -210,6 +210,7 @@ class TestFilterPosesByAngularSpeed(unittest.TestCase):
         id_pairs = filters.filter_pairs_by_angular_speed(poses_5, stamps_5, target_speed, tol, degrees=True)
         self.assertEqual(id_pairs, [(2, 3)])
 
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
 

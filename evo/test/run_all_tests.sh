@@ -7,6 +7,7 @@ if [[ $* == *--no_plots* ]]; then
     n="--no_plots"
 fi
 
+./test_trajectory.py
 ./test_filters.py
 ./test_lie_algebra.py
 ./test_metrics.APE.py

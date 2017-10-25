@@ -45,7 +45,7 @@ class PosePath3D(object):
         :param orientations_quat_wxyz: nx4 list of quaternions (w,x,y,z format)
         :param poses_se3: list of SE(3) poses
         """
-        if (positions_xyz is None and orientations_quat_wxyz is None) and poses_se3 is None:
+        if (positions_xyz is None or orientations_quat_wxyz is None) and poses_se3 is None:
             raise TrajectoryException("must provide at least positions_xyz "
                                       "& orientations_quat_wxyz or poses_se3")
         if positions_xyz is not None:
@@ -54,6 +54,21 @@ class PosePath3D(object):
             self._orientations_quat_wxyz = np.array(orientations_quat_wxyz)
         if poses_se3 is not None:
             self._poses_se3 = poses_se3
+
+    def __str__(self):
+        return "{} poses, {:.3f}m path length".format(self.num_poses, self.path_length())
+
+    def __eq__(self, other):
+        if type(other) != type(self):
+            return False
+        equal = True
+        equal &= all([np.array_equal(p1, p2) for p1, p2 in zip(self.poses_se3, other.poses_se3)])
+        equal &= np.array_equal(self.orientations_quat_wxyz, other.orientations_quat_wxyz)
+        equal &= np.array_equal(self.positions_xyz, other.positions_xyz)
+        return equal
+
+    def __ne__(self, other):
+        return not self == other
 
     @property
     def positions_xyz(self):
@@ -86,6 +101,19 @@ class PosePath3D(object):
         else:
             return self.positions_xyz.shape[0]
 
+    def path_length(self, ids=None):
+        """
+        calculates the path length (arc-length)
+        :param ids: optional start and end index as tuple (start, end)
+        :return: path length in meters
+        """
+        if ids is not None:
+            if len(ids) != 2 or not all(type(i) is int for i in ids):
+                raise TrajectoryException("ids must be a tuple of positive integers")
+            return float(geometry.arc_len(self.positions_xyz[ids[0]:ids[1]]))
+        else:
+            return float(geometry.arc_len(self.positions_xyz))
+
     def transform(self, t, right_mul=False):
         """
         apply a left or right multiplicative SE(3) transformation to the whole path
@@ -112,6 +140,10 @@ class PosePath3D(object):
             self._positions_xyz = s * self._positions_xyz
 
     def reduce_to_ids(self, ids):
+        """
+        reduce the elements to the ones specified in ids
+        :param ids: list of integer indices
+        """
         if hasattr(self, "_positions_xyz"):
             self._positions_xyz = self._positions_xyz[ids]
         if hasattr(self, "_orientations_quat_wxyz"):
@@ -144,7 +176,7 @@ class PosePath3D(object):
         """
         return {
             "nr. of poses": self.num_poses,
-            "path length (m)": geometry.arc_len(self.positions_xyz),
+            "path length (m)": self.path_length(),
             "pos_start (m)": self.positions_xyz[0],
             "pos_end (m)": self.positions_xyz[-1]
         }
@@ -158,18 +190,42 @@ class PoseTrajectory3D(PosePath3D, object):
     a PosePath with temporal information
     """
 
-    def __init__(self, positions_xyz, orientations_quat_wxyz, timestamps, poses_se3=None):
+    def __init__(self, positions_xyz=None, orientations_quat_wxyz=None,
+                 timestamps=None, poses_se3=None):
         """
         :param timestamps: optional nx1 list of timestamps
         """
         super(PoseTrajectory3D, self).__init__(positions_xyz, orientations_quat_wxyz, poses_se3)
-        if len(positions_xyz) != len(timestamps):
-            raise TrajectoryException("timestamps list must have same length as poses")
+        # this is a bit ugly...
+        if timestamps is None:
+            raise TrajectoryException("no timestamps provided")
         self.timestamps = np.array(timestamps)
+
+    def __str__(self):
+        s = super(PoseTrajectory3D, self).__str__()
+        return s + ", {:.3f}s duration".format(self.timestamps[-1] - self.timestamps[0])
+
+    def __eq__(self, other):
+        equal = super(PoseTrajectory3D, self).__eq__(other)
+        equal &= np.array_equal(self.timestamps, other.timestamps)
+        return equal
+
+    def __ne__(self, other):
+        return not self == other
 
     def reduce_to_ids(self, ids):
         super(PoseTrajectory3D, self).reduce_to_ids(ids)
         self.timestamps = self.timestamps[ids]
+
+    def check(self):
+        valid, details = super(PoseTrajectory3D, self).check()
+        len_stamps_valid = (len(self.timestamps) == len(self.positions_xyz))
+        valid &= len_stamps_valid
+        details["nr. of stamps"] = "ok" if len_stamps_valid else "wrong"
+        stamps_ascending = np.alltrue(np.sort(self.timestamps) == self.timestamps)
+        valid &= stamps_ascending
+        details["timestamps"] = "ok" if stamps_ascending else "wrong, not ascending"
+        return valid, details
 
     def get_infos(self):
         """

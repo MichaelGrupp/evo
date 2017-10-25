@@ -79,6 +79,7 @@ class PlotCollection:
         return self.title + " (" + str(len(self.figures)) + " figure(s))"
 
     def add_figure(self, name, fig):
+        fig.tight_layout()
         self.figures[name] = fig
 
     def tabbed_qt_window(self):

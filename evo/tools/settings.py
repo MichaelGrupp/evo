@@ -50,7 +50,7 @@ DEFAULT_SETTINGS_DICT = {
     "plot_split": False,
     "plot_figsize": [8, 8],
     "plot_info_text": False,
-    "plot_trajectory_cmap": "cool",
+    "plot_trajectory_cmap": "jet",
     "plot_multi_cmap": "none",
     "plot_invert_xaxis": False,
     "plot_invert_yaxis": False,

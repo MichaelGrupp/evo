@@ -17,8 +17,8 @@ Supported trajectory formats:
 <center>
 <a href="evo/doc/ape_demo_ORB_map.png" target="_blank"><img src="evo/doc/ape_demo_ORB_map.png" alt="evo" height="200" border="5" /></a>
 <a href="evo/doc/res_violin.png" target="_blank"><img src="evo/doc/res_violin.png" alt="evo" height="200" border="5" /></a>
-<a href="evo/doc/res_stats.png" target="_blank"><img src="evo/doc/res_stats.png" alt="evo" height="200" border="5" />
-</center></a>
+<a href="evo/doc/res_stats.png" target="_blank"><img src="evo/doc/res_stats.png" alt="evo" height="200" border="5" /></a>
+</center>
 
 ---
 
@@ -99,9 +99,9 @@ There are some example trajectories in the source folder in `evo/test/data`.
   ```
 
   <center>
-  <a href="evo/doc/traj_demo.png" target="_blank"><img src="evo/doc/traj_demo.png" alt="evo" height="200" border="5" />
-  <a href="evo/doc/traj_demo_xyz.png" target="_blank"><img src="evo/doc/traj_demo_xyz.png" alt="evo" height="200" border="5" />
-  </center></a>
+  <a href="evo/doc/traj_demo.png" target="_blank"><img src="evo/doc/traj_demo.png" alt="evo" height="200" border="5" /></a>
+  <a href="evo/doc/traj_demo_xyz.png" target="_blank"><img src="evo/doc/traj_demo_xyz.png" alt="evo" height="200" border="5" /></a>
+  </center>
 
 2. ***Run a metric on trajectories***
 
@@ -116,8 +116,8 @@ There are some example trajectories in the source folder in `evo/test/data`.
 
   <center>
   <a href="evo/doc/ape_demo_ORB_raw.png" target="_blank"><img src="evo/doc/ape_demo_ORB_raw.png" alt="evo" height="200" border="5" /></a>
-  <a href="evo/doc/ape_demo_ORB_map.png" target="_blank"><img src="evo/doc/ape_demo_ORB_map.png" alt="evo" height="200" border="5" />
-  </center></a>
+  <a href="evo/doc/ape_demo_ORB_map.png" target="_blank"><img src="evo/doc/ape_demo_ORB_map.png" alt="evo" height="200" border="5" /></a>
+  </center>
 
   *Second trajectory (S-PTAM):*
   
@@ -127,8 +127,8 @@ There are some example trajectories in the source folder in `evo/test/data`.
 
   <center>
   <a href="evo/doc/ape_demo_S-PTAM_raw.png" target="_blank"><img src="evo/doc/ape_demo_S-PTAM_raw.png" alt="evo" height="200" border="5" /></a>
-  <a href="evo/doc/ape_demo_S-PTAM_map.png" target="_blank"><img src="evo/doc/ape_demo_S-PTAM_map.png" alt="evo" height="200" border="5" />
-  </center></a>
+  <a href="evo/doc/ape_demo_S-PTAM_map.png" target="_blank"><img src="evo/doc/ape_demo_S-PTAM_map.png" alt="evo" height="200" border="5" /></a>
+  </center>
 
 
 3. ***Process multiple results from a metric***
@@ -148,8 +148,8 @@ There are some example trajectories in the source folder in `evo/test/data`.
   <a href="evo/doc/res_dist.png" target="_blank"><img src="evo/doc/res_dist.png" alt="evo" height="200" border="5" /> </a>
   <a href="evo/doc/res_stats.png" target="_blank"><img src="evo/doc/res_stats.png" alt="evo" height="200" border="5" /></a>
   <a href="evo/doc/res_box.png" target="_blank"><img src="evo/doc/res_box.png" alt="evo" height="200" border="5" /></a>
-  <a href="evo/doc/res_violin.png" target="_blank"><img src="evo/doc/res_violin.png" alt="evo" height="200" border="5" />
-  </center></a>
+  <a href="evo/doc/res_violin.png" target="_blank"><img src="evo/doc/res_violin.png" alt="evo" height="200" border="5" /></a>
+  </center>
 
 ---
 

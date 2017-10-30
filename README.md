@@ -2,7 +2,7 @@
 
 ***Python package for the evaluation of odometry and SLAM***
 
-This packages provides executables and a small library for handling and evaluating and the trajectory output of odometry and SLAM algorithms.
+This packages provides executables and a small library for handling and evaluating and the trajectory output of odometry and SLAM algorithms. If you use this package for your research, please "cite" it as a footnote with the link to this repository: `github.com/MichaelGrupp/evo`.
 
 Supported trajectory formats:
 

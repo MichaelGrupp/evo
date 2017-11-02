@@ -105,7 +105,7 @@ There are some example trajectories in the source folder in `evo/test/data`.
 
 2. ***Run a metric on trajectories***
 
-  For example, here we calculate the absolute pose error for two trajectories from ORB-SLAM and S-PTAM using `evo_ape` and plot and save the individual results to .zip files:
+  For example, here we calculate the absolute pose error for two trajectories from ORB-SLAM and S-PTAM using `evo_ape` (`KITTI_00_gt.txt` is the reference (ground truth)) and plot and save the individual results to .zip files for `evo_res`:
 
   *First trajectory (ORB Stereo):*
 

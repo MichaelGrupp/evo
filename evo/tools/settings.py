@@ -189,7 +189,7 @@ def configure_logging(verbose=False, silent=False, debug=False,
     else: 
         console_level = logging.WARNING
     console_handler = logging.StreamHandler(stream=sys.stdout)
-    console_formatter = logging.Formatter(dbg_fmt) if debug else DefaultConsoleFormatter()
+    console_formatter = logging.Formatter(dbg_fmt) if debug else DefaultConsoleFormatter(fmt)
     console_handler.setFormatter(console_formatter)
     console_handler.setLevel(console_level)
     # add console_handler to default root logger

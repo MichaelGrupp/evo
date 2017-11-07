@@ -146,7 +146,7 @@ def read_euroc_csv_trajectory(file_path):
         raise FileInterfaceException("EuRoC MAV state ground truth must have 17 entries per row")
     stamps = np.divide(mat[:, 0], 1e9)  # n x 1  -  nanoseconds to seconds
     xyz = mat[:, 1:4]  # n x 3
-    quat = mat[:, 4:]  # n x 4
+    quat = mat[:, 4:8]  # n x 4
     logging.debug("loaded " + str(len(stamps)) + " stamps and poses from: " + file_path)
     return PoseTrajectory3D(xyz, quat, stamps)
 

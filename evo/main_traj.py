@@ -198,10 +198,13 @@ def run(args):
         raise RuntimeError("unsupported subcommand: " + args.subcommand)
 
     if args.transform_left or args.transform_right:
+        tf_type = "left" if args.transform_left else "right"
         tf_path = args.transform_left if args.transform_left else args.transform_right
         t, xyz, quat = file_interface.load_transform_json(tf_path)
         logging.debug(SEP)
-        logging.debug("applying transformation to the trajectories:\n" + str(t))
+        logging.debug("applying a " + tf_type + "-multiplicative transformation:\n" + str(t))
+        if not lie.is_se3(t):
+            logging.warning("not a valid SE(3) transformation!")
         if args.invert_transform:
             t = lie.se3_inverse(t)
         for name, traj in trajectories:

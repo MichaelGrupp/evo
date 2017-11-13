@@ -8,6 +8,7 @@ depending on whether your issue is a general question, a bug / error report
 or a feature request.
 
 Changing "- [ ]" to "- [x]" will mark a task in a to-do list as done.
+You can also click the boxes after you created the issue.
 
 Before you click "Submit new issue", check the formatting in the "Preview" tab.
 Help with Markdown formatting: 
@@ -26,8 +27,8 @@ delete the part below if your issue is NOT a general request
 
 Have you already...
 
-- [ ] looked into the [README.md](https://github.com/MichaelGrupp/evo/blob/master/README.md) 
-      file or the [Wiki](https://github.com/MichaelGrupp/evo/wiki)?
+- [ ] looked into the [README.md](https://github.com/MichaelGrupp/evo/blob/master/README.md) file 
+      or the [Wiki](https://github.com/MichaelGrupp/evo/wiki)?
 - [ ] searched in the [open and closed issues](https://github.com/MichaelGrupp/evo/issues?q=is%3Aissue) for similar questions?
 - [ ] used the `--help` option of the command you want to use?
 

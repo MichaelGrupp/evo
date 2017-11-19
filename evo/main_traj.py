@@ -202,11 +202,11 @@ def run(args):
         tf_path = args.transform_left if args.transform_left else args.transform_right
         t, xyz, quat = file_interface.load_transform_json(tf_path)
         logging.debug(SEP)
-        logging.debug("applying a " + tf_type + "-multiplicative transformation:\n" + str(t))
         if not lie.is_se3(t):
             logging.warning("not a valid SE(3) transformation!")
         if args.invert_transform:
             t = lie.se3_inverse(t)
+        logging.debug("applying a " + tf_type + "-multiplicative transformation:\n" + str(t))
         for name, traj in trajectories:
             traj.transform(t, right_mul=args.transform_right)
 

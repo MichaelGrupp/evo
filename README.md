@@ -2,7 +2,7 @@
 
 ***Python package for the evaluation of odometry and SLAM***
 
-This packages provides executables and a small library for handling and evaluating and the trajectory output of odometry and SLAM algorithms. If you use this package for your research, please "cite" it as a footnote with the link to this repository: `github.com/MichaelGrupp/evo`.
+This packages provides executables and a small library for handling and evaluating and the trajectory output of odometry and SLAM algorithms. If you use this package for your research, a footnote with the link to this repository is appreciated: `github.com/MichaelGrupp/evo`.
 
 Supported trajectory formats:
 
@@ -32,7 +32,7 @@ If you just want to use the executables of the latest release version, the easie
 ```bash
 pip install evo --upgrade
 ```
-This will download the package and its dependencies from PyPi and install them. Depending on your OS, you might be able to use `pip2`or `pip3` to specify the Python version you want. Tab completion for Bash terminals is supported via the argcomplete package on most UNIX systems - open a new shell after the installation to use it.
+This will download the package and its dependencies from PyPi and install them. Depending on your OS, you might be able to use `pip2` or `pip3` to specify the Python version you want. Tab completion for Bash terminals is supported via the argcomplete package on most UNIX systems - open a new shell after the installation to use it.
 
 ### From Source
 Run this in the repository's base folder:

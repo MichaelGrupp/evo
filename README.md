@@ -11,6 +11,8 @@ Supported trajectory formats:
 * 'EuRoC MAV' (.csv groundtruth and TUM trajectory file)
 * ROS bagfile with geometry_msgs/PoseStamped topics
 
+See [here](https://github.com/MichaelGrupp/evo/wiki/Formats) for more infos about the formats.
+
 <!---
 <img src="evo/doc/traj_demo.png" alt="evo" height="180" border="10" />
 -->
@@ -76,6 +78,9 @@ After installation with setup.sh, setup.py or from pip, the following console co
 * `evo_config` - tool for global settings and config file manipulation
 
 Call the commands with `--help` to see the options, e.g. `evo_ape --help`. Tab-completion of command line parameters is available on UNIX systems.
+
+**More documentation**
+Check out the [Wiki on GitHub](https://github.com/MichaelGrupp/evo/wiki).
 
 **Configurations**
 

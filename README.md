@@ -2,7 +2,7 @@
 
 ***Python package for the evaluation of odometry and SLAM***
 
-This packages provides executables and a small library for handling and evaluating and the trajectory output of odometry and SLAM algorithms. If you use this package for your research, a footnote with the link to this repository is appreciated: `github.com/MichaelGrupp/evo`.
+This packages provides executables and a small library for handling and evaluating and the trajectory output of odometry and SLAM algorithms.
 
 Supported trajectory formats:
 
@@ -213,4 +213,4 @@ This can be caused if the Kernel version of Jupyter does not match the Python ve
 
 ## License
 
-Free, modifiable open source software as covered by the GNU GPL v3 - see the 'LICENSE' file for full information.
+Free, modifiable open source software as covered by the GNU GPL v3 - see the 'LICENSE' file for full information. If you use this package for your research, a footnote with the link to this repository is appreciated: `github.com/MichaelGrupp/evo`.

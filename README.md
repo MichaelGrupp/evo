@@ -82,12 +82,6 @@ Call the commands with `--help` to see the options, e.g. `evo_ape --help`. Tab-c
 **More documentation**
 Check out the [Wiki on GitHub](https://github.com/MichaelGrupp/evo/wiki).
 
-**Configurations**
-
-Some global settings of the package (see `evo_config show`) can be changed via `evo_config set`.
-
-Configuration JSON files can be used to store command line parameters of an experiment and can be passed to the executables via `--config`/`-c` - see `config_ape.example.json` and `config_rpe.example.json` in the source folder for examples. Use `evo_config generate` to quickly generate such config files.
-
 ---
 
 ## Example Workflow

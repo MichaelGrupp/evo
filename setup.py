@@ -15,9 +15,6 @@ def python_below_34():
 
 
 def _post_install(install_lib_dir):
-    from evo.main_config import reset_pkg_settings
-    print("resetting evo's settings.json")
-    reset_pkg_settings(os.path.join(install_lib_dir, "evo", "settings.json"))
     print("activating argcomplete")
     sp.call("activate-global-python-argcomplete", shell=True)
     print("done - argcomplete should work now")

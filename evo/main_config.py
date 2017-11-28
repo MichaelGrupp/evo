@@ -60,12 +60,12 @@ def show(cfg_path, colored=True):
         log_info_dict_json(json.load(cfg_file), colored)
 
 
-def merge_json_union(first, second):
+def merge_json_union(first, second, soft=False):
     with open(first, 'r+') as f_1:
         cfg_1 = json.loads(f_1.read())
         with open(second) as f_2:
             cfg_2 = json.loads(f_2.read())
-            cfg_1.update(cfg_2)
+            cfg_1 = settings.merge_dicts(first, second, soft)
         f_1.truncate(0)
         f_1.seek(0)
         f_1.write(json.dumps(cfg_1, indent=4, sort_keys=True))

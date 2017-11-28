@@ -18,6 +18,8 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from __future__ import print_function
+
 import os
 import sys
 import json
@@ -103,7 +105,7 @@ save_traj_in_zip
 logging_format
     format string for the logging module (console only)
 logfile_enabled
-    whether to write .evo.log logfile to home folder
+    whether to write a logfile to the home folder
 '''
 
 
@@ -129,16 +131,50 @@ class SettingsContainer(dict):
         self[attr] = value
 
 
+def merge_dicts(first, second, soft=False):
+    if soft:
+        first.update({k: v for k, v in second.items() if not k in first})
+    else:
+        first.update(second)
+    return first
+
+
 PACKAGE_BASE_PATH = os.path.abspath(__file__ + "/../../")
 PACKAGE_VERSION = open(os.path.join(PACKAGE_BASE_PATH, "version")).read()
 
-DEFAULT_PATH = os.path.join(PACKAGE_BASE_PATH, "settings.json")
-DEFAULT_LOGFILE_PATH = os.path.join(os.path.expanduser('~'), ".evo.log")
+USER_ASSETS_PATH = os.path.join(os.path.expanduser('~'), ".evo")
+USER_ASSETS_VERSION_PATH = os.path.join(USER_ASSETS_PATH, "assets_version")
+
+DEFAULT_PATH = os.path.join(USER_ASSETS_PATH, "settings.json")
+DEFAULT_LOGFILE_PATH = os.path.join(USER_ASSETS_PATH, "evo.log")
+
+# initialize .evo user folder after first installation (or if it was deleted)
+if not os.path.isdir(USER_ASSETS_PATH):
+    os.makedirs(USER_ASSETS_PATH)
+
+if not os.path.exists(USER_ASSETS_VERSION_PATH):
+    open(os.path.join(USER_ASSETS_PATH, "assets_version"), 'w').write(PACKAGE_VERSION)
+
 if not os.path.exists(DEFAULT_PATH):
-    logging.error(Fore.LIGHTRED_EX + "fatal: failed to load package settings file " + DEFAULT_PATH + Fore.RESET)
-    logging.warning(Fore.LIGHTYELLOW_EX + "trying to generate new settings.json" + Fore.RESET)
+    try:
+        with open(DEFAULT_PATH, 'w') as cfg_file:
+            cfg_file.write(json.dumps(DEFAULT_SETTINGS_DICT, indent=4, sort_keys=True))
+        print(Fore.LIGHTYELLOW_EX + "initialized new " + DEFAULT_PATH + Fore.RESET)
+    except:
+        print(Fore.LIGHTRED_EX
+            + "fatal: failed to write package settings file " + DEFAULT_PATH + Fore.RESET)
+        raise
+
+if not open(USER_ASSETS_VERSION_PATH).read() == PACKAGE_VERSION:
+    old_settings = json.loads(open(DEFAULT_PATH).read())
+    updated_settings = merge_dicts(old_settings, DEFAULT_SETTINGS_DICT, soft=True)
     with open(DEFAULT_PATH, 'w') as cfg_file:
-        cfg_file.write(json.dumps(DEFAULT_SETTINGS_DICT, indent=4, sort_keys=True))
+        cfg_file.write(json.dumps(updated_settings, indent=4, sort_keys=True))
+    open(os.path.join(USER_ASSETS_PATH, "assets_version"), 'w').write(PACKAGE_VERSION)
+    print(Fore.LIGHTYELLOW_EX + "updated outdated " + DEFAULT_PATH + Fore.RESET)
+
+
+# load the user settings into this container
 SETTINGS = SettingsContainer(DEFAULT_PATH)
 
 

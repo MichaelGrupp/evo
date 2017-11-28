@@ -108,8 +108,8 @@ def main():
             print(settings.PACKAGE_BASE_PATH, end=line_end)
         if args.logfile or args.open_log:
             if not os.path.exists(settings.DEFAULT_LOGFILE_PATH):
-                print("no logfile found", end=line_end)
-                sys.exit()
+                print("no logfile found - run: evo_config set logfile_enabled", end=line_end)
+                sys.exit(1)
             print(settings.DEFAULT_LOGFILE_PATH, end=line_end)
             if args.open_log:
                 import webbrowser
@@ -121,7 +121,7 @@ def main():
             sys.exit(1)
         if not args.message and sys.stdin.isatty():
             if not os.path.exists(settings.DEFAULT_LOGFILE_PATH):
-                print("no logfile found", end=line_end)
+                print("no logfile found - run: evo_config set logfile_enabled", end=line_end)
             else:
                 print(open(settings.DEFAULT_LOGFILE_PATH).read(), end="")
             sys.exit()

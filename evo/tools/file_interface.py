@@ -99,7 +99,7 @@ def write_tum_trajectory_file(file_path, traj, quat_is_wxyz=True, confirm_overwr
     mat = np.column_stack((stamps, xyz, quat))
     np.savetxt(file_path, mat, delimiter=" ")
     if isinstance(file_path, str):
-        logging.debug("trajectory saved to: " + file_path)
+        logging.info("trajectory saved to: " + file_path)
 
 
 def read_kitti_poses_file(file_path):
@@ -132,7 +132,7 @@ def write_kitti_poses_file(file_path, traj, confirm_overwrite=False):
     poses_flat = [p.flatten()[:-4] for p in traj.poses_se3]  # first 3 rows flattened
     np.savetxt(file_path, poses_flat, delimiter=' ')
     if isinstance(file_path, str):
-        logging.debug("poses saved to: " + file_path)
+        logging.info("poses saved to: " + file_path)
 
 
 def read_euroc_csv_trajectory(file_path):
@@ -193,7 +193,7 @@ def write_bag_trajectory(bag_handle, traj, topic_name):
         p.pose.orientation.y = quat[2]
         p.pose.orientation.z = quat[3]
         bag_handle.write(topic_name, p, t=p.header.stamp)
-    logging.debug("saved geometry_msgs/PoseStamped topic: " + topic_name)
+    logging.info("saved geometry_msgs/PoseStamped topic: " + topic_name)
 
 
 def load_assoc_tum_trajectories(ref_file, est_file, max_diff=0.01, offset_2=0.0, invert=False):

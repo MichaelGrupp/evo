@@ -298,14 +298,14 @@ def run(args):
         if args.plot:
             plot_collection.show()
         if args.save_plot:
-            logging.debug(SEP)
+            logging.info(SEP)
             plot_collection.export(args.save_plot, confirm_overwrite=not args.no_warnings)
         if args.serialize_plot:
-            logging.debug(SEP)
+            logging.info(SEP)
             plot_collection.serialize(args.serialize_plot, confirm_overwrite=not args.no_warnings)
 
     if args.save_as_tum:
-        logging.debug(SEP)
+        logging.info(SEP)
         for name, traj in trajectories:
             dest = os.path.splitext(os.path.basename(name))[0] + ".tum"
             file_interface.write_tum_trajectory_file(dest, traj,
@@ -315,7 +315,7 @@ def run(args):
             file_interface.write_tum_trajectory_file(dest, ref_traj,
                                                      confirm_overwrite=not args.no_warnings)
     if args.save_as_kitti:
-        logging.debug(SEP)
+        logging.info(SEP)
         for name, traj in trajectories:
             dest = os.path.splitext(os.path.basename(name))[0] + ".kitti"
             file_interface.write_kitti_poses_file(dest, traj,
@@ -325,11 +325,11 @@ def run(args):
             file_interface.write_kitti_poses_file(dest, ref_traj,
                                                   confirm_overwrite=not args.no_warnings)
     if args.save_as_bag:
-        logging.debug(SEP)
+        logging.info(SEP)
         import datetime
         import rosbag
         dest_bag_path = str(datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S.%f')) + ".bag"
-        logging.debug("saving trajectories to " + dest_bag_path + "...")
+        logging.info("saving trajectories to " + dest_bag_path + "...")
         bag = rosbag.Bag(dest_bag_path, 'w')
         try:
             for name, traj in trajectories:

@@ -68,6 +68,7 @@ def parser():
                              action="store_true")
     usability_opts.add_argument("--no_warnings", help="no warnings requiring user confirmation",
                                 action="store_true")
+    usability_opts.add_argument("-v", "--verbose", help="verbose output", action="store_true")
     usability_opts.add_argument("--silent", help="don't print any output", action="store_true")
     usability_opts.add_argument("--debug", help="verbose output with additional debug info",
                                 action="store_true")
@@ -105,35 +106,39 @@ def parser():
 
 
 # TODO refactor
-def print_traj_info(name, traj, with_stats=False):
+def print_traj_info(name, traj, verbose=False, full_check=False):
     import os
     import logging
     from evo.algorithms import trajectory
 
-    logging.debug(SEP)
-    logging.debug("name:\t" + os.path.splitext(os.path.basename(name))[0])
-    infos = traj.get_infos()
-    info_str = ""
-    for info, value in sorted(infos.items()):
-        info_str += "\n\t" + info + "\t" + str(value)
-    logging.debug("infos" + info_str)
-    if with_stats:
-        passed, details = traj.check()
-        check_str = ""
-        for test, result in sorted(details.items()):
-            check_str += "\n\t" + test + "\t" + result
-        logging.debug("checks" + check_str)
-        stat_str = ""
-        try:
-            stats = traj.get_statistics()
-            for stat, value in sorted(stats.items()):
-                if isinstance(value, float):
-                    stat_str += "\n\t" + stat + "\t" + "{0:.6f}".format(value)
-                else:
-                    stat_str += value
-        except trajectory.TrajectoryException as e:
-            stat_str += "\n\terror - " + str(e)
-        logging.debug("stats" + stat_str)
+    logging.info(SEP)
+    logging.info("name:\t" + os.path.splitext(os.path.basename(name))[0])
+
+    if verbose or full_check:
+        infos = traj.get_infos()
+        info_str = ""
+        for info, value in sorted(infos.items()):
+            info_str += "\n\t" + info + "\t" + str(value)
+        logging.info("infos:" + info_str)
+        if full_check:
+            passed, details = traj.check()
+            check_str = ""
+            for test, result in sorted(details.items()):
+                check_str += "\n\t" + test + "\t" + result
+            logging.info("checks:" + check_str)
+            stat_str = ""
+            try:
+                stats = traj.get_statistics()
+                for stat, value in sorted(stats.items()):
+                    if isinstance(value, float):
+                        stat_str += "\n\t" + stat + "\t" + "{0:.6f}".format(value)
+                    else:
+                        stat_str += value
+            except trajectory.TrajectoryException as e:
+                stat_str += "\n\terror - " + str(e)
+            logging.info("stats:" + stat_str)
+    else:
+        logging.info("infos:\t" + str(traj))
 
 
 def run(args):
@@ -145,7 +150,7 @@ def run(args):
     from evo.tools import file_interface, settings
     from evo.tools.settings import SETTINGS
 
-    settings.configure_logging(verbose=True, silent=args.silent, debug=args.debug)
+    settings.configure_logging(verbose=args.verbose, silent=args.silent, debug=args.debug)
     if args.debug:
         import pprint
         logging.debug("main_parser config:\n"
@@ -239,12 +244,12 @@ def run(args):
             logging.debug(SEP)
             logging.info("adding time offset to " + name + ": " + str(args.t_offset) + " (s)")
             traj.timestamps += args.t_offset
-        print_traj_info(name, traj, args.full_check)
+        print_traj_info(name, traj, args.verbose, args.full_check)
     if (args.align or args.correct_scale) and not args.ref:
         logging.debug(SEP)
         logging.warning("can't align without a reference! (--ref)  *grunt*")
     if args.ref:
-        print_traj_info(args.ref, ref_traj, args.full_check)
+        print_traj_info(args.ref, ref_traj, args.verbose, args.full_check)
 
     if args.plot or args.save_plot or args.serialize_plot:
         from evo.tools.plot import PlotMode

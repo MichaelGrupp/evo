@@ -18,10 +18,13 @@ fi
 log "read single info"
 echo_and_run evo_traj tum ../data/fr2_desk_ORB.txt
 
-log "show more infos..."
+log "verbose mode: -v or --verbose"
+echo_and_run evo_traj tum ../data/fr2_desk_ORB.txt -v
+
+log "do a full check of the trajectory"
 echo_and_run evo_traj tum ../data/fr2_desk_ORB.txt --full_check
 
-log "process multiple trajectories"
+log "load multiple trajectories"
 echo_and_run evo_traj tum ../data/fr2_desk_*
 
 log "plot trajectories: -p or --plot"

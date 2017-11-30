@@ -65,7 +65,7 @@ def merge_json_union(first, second, soft=False):
         cfg_1 = json.loads(f_1.read())
         with open(second) as f_2:
             cfg_2 = json.loads(f_2.read())
-            cfg_1 = settings.merge_dicts(first, second, soft)
+            cfg_1 = settings.merge_dicts(cfg_1, cfg_2, soft)
         f_1.truncate(0)
         f_1.seek(0)
         f_1.write(json.dumps(cfg_1, indent=4, sort_keys=True))
@@ -138,7 +138,8 @@ SET_HELP = '''
 set parameters
 Unless -c / --config is specified, the package settings will be used.
 
---Example--
+--EXAMPLE--
+
 If your configuration looks like this (via 'evo_config show'):
 
     {
@@ -162,16 +163,21 @@ generate configuration files from command-line args
 The configuration files are intended to hold command line
 parameters used by the respective executables, e.g. 'evo_ape'.
 
---Example--
+--EXAMPLE--
+
 Running:
+
     evo_config generate --align --plot --plot_mode xz --verbose
+
 will convert the arguments into the JSON format:
+
     {
         "align": true,
         "plot": true,
         "plot_mode": "xz",
         "verbose": true
     }
+
 List arguments (--arg 1 2 3) are also supported.
 To save the configuration, specify -o / --output.
 '''
@@ -201,7 +207,7 @@ def main():
     set_parser.add_argument("-c", "--config",
                             help="optional config file (default: package settings)", default=None)
     set_parser.add_argument("-m", "--merge",
-                            help="optional config file (priority) for union merging", default=None)
+                            help="other config file to merge in (priority)", default=None)
 
     gen_parser = sub_parsers.add_parser("generate", description=GENERATE_HELP,
                                         parents=[shared_parser],

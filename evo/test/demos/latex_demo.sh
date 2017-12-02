@@ -11,7 +11,7 @@ parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 cd "$parent_path"
 
 log "configure LaTeX-friendly settings"
-echo_and_run sudo evo_config set plot_figsize 5 5 plot_usetex plot_fontfamily serif plot_linewidth 0.5 plot_seaborn_style whitegrid plot_export_format pgf
+echo_and_run evo_config set plot_figsize 5 5 plot_usetex plot_fontfamily serif plot_linewidth 0.5 plot_seaborn_style whitegrid plot_export_format pgf
 
 log "generate .pgf figures"
 echo_and_run evo_res *rpe.zip --save_plot example.pgf
@@ -22,4 +22,4 @@ if [[ ! $* == *--no_plots* ]]; then
     evince example.pdf
 fi
 
-yes | sudo evo_config reset
+yes | evo_config reset

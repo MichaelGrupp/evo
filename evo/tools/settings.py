@@ -50,7 +50,7 @@ DEFAULT_SETTINGS_DICT = {
     "plot_fontfamily": "sans-serif",
     "plot_fontsize": 12,
     "plot_split": False,
-    "plot_figsize": [8, 8],
+    "plot_figsize": [6, 6],
     "plot_info_text": False,
     "plot_trajectory_cmap": "jet",
     "plot_multi_cmap": "none",

@@ -1,5 +1,5 @@
 """
-default settings and a static container which loads and holds the settings from settings.json
+stuff related to package settings
 author: Michael Grupp
 
 This file is part of evo (github.com/MichaelGrupp/evo).
@@ -24,91 +24,26 @@ import os
 import sys
 import json
 import logging
-import imp  # TODO deprecated in Python 3
+from collections import OrderedDict
 
 import colorama
 from colorama import Fore
 
+from evo.tools.settings_template import DEFAULT_SETTINGS_DICT
+
+
+PACKAGE_BASE_PATH = os.path.abspath(__file__ + "/../../")
+PACKAGE_VERSION = open(os.path.join(PACKAGE_BASE_PATH, "version")).read()
+USER_ASSETS_PATH = os.path.join(os.path.expanduser('~'), ".evo")
+USER_ASSETS_VERSION_PATH = os.path.join(USER_ASSETS_PATH, "assets_version")
+DEFAULT_PATH = os.path.join(USER_ASSETS_PATH, "settings.json")
+DEFAULT_LOGFILE_PATH = os.path.join(USER_ASSETS_PATH, "evo.log")
+
+
 class SettingsException(Exception):
     pass
 
-
-pyqt4_installed = False
-try:
-    imp.find_module("PyQt4")
-    pyqt4_installed = True
-except ImportError:
-    pass
     
-
-DEFAULT_SETTINGS_DICT = {
-    "plot_xyz_realistic": True,
-    "plot_backend": "Qt4Agg" if pyqt4_installed else "TkAgg",
-    "plot_hideref": False,
-    "plot_linewidth": 1.5,
-    "plot_usetex": False,
-    "plot_fontfamily": "sans-serif",
-    "plot_fontsize": 12,
-    "plot_split": False,
-    "plot_figsize": [6, 6],
-    "plot_info_text": False,
-    "plot_trajectory_cmap": "jet",
-    "plot_multi_cmap": "none",
-    "plot_invert_xaxis": False,
-    "plot_invert_yaxis": False,
-    "plot_seaborn_style": "darkgrid",
-    "plot_export_format": "pdf",
-    "table_export_format": "csv",
-    "table_export_transpose": True,
-    "save_traj_in_zip": False,
-    "logging_format": "%(message)s",
-    "logfile_enabled": False
-}
-
-DEFAULT_SETTINGS_HELP = '''
-plot_backend
-    matplotlib backend - tabs are supported with TkAgg and Qt4Agg
-plot_hideref
-    hide reference trajectory in trajectory plots of metrics
-plot_linewidth
-    matplotlib supported line width value
-plot_usetex
-    use LaTeX renderer for plots
-plot_fontfamily
-    matplotlib supported font family string
-plot_fontsize
-    matplotlib supported font size integer
-plot_split
-    show / save each figure separately
-    default: window with tabs from TkAgg backend
-plot_figsize
-    the default size of one (sub)plot figure (width, height)
-plot_xyz_realistic
-    equal axes aspect ratio for more realistic trajectory plots in xyz plot mode
-plot_info_text
-    allow text boxes with additional infos below the plots
-plot_seaborn_style
-    whitegrid, darkgrid, white, dark
-plot_trajectory_cmap
-    matplotlib color map for mapping values on a trajectory
-plot_multi_cmap matplotlib
-    color map for coloring plots from multiple data sources
-    "none" will use default color cycle
-plot_export_format
-    matplotlib supported file format for exporting plots
-table_export_format
-    format for exporting tables (csv, excel, latex)
-table_export_transpose
-    transpose tables for export
-save_traj_in_zip
-    backup trajectories in result zip files (increases size)
-logging_format
-    format string for the logging module (console only)
-logfile_enabled
-    whether to write a logfile to the home folder
-'''
-
-
 class SettingsContainer(dict):
     def __init__(self, settings_path, data=None):
         super(SettingsContainer, self).__init__()
@@ -139,14 +74,10 @@ def merge_dicts(first, second, soft=False):
     return first
 
 
-PACKAGE_BASE_PATH = os.path.abspath(__file__ + "/../../")
-PACKAGE_VERSION = open(os.path.join(PACKAGE_BASE_PATH, "version")).read()
-
-USER_ASSETS_PATH = os.path.join(os.path.expanduser('~'), ".evo")
-USER_ASSETS_VERSION_PATH = os.path.join(USER_ASSETS_PATH, "assets_version")
-
-DEFAULT_PATH = os.path.join(USER_ASSETS_PATH, "settings.json")
-DEFAULT_LOGFILE_PATH = os.path.join(USER_ASSETS_PATH, "evo.log")
+def reset(dest=DEFAULT_PATH):
+    with open(dest, 'w') as cfg_file:
+        cfg_file.write(json.dumps(DEFAULT_SETTINGS_DICT, indent=4, sort_keys=True))
+    
 
 # initialize .evo user folder after first installation (or if it was deleted)
 if not os.path.isdir(USER_ASSETS_PATH):
@@ -157,8 +88,7 @@ if not os.path.exists(USER_ASSETS_VERSION_PATH):
 
 if not os.path.exists(DEFAULT_PATH):
     try:
-        with open(DEFAULT_PATH, 'w') as cfg_file:
-            cfg_file.write(json.dumps(DEFAULT_SETTINGS_DICT, indent=4, sort_keys=True))
+        reset()
         print(Fore.LIGHTYELLOW_EX + "initialized new " + DEFAULT_PATH + Fore.RESET)
     except:
         print(Fore.LIGHTRED_EX

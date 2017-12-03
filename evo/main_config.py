@@ -30,21 +30,17 @@ import argparse
 import logging
 
 import colorama
+from colorama import Fore, Style
 from pygments import highlight, lexers, formatters
 
 from evo.tools import user, settings
+from evo.tools.settings_template import DEFAULT_SETTINGS_DICT_DOC
 
 SEP = "-" * 80
 
 
 class ConfigError(Exception):
     pass
-
-
-def reset_pkg_settings(pkg_config=settings.DEFAULT_PATH):
-    with open(pkg_config, 'w') as cfg_file:
-        print(pkg_config)
-        cfg_file.write(json.dumps(settings.DEFAULT_SETTINGS_DICT, indent=4, sort_keys=True))
 
 
 def log_info_dict_json(data_str, colored=True):
@@ -188,8 +184,7 @@ def main():
     basic_desc = "crappy configuration tool"
     lic = "(c) michael.grupp@tum.de"
     shared_parser = argparse.ArgumentParser(add_help=False)
-    shared_parser.add_argument("--no_color", help="don't color output", 
-                               action="store_false", default=True)
+    shared_parser.add_argument("--no_color", help="don't color output", action="store_true")
     main_parser = argparse.ArgumentParser(description="%s %s" % (basic_desc, lic))
     sub_parsers = main_parser.add_subparsers(dest="subcommand")
     sub_parsers.required = True
@@ -230,9 +225,12 @@ def main():
 
     if args.subcommand == "show":
         if not args.brief and not args.config:
-            logging.info(settings.DEFAULT_SETTINGS_HELP)
+            style = Style.BRIGHT if not args.no_color else Style.NORMAL
+            doc_str = "\n".join("{0}{1}{2}:\n{3}\n".format(style, k, Style.RESET_ALL, v[1])
+                                for k, v in sorted(DEFAULT_SETTINGS_DICT_DOC.items()))
+            logging.info(doc_str)
             logging.info(SEP + "\n" + config + "\n" + SEP)
-        show(config, colored=args.no_color)
+        show(config, colored=not args.no_color)
         if config == settings.DEFAULT_PATH and not args.brief:
             logging.info(SEP + "\nsee text above for parameter descriptions")
 
@@ -242,7 +240,7 @@ def main():
             sys.exit()
         if other_args or args.merge:
             logging.info(SEP + "\nold configuration:\n" + SEP)
-            show(config, colored=args.no_color)
+            show(config, colored=not args.no_color)
             try:
                 set_cfg(config, other_args)
             except ConfigError as e:
@@ -251,7 +249,7 @@ def main():
             if args.merge:
                 merge_json_union(config, args.merge, args.soft)
             logging.info(SEP + "\nnew configuration:\n" + SEP)
-            show(config, colored=args.no_color)
+            show(config, colored=not args.no_color)
         else:
             logging.info("no configuration parameters given (see --help)")
 
@@ -262,7 +260,7 @@ def main():
                   "make sure you use the 'long-style' -- options (e.g. --plot) if possible\n" +
                   "and no combined 'short' - flags, (e.g. -avp)\n" + SEP)
             data = generate(other_args)
-            log_info_dict_json(data, colored=args.no_color)
+            log_info_dict_json(data, colored=not args.no_color)
             if args.out and user.check_and_confirm_overwrite(args.out):
                 with open(args.out, 'w') as out:
                     out.write(json.dumps(data, indent=4, sort_keys=True))
@@ -276,9 +274,9 @@ def main():
             logging.info("no permission to modify" + config)
             sys.exit()
         if user.confirm("reset the package settings to the default settings? (y/n)"):
-            reset_pkg_settings(settings.DEFAULT_PATH)
+            settings.reset()
             logging.info(SEP + "\npackage settings after reset:\n" + SEP)
-            show(settings.DEFAULT_PATH, colored=args.no_color)
+            show(settings.DEFAULT_PATH, colored=not args.no_color)
 
 
 if __name__ == '__main__':

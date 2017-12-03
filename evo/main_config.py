@@ -208,6 +208,7 @@ def main():
                             help="optional config file (default: package settings)", default=None)
     set_parser.add_argument("-m", "--merge",
                             help="other config file to merge in (priority)", default=None)
+    set_parser.add_argument("--soft", help="do a soft-merge (no overwriting)", action="store_true")
 
     gen_parser = sub_parsers.add_parser("generate", description=GENERATE_HELP,
                                         parents=[shared_parser],
@@ -248,7 +249,7 @@ def main():
                 logging.error(e)
                 sys.exit(1)
             if args.merge:
-                merge_json_union(config, args.merge)
+                merge_json_union(config, args.merge, args.soft)
             logging.info(SEP + "\nnew configuration:\n" + SEP)
             show(config, colored=args.no_color)
         else:

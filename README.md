@@ -62,7 +62,7 @@ To load or export ROS bag files, you need to install ROS - see [here](http://www
 
 ## Run Executables
 
-After installation with setup.sh, setup.py or from pip, the following console commands can be called globally from your command-line:
+After installation with setup.py or from pip, the following console commands can be called globally from your command-line:
 
 **Metrics:**
 
@@ -156,7 +156,11 @@ There are some example trajectories in the source folder in `evo/test/data`.
 
 For an interactive source code documentation, open the [Jupyter notebook](http://jupyter.readthedocs.io/en/latest/install.html) `metrics_tutorial.ipynb`
 
-To install Jupyter, call `pip install jupyter` or use the `--with_jupyter` flag for `setup.sh`.
+To install Jupyter, call:
+```
+pip install jupyter
+jupyter nbextension enable --py --sys-prefix widgetsnbextension
+```
 
 ### Local Jupyter notebook access
 

@@ -45,7 +45,7 @@ class SettingsException(Exception):
 
     
 class SettingsContainer(dict):
-    def __init__(self, settings_path, data=None):
+    def __init__(self, settings_path, data=None, lock=True):
         super(SettingsContainer, self).__init__()
         try:
             if not data:
@@ -53,17 +53,27 @@ class SettingsContainer(dict):
                     data = json.load(settings_file)
             for k, v in data.items():
                 setattr(self, k, v)
+            setattr(self, "__locked__", lock)
         except Exception as e:
             logging.error(str(e))
             raise SettingsException("fatal: failed to load package settings file " + settings_path)
 
+    def locked(self):
+        if "__locked__" in self:
+            return self["__locked__"]
+
     def __getattr__(self, attr):
         # allow dot access
+        if not attr in self:
+            raise SettingsException("unknown settings parameter: " + str(attr))
         return self[attr]
 
     def __setattr__(self, attr, value):
         # allow dot access
-        self[attr] = value
+        if self.locked() and not attr in self:
+            raise SettingsException("write-access locked, can't add new parameter {}".format(attr))
+        else:
+            self[attr] = value
 
 
 def merge_dicts(first, second, soft=False):

@@ -62,7 +62,6 @@ class PlotMode(Enum):
     yz = "yz"
     zx = "zx"
     xyz = "xyz"
-    xyz_eq = "xyz_eq"
 
 
 class PlotCollection:

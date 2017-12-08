@@ -24,8 +24,8 @@ import unittest
 
 import numpy as np
 
-from evo.algorithms import filters
-from evo.algorithms import lie_algebra as lie
+from evo.core import filters
+from evo.core import lie_algebra as lie
 
 # some synthetic poses for testing
 #                          [0]                                       [1]

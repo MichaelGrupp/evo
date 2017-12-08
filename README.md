@@ -191,7 +191,7 @@ Notebook servers can also be accessed via the browser of a remote PC on the loca
 
 Append `-h`/ `--help` or `--debug` to your command.
 
-**Warnings from [transformations.py](evo/algorithms/transformations.py):**
+**Warnings from [transformations.py](evo/core/transformations.py):**
 
 `UserWarning: failed to import module _transformations`
 

@@ -26,8 +26,8 @@ import copy
 
 import numpy as np
 
-from evo.algorithms import trajectory, geometry
-from evo.algorithms import lie_algebra as lie
+from evo.core import trajectory, geometry
+from evo.core import lie_algebra as lie
 from evo.tools import file_interface
 
 

@@ -29,7 +29,7 @@ from timeit import timeit
 
 import matplotlib.pyplot as plt
 
-from evo.algorithms import metrics, trajectory
+from evo.core import metrics, trajectory
 from evo.tools import plot, file_interface
 
 pretty_printer = pprint.PrettyPrinter(indent=4)

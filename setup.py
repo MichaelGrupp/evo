@@ -71,7 +71,7 @@ setup(
         "SLAM", "odometry", "trajectory", "evaluation", "metric",
         "vision", "laser", "visual", "robotics"
     ],
-    packages=["evo", "evo.algorithms", "evo.tools"],
+    packages=["evo", "evo.core", "evo.tools"],
     package_data={"evo": ["version", "LICENSE"]},
     entry_points={"console_scripts": [
         "evo_ape=evo.entry_points:ape",

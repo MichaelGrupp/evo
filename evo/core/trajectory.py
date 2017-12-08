@@ -24,9 +24,9 @@ import logging
 
 import numpy as np
 
-import evo.algorithms.transformations as tr
-import evo.algorithms.geometry as geometry
-from evo.algorithms import lie_algebra as lie
+import evo.core.transformations as tr
+import evo.core.geometry as geometry
+from evo.core import lie_algebra as lie
 
 
 class TrajectoryException(Exception):

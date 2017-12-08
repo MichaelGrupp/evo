@@ -110,8 +110,8 @@ def main_ape(traj_ref, traj_est, pose_relation, align=True, correct_scale=False,
              ref_name="", est_name="", show_plot=False, save_plot=None,
              plot_mode=None, save_results=None, no_warnings=False, serialize_plot=None):
 
-    from evo.algorithms import metrics
-    from evo.algorithms import trajectory
+    from evo.core import metrics
+    from evo.core import trajectory
     from evo.tools import file_interface
     from evo.tools.settings import SETTINGS
 
@@ -201,7 +201,7 @@ def main_ape(traj_ref, traj_est, pose_relation, align=True, correct_scale=False,
 
 
 def run(args):
-    from evo.algorithms import metrics
+    from evo.core import metrics
     from evo.tools import file_interface, settings
     settings.configure_logging(args.verbose, args.silent, args.debug)
     if args.debug:

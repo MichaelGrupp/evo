@@ -22,7 +22,7 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 import scipy.linalg as sl
 
-from evo.algorithms import transformations as tr
+from evo.core import transformations as tr
 
 
 class LieAlgebraException(Exception):

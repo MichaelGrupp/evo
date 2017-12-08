@@ -27,7 +27,7 @@ import sys
 import time
 from timeit import timeit
 
-from evo.algorithms import metrics
+from evo.core import metrics
 from evo.tools import file_interface
 
 pretty_printer = pprint.PrettyPrinter(indent=4)

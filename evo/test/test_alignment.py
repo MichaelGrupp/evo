@@ -25,10 +25,10 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 
-from evo.algorithms import trajectory
+from evo.core import trajectory
 from evo.tools import plot, file_interface
 
-import evo.algorithms.lie_algebra as lie
+import evo.core.lie_algebra as lie
 
 logging.basicConfig(format="%(message)s", stream=sys.stdout, level=logging.DEBUG)
 

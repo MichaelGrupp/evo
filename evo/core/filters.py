@@ -25,8 +25,8 @@ import logging
 
 import numpy as np
 
-from evo.algorithms import geometry, trajectory
-from evo.algorithms import lie_algebra as lie
+from evo.core import geometry, trajectory
+from evo.core import lie_algebra as lie
 
 
 def bounded_binary_search(generator, length, target, lower_bound, upper_bound):

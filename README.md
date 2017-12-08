@@ -86,14 +86,14 @@ Check out the [Wiki on GitHub](https://github.com/MichaelGrupp/evo/wiki).
 
 ## Example Workflow
 
-There are some example trajectories in the source folder in `evo/test/data`.
+There are some example trajectories in the source folder in `test/data`.
 
 
 1. ***Plot multiple trajectories***
 
   Here, we plot two KITTI pose files and the ground truth using `evo_traj`:
   ```
-  cd evo/test/data
+  cd test/data
   evo_traj kitti KITTI_00_ORB.txt KITTI_00_SPTAM.txt --ref=KITTI_00_gt.txt -p --plot_mode=xz
   ```
 
@@ -154,7 +154,7 @@ There are some example trajectories in the source folder in `evo/test/data`.
 
 ## Jupyter Notebooks
 
-For an interactive source code documentation, open the [Jupyter notebook](http://jupyter.readthedocs.io/en/latest/install.html) `metrics_tutorial.ipynb`
+For an interactive source code documentation, open the [Jupyter notebook](http://jupyter.readthedocs.io/en/latest/install.html) `metrics_tutorial.ipynb` in the `notebooks` folder of the repository.
 
 To install Jupyter, call:
 ```

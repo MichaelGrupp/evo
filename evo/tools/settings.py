@@ -24,7 +24,6 @@ import os
 import sys
 import json
 import logging
-from collections import OrderedDict
 
 import colorama
 from colorama import Fore

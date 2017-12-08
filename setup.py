@@ -25,7 +25,7 @@ def _post_install(install_lib_dir):
         sp.check_call("activate-global-python-argcomplete", shell=True)
         print("done - argcomplete should work now")
     except sp.CalledProcessError as e:
-        print("error:", e.message, file=sys.stderr)
+        print("error:", e.output, file=sys.stderr)
 
 
 class CustomInstall(install):
@@ -101,7 +101,7 @@ setup(
         #jupyter
     ] + (["enum34"] if python_below_34() else []),
     classifiers=[
-        "License :: OSI Approved :: GPLv3",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Programming Language :: Python",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",

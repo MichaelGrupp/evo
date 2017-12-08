@@ -14,12 +14,12 @@ Supported trajectory formats:
 See [here](https://github.com/MichaelGrupp/evo/wiki/Formats) for more infos about the formats.
 
 <!---
-<img src="evo/doc/traj_demo.png" alt="evo" height="180" border="10" />
+<img src="doc/assets/traj_demo.png" alt="evo" height="180" border="10" />
 -->
 <center>
-<a href="evo/doc/ape_demo_ORB_map.png" target="_blank"><img src="evo/doc/ape_demo_ORB_map.png" alt="evo" height="200" border="5" /></a>
-<a href="evo/doc/res_violin.png" target="_blank"><img src="evo/doc/res_violin.png" alt="evo" height="200" border="5" /></a>
-<a href="evo/doc/res_stats.png" target="_blank"><img src="evo/doc/res_stats.png" alt="evo" height="200" border="5" /></a>
+<a href="doc/assets/ape_demo_ORB_map.png" target="_blank"><img src="doc/assets/ape_demo_ORB_map.png" alt="evo" height="200" border="5" /></a>
+<a href="doc/assets/res_violin.png" target="_blank"><img src="doc/assets/res_violin.png" alt="evo" height="200" border="5" /></a>
+<a href="doc/assets/res_stats.png" target="_blank"><img src="doc/assets/res_stats.png" alt="evo" height="200" border="5" /></a>
 </center>
 
 ---
@@ -27,7 +27,7 @@ See [here](https://github.com/MichaelGrupp/evo/wiki/Formats) for more infos abou
 ## Installation
 
 **Python 3.4+** and **Python 2.7** are both supported. If you want to use the ROS bagfile interface, first check which Python version is used by your ROS installation and install accordingly.
-You might also want to use a [virtual environment](evo/doc/install_in_virtualenv.md).
+You might also want to use a [virtual environment](doc/install_in_virtualenv.md).
 
 ### From PyPi
 If you just want to use the executables of the latest release version, the easiest way is to run:
@@ -98,8 +98,8 @@ There are some example trajectories in the source folder in `evo/test/data`.
   ```
 
   <center>
-  <a href="evo/doc/traj_demo.png" target="_blank"><img src="evo/doc/traj_demo.png" alt="evo" height="200" border="5" /></a>
-  <a href="evo/doc/traj_demo_xyz.png" target="_blank"><img src="evo/doc/traj_demo_xyz.png" alt="evo" height="200" border="5" /></a>
+  <a href="doc/assets/traj_demo.png" target="_blank"><img src="doc/assets/traj_demo.png" alt="evo" height="200" border="5" /></a>
+  <a href="doc/assets/traj_demo_xyz.png" target="_blank"><img src="doc/assets/traj_demo_xyz.png" alt="evo" height="200" border="5" /></a>
   </center>
 
 2. ***Run a metric on trajectories***
@@ -114,8 +114,8 @@ There are some example trajectories in the source folder in `evo/test/data`.
   ```
 
   <center>
-  <a href="evo/doc/ape_demo_ORB_raw.png" target="_blank"><img src="evo/doc/ape_demo_ORB_raw.png" alt="evo" height="200" border="5" /></a>
-  <a href="evo/doc/ape_demo_ORB_map.png" target="_blank"><img src="evo/doc/ape_demo_ORB_map.png" alt="evo" height="200" border="5" /></a>
+  <a href="doc/assets/ape_demo_ORB_raw.png" target="_blank"><img src="doc/assets/ape_demo_ORB_raw.png" alt="evo" height="200" border="5" /></a>
+  <a href="doc/assets/ape_demo_ORB_map.png" target="_blank"><img src="doc/assets/ape_demo_ORB_map.png" alt="evo" height="200" border="5" /></a>
   </center>
 
   *Second trajectory (S-PTAM):*
@@ -125,8 +125,8 @@ There are some example trajectories in the source folder in `evo/test/data`.
   ```
 
   <center>
-  <a href="evo/doc/ape_demo_S-PTAM_raw.png" target="_blank"><img src="evo/doc/ape_demo_S-PTAM_raw.png" alt="evo" height="200" border="5" /></a>
-  <a href="evo/doc/ape_demo_S-PTAM_map.png" target="_blank"><img src="evo/doc/ape_demo_S-PTAM_map.png" alt="evo" height="200" border="5" /></a>
+  <a href="doc/assets/ape_demo_S-PTAM_raw.png" target="_blank"><img src="doc/assets/ape_demo_S-PTAM_raw.png" alt="evo" height="200" border="5" /></a>
+  <a href="doc/assets/ape_demo_S-PTAM_map.png" target="_blank"><img src="doc/assets/ape_demo_S-PTAM_map.png" alt="evo" height="200" border="5" /></a>
   </center>
 
 
@@ -143,11 +143,11 @@ There are some example trajectories in the source folder in `evo/test/data`.
   ```
 
   <center>
-  <a href="evo/doc/res_raw.png" target="_blank"><img src="evo/doc/res_raw.png" alt="evo" height="200" border="5" /></a>
-  <a href="evo/doc/res_dist.png" target="_blank"><img src="evo/doc/res_dist.png" alt="evo" height="200" border="5" /> </a>
-  <a href="evo/doc/res_stats.png" target="_blank"><img src="evo/doc/res_stats.png" alt="evo" height="200" border="5" /></a>
-  <a href="evo/doc/res_box.png" target="_blank"><img src="evo/doc/res_box.png" alt="evo" height="200" border="5" /></a>
-  <a href="evo/doc/res_violin.png" target="_blank"><img src="evo/doc/res_violin.png" alt="evo" height="200" border="5" /></a>
+  <a href="doc/assets/res_raw.png" target="_blank"><img src="doc/assets/res_raw.png" alt="evo" height="200" border="5" /></a>
+  <a href="doc/assets/res_dist.png" target="_blank"><img src="doc/assets/res_dist.png" alt="evo" height="200" border="5" /> </a>
+  <a href="doc/assets/res_stats.png" target="_blank"><img src="doc/assets/res_stats.png" alt="evo" height="200" border="5" /></a>
+  <a href="doc/assets/res_box.png" target="_blank"><img src="doc/assets/res_box.png" alt="evo" height="200" border="5" /></a>
+  <a href="doc/assets/res_violin.png" target="_blank"><img src="doc/assets/res_violin.png" alt="evo" height="200" border="5" /></a>
   </center>
 
 ---

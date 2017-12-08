@@ -36,19 +36,19 @@ test_plot = False
 test_bag = True
 
 infos.append("APE with TUM files")
-cmds.append(".././main_ape.py tum ../test/data/freiburg1_xyz-groundtruth.txt ../test/data/freiburg1_xyz-rgbdslam.txt")
+cmds.append("evo_ape tum ../test/data/freiburg1_xyz-groundtruth.txt ../test/data/freiburg1_xyz-rgbdslam.txt")
 infos.append("APE with KITTI files")
-cmds.append(".././main_ape.py kitti ../test/data/KITTI_00_gt.txt ../test/data/KITTI_00_ORB.txt")
+cmds.append("evo_ape kitti ../test/data/KITTI_00_gt.txt ../test/data/KITTI_00_ORB.txt")
 if test_bag:
     infos.append("APE with ROS bag")
-    cmds.append(".././main_ape.py bag ../test/data/ROS_example.bag groundtruth ORB-SLAM")
+    cmds.append("evo_ape bag ../test/data/ROS_example.bag groundtruth ORB-SLAM")
 infos.append("RPE with TUM files")
-cmds.append(".././main_rpe.py tum ../test/data/freiburg1_xyz-groundtruth.txt ../test/data/freiburg1_xyz-rgbdslam.txt")
+cmds.append("evo_rpe tum ../test/data/freiburg1_xyz-groundtruth.txt ../test/data/freiburg1_xyz-rgbdslam.txt")
 infos.append("RPE with KITTI files")
-cmds.append(".././main_rpe.py kitti ../test/data/KITTI_00_gt.txt ../test/data/KITTI_00_ORB.txt")
+cmds.append("evo_rpe kitti ../test/data/KITTI_00_gt.txt ../test/data/KITTI_00_ORB.txt")
 if test_bag:
     infos.append("RPE with ROS bag")
-    cmds.append(".././main_rpe.py bag ../test/data/ROS_example.bag groundtruth ORB-SLAM")
+    cmds.append("evo_rpe bag ../test/data/ROS_example.bag groundtruth ORB-SLAM")
 
 try:
     for info, cmd in zip(infos, cmds):
@@ -64,14 +64,14 @@ try:
         sp.check_call(cmd, shell=True)
 
     info = "APE with alignment"
-    cmd = ".././main_ape.py tum ../test/data/freiburg1_xyz-groundtruth.txt ../test/data/freiburg1_xyz-rgbdslam.txt -a"
+    cmd = "evo_ape tum ../test/data/freiburg1_xyz-groundtruth.txt ../test/data/freiburg1_xyz-rgbdslam.txt -a"
     cmd += " --plot" if test_plot else ""
     print("\n" + green(info))
     print(blue(cmd))
     sp.check_call(cmd, shell=True)
 
     info = "APE with alignment and scale correction"
-    cmd = ".././main_ape.py tum ../test/data/freiburg1_xyz-groundtruth.txt ../test/data/freiburg1_xyz-rgbdslam.txt " \
+    cmd = "evo_ape tum ../test/data/freiburg1_xyz-groundtruth.txt ../test/data/freiburg1_xyz-rgbdslam.txt " \
           "--correct_scale --align"
     cmd += " --plot" if test_plot else ""
     print("\n" + green(info))
@@ -79,7 +79,7 @@ try:
     sp.check_call(cmd, shell=True)
 
     info = "APE with scale correction only"
-    cmd = ".././main_ape.py tum ../test/data/freiburg1_xyz-groundtruth.txt ../test/data/freiburg1_xyz-rgbdslam.txt " \
+    cmd = "evo_ape tum ../test/data/freiburg1_xyz-groundtruth.txt ../test/data/freiburg1_xyz-rgbdslam.txt " \
           "--correct_scale"
     cmd += " --plot" if test_plot else ""
     print("\n" + green(info))

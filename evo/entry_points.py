@@ -53,13 +53,6 @@ def rpe_for_each():
     launch(main_rpe_for_each, parser)
 
 
-def adj_mat():
-    from evo.xperimental import main_adj_mat
-    parser = main_adj_mat.parser()
-    argcomplete.autocomplete(parser)
-    launch(main_adj_mat, parser)
-
-
 def res():
     from evo import main_res
     parser = main_res.parser()

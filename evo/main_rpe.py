@@ -121,8 +121,8 @@ def main_rpe(traj_ref, traj_est, pose_relation, delta, delta_unit,
              plot_mode=None, save_results=None, no_warnings=False, support_loop=False,
              serialize_plot=None):
 
-    from evo.algorithms import metrics
-    from evo.algorithms import trajectory
+    from evo.core import metrics
+    from evo.core import trajectory
     from evo.tools import file_interface
     from evo.tools.settings import SETTINGS
 
@@ -224,7 +224,7 @@ def main_rpe(traj_ref, traj_est, pose_relation, delta, delta_unit,
 
 
 def run(args):
-    from evo.algorithms import metrics
+    from evo.core import metrics
     from evo.tools import file_interface, settings
 
     settings.configure_logging(args.verbose, args.silent, args.debug)

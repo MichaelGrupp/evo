@@ -3,7 +3,7 @@
 from __future__ import print_function
 
 print("loading required evo modules")
-from evo.algorithms import trajectory, sync, metrics
+from evo.core import trajectory, sync, metrics
 from evo.tools import file_interface
 
 print("loading trajectories")

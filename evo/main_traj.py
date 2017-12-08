@@ -109,7 +109,7 @@ def parser():
 def print_traj_info(name, traj, verbose=False, full_check=False):
     import os
     import logging
-    from evo.algorithms import trajectory
+    from evo.core import trajectory
 
     logging.info(SEP)
     logging.info("name:\t" + os.path.splitext(os.path.basename(name))[0])
@@ -145,8 +145,8 @@ def run(args):
     import os
     import sys
     import logging
-    import evo.algorithms.lie_algebra as lie
-    from evo.algorithms import trajectory
+    import evo.core.lie_algebra as lie
+    from evo.core import trajectory
     from evo.tools import file_interface, settings
     from evo.tools.settings import SETTINGS
 
@@ -221,7 +221,7 @@ def run(args):
                 traj_tmp, ref_traj_tmp = trajectories, [ref_traj for n, t in trajectories]
             else:
                 traj_tmp, ref_traj_tmp = [], []
-                from evo.algorithms import sync
+                from evo.core import sync
                 for name, traj in trajectories:
                     logging.debug(SEP)
                     ref_assoc, traj_assoc = sync.associate_trajectories(ref_traj, traj,

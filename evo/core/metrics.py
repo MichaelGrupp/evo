@@ -29,9 +29,9 @@ from enum import Enum  # requires enum34 in Python 2.7
 
 import numpy as np
 
-from evo.algorithms import filters
-from evo.algorithms import transformations as tr
-from evo.algorithms import lie_algebra as lie
+from evo.core import filters
+from evo.core import transformations as tr
+from evo.core import lie_algebra as lie
 
 if sys.version_info[0] >= 3 and sys.version_info[1] >= 4:
     ABC = abc.ABC

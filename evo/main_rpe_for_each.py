@@ -116,9 +116,9 @@ def main_rpe_for_each(traj_ref, traj_est, pose_relation, mode, bins, rel_tols,
                       show_plot=False, save_plot=None, save_results=None, no_warnings=False,
                       serialize_plot=None):
 
-    from evo.algorithms import metrics
-    from evo.algorithms import filters
-    from evo.algorithms import trajectory
+    from evo.core import metrics
+    from evo.core import filters
+    from evo.core import trajectory
     from evo.tools import file_interface
     from evo.tools.settings import SETTINGS
 
@@ -252,7 +252,7 @@ def main_rpe_for_each(traj_ref, traj_est, pose_relation, mode, bins, rel_tols,
 
 def run(args):
     import sys
-    from evo.algorithms import metrics
+    from evo.core import metrics
     from evo.tools import file_interface, settings
 
     # manually check bins and tols arguments to allow them to be in config files

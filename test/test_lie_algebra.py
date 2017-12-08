@@ -27,7 +27,7 @@ import unittest
 
 import numpy as np
 
-from evo.algorithms import lie_algebra as lie
+from evo.core import lie_algebra as lie
 
 
 class TestSE3(unittest.TestCase):
@@ -135,24 +135,24 @@ if __name__ == '__main__':
     benchmarks
     """
     print("\ncheck speed of SE(3) inverse:")
-    setup = "from evo.algorithms import lie_algebra as lie; import numpy as np; se3 = lie.random_se3()"
+    setup = "from evo.core import lie_algebra as lie; import numpy as np; se3 = lie.random_se3()"
     print("time for 1000*lie.se3_inverse(se3): ",
           timeit.timeit("lie.se3_inverse(se3)", setup=setup, number=1000))
     print("time for 1000*np.linalg.inv(se3): ",
           timeit.timeit("np.linalg.inv(se3)", setup=setup, number=1000))
 
     print("\ncheck speed of  SO(3) log:")
-    setup = "from evo.algorithms import lie_algebra as lie; import numpy as np; so3 = lie.random_so3()"
+    setup = "from evo.core import lie_algebra as lie; import numpy as np; so3 = lie.random_so3()"
     print("time for 1000*lie.so3_log(so3, skew=True): ",
           timeit.timeit("lie.so3_log(so3, True)", setup=setup, number=1000))
     print("time for 1000*lie.so3_log(so3): ",
           timeit.timeit("lie.so3_log(so3)", setup=setup, number=1000))
-    setup = "from evo.algorithms import lie_algebra as lie; import numpy as np; " \
-            "import evo.algorithms.transformations as tr; " \
+    setup = "from evo.core import lie_algebra as lie; import numpy as np; " \
+            "import evo.core.transformations as tr; " \
             "so3 = lie.se3(lie.random_so3(), [0, 0, 0])"
     print("time for 1000*tr.rotation_from_matrix(so3): ",
           timeit.timeit("tr.rotation_from_matrix(so3)", setup=setup, number=1000))
-    setup = "from evo.algorithms import lie_algebra as lie; import numpy as np; so3 = lie.random_so3(); " \
+    setup = "from evo.core import lie_algebra as lie; import numpy as np; so3 = lie.random_so3(); " \
             "axis, angle = lie.so3_log(so3, False)"
     print("time for 1000*lie.so3_exp(axis, angle): ",
           timeit.timeit("lie.so3_exp(axis, angle)", setup=setup, number=1000))

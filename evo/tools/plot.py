@@ -40,7 +40,7 @@ import numpy as np
 import seaborn as sns
 
 from evo.tools import user
-from evo.algorithms import trajectory
+from evo.core import trajectory
 
 # configure matplotlib and seaborn according to package settings
 sns.set(style=SETTINGS.plot_seaborn_style, font=SETTINGS.plot_fontfamily)
@@ -62,7 +62,6 @@ class PlotMode(Enum):
     yz = "yz"
     zx = "zx"
     xyz = "xyz"
-    xyz_eq = "xyz_eq"
 
 
 class PlotCollection:

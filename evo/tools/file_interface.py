@@ -28,9 +28,9 @@ import json
 
 import numpy as np
 
-from evo.algorithms import sync
-from evo.algorithms import trajectory
-from evo.algorithms.trajectory import PosePath3D, PoseTrajectory3D
+from evo.core import sync
+from evo.core import trajectory
+from evo.core.trajectory import PosePath3D, PoseTrajectory3D
 from evo.tools import user
 from evo.tools.settings import SETTINGS
 
@@ -267,7 +267,7 @@ def save_res_file(zip_path, pe_metric, pe_statistics, title, ref_name, est_name,
     :param confirm_overwrite: whether to require user interaction to overwrite existing files
     """
     from tempfile import TemporaryFile
-    from evo.algorithms.metrics import APE
+    from evo.core.metrics import APE
     logging.debug("saving results to " + zip_path + "...")
     if confirm_overwrite and not user.check_and_confirm_overwrite(zip_path):
         return
@@ -352,8 +352,8 @@ def load_transform_json(json_path):
     :param json_path: path to the .json file
     :return: t (SE(3) matrix), xyz (position), quat (orientation quaternion)
     """
-    import evo.algorithms.lie_algebra as lie
-    import evo.algorithms.transformations as tr
+    import evo.core.lie_algebra as lie
+    import evo.core.transformations as tr
     with open(json_path, 'r') as tf_file:
         data = json.load(tf_file)
         keys = ("x", "y", "z", "qx", "qy", "qz", "qw")

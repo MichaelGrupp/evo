@@ -24,7 +24,7 @@ import logging
 
 import numpy as np
 
-from evo.algorithms.trajectory import PoseTrajectory3D
+from evo.core.trajectory import PoseTrajectory3D
 
 
 class SyncException(Exception):

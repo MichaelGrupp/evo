@@ -29,7 +29,7 @@ set -e  # exit on error
 
 for m in ape rpe rpe-for-each
 do
-    log "load results from evo_ape..."
+    log "load results from evo_${m}..."
     echo_and_run evo_res *"$m".zip
 
     log "load results from evo_$m and plot them"

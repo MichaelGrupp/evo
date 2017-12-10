@@ -110,7 +110,7 @@ def main_ape(traj_ref, traj_est, pose_relation, align=True, correct_scale=False,
              ref_name="", est_name="", show_plot=False, save_plot=None,
              plot_mode=None, save_results=None, no_warnings=False, serialize_plot=None):
 
-    from evo.core import metrics
+    from evo.core import metrics, result
     from evo.core import trajectory
     from evo.tools import file_interface
     from evo.tools.settings import SETTINGS
@@ -141,18 +141,18 @@ def main_ape(traj_ref, traj_est, pose_relation, align=True, correct_scale=False,
         title += "\n(scale corrected)"
     else:
         title += "\n(not aligned)"
+
+    ape_result = result.from_metric(ape_metric, title, ref_name, est_name)
     logging.debug(SEP)
-    res_str = ""
-    for name, val in sorted(ape_statistics.items()):
-        res_str += "{:>10}".format(name) + "\t" + "{0:.6f}".format(val) + "\n"
-    logging.info("\nstatistics of " + title + ":\n\n" + res_str)
+    logging.info(ape_result.pretty_str())
+
+    if isinstance(traj_est, trajectory.PoseTrajectory3D):
+        seconds_from_start = [t - traj_est.timestamps[0] for t in traj_est.timestamps]
+        ape_result.add_np_array("seconds_from_start", seconds_from_start)
+    else:
+        seconds_from_start = None
 
     if show_plot or save_plot or save_results or serialize_plot:
-        if isinstance(traj_est, trajectory.PoseTrajectory3D):
-            seconds_from_start = [t - traj_est.timestamps[0] for t in traj_est.timestamps]
-        else:
-            seconds_from_start = None
-
         if show_plot or save_plot or serialize_plot:
             from evo.tools import plot
             import matplotlib.pyplot as plt
@@ -190,14 +190,14 @@ def main_ape(traj_ref, traj_est, pose_relation, align=True, correct_scale=False,
                 logging.debug(SEP)
                 plot_collection.serialize(serialize_plot, confirm_overwrite=not no_warnings)
 
-        if save_results:
-            logging.debug(SEP)
-            file_interface.save_res_file(save_results, ape_metric, ape_statistics,
-                                         title, ref_name, est_name, seconds_from_start, traj_ref,
-                                         traj_est,
-                                         confirm_overwrite=not no_warnings)
+    if save_results:
+        logging.debug(SEP)
+        if SETTINGS.save_traj_in_zip:
+            ape_result.add_trajectory("traj_ref", traj_ref)
+            ape_result.add_trajectory("traj_est", traj_est)
+        file_interface.save_res_file(save_results, ape_result, confirm_overwrite=not no_warnings)
 
-    return ape_statistics, ape_metric.error
+    return ape_result
 
 
 def run(args):

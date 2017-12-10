@@ -29,6 +29,7 @@ from enum import Enum
 
 import matplotlib as mpl
 from evo.tools.settings import SETTINGS
+
 mpl.use(SETTINGS.plot_backend)
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
@@ -44,11 +45,13 @@ from evo.core import trajectory
 
 # configure matplotlib and seaborn according to package settings
 sns.set(style=SETTINGS.plot_seaborn_style, font=SETTINGS.plot_fontfamily)
-mpl.rcParams.update({"lines.linewidth": SETTINGS.plot_linewidth,
-                            "text.usetex": SETTINGS.plot_usetex,
-                            "font.size": SETTINGS.plot_fontsize,
-                            "font.family": SETTINGS.plot_fontfamily,
-                            "pgf.texsystem": "pdflatex"})
+mpl.rcParams.update({
+    "lines.linewidth": SETTINGS.plot_linewidth,
+    "text.usetex": SETTINGS.plot_usetex,
+    "font.size": SETTINGS.plot_fontsize,
+    "font.family": SETTINGS.plot_fontfamily,
+    "pgf.texsystem": SETTINGS.plot_texsystem
+})
 
 
 class PlotException(Exception):

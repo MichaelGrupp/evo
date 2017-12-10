@@ -79,36 +79,47 @@ def run(args):
     stat_df = pd.DataFrame()
     info_df = pd.DataFrame()
     use_seconds = False
+
     for result_file in args.result_files:
         logging.debug(SEP)
-        info_dict, stat_dict, err_array, sec_from_start, traj_ref, traj_est \
-            = file_interface.load_res_file(result_file, True)
-        short_est_name = os.path.splitext(os.path.basename(info_dict["est_name"]))[0]
+        result_obj = file_interface.load_res_file(result_file, True)
+        short_est_name = os.path.splitext(os.path.basename(result_obj.info["est_name"]))[0]
+        error_array = result_obj.np_arrays["error_array"]
+        if "seconds_from_start" in result_obj.np_arrays:
+            seconds_from_start = result_obj.np_arrays["seconds_from_start"]
+        else:
+            seconds_from_start = None
+
         if not args.no_warnings and (short_est_name in info_df.columns):
             logging.warning("double entry detected: " + short_est_name)
             if not user.confirm("ignore? enter 'y' to go on or any other key to quit"):
                 sys.exit()
+
         if SETTINGS.plot_usetex:
             short_est_name = short_est_name.replace("_", "\\_")
+
         if args.use_abs_time:
-            if traj_est is None:
-                msg = "no trajectory found in " + result_file \
+            if "traj_est" in result_obj.trajectories:
+                traj_est = result_obj.trajectories["traj_est"]
+                index = traj_est.timestamps
+                use_seconds = True
+            else:
+                msg = "no 'traj_est' trajectory found in " + result_file \
                       + " but --use_abs_time requires the trajectory in the result file - " \
                       + "to let the metrics app include them run: evo_config set save_traj_in_zip"
                 raise RuntimeError(msg)
-            else:
-                index = traj_est.timestamps
-                use_seconds = True
-        elif sec_from_start is not None:
-            index = sec_from_start.tolist()
+        elif seconds_from_start is not None:
+            index = seconds_from_start.tolist()
             use_seconds = True
         else:
-            index = np.arange(0, err_array.shape[0])
-        info_dict["traj. backup?"] = traj_ref is not None and traj_est is not None
-        info_dict["res_file"] = result_file
-        new_raw_df = pd.DataFrame({short_est_name: err_array.tolist()}, index=index)
-        new_info_df = pd.DataFrame({short_est_name: info_dict})
-        new_stat_df = pd.DataFrame({short_est_name: stat_dict})
+            index = np.arange(0, error_array.shape[0])
+
+        result_obj.info["traj. backup?"] = \
+            all(k in result_obj.trajectories for k in ("traj_ref", "traj_est"))
+        result_obj.info["res_file"] = result_file
+        new_raw_df = pd.DataFrame({short_est_name: error_array.tolist()}, index=index)
+        new_info_df = pd.DataFrame({short_est_name: result_obj.info})
+        new_stat_df = pd.DataFrame({short_est_name: result_obj.stats})
         # natural sort num strings "10" "100" "20" -> "10" "20" "100"
         new_stat_df = new_stat_df.reindex(index=natsorted(new_stat_df.index))
         # column-wise concatenation
@@ -116,10 +127,7 @@ def run(args):
         info_df = pd.concat([info_df, new_info_df], axis=1)
         stat_df = pd.concat([stat_df, new_stat_df], axis=1)
         # if verbose: log infos of the current data
-        logging.debug("\n" + info_df[short_est_name].ix["title"])
-        show_fields = ["est_name", "ref_name", "label", "traj. backup?"]
-        logging.debug(info_df[short_est_name].ix[show_fields].to_string() + "\n")
-
+        logging.debug("\n" + result_obj.pretty_str(title=True, stats=False, info=True))
 
     logging.debug(SEP)
     logging.info("\nstatistics overview:\n" + stat_df.T.to_string(line_width=80) + "\n")

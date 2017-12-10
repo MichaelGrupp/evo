@@ -29,7 +29,7 @@ import json
 import numpy as np
 
 from evo.core import sync
-from evo.core import trajectory
+from evo.core import result
 from evo.core.trajectory import PosePath3D, PoseTrajectory3D
 from evo.tools import user
 from evo.tools.settings import SETTINGS
@@ -249,66 +249,39 @@ def load_assoc_bag_trajectories(bag_handle, ref_topic, est_topic,
                                        ref_topic, est_topic)
 
 
-def save_res_file(zip_path, pe_metric, pe_statistics, title, ref_name, est_name,
-                  seconds_from_start=None, traj_ref=None, traj_est=None, xlabel=None,
-                  confirm_overwrite=False):
+def save_res_file(zip_path, result_obj, confirm_overwrite=False):
     """
     save results of a pose error metric (pe_metric) to a zip file
     :param zip_path: path to zip file
-    :param pe_metric: instance of metrics.APE or metrics.RPE
-    :param pe_statistics: dictionary with statistics from pe_metric.get_[all_]statistic[s]
-    :param title: the title of the experiment
-    :param ref_name: name of the reference (ground_truth)
-    :param est_name: name of the estimate
-    :param seconds_from_start: optional time array (useful for plotting the time instead of index)
-    :param traj_ref: optional - save trajectory that was used as the reference (requires traj_est)
-    :param traj_est: optional - save trajectory that was used as the estimate (requires traj_ref)
-    :param xlabel: optional custom (plot) xlabel to save
+    :param result_obj: evo.core.result.Result instance
     :param confirm_overwrite: whether to require user interaction to overwrite existing files
     """
     from tempfile import TemporaryFile
-    from evo.core.metrics import APE
     logging.debug("saving results to " + zip_path + "...")
     if confirm_overwrite and not user.check_and_confirm_overwrite(zip_path):
         return
     with zipfile.ZipFile(zip_path, 'w') as archive:
-        pe_type = "APE" if isinstance(pe_metric, APE) else "RPE"
-        info = {"title": title, "ref_name": ref_name, "est_name": est_name,
-                "label": pe_type + (" (" + pe_metric.unit.value + ")") if pe_metric.unit else ""}
-        if xlabel:
-            info["xlabel"] = xlabel
-        archive.writestr("info.json", json.dumps(info))
-        archive.writestr("stats.json", json.dumps(pe_statistics))
-        # save np arrays in .npz format
-        tmp_file_err = TemporaryFile()
-        np.save(tmp_file_err, pe_metric.error)
-        tmp_file_err.seek(0)
-        archive.writestr("error_array.npz", tmp_file_err.read())
-        tmp_file_err.close()
-        if seconds_from_start:
-            tmp_file_sec = TemporaryFile()
-            if seconds_from_start:
-                np.save(tmp_file_sec, seconds_from_start)
-            tmp_file_sec.seek(0)
-            archive.writestr("sec_from_start.npz", tmp_file_sec.read())
-            tmp_file_sec.close()
-        if SETTINGS.save_traj_in_zip and traj_ref is not None and traj_est is not None:
-            tmp_file_ref = TemporaryFile()
-            tmp_file_est = TemporaryFile()
-            if type(traj_ref) is PosePath3D or type(traj_est) is PosePath3D:
-                traj_type = ".kitti"
-                write_kitti_poses_file(tmp_file_ref, traj_ref)
-                write_kitti_poses_file(tmp_file_est, traj_est)
+        archive.writestr("info.json", json.dumps(result_obj.info))
+        archive.writestr("stats.json", json.dumps(result_obj.stats))
+        for name, array in result_obj.np_arrays.items():
+            tmp_file = TemporaryFile()
+            np.save(tmp_file, array)
+            tmp_file.seek(0)
+            archive.writestr("{}.npz".format(name), tmp_file.read())
+            tmp_file.close()
+        for name, traj in result_obj.trajectories.items():
+            tmp_file = TemporaryFile()
+            if type(traj) is PosePath3D:
+                fmt_suffix = ".kitti"
+                write_kitti_poses_file(tmp_file, traj)
+            elif type(traj) is PoseTrajectory3D:
+                fmt_suffix = ".tum"
+                write_tum_trajectory_file(tmp_file, traj)
             else:
-                traj_type = ".tum"
-                write_tum_trajectory_file(tmp_file_ref, traj_ref)
-                write_tum_trajectory_file(tmp_file_est, traj_est)
-            tmp_file_ref.seek(0)
-            tmp_file_est.seek(0)
-            archive.writestr("traj_ref" + traj_type, tmp_file_ref.read())
-            archive.writestr("traj_est" + traj_type, tmp_file_est.read())
-            tmp_file_ref.close()
-            tmp_file_est.close()
+                raise FileInterfaceException("unknown format of trajectory {}".format(name))
+            tmp_file.seek(0)
+            archive.writestr("{}{}".format(name, fmt_suffix), tmp_file.read())
+            tmp_file.close()
 
 
 def load_res_file(zip_path, load_trajectories=False):
@@ -316,34 +289,36 @@ def load_res_file(zip_path, load_trajectories=False):
     load contents of a result .zip file saved with save_res_file(...)
     :param zip_path: path to zip file
     :param load_trajectories: set to True to load also the (backup) trajectories
-    :return: info (dictionary), statistics (dictionary),
-             error_array (numpy array), seconds_from_start (list or None)
+    :return: evo.core.result.Result instance
     """
-    logging.debug("loading results from " + zip_path + "...")
+    logging.debug("loading result from {} ...".format(zip_path))
+    result_obj = result.Result()
     with zipfile.ZipFile(zip_path, mode='r') as archive:
         file_list = archive.namelist()
         if not {"error_array.npz", "info.json", "stats.json"} <= set(file_list):
-            raise FileInterfaceException("incorrect zip file structure")
-        seconds_from_start = None
-        if "sec_from_start.npz" in file_list:
-            with io.BytesIO(archive.read("sec_from_start.npz")) as f:
-                seconds_from_start = np.load(f)
-        traj_ref, traj_est = None, None
-        if load_trajectories and "traj_ref.tum" and "traj_est.tum" in file_list:
-            with io.TextIOWrapper(archive.open("traj_ref.tum", mode='r')) as f:
-                traj_ref = read_tum_trajectory_file(f)
-            with io.TextIOWrapper(archive.open("traj_est.tum", mode='r')) as f:
-                traj_est = read_tum_trajectory_file(f)
-        elif load_trajectories and "traj_ref.kitti" and "traj_est.kitti" in file_list:
-            with io.TextIOWrapper(archive.open("traj_ref.kitti", mode='r')) as f:
-                traj_ref = read_kitti_poses_file(f)
-            with io.TextIOWrapper(archive.open("traj_est.kitti", mode='r')) as f:
-                traj_est = read_kitti_poses_file(f)
-        with io.BytesIO(archive.read("error_array.npz")) as f:
-            error_array = np.load(f)
-        info = json.loads(archive.read("info.json").decode("utf-8"))
-        statistics = json.loads(archive.read("stats.json").decode("utf-8"))
-        return info, statistics, error_array, seconds_from_start, traj_ref, traj_est
+            logging.warning("{} has incorrect zip file structure for evo_res".format(zip_path))
+        npz_files = [n for n in archive.namelist() if n.endswith(".npz")]
+        for filename in npz_files:
+            with io.BytesIO(archive.read(filename)) as f:
+                array = np.load(f)
+                name = os.path.splitext(os.path.basename(filename))[0]
+                result_obj.add_np_array(name, array)
+        if load_trajectories:
+            tum_files = [n for n in archive.namelist() if n.endswith(".tum")]
+            for filename in tum_files:
+                with io.TextIOWrapper(archive.open(filename, mode='r')) as f:
+                    traj = read_tum_trajectory_file(f)
+                    name = os.path.splitext(os.path.basename(filename))[0]
+                    result_obj.add_trajectory(name, traj)
+            kitti_files = [n for n in archive.namelist() if n.endswith(".kitti")]
+            for filename in kitti_files:
+                with io.TextIOWrapper(archive.open(filename, mode='r')) as f:
+                    traj = read_kitti_poses_file(f)
+                    name = os.path.splitext(os.path.basename(filename))[0]
+                    result_obj.add_trajectory(name, traj)
+        result_obj.info = json.loads(archive.read("info.json").decode("utf-8"))
+        result_obj.stats = json.loads(archive.read("stats.json").decode("utf-8"))
+    return result_obj
 
 
 def load_transform_json(json_path):

@@ -121,7 +121,7 @@ def main_rpe(traj_ref, traj_est, pose_relation, delta, delta_unit,
              plot_mode=None, save_results=None, no_warnings=False, support_loop=False,
              serialize_plot=None):
 
-    from evo.core import metrics
+    from evo.core import metrics, result
     from evo.core import trajectory
     from evo.tools import file_interface
     from evo.tools.settings import SETTINGS
@@ -155,14 +155,18 @@ def main_rpe(traj_ref, traj_est, pose_relation, delta, delta_unit,
         title += "\n(scale corrected)"
     else:
         title += "\n(not aligned)"
-    logging.debug(SEP)
-    res_str = ""
-    for name, val in sorted(rpe_statistics.items()):
-        res_str += "{:>10}".format(name) + "\t" + "{0:.6f}".format(val) + "\n"
-    logging.info("\nstatistics of " + title + ":\n\n" + res_str)
 
-    seconds_from_start = None
-    if show_plot or save_plot or serialize_plot or save_results and not all_pairs:
+    rpe_result = result.from_metric(rpe_metric, title, ref_name, est_name)
+    logging.debug(SEP)
+    logging.info(rpe_result.pretty_str())
+
+    if isinstance(traj_est, trajectory.PoseTrajectory3D):
+        seconds_from_start = [t - traj_est.timestamps[0] for t in traj_est.timestamps[1:]]
+        rpe_result.add_np_array("seconds_from_start", seconds_from_start)
+    else:
+        seconds_from_start = None
+
+    if show_plot or save_plot or serialize_plot and not all_pairs:
         # restrict trajectories to delta ids for plot
         if support_loop:
             # avoid overwriting if called repeatedly e.g. in Jupyter notebook
@@ -171,10 +175,6 @@ def main_rpe(traj_ref, traj_est, pose_relation, delta, delta_unit,
             traj_est = copy.deepcopy(traj_est)
         traj_ref.reduce_to_ids(rpe_metric.delta_ids)
         traj_est.reduce_to_ids(rpe_metric.delta_ids)
-        if isinstance(traj_est, trajectory.PoseTrajectory3D):
-            seconds_from_start = [t - traj_est.timestamps[0] for t in traj_est.timestamps]
-        else:
-            seconds_from_start = None
 
         if show_plot or save_plot or serialize_plot:
             from evo.tools import plot
@@ -216,11 +216,12 @@ def main_rpe(traj_ref, traj_est, pose_relation, delta, delta_unit,
 
     if save_results:
         logging.debug(SEP)
-        file_interface.save_res_file(save_results, rpe_metric, rpe_statistics,
-                                        title, ref_name, est_name, seconds_from_start, traj_ref,
-                                        traj_est, confirm_overwrite=not no_warnings)
+        if SETTINGS.save_traj_in_zip:
+            rpe_result.add_trajectory("traj_ref", traj_ref)
+            rpe_result.add_trajectory("traj_est", traj_est)
+        file_interface.save_res_file(save_results, rpe_result, confirm_overwrite=not no_warnings)
 
-    return rpe_statistics, rpe_metric.error
+    return rpe_result
 
 
 def run(args):

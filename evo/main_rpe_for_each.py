@@ -116,7 +116,7 @@ def main_rpe_for_each(traj_ref, traj_est, pose_relation, mode, bins, rel_tols,
                       show_plot=False, save_plot=None, save_results=None, no_warnings=False,
                       serialize_plot=None):
 
-    from evo.core import metrics
+    from evo.core import metrics, result
     from evo.core import filters
     from evo.core import trajectory
     from evo.tools import file_interface
@@ -201,13 +201,22 @@ def main_rpe_for_each(traj_ref, traj_est, pose_relation, mode, bins, rel_tols,
         title += "\n(scale corrected)"
     else:
         title += "\n(not aligned)"
+
+    rpe_for_each_result = result.Result()
+    rpe_for_each_result.add_info({
+        "label": "RPE ({})".format(rpe_unit.value),
+        "est_name": est_name,
+        "ref_name": ref_name,
+        "title": title,
+        "xlabel": "{} sub-sequences ({})".format(mode, bin_unit.value)
+    })
+    rpe_for_each_result.add_stats({bin: result for bin, result in zip(bins, results)})
+    # TODO use a more suitable name than seconds
+    rpe_for_each_result.add_np_array("seconds_from_start", bins)
+    rpe_for_each_result.add_np_array("error_array", results)
+
     logging.debug(SEP)
-    logging.info("\n" + title + "\n")
-    res_str = ""
-    for bin, result in zip(bins, results):
-        res_str += "{:>10}".format(str(bin) + "(" + bin_unit.value + ")")
-        res_str += "\t" + "{0:.6f}".format(result) + "\n"
-    logging.info(res_str)
+    logging.info(rpe_for_each_result.pretty_str())
 
     if show_plot or save_plot or serialize_plot:
         from evo.tools import plot
@@ -233,21 +242,15 @@ def main_rpe_for_each(traj_ref, traj_est, pose_relation, mode, bins, rel_tols,
             logging.debug(SEP)
             plot_collection.serialize(serialize_plot, confirm_overwrite=not no_warnings)
 
-    rpe_statistics = {bin: result for bin, result in zip(bins, results)}
     if save_results:
         logging.debug(SEP)
-
-        # utility class to trick save_res_file
-        class Metric:
-            unit = rpe_unit
-            error = results
-
-        file_interface.save_res_file(save_results, Metric, rpe_statistics,
-                                     title, ref_name, est_name, bins, traj_ref, traj_est,
-                                     xlabel=mode + " sub-sequences " + " (" + bin_unit.value + ")",
+        if SETTINGS.save_traj_in_zip:
+            rpe_for_each_result.add_trajectory("traj_ref", traj_ref)
+            rpe_for_each_result.add_trajectory("traj_est", traj_est)
+        file_interface.save_res_file(save_results, rpe_for_each_result,
                                      confirm_overwrite=not no_warnings)
 
-    return rpe_statistics, results
+    return rpe_for_each_result
 
 
 def run(args):

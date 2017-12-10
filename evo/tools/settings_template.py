@@ -51,6 +51,10 @@ DEFAULT_SETTINGS_DICT_DOC = {
         False,
         "use LaTeX renderer for plots",
     ),
+    "plot_texsystem": (
+        "pdflatex",
+        "'xelatex', 'lualatex' or 'pdflatex', see: https://matplotlib.org/users/pgf.html",
+    ),
     "plot_fontfamily": (
         "sans-serif",
         "font family string supported by matplotlib"
@@ -90,7 +94,7 @@ DEFAULT_SETTINGS_DICT_DOC = {
     ),
     "plot_seaborn_style": (
         "darkgrid",
-        "defines plot background/grid: whitegrid, darkgrid, white or dark"
+        "defines plot background/grid: 'whitegrid', 'darkgrid', 'white' or 'dark'"
     ),
     "plot_export_format": (
         "pdf",
@@ -98,7 +102,7 @@ DEFAULT_SETTINGS_DICT_DOC = {
     ),
     "table_export_format": (
         "csv",
-        "format for exporting tables (csv, excel, latex)",
+        "format for exporting tables ('csv', 'excel', 'latex')",
     ),
     "table_export_transpose": (
         True,

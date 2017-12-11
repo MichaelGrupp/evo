@@ -160,59 +160,57 @@ def main_rpe(traj_ref, traj_est, pose_relation, delta, delta_unit,
     logging.debug(SEP)
     logging.info(rpe_result.pretty_str())
 
-    if isinstance(traj_est, trajectory.PoseTrajectory3D):
-        seconds_from_start = [t - traj_est.timestamps[0] for t in traj_est.timestamps[1:]]
+    # restrict trajectories to delta ids
+    if support_loop:
+        # avoid overwriting if called repeatedly e.g. in Jupyter notebook
+        import copy
+        traj_ref = copy.deepcopy(traj_ref)
+        traj_est = copy.deepcopy(traj_est)
+    traj_ref.reduce_to_ids(rpe_metric.delta_ids)
+    traj_est.reduce_to_ids(rpe_metric.delta_ids)
+    if isinstance(traj_est, trajectory.PoseTrajectory3D) and not all_pairs:
+        seconds_from_start = [t - traj_est.timestamps[0] for t in traj_est.timestamps]
         rpe_result.add_np_array("seconds_from_start", seconds_from_start)
     else:
         seconds_from_start = None
 
     if show_plot or save_plot or serialize_plot and not all_pairs:
-        # restrict trajectories to delta ids for plot
-        if support_loop:
-            # avoid overwriting if called repeatedly e.g. in Jupyter notebook
-            import copy
-            traj_ref = copy.deepcopy(traj_ref)
-            traj_est = copy.deepcopy(traj_est)
-        traj_ref.reduce_to_ids(rpe_metric.delta_ids)
-        traj_est.reduce_to_ids(rpe_metric.delta_ids)
-
-        if show_plot or save_plot or serialize_plot:
-            from evo.tools import plot
-            import matplotlib.pyplot as plt
+        from evo.tools import plot
+        import matplotlib.pyplot as plt
+        logging.debug(SEP)
+        logging.debug("plotting results... ")
+        fig1 = plt.figure(figsize=(SETTINGS.plot_figsize[0], SETTINGS.plot_figsize[1]))
+        # metric values
+        plot.error_array(fig1, rpe_metric.error, x_array=seconds_from_start,
+                            statistics=rpe_statistics,
+                            name="RPE" + (
+                            " (" + rpe_metric.unit.value + ")") if rpe_metric.unit else "",
+                            title=title, xlabel="$t$ (s)" if seconds_from_start else "index")
+        # info text
+        if SETTINGS.plot_info_text and est_name and ref_name:
+            ax = fig1.gca()
+            ax.text(0, -0.12, "estimate:  " + est_name + "\nreference: " + ref_name,
+                    transform=ax.transAxes, fontsize=8, color="gray")
+        # trajectory colormapped
+        fig2 = plt.figure(figsize=(SETTINGS.plot_figsize[0], SETTINGS.plot_figsize[1]))
+        plot_mode = plot_mode if plot_mode is not None else plot.PlotMode.xyz
+        ax = plot.prepare_axis(fig2, plot_mode)
+        plot.traj(ax, plot_mode, traj_ref, '--', 'gray', 'reference',
+                    alpha=0 if SETTINGS.plot_hideref else 1)
+        plot.traj_colormap(ax, traj_est, rpe_metric.error, plot_mode,
+                            min_map=rpe_statistics["min"], max_map=rpe_statistics["max"],
+                            title="RPE mapped onto trajectory")
+        fig2.axes.append(ax)
+        plot_collection = plot.PlotCollection(title)
+        plot_collection.add_figure("raw", fig1)
+        plot_collection.add_figure("map", fig2)
+        if show_plot:
+            plot_collection.show()
+        if save_plot:
+            plot_collection.export(save_plot, confirm_overwrite=not no_warnings)
+        if serialize_plot:
             logging.debug(SEP)
-            logging.debug("plotting results... ")
-            fig1 = plt.figure(figsize=(SETTINGS.plot_figsize[0], SETTINGS.plot_figsize[1]))
-            # metric values
-            plot.error_array(fig1, rpe_metric.error, x_array=seconds_from_start,
-                             statistics=rpe_statistics,
-                             name="RPE" + (
-                             " (" + rpe_metric.unit.value + ")") if rpe_metric.unit else "",
-                             title=title, xlabel="$t$ (s)" if seconds_from_start else "index")
-            # info text
-            if SETTINGS.plot_info_text and est_name and ref_name:
-                ax = fig1.gca()
-                ax.text(0, -0.12, "estimate:  " + est_name + "\nreference: " + ref_name,
-                        transform=ax.transAxes, fontsize=8, color="gray")
-            # trajectory colormapped
-            fig2 = plt.figure(figsize=(SETTINGS.plot_figsize[0], SETTINGS.plot_figsize[1]))
-            plot_mode = plot_mode if plot_mode is not None else plot.PlotMode.xyz
-            ax = plot.prepare_axis(fig2, plot_mode)
-            plot.traj(ax, plot_mode, traj_ref, '--', 'gray', 'reference',
-                      alpha=0 if SETTINGS.plot_hideref else 1)
-            plot.traj_colormap(ax, traj_est, rpe_metric.error, plot_mode,
-                               min_map=rpe_statistics["min"], max_map=rpe_statistics["max"],
-                               title="RPE mapped onto trajectory")
-            fig2.axes.append(ax)
-            plot_collection = plot.PlotCollection(title)
-            plot_collection.add_figure("raw", fig1)
-            plot_collection.add_figure("map", fig2)
-            if show_plot:
-                plot_collection.show()
-            if save_plot:
-                plot_collection.export(save_plot, confirm_overwrite=not no_warnings)
-            if serialize_plot:
-                logging.debug(SEP)
-                plot_collection.serialize(serialize_plot, confirm_overwrite=not no_warnings)
+            plot_collection.serialize(serialize_plot, confirm_overwrite=not no_warnings)
 
     if save_results:
         logging.debug(SEP)

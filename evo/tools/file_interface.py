@@ -171,11 +171,12 @@ def read_bag_trajectory(bag_handle, topic):
     return PoseTrajectory3D(xyz, quat, stamps)
 
 
-def write_bag_trajectory(bag_handle, traj, topic_name):
+def write_bag_trajectory(bag_handle, traj, topic_name, frame_id=""):
     """
     :param bag_handle: opened bag handle, from rosbag.Bag(...)
     :param traj: trajectory.PoseTrajectory3D
     :param topic_name: the desired topic name for the trajectory
+    :param frame_id: optional ROS frame_id
     """
     import rospy
     from geometry_msgs.msg import PoseStamped
@@ -184,7 +185,7 @@ def write_bag_trajectory(bag_handle, traj, topic_name):
     for stamp, xyz, quat in zip(traj.timestamps, traj.positions_xyz, traj.orientations_quat_wxyz):
         p = PoseStamped()
         p.header.stamp = rospy.Time.from_sec(stamp)
-        p.header.frame_id = topic_name.replace("/", "")
+        p.header.frame_id = frame_id
         p.pose.position.x = xyz[0]
         p.pose.position.y = xyz[1]
         p.pose.position.z = xyz[2]

@@ -52,8 +52,12 @@ def parser():
     algo_opts.add_argument("--invert_transform", help="invert the transformation of the .json file",
                            action="store_true")
     algo_opts.add_argument("--ref", help="trajectory that will be marked/used as the reference")
-    algo_opts.add_argument("--t_offset", help="add a constant timestamp offset",
+    algo_opts.add_argument("--t_offset", 
+                           help="add a constant timestamp offset (not adding to --ref trajectory)",
                            default=0.0, type=float)
+    algo_opts.add_argument("--t_max_diff",
+                           help="maximum timestamp difference for data association",
+                           default=0.01, type=float)
     output_opts.add_argument("-p", "--plot", help="show plot window", action="store_true")
     output_opts.add_argument("--plot_mode", help="the axes for  plot projection",
                              default=None, choices=["xy", "yx", "xz", "zx", "yz", "xyz"])
@@ -215,8 +219,20 @@ def run(args):
         for name, traj in trajectories:
             traj.transform(t, right_mul=args.transform_right)
 
+    if args.t_offset:
+        logging.debug(SEP)
+        for name, traj in trajectories:
+            if type(traj) is trajectory.PosePath3D:
+                logging.warning("{} doesn't have timestamps - can't add t_offset".format(name))
+            else:
+                logging.info("adding time offset to {}: {} (s)".format(name, args.t_offset))
+                traj.timestamps += args.t_offset
+
     if args.align or args.correct_scale:
-        if args.ref:
+        if not args.ref:
+            logging.debug(SEP)
+            logging.warning("can't align without a reference! (--ref)  *grunt*")
+        else:
             if args.subcommand == "kitti":
                 traj_tmp, ref_traj_tmp = trajectories, [ref_traj for n, t in trajectories]
             else:
@@ -225,6 +241,7 @@ def run(args):
                 for name, traj in trajectories:
                     logging.debug(SEP)
                     ref_assoc, traj_assoc = sync.associate_trajectories(ref_traj, traj,
+                                                                        max_diff=args.t_max_diff,
                                                                         first_name="ref",
                                                                         snd_name=name)
                     ref_traj_tmp.append(ref_assoc)
@@ -240,14 +257,7 @@ def run(args):
             trajectories = trajectories_new
 
     for name, traj in trajectories:
-        if args.t_offset and traj.timestamps.shape[0] != 0:
-            logging.debug(SEP)
-            logging.info("adding time offset to " + name + ": " + str(args.t_offset) + " (s)")
-            traj.timestamps += args.t_offset
         print_traj_info(name, traj, args.verbose, args.full_check)
-    if (args.align or args.correct_scale) and not args.ref:
-        logging.debug(SEP)
-        logging.warning("can't align without a reference! (--ref)  *grunt*")
     if args.ref:
         print_traj_info(args.ref, ref_traj, args.verbose, args.full_check)
 

@@ -171,6 +171,7 @@ def main_rpe(traj_ref, traj_est, pose_relation, delta, delta_unit,
     if isinstance(traj_est, trajectory.PoseTrajectory3D) and not all_pairs:
         seconds_from_start = [t - traj_est.timestamps[0] for t in traj_est.timestamps]
         rpe_result.add_np_array("seconds_from_start", seconds_from_start)
+        rpe_result.add_np_array("timestamps", traj_est.timestamps)
     else:
         seconds_from_start = None
 

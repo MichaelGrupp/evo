@@ -99,15 +99,11 @@ def run(args):
             short_est_name = short_est_name.replace("_", "\\_")
 
         if args.use_abs_time:
-            if "traj_est" in result_obj.trajectories:
-                traj_est = result_obj.trajectories["traj_est"]
-                index = traj_est.timestamps
+            if "timestamps" in result_obj.np_arrays:
+                index = result_obj.np_arrays["timestamps"]
                 use_seconds = True
             else:
-                msg = "no 'traj_est' trajectory found in " + result_file \
-                      + " but --use_abs_time requires the trajectory in the result file - " \
-                      + "to let the metrics app include them run: evo_config set save_traj_in_zip"
-                raise RuntimeError(msg)
+                raise RuntimeError("no timestamps found for --use_abs_time")
         elif seconds_from_start is not None:
             index = seconds_from_start.tolist()
             use_seconds = True

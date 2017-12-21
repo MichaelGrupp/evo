@@ -149,6 +149,7 @@ def main_ape(traj_ref, traj_est, pose_relation, align=True, correct_scale=False,
     if isinstance(traj_est, trajectory.PoseTrajectory3D):
         seconds_from_start = [t - traj_est.timestamps[0] for t in traj_est.timestamps]
         ape_result.add_np_array("seconds_from_start", seconds_from_start)
+        ape_result.add_np_array("timestamps", traj_est.timestamps)
     else:
         seconds_from_start = None
 

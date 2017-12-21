@@ -135,11 +135,12 @@ def run(args):
         for short_est_name, column in info_df.iteritems():
             if column.ix["title"] != first_title and not args.no_warnings:
                 logging.info(SEP)
-                logging.warning("mismatching titles, you probably use data from different metrics")
-                logging.warning("conflict:\n" + "<"*7 + " " + first_res_file + "\n" + first_title + "\n"
-                                + "="*7 + "\n" + column.ix["title"] + "\n"
-                                + ">"*7 + " " + column.ix["res_file"])
-                logging.warning("only the first one will be used as the title!")
+                msg = ("mismatching titles, you probably use data from different metrics"
+                       + "\nconflict:\n{} {}\n{}\n".format("<"*7, first_res_file, first_title)
+                       + "{}\n{}\n".format("="*7, column.ix["title"])
+                       + "{} {}\n\n".format(">"*7, column.ix["res_file"])
+                       + "only the first one will be used as the title!")
+                logging.warning(msg)
                 if not user.confirm("plot/save anyway? - enter 'y' or any other key to exit"):
                     sys.exit()
 
@@ -158,10 +159,7 @@ def run(args):
         inconsistent = raw_df.isnull().values.any()
         if inconsistent and not args.no_warnings:
             logging.debug(SEP)
-            logging.warning(
-                "data lengths/indices are not consistent, plotting probably makes no sense")
-            if not user.confirm("plot anyway? - enter 'y' or any other key to exit"):
-                sys.exit()
+            logging.warning("data lengths/indices are not consistent, plotting could make no sense")
 
         from evo.tools import plot
         import matplotlib.pyplot as plt

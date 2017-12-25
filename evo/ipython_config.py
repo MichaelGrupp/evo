@@ -188,8 +188,12 @@ Pre-loaded modules from {bright}evo.core:{blue}
 Pre-loaded modules from {bright}evo.tools:{blue}
     file_interface
     plot
-    settings
 {fr}{sr}
+Pre-loaded high-level functions for metrics:{blue}
+    main_ape(...)
+    main_rpe(...)
+    main_rpe_for_each(...)
+{fr}
 '''.format(fr=Fore.RESET, sr=Style.RESET_ALL, bright=Style.BRIGHT, 
            blue=Fore.BLUE, green=Fore.GREEN)
 

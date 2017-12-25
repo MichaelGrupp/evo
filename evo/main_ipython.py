@@ -32,7 +32,7 @@ import subprocess as sp
 
 DESC = '''
 Launches an IPython shell with pre-loaded evo modules
-(c) michael.grupp@tum.de"
+(c) michael.grupp@tum.de
 
 Unknown command line arguments are forwarded to the ipython executable
 '''
@@ -45,19 +45,20 @@ def main():
   other_args = [] if other_args is None else other_args
 
   FNULL = open(os.devnull, 'w')
+  ipython = "ipython3" if sys.version_info >= (3, 0) else "ipython2"
   try:
-    sp.check_call(["ipython", "--version"], stdout=FNULL, stderr=FNULL)
+    sp.check_call([ipython, "--version"], stdout=FNULL, stderr=FNULL)
   except sp.CalledProcessError as e:
     print("IPython is not installed", file=sys.stderr)
     sys.exit(1)
   try:
-    sp.check_call(["ipython", "profile", "locate", "evo"], stdout=FNULL,
+    sp.check_call([ipython, "profile", "locate", "evo"], stdout=FNULL,
                   stderr=FNULL)
   except sp.CalledProcessError as e:
     print("IPython profile for evo is not installed", file=sys.stderr)
     sys.exit(1)
   try:
-    sp.check_call(["ipython", "--profile", "evo"] + other_args)
+    sp.check_call([ipython, "--profile", "evo"] + other_args)
   except sp.CalledProcessError as e:
     print("IPython error", e.output, file=sys.stderr)
 

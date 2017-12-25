@@ -43,17 +43,23 @@ def _post_install(install_lib_dir):
     ipython_dir = os.path.join(home_dir, ".ipython")
     os.environ["IPYTHONDIR"] = ipython_dir
     print("installing evo IPython profile for user", user)
+    ipython = "ipython3" if sys.version_info >= (3, 0) else "ipython2"
     try:
-        sp.check_call(["ipython", "--version"])
-        sp.check_call(["ipython", "profile", "create", "evo",
+        sp.check_call([ipython, "--version"])
+        sp.check_call([ipython, "profile", "create", "evo",
                        "--ipython-dir", ipython_dir], preexec_fn=run_as_caller)
-        profile_dir = sp.check_output(["ipython", "profile", "locate", "evo"],
+        profile_dir = sp.check_output([ipython, "profile", "locate", "evo"],
                                       preexec_fn=run_as_caller)
-        profile_dir = profile_dir.replace("\n", "")
+        if sys.version_info >= (3, 0):
+            profile_dir = profile_dir.decode("UTF-8").replace("\n", "")
+        else:
+            profile_dir = profile_dir.replace("\n", "")
         shutil.move(os.path.join(install_lib_dir, "evo", "ipython_config.py"),
                     os.path.join(profile_dir, "ipython_config.py"))
     except sp.CalledProcessError as e:
         print("IPython error", e.output, file=sys.stderr)
+    except Exception as e:
+        print("unexpected error", e.message, file=sys.stderr)
 
 
 class CustomInstall(install):

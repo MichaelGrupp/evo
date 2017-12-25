@@ -152,38 +152,11 @@ There are some example trajectories in the source folder in `test/data`.
 
 ---
 
-## Jupyter Notebooks
+## IPython / Jupyter Resources
 
-For an interactive source code documentation, open the [Jupyter notebook](http://jupyter.readthedocs.io/en/latest/install.html) `metrics_tutorial.ipynb` in the `notebooks` folder of the repository.
+For an interactive source code documentation, open the [Jupyter notebook](http://jupyter.readthedocs.io/en/latest/install.html) `metrics_tutorial.ipynb` in the `notebooks` folder of the repository. More infos on Jupyter notebooks: see [here](doc/jupyter_notebook.md)
 
-To install Jupyter, call:
-```
-pip install jupyter
-jupyter nbextension enable --py --sys-prefix widgetsnbextension
-```
-
-### Local Jupyter notebook access
-
-Go to the `evo` source folder in a terminal and run: `jupyter notebook` (starts server and opens browser window with notebook).
-
-### Remote Jupyter notebook access
-
-Notebook servers can also be accessed via the browser of a remote PC on the local network without installing Jupyter.
-
-**Do once:**
-
-* disable tokens on your **server** side:
-  * `jupyter notebook --generate-config`
-  * go to the generated config file, uncomment and change the `c.NotebookApp.token` parameter to an empty string
-  * **TODO**: enable password authentication without annoying tokens
-
-**Anytime you want to start a server:**
-
-* start the notebook on the **server**: `jupyter notebook --no-browser --port=8888`
-* access notebook on **remote** PC:
-  * establish SSH forwarding: `ssh username@remotehost -L 8889:localhost:8888`
-  * this forwards remote 8888 port to local 8889 (numbers are just examples)
-  * open the notebook in a browser: `localhost:8889`
+If you have IPython installed, you can launch an IPython shell with a custom evo profile with the command `evo_ipython`.
 
 ---
 

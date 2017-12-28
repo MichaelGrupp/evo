@@ -206,6 +206,8 @@ class PoseTrajectory3D(PosePath3D, object):
         return s + ", {:.3f}s duration".format(self.timestamps[-1] - self.timestamps[0])
 
     def __eq__(self, other):
+        if type(other) != type(self):
+            return False
         equal = super(PoseTrajectory3D, self).__eq__(other)
         equal &= np.array_equal(self.timestamps, other.timestamps)
         return equal

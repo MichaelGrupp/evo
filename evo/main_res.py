@@ -114,6 +114,12 @@ def run(args):
             all(k in result_obj.trajectories for k in ("traj_ref", "traj_est"))
         result_obj.info["res_file"] = result_file
         new_raw_df = pd.DataFrame({short_est_name: error_array.tolist()}, index=index)
+        duplicates = new_raw_df.index.get_level_values(0).get_duplicates()
+        if len(duplicates) != 0:
+            logging.warning("duplicate indices in error array of {} - "
+                            "keeping only first occurrence of duplicates".format(result_file))
+            new_raw_df.drop_duplicates(keep="first", inplace=True)
+
         new_info_df = pd.DataFrame({short_est_name: result_obj.info})
         new_stat_df = pd.DataFrame({short_est_name: result_obj.stats})
         # natural sort num strings "10" "100" "20" -> "10" "20" "100"

@@ -225,8 +225,9 @@ class PoseTrajectory3D(PosePath3D, object):
         valid &= len_stamps_valid
         details["nr. of stamps"] = "ok" if len_stamps_valid else "wrong"
         stamps_ascending = np.alltrue(np.sort(self.timestamps) == self.timestamps)
+        stamps_ascending &= np.unique(self.timestamps).size == len(self.timestamps)
         valid &= stamps_ascending
-        details["timestamps"] = "ok" if stamps_ascending else "wrong, not ascending"
+        details["timestamps"] = "ok" if stamps_ascending else "wrong, not ascending or duplicates"
         return valid, details
 
     def get_infos(self):

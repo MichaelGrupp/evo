@@ -4,8 +4,10 @@ from setuptools.command.install import install
 
 import os
 import sys
+import shutil
 import subprocess as sp
-from shutil import rmtree
+from pwd import getpwnam
+
 
 # monkey patch because setuptools entry_points are slow as fuck
 # https://github.com/ninjaaron/fast-entry_points
@@ -19,13 +21,45 @@ def python_below_34():
     return sys.version_info[0] < 3 or sys.version_info[1] < 4
 
 
+def run_as_caller():
+    caller = os.environ["SUDO_USER"] if "SUDO_USER" in os.environ else os.environ["USER"]
+    uid = getpwnam(caller).pw_uid
+    gid = getpwnam(caller).pw_gid
+    os.setgid(gid)
+    os.setuid(uid)
+
+
 def _post_install(install_lib_dir):
+    # argcomplete
     print("activating argcomplete")
     try:
         sp.check_call("activate-global-python-argcomplete", shell=True)
         print("done - argcomplete should work now")
     except sp.CalledProcessError as e:
         print("error:", e.output, file=sys.stderr)
+    # IPython profile
+    user = os.environ["SUDO_USER"] if "SUDO_USER" in os.environ else os.environ["USER"]
+    home_dir = os.path.expanduser("~{}".format(user))
+    ipython_dir = os.path.join(home_dir, ".ipython")
+    os.environ["IPYTHONDIR"] = ipython_dir
+    print("installing evo IPython profile for user", user)
+    ipython = "ipython3" if sys.version_info >= (3, 0) else "ipython2"
+    try:
+        sp.check_call([ipython, "--version"])
+        sp.check_call([ipython, "profile", "create", "evo",
+                       "--ipython-dir", ipython_dir], preexec_fn=run_as_caller)
+        profile_dir = sp.check_output([ipython, "profile", "locate", "evo"],
+                                      preexec_fn=run_as_caller)
+        if sys.version_info >= (3, 0):
+            profile_dir = profile_dir.decode("UTF-8").replace("\n", "")
+        else:
+            profile_dir = profile_dir.replace("\n", "")
+        shutil.move(os.path.join(install_lib_dir, "evo", "ipython_config.py"),
+                    os.path.join(profile_dir, "ipython_config.py"))
+    except sp.CalledProcessError as e:
+        print("IPython error", e.output, file=sys.stderr)
+    except Exception as e:
+        print("unexpected error", e.message, file=sys.stderr)
 
 
 class CustomInstall(install):
@@ -49,7 +83,7 @@ class UploadCommand(Command):
     def run(self):
         try:
             print("Removing previous dist/ ...")
-            rmtree(os.path.join(HERE, "dist"))
+            shutil.rmtree(os.path.join(HERE, "dist"))
         except OSError:
             pass
         print("Building source distribution...")
@@ -81,6 +115,7 @@ setup(
         "evo_rpe-for-each=evo.entry_points:rpe_for_each",
         "evo_config=evo.main_config:main",
         "evo_fig=evo.main_fig:main",
+        "evo_ipython=evo.main_ipython:main",
         "evo=evo.main_evo:main"
     ]},
     zip_safe=False,

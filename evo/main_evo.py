@@ -45,6 +45,7 @@ Metrics:
 Tools:
    evo_traj - tool for analyzing, plotting or exporting multiple trajectories
    evo_res - tool for processing multiple result files from the metrics
+   evo_ipython - IPython shell with pre-loaded evo modules
    evo_fig - (experimental) tool for re-opening serialized plots
    evo_config - tool for global settings and config file manipulation
 '''
@@ -56,7 +57,6 @@ def main():
     import argcomplete
     main_parser = argparse.ArgumentParser()
     shared_parser = argparse.ArgumentParser(add_help=False)
-    shared_parser.add_argument("--clear_log", help="clear package logfile", action="store_true")
     sub_parsers = main_parser.add_subparsers(dest="subcommand")
     sub_parsers.required = True
     pkg_parser = sub_parsers.add_parser("pkg", description="show infos of the package",
@@ -68,6 +68,7 @@ def main():
     pkg_parser.add_argument("--location", help="print the package path", action="store_true")
     pkg_parser.add_argument("--logfile", help="print the logfile path", action="store_true")
     pkg_parser.add_argument("--open_log", help="open the package logfile", action="store_true")
+    pkg_parser.add_argument("--clear_log", help="clear package logfile", action="store_true")
     cat_parser = sub_parsers.add_parser("cat_log", description="pipe stdin to evo logfile"
                                         " or print logfile to stdout (if no stdin)",
                                         parents=[shared_parser])
@@ -77,16 +78,12 @@ def main():
     cat_parser.add_argument("-s", "--source", help="source name to use for the log message")
     cat_parser.add_argument("--mark_entry", help="include the default log entry header", 
                             action="store_true", default=False)
+    cat_parser.add_argument("--clear_log", help="clear logfile before exiting", action="store_true")
     argcomplete.autocomplete(main_parser)
     if len(sys.argv[1:])==0:
         sys.argv.extend(["pkg", "--info"])  # cheap trick because YOLO
     args = main_parser.parse_args()
     line_end = "\n" if sys.stdout.isatty() else ""
-
-    if args.clear_log:
-        from evo.tools import user
-        if user.confirm("clear logfile? (y/n)"):
-            open(settings.DEFAULT_LOGFILE_PATH, mode='w')
 
     if args.subcommand == "pkg":
         if not len(sys.argv) > 2:
@@ -114,6 +111,10 @@ def main():
             if args.open_log:
                 import webbrowser
                 webbrowser.open(settings.DEFAULT_LOGFILE_PATH)
+        if args.clear_log:
+            from evo.tools import user
+            if user.confirm("clear logfile? (y/n)"):
+                open(settings.DEFAULT_LOGFILE_PATH, mode='w')
 
     elif args.subcommand == "cat_log":
         if os.name == "nt":
@@ -124,20 +125,22 @@ def main():
                 print("no logfile found - run: evo_config set logfile_enabled", end=line_end)
             else:
                 print(open(settings.DEFAULT_LOGFILE_PATH).read(), end="")
-            sys.exit()
-        if not settings.SETTINGS.logfile_enabled:
+        elif not settings.SETTINGS.logfile_enabled:
             print("logfile disabled", end=line_end)
             sys.exit(1)
-        import logging
-        fmt = None
-        if args.source:
-            fmt = "[%(levelname)s][%(asctime)s][" + args.source + "]\n%(message)s"
-        settings.configure_logging(silent=True, dbg_fmt=fmt, mark_entry=args.mark_entry)
-        if not args.message:
-            msg = sys.stdin.read()
         else:
-            msg = args.message
-        getattr(logging, args.loglevel)(msg)
+            import logging
+            dbg_fmt = None
+            if args.source:
+                dbg_fmt = "[%(levelname)s][%(asctime)s][" + args.source + "]\n%(message)s"
+            settings.configure_logging(silent=True, dbg_fmt=dbg_fmt, mark_entry=args.mark_entry)
+            if not args.message:
+                msg = sys.stdin.read()
+            else:
+                msg = args.message
+            getattr(logging, args.loglevel)(msg)
+        if args.clear_log:
+            open(settings.DEFAULT_LOGFILE_PATH, mode='w')
 
 
 if __name__ == '__main__':

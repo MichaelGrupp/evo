@@ -206,6 +206,8 @@ class PoseTrajectory3D(PosePath3D, object):
         return s + ", {:.3f}s duration".format(self.timestamps[-1] - self.timestamps[0])
 
     def __eq__(self, other):
+        if type(other) != type(self):
+            return False
         equal = super(PoseTrajectory3D, self).__eq__(other)
         equal &= np.array_equal(self.timestamps, other.timestamps)
         return equal
@@ -223,8 +225,9 @@ class PoseTrajectory3D(PosePath3D, object):
         valid &= len_stamps_valid
         details["nr. of stamps"] = "ok" if len_stamps_valid else "wrong"
         stamps_ascending = np.alltrue(np.sort(self.timestamps) == self.timestamps)
+        stamps_ascending &= np.unique(self.timestamps).size == len(self.timestamps)
         valid &= stamps_ascending
-        details["timestamps"] = "ok" if stamps_ascending else "wrong, not ascending"
+        details["timestamps"] = "ok" if stamps_ascending else "wrong, not ascending or duplicates"
         return valid, details
 
     def get_infos(self):

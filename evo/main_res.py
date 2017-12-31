@@ -99,15 +99,11 @@ def run(args):
             short_est_name = short_est_name.replace("_", "\\_")
 
         if args.use_abs_time:
-            if "traj_est" in result_obj.trajectories:
-                traj_est = result_obj.trajectories["traj_est"]
-                index = traj_est.timestamps
+            if "timestamps" in result_obj.np_arrays:
+                index = result_obj.np_arrays["timestamps"]
                 use_seconds = True
             else:
-                msg = "no 'traj_est' trajectory found in " + result_file \
-                      + " but --use_abs_time requires the trajectory in the result file - " \
-                      + "to let the metrics app include them run: evo_config set save_traj_in_zip"
-                raise RuntimeError(msg)
+                raise RuntimeError("no timestamps found for --use_abs_time")
         elif seconds_from_start is not None:
             index = seconds_from_start.tolist()
             use_seconds = True
@@ -118,6 +114,12 @@ def run(args):
             all(k in result_obj.trajectories for k in ("traj_ref", "traj_est"))
         result_obj.info["res_file"] = result_file
         new_raw_df = pd.DataFrame({short_est_name: error_array.tolist()}, index=index)
+        duplicates = new_raw_df.index.get_level_values(0).get_duplicates()
+        if len(duplicates) != 0:
+            logging.warning("duplicate indices in error array of {} - "
+                            "keeping only first occurrence of duplicates".format(result_file))
+            new_raw_df.drop_duplicates(keep="first", inplace=True)
+
         new_info_df = pd.DataFrame({short_est_name: result_obj.info})
         new_stat_df = pd.DataFrame({short_est_name: result_obj.stats})
         # natural sort num strings "10" "100" "20" -> "10" "20" "100"
@@ -139,11 +141,12 @@ def run(args):
         for short_est_name, column in info_df.iteritems():
             if column.ix["title"] != first_title and not args.no_warnings:
                 logging.info(SEP)
-                logging.warning("mismatching titles, you probably use data from different metrics")
-                logging.warning("conflict:\n" + "<"*7 + " " + first_res_file + "\n" + first_title + "\n"
-                                + "="*7 + "\n" + column.ix["title"] + "\n"
-                                + ">"*7 + " " + column.ix["res_file"])
-                logging.warning("only the first one will be used as the title!")
+                msg = ("mismatching titles, you probably use data from different metrics"
+                       + "\nconflict:\n{} {}\n{}\n".format("<"*7, first_res_file, first_title)
+                       + "{}\n{}\n".format("="*7, column.ix["title"])
+                       + "{} {}\n\n".format(">"*7, column.ix["res_file"])
+                       + "only the first one will be used as the title!")
+                logging.warning(msg)
                 if not user.confirm("plot/save anyway? - enter 'y' or any other key to exit"):
                     sys.exit()
 
@@ -162,10 +165,7 @@ def run(args):
         inconsistent = raw_df.isnull().values.any()
         if inconsistent and not args.no_warnings:
             logging.debug(SEP)
-            logging.warning(
-                "data lengths/indices are not consistent, plotting probably makes no sense")
-            if not user.confirm("plot anyway? - enter 'y' or any other key to exit"):
-                sys.exit()
+            logging.warning("data lengths/indices are not consistent, plotting could make no sense")
 
         from evo.tools import plot
         import matplotlib.pyplot as plt

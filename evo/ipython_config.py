@@ -34,6 +34,8 @@ c = get_config()
 ## lines of code to run at IPython startup.
 c.InteractiveShellApp.exec_lines = [
     'from __future__ import print_function',
+    'import matplotlib.pyplot as plt',
+    'import numpy as np',
     'from evo.core import lie_algebra, metrics, result, sync, trajectory',
     'from evo.tools import file_interface, plot, settings',
     'from evo.main_ape import main_ape',
@@ -194,6 +196,7 @@ Pre-loaded high-level functions for metrics:{blue}
     main_rpe(...)
     main_rpe_for_each(...)
 {fr}
+Others: numpy as np, matplotlib.pyplot as plt
 '''.format(fr=Fore.RESET, sr=Style.RESET_ALL, bright=Style.BRIGHT, 
            blue=Fore.BLUE, green=Fore.GREEN)
 

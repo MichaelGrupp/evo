@@ -34,13 +34,13 @@ c = get_config()
 ## lines of code to run at IPython startup.
 c.InteractiveShellApp.exec_lines = [
     'from __future__ import print_function',
-    'import matplotlib.pyplot as plt',
-    'import numpy as np',
     'from evo.core import lie_algebra, metrics, result, sync, trajectory',
     'from evo.tools import file_interface, plot, settings',
     'from evo.main_ape import main_ape',
     'from evo.main_rpe import main_rpe',
-    'from evo.main_rpe_for_each import main_rpe_for_each'
+    'from evo.main_rpe_for_each import main_rpe_for_each',
+    'import matplotlib.pyplot as plt',
+    'import numpy as np'
 ]
 
 ## A list of dotted module names of IPython extensions to load.
@@ -174,7 +174,7 @@ c.BaseIPythonApplication.profile = u'default'
 #c.InteractiveShell.automagic = True
 
 ## The part of the banner to be printed before the profile
-c.InteractiveShell.banner1 = 'Python 2.7.12 (default, Nov 20 2017, 18:23:56) \nType "copyright", "credits" or "license" for more information.\n\nIPython 5.3.0 -- An enhanced Interactive Python.\n?         -> Introduction and overview of IPython\'s features.\n%quickref -> Quick reference.\nhelp      -> Python\'s own help system.\nobject?   -> Details about \'object\', use \'object??\' for extra details.\n'
+c.InteractiveShell.banner1 = 'Type "copyright", "credits" or "license" for more information.\n\nIPython -- An enhanced Interactive Python.\n?         -> Introduction and overview of IPython\'s features.\n%quickref -> Quick reference.\nhelp      -> Python\'s own help system.\nobject?   -> Details about \'object\', use \'object??\' for extra details.\n'
 
 ## The part of the banner to be printed after the profile
 c.InteractiveShell.banner2 = '''

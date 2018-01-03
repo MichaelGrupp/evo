@@ -24,11 +24,13 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function
 
 import os
+import six
 import sys
 import argparse
 import argcomplete
 import subprocess as sp
 
+from evo.tools.compat import which
 
 DESC = '''
 Launches an IPython shell with pre-loaded evo modules
@@ -39,29 +41,32 @@ Unknown command line arguments are forwarded to the ipython executable
 
 
 def main():
-  main_parser = argparse.ArgumentParser(description=DESC,
-                                        formatter_class=argparse.RawTextHelpFormatter)
-  args, other_args = main_parser.parse_known_args()
-  other_args = [] if other_args is None else other_args
+    main_parser = argparse.ArgumentParser(description=DESC,
+                                          formatter_class=argparse.RawTextHelpFormatter)
+    args, other_args = main_parser.parse_known_args()
+    other_args = [] if other_args is None else other_args
+    FNULL = open(os.devnull, 'w')
 
-  FNULL = open(os.devnull, 'w')
-  ipython = "ipython3" if sys.version_info >= (3, 0) else "ipython2"
-  try:
-    sp.check_call([ipython, "--version"], stdout=FNULL, stderr=FNULL)
-  except sp.CalledProcessError as e:
-    print("IPython is not installed", file=sys.stderr)
-    sys.exit(1)
-  try:
-    sp.check_call([ipython, "profile", "locate", "evo"], stdout=FNULL,
-                  stderr=FNULL)
-  except sp.CalledProcessError as e:
-    print("IPython profile for evo is not installed", file=sys.stderr)
-    sys.exit(1)
-  try:
-    sp.check_call([ipython, "--profile", "evo"] + other_args)
-  except sp.CalledProcessError as e:
-    print("IPython error", e.output, file=sys.stderr)
+    # check if IPython is installed properly
+    ipython = "ipython3" if six.PY3 else "ipython2"
+    if which(ipython) is None:
+        # fall back to the non-explicit ipython name if ipython2/3 is not in PATH
+        ipython = "ipython"
+        if which(ipython) is None:
+            print("IPython is not installed", file=sys.stderr)
+            sys.exit(1)
+
+    try:
+        sp.check_call([ipython, "profile", "locate", "evo"], stdout=FNULL, stderr=FNULL)
+    except sp.CalledProcessError:
+        print("IPython profile for evo is not installed", file=sys.stderr)
+        sys.exit(1)
+    try:
+        sp.check_call([ipython, "--profile", "evo"] + other_args)
+    except sp.CalledProcessError as e:
+        print("IPython error", e.output, file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == '__main__':
-  main()
+    main()

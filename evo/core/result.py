@@ -23,6 +23,7 @@ from __future__ import print_function
 
 import numpy as np
 
+
 class Result(object):
     def __init__(self):
         self.info = {}

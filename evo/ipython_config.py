@@ -35,7 +35,7 @@ c = get_config()
 c.InteractiveShellApp.exec_lines = [
     'from __future__ import print_function',
     'from evo.core import lie_algebra, metrics, result, sync, trajectory',
-    'from evo.tools import file_interface, plot, settings',
+    'from evo.tools import file_interface, pandas_bridge, plot, settings',
     'from evo.main_ape import main_ape',
     'from evo.main_rpe import main_rpe',
     'from evo.main_rpe_for_each import main_rpe_for_each',
@@ -189,6 +189,7 @@ Pre-loaded modules from {bright}evo.core:{blue}
 {fr}{sr}
 Pre-loaded modules from {bright}evo.tools:{blue}
     file_interface
+    pandas_bridge
     plot
 {fr}{sr}
 Pre-loaded high-level functions for metrics:{blue}

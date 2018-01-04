@@ -40,7 +40,9 @@ c.InteractiveShellApp.exec_lines = [
     'from evo.main_rpe import main_rpe',
     'from evo.main_rpe_for_each import main_rpe_for_each',
     'import matplotlib.pyplot as plt',
-    'import numpy as np'
+    'import numpy as np',
+    'import seaborn as sns',
+    'import pandas as pd'
 ]
 
 ## A list of dotted module names of IPython extensions to load.
@@ -197,7 +199,7 @@ Pre-loaded high-level functions for metrics:{blue}
     main_rpe(...)
     main_rpe_for_each(...)
 {fr}
-Others: numpy as np, matplotlib.pyplot as plt
+Others: numpy as np, matplotlib.pyplot as plt, pandas as pd, seaborn as sns
 '''.format(fr=Fore.RESET, sr=Style.RESET_ALL, bright=Style.BRIGHT, 
            blue=Fore.BLUE, green=Fore.GREEN)
 

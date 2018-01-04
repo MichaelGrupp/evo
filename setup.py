@@ -30,6 +30,7 @@ def run_as_caller():
 
 
 def _post_install(install_lib_dir):
+    from evo.tools.compat import which
     # argcomplete
     print("activating argcomplete")
     try:
@@ -44,8 +45,13 @@ def _post_install(install_lib_dir):
     os.environ["IPYTHONDIR"] = ipython_dir
     print("installing evo IPython profile for user", user)
     ipython = "ipython3" if sys.version_info >= (3, 0) else "ipython2"
+    if which(ipython) is None:
+        # fall back to the non-explicit ipython name if ipython2/3 is not in PATH
+        ipython = "ipython"
+        if which(ipython) is None:
+            print("IPython is not installed", file=sys.stderr)
+            return
     try:
-        sp.check_call([ipython, "--version"])
         sp.check_call([ipython, "profile", "create", "evo",
                        "--ipython-dir", ipython_dir], preexec_fn=run_as_caller)
         profile_dir = sp.check_output([ipython, "profile", "locate", "evo"],

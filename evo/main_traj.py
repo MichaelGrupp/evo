@@ -270,6 +270,7 @@ def run(args):
         import matplotlib.cm as cm
         plot_collection = plot.PlotCollection("evo_traj - trajectory plot")
         fig_xyz, axarr_xyz = plt.subplots(3, sharex="col", figsize=tuple(SETTINGS.plot_figsize))
+        fig_rpy, axarr_rpy = plt.subplots(3, sharex="col", figsize=tuple(SETTINGS.plot_figsize))
         fig_traj = plt.figure(figsize=tuple(SETTINGS.plot_figsize))
         if (args.align or args.correct_scale) and not args.ref:
             plt.xkcd(scale=2, randomness=4)
@@ -302,9 +303,11 @@ def run(args):
             else:
                 start_time = None
             plot.traj_xyz(axarr_xyz, traj, '-', color, short_traj_name, start_timestamp=start_time)
+            plot.traj_rpy(axarr_rpy, traj, '-', color, short_traj_name, start_timestamp=start_time)
         plt.tight_layout()
         plot_collection.add_figure("trajectories", fig_traj)
         plot_collection.add_figure("xyz_view", fig_xyz)
+        plot_collection.add_figure("rpy_view", fig_rpy)
         if args.plot:
             plot_collection.show()
         if args.save_plot:

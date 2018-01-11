@@ -362,10 +362,76 @@ def traj_xyz(axarr, traj, style='-', color='black', label="", alpha=1.0, start_t
         axarr[0].legend(frameon=True)
 
 
+def traj_rpy(axarr, traj, style='-', color='black', label="", alpha=1.0, start_timestamp=None):
+    """
+    plot a path/trajectory's Euler RPY angles into an axis
+    :param axarr: an axis array (for R, P & Y) e.g. from 'fig, axarr = plt.subplots(3)'
+    :param traj: trajectory.PosePath3D or trajectory.PoseTrajectory3D object
+    :param style: matplotlib line style
+    :param color: matplotlib color
+    :param label: label (for legend)
+    :param alpha: alpha value for transparency
+    :param start_timestamp: optional start time of the reference (for x-axis alignment)
+    """
+    if len(axarr) != 3:
+        raise PlotException("expected an axis array with 3 subplots - got " + str(len(axarr)))
+    if isinstance(traj, trajectory.PoseTrajectory3D):
+        x = traj.timestamps - (traj.timestamps[0] if start_timestamp is None else start_timestamp)
+        xlabel = "$t$ (s)"
+    else:
+        x = range(0, len(traj.orientations_euler))
+        xlabel = "index"
+    ylabels = ["$roll$ (deg)", "$pitch$ (deg)", "$yaw$ (deg)"]
+    for i in range(0, 3):
+        axarr[i].plot(x, np.rad2deg(traj.orientations_euler[:, i]), style,
+                      color=color, label=label, alpha=alpha)
+        axarr[i].set_ylabel(ylabels[i])
+    axarr[2].set_xlabel(xlabel)
+    if label:
+        axarr[0].legend(frameon=True)
+
+
+def trajectories(fig, trajectories, plot_mode=PlotMode.xy, title="", subplot_arg="111"):
+    """
+    high-level function for plotting multiple trajectories
+    :param fig: matplotlib figure
+    :param trajectories: instances or iterables of PosePath3D or derived
+    - if it's a dictionary, the keys (names) will be used as labels
+    :param plot_mode: e.g. plot.PlotMode.xy
+    :param title: optional plot title
+    :param subplot_arg: optional matplotlib subplot ID if used as subplot
+    """
+    ax = prepare_axis(fig, plot_mode)
+    cmap_colors = None
+    if SETTINGS.plot_multi_cmap.lower() != "none":
+        cmap = getattr(cm, SETTINGS.plot_multi_cmap)
+        cmap_colors = iter(cmap(np.linspace(0, 1, len(trajectories))))
+    
+    # helper function
+    def draw(t, name=""):
+        if cmap_colors is None:
+            color = next(ax._get_lines.prop_cycler)['color']
+        else:
+            color = next(cmap_colors)
+        if SETTINGS.plot_usetex:
+            name = name.replace("_", "\\_")
+        traj(ax, plot_mode, t, '-', color, name)
+
+    if isinstance(trajectories, trajectory.PosePath3D):
+        draw(trajectories)
+    elif isinstance(trajectories, dict):
+        for name, t in trajectories:
+            draw(t, name)
+    else:
+        for t in trajectories:
+            draw(t)
+
+
 def error_array(fig, err_array, x_array=None, statistics=None, threshold=None, cumulative=False,
                 color='grey', name="error", title="",
                 xlabel="index", ylabel=None, subplot_arg='111', linestyle="-", marker=None):
     """
+    high-level function for plotting raw error values of a metric
     :param fig: matplotlib figure
     :param err_array: an nx1 array of values
     :param x_array: an nx1 array of x-axis values

@@ -19,6 +19,8 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import os
+
 import numpy as np
 import pandas as pd
 
@@ -57,4 +59,8 @@ def result_to_df(result_obj):
         data["np_arrays"][name] = array
     for name, traj in result_obj.trajectories.items():
         data["trajectories"][name] = trajectory_to_df(traj)
-    return pd.DataFrame(data=data).T.stack()
+    if "est_name" in data["info"]:
+        name = os.path.splitext(os.path.basename(data["info"]["est_name"]))[0]
+    else:
+        name = "unnamed_result"
+    return pd.DataFrame(data=data).T.stack().to_frame(name=name)

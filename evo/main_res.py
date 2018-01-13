@@ -25,19 +25,28 @@ from __future__ import print_function
 
 SEP = "-" * 80  # separator line
 
+CONFLICT_TEMPLATE = """
+Mismatching titles - risk of aggregating data from different metrics. Conflict:
+<<<<<<< {0}
+{1}
+=======
+{2}
+>>>>>>> {3}
+
+Only the first one will be used as the title!
+"""
+
 
 def parser():
     import argparse
-    basic_desc = "tool for processing one or multiple result files from ape or rpe"
+    basic_desc = "tool for processing one or multiple result files"
     lic = "(c) michael.grupp@tum.de"
     main_parser = argparse.ArgumentParser(description="%s %s" % (basic_desc, lic))
     output_opts = main_parser.add_argument_group("output options")
     usability_opts = main_parser.add_argument_group("usability options")
     main_parser.add_argument("result_files", help="one or multiple result files", nargs='+')
-    main_parser.add_argument("--use_abs_time",
-                             help="use absolute timestamps instead of the seconds from start "
-                                  "(if trajectories were saved to result file)",
-                             action="store_true")
+    main_parser.add_argument("--use_rel_time",
+                             help="use relative timestamps if available", action="store_true")
     output_opts.add_argument("-p", "--plot", help="show plot window", action="store_true")
     output_opts.add_argument("--plot_markers", help="plot with circle markers", action="store_true")
     output_opts.add_argument("--save_plot", help="path to save plot", default=None)
@@ -57,121 +66,101 @@ def parser():
 
 
 def run(args):
-    import os
     import sys
     import logging
 
     import pandas as pd
-    import numpy as np
-    from natsort import natsorted
 
-    from evo.tools import file_interface, user, settings
+    from evo.tools import file_interface, user, settings, pandas_bridge
     from evo.tools.settings import SETTINGS
+
+    pd.options.display.width = 80
+    pd.options.display.max_colwidth = 20
 
     settings.configure_logging(args.verbose, args.silent, args.debug)
     if args.debug:
         import pprint
-        logging.debug("main_parser config:\n"
-                      + pprint.pformat({arg: getattr(args, arg) for arg in vars(args)}) + "\n")
+        arg_dict = {arg: getattr(args, arg) for arg in vars(args)}
+        logging.debug("main_parser config:\n{}\n".format(pprint.pformat(arg_dict)))
 
-    # store data in Pandas data frames for easier analysis
-    raw_df = pd.DataFrame()
-    stat_df = pd.DataFrame()
-    info_df = pd.DataFrame()
-    use_seconds = False
-
+    df = pd.DataFrame()
     for result_file in args.result_files:
-        logging.debug(SEP)
-        result_obj = file_interface.load_res_file(result_file, True)
-        short_est_name = os.path.splitext(os.path.basename(result_obj.info["est_name"]))[0]
-        error_array = result_obj.np_arrays["error_array"]
-        if "seconds_from_start" in result_obj.np_arrays:
-            seconds_from_start = result_obj.np_arrays["seconds_from_start"]
+        result = file_interface.load_res_file(result_file)
+        df = pd.concat([df, pandas_bridge.result_to_df(result)], axis="columns")
+
+    keys = df.columns.values
+    if SETTINGS.plot_usetex:
+        keys = [key.replace("_", "\\_") for key in keys]
+        df.columns = keys
+
+    # derive a common index type if possible - preferably timestamps
+    common_index = None
+    time_indices = ["timestamps", "seconds_from_start", "sec_from_start"]
+    if args.use_rel_time:
+        del time_indices[0]
+    for idx in time_indices:
+        if idx not in df.loc["np_arrays"].index:
+            continue
+        if df.loc["np_arrays", idx].isnull().values.any():
+            continue
         else:
-            seconds_from_start = None
+            common_index = idx
+            break
 
-        if not args.no_warnings and (short_est_name in info_df.columns):
-            logging.warning("double entry detected: " + short_est_name)
-            if not user.confirm("ignore? enter 'y' to go on or any other key to quit"):
-                sys.exit()
-
-        if SETTINGS.plot_usetex:
-            short_est_name = short_est_name.replace("_", "\\_")
-
-        if args.use_abs_time:
-            if "timestamps" in result_obj.np_arrays:
-                index = result_obj.np_arrays["timestamps"]
-                use_seconds = True
-            else:
-                raise RuntimeError("no timestamps found for --use_abs_time")
-        elif seconds_from_start is not None:
-            index = seconds_from_start.tolist()
-            use_seconds = True
-        else:
-            index = np.arange(0, error_array.shape[0])
-
-        result_obj.info["traj. backup?"] = \
-            all(k in result_obj.trajectories for k in ("traj_ref", "traj_est"))
-        result_obj.info["res_file"] = result_file
-        new_raw_df = pd.DataFrame({short_est_name: error_array.tolist()}, index=index)
-        duplicates = new_raw_df.index.get_level_values(0).get_duplicates()
-        if len(duplicates) != 0:
-            logging.warning("duplicate indices in error array of {} - "
-                            "keeping only first occurrence of duplicates".format(result_file))
-            new_raw_df.drop_duplicates(keep="first", inplace=True)
-
-        new_info_df = pd.DataFrame({short_est_name: result_obj.info})
-        new_stat_df = pd.DataFrame({short_est_name: result_obj.stats})
-        # natural sort num strings "10" "100" "20" -> "10" "20" "100"
-        new_stat_df = new_stat_df.reindex(index=natsorted(new_stat_df.index))
-        # column-wise concatenation
-        raw_df = pd.concat([raw_df, new_raw_df], axis=1)
-        info_df = pd.concat([info_df, new_info_df], axis=1)
-        stat_df = pd.concat([stat_df, new_stat_df], axis=1)
-        # if verbose: log infos of the current data
-        logging.debug("\n" + result_obj.pretty_str(title=True, stats=False, info=True))
-
-    logging.debug(SEP)
-    logging.info("\nstatistics overview:\n" + stat_df.T.to_string(line_width=80) + "\n")
+    # build error_df (raw values) according to common_index
+    if common_index is None:
+        # use a non-timestamp index
+        error_df = pd.DataFrame(df.loc["np_arrays", "error_array"].tolist(), index=keys).T
+    else:
+        error_df = pd.DataFrame()
+        for key in keys:
+            new_error_df = pd.DataFrame({key: df.loc["np_arrays", "error_array"][key]},
+                                        index=df.loc["np_arrays", common_index][key])
+            error_df = pd.concat([error_df, new_error_df], axis=1)
 
     # check titles
-    first_title = info_df.ix["title", 0]
-    first_res_file = info_df.ix["res_file", 0]
-    if args.save_table or args.plot or args.save_plot:
-        for short_est_name, column in info_df.iteritems():
-            if column.ix["title"] != first_title and not args.no_warnings:
-                logging.info(SEP)
-                msg = ("mismatching titles, you probably use data from different metrics"
-                       + "\nconflict:\n{} {}\n{}\n".format("<"*7, first_res_file, first_title)
-                       + "{}\n{}\n".format("="*7, column.ix["title"])
-                       + "{} {}\n\n".format(">"*7, column.ix["res_file"])
-                       + "only the first one will be used as the title!")
-                logging.warning(msg)
-                if not user.confirm("plot/save anyway? - enter 'y' or any other key to exit"):
+    first_title = df.loc["info", "title"][0]
+    first_file = args.result_files[0]
+    if not args.no_warnings:
+        checks = df.loc["info", "title"] != first_title
+        for i, differs in enumerate(checks):
+            if not differs:
+                continue
+            else:
+                mismatching_title = df.loc["info", "title"][i]
+                mismatching_file = args.result_files[i]
+                logging.debug(SEP)
+                logging.warning(CONFLICT_TEMPLATE.format(first_file, first_title,
+                                                         mismatching_title, mismatching_file))
+                if not user.confirm("Go on anyway? - enter 'y' or any other key to exit"):
                     sys.exit()
+
+    # show a statistics overview
+    logging.debug(SEP)
+    logging.info("\n{}\n\n{}\n".format(first_title, df.loc["stats"].T.to_string(line_width=80)))
 
     if args.save_table:
         logging.debug(SEP)
         if args.no_warnings or user.check_and_confirm_overwrite(args.save_table):
             table_fmt = SETTINGS.table_export_format
             if SETTINGS.table_export_transpose:
-                getattr(stat_df.T, "to_" + table_fmt)(args.save_table)
+                getattr(df.loc["stats"].T, "to_" + table_fmt)(args.save_table)
             else:
-                getattr(stat_df, "to_" + table_fmt)(args.save_table)
-            logging.debug(table_fmt + " table saved to: " + args.save_table)
+                getattr(df.loc["stats"], "to_" + table_fmt)(args.save_table)
+            logging.debug("{} table saved to: {}".format(table_fmt, args.save_table))
 
     if args.plot or args.save_plot or args.serialize_plot:
         # check if data has NaN "holes" due to different indices
-        inconsistent = raw_df.isnull().values.any()
-        if inconsistent and not args.no_warnings:
+        inconsistent = error_df.isnull().values.any()
+        if inconsistent and common_index != "timestamps" and not args.no_warnings:
             logging.debug(SEP)
-            logging.warning("data lengths/indices are not consistent, plotting could make no sense")
+            logging.warning("Data lengths/indices are not consistent, " 
+                            "raw value plot might not be correctly aligned")
 
         from evo.tools import plot
         import matplotlib.pyplot as plt
         import seaborn as sns
         import math
-        from scipy import stats
 
         # use default plot settings
         figsize = (SETTINGS.plot_figsize[0], SETTINGS.plot_figsize[1])
@@ -181,17 +170,17 @@ def run(args):
 
         # labels according to first dataset
         title = first_title
-        if "xlabel" in info_df.ix[:, 0].index:
-            index_label = info_df.ix["xlabel", 0]
+        if "xlabel" in df.columns:
+            index_label = df.loc["info", "xlabel"][0]
         else:
-            index_label = "$t$ (s)" if use_seconds else "index"
-        metric_label = info_df.ix["label", 0]
+            index_label = "$t$ (s)" if common_index else "index"
+        metric_label = df.loc["info", "label"][0]
 
         plot_collection = plot.PlotCollection(title)
         # raw value plot
         fig_raw = plt.figure(figsize=figsize)
         # handle NaNs from concat() above
-        raw_df.interpolate(method="index").plot(ax=fig_raw.gca(), colormap=colormap,
+        error_df.interpolate(method="index").plot(ax=fig_raw.gca(), colormap=colormap,
                                                 style=linestyles, title=first_title)
         plt.xlabel(index_label)
         plt.ylabel(metric_label)
@@ -200,15 +189,16 @@ def run(args):
 
         # statistics plot
         fig_stats = plt.figure(figsize=figsize)
-        exclude = stat_df.index.isin(["sse"])  # don't plot sse
-        stat_df[~exclude].plot(kind="barh", ax=fig_stats.gca(), colormap=colormap, stacked=False)
+        exclude = df.loc["stats"].index.isin(["sse"])  # don't plot sse
+        df.loc["stats"][~exclude].plot(kind="barh", ax=fig_stats.gca(),
+                                       colormap=colormap, stacked=False)
         plt.xlabel(metric_label)
         plt.legend(frameon=True)
         plot_collection.add_figure("stats", fig_stats)
 
         # grid of distribution plots
-        raw_tidy = pd.melt(raw_df, value_vars=list(raw_df.columns.values), var_name="estimate",
-                           value_name=metric_label)
+        raw_tidy = pd.melt(error_df, value_vars=list(error_df.columns.values),
+                           var_name="estimate", value_name=metric_label)
         col_wrap = 2 if len(args.result_files) <= 2 else math.ceil(len(args.result_files) / 2.0)
         dist_grid = sns.FacetGrid(raw_tidy, col="estimate", col_wrap=col_wrap)
         dist_grid.map(sns.distplot, metric_label)  # fits=stats.gamma

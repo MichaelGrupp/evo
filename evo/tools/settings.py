@@ -121,10 +121,10 @@ class DefaultConsoleFormatter(logging.Formatter):
     def __init__(self, fmt="%(msg)s"):
         logging.Formatter.__init__(self, fmt)
         colorama.init()
-        self.error_fmt  = Fore.LIGHTRED_EX + "[%(levelname)s]" + Fore.RESET + "\n%(msg)s"
-        self.warning_fmt  = Fore.LIGHTYELLOW_EX + "[%(levelname)s]" + Fore.RESET + "\n%(msg)s"
+        self.error_fmt = "{}[%(levelname)s]{} %(msg)s".format(Fore.LIGHTRED_EX, Fore.RESET)
+        self.warning_fmt = "{}[%(levelname)s]{} %(msg)s".format(Fore.LIGHTYELLOW_EX, Fore.RESET)
         self.info_fmt = fmt
-        self.debug_fmt  = fmt
+        self.debug_fmt = fmt
 
     def format(self, record):
         if record.levelno == logging.ERROR:

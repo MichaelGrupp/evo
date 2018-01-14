@@ -58,6 +58,8 @@ def parser():
     algo_opts.add_argument("--t_max_diff",
                            help="maximum timestamp difference for data association",
                            default=0.01, type=float)
+    algo_opts.add_argument("--merge", help="merge the trajectories in a single trajectory",
+                           action="store_true")
     output_opts.add_argument("-p", "--plot", help="show plot window", action="store_true")
     output_opts.add_argument("--plot_mode", help="the axes for  plot projection",
                              default=None, choices=["xy", "yx", "xz", "zx", "yz", "xyz"])
@@ -149,8 +151,12 @@ def run(args):
     import os
     import sys
     import logging
+
+    import numpy as np
+
     import evo.core.lie_algebra as lie
     from evo.core import trajectory
+    from evo.core.trajectory import PoseTrajectory3D
     from evo.tools import file_interface, settings
     from evo.tools.settings import SETTINGS
 
@@ -205,6 +211,23 @@ def run(args):
             bag.close()
     else:
         raise RuntimeError("unsupported subcommand: " + args.subcommand)
+
+    if args.merge:
+        if args.subcommand == "kitti":
+            raise TypeError("can't merge KITTI files - but you can append them with 'cat'")
+        merged_stamps = trajectories[0][1].timestamps
+        merged_xyz = trajectories[0][1].positions_xyz
+        merged_quat = trajectories[0][1].orientations_quat_wxyz
+        for _, traj in trajectories[1:]:
+            merged_stamps = np.concatenate((merged_stamps, traj.timestamps))
+            merged_xyz = np.concatenate((merged_xyz, traj.positions_xyz))
+            merged_quat = np.concatenate((merged_quat, traj.orientations_quat_wxyz))
+        order = merged_stamps.argsort()
+        merged_stamps = merged_stamps[order]
+        merged_xyz = merged_xyz[order]
+        merged_quat = merged_quat[order]
+        trajectories = [("merged_trajectory",
+                        PoseTrajectory3D(merged_xyz, merged_quat, merged_stamps))]
 
     if args.transform_left or args.transform_right:
         tf_type = "left" if args.transform_left else "right"

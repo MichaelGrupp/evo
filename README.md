@@ -2,7 +2,7 @@
 
 ***Python package for the evaluation of odometry and SLAM***
 
-This packages provides executables and a small library for handling and evaluating and the trajectory output of odometry and SLAM algorithms.
+This packages provides executables and a small library for handling and evaluating the trajectory output of odometry and SLAM algorithms.
 
 Supported trajectory formats:
 
@@ -161,24 +161,19 @@ If you have IPython installed, you can launch an IPython shell with a custom evo
 ---
 
 ## Trouble
+*":scream:, this piece of :shit: software doesn't do what I want!!1!1!!"*
 
-Append `-h`/ `--help` or `--debug` to your command.
-
-**Warnings from [transformations.py](evo/core/transformations.py):**
-
-`UserWarning: failed to import module _transformations`
-
-Can be ignored, as written [here](https://simoncblyth.bitbucket.io/env/notes/graphics/transformations/transformations/?).
-
+**First aid:**
+* append `-h`/ `--help` to your command
+* check the [Wiki](https://github.com/MichaelGrupp/evo/wiki)
+* check the [previous issues](https://github.com/MichaelGrupp/evo/issues?q=is%3Aissue+is%3Aclosed)
+* open a [new issue](https://github.com/MichaelGrupp/evo/issues)
 
 **Jupyter notebook errors**
 
 `No module named 'evo'`
 
 This can be caused if the Kernel version of Jupyter does not match the Python version of the evo installation.
-
-
-***For any other problems, feel free to open an issue on GitHub!***
 
 ---
 

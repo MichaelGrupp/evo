@@ -3,9 +3,10 @@
 This template can help you to get a better response to your issue.
 Click on "Preview" to see a more readable version.
 
-Please follow the instructions and fill in the information below, 
-depending on whether your issue is a general question, a bug / error report 
-or a feature request.
+- If you want to report an error or a bug, please fill out the template below.
+
+- For anything else (questions, feature requests...), 
+  you can delete the template and just write normally.
 
 Before you click "Submit new issue", check the formatting in the "Preview" tab.
 Help with Markdown formatting: 
@@ -15,16 +16,6 @@ Thanks!
 ###############################################################################
 -->
 
-<!-- 
-###############################################################################
-delete the part below if your issue is NOT a question 
-###############################################################################
--->
-### General question
-
-<!-- please write some details about your question in a few sentences here -->
-
----
 
 <!--
 ###############################################################################
@@ -63,13 +54,3 @@ Please give also the following information:
 
 ```
 
----
-
-<!-- 
-###############################################################################
-delete the part below if your issue is NOT a feature request
-###############################################################################
--->
-### Feature request
-
-<!-- please describe your feature request here -->

@@ -4,7 +4,7 @@ set -e
 
 usage="
 Print lines with duplicate timestamps in TUM or EuRoC trajectory files.\n\n
-Usage: ./print_duplicates.sh
+Usage: ./print_duplicates.sh TRAJECTORY
 "
 
 if [ "$#" -ne 1 ]; then

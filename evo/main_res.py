@@ -27,14 +27,14 @@ SEP = "-" * 80  # separator line
 
 CONFLICT_TEMPLATE = """
 Mismatching titles - risk of aggregating data from different metrics. Conflict:
+
 <<<<<<< {0}
 {1}
 =======
 {2}
 >>>>>>> {3}
 
-Only the first one will be used as the title!
-"""
+Only the first one will be used as the title!"""
 
 
 def parser():
@@ -97,7 +97,7 @@ def run(args):
         logging.error("Values of 'est_name' must be unique "
                       "- duplicates: {}".format(", ".join(duplicates)))
         sys.exit(1)
-
+    
     # derive a common index type if possible - preferably timestamps
     common_index = None
     time_indices = ["timestamps", "seconds_from_start", "sec_from_start"]
@@ -144,6 +144,10 @@ def run(args):
                                                          mismatching_title, mismatching_file))
                 if not user.confirm("Go on anyway? - enter 'y' or any other key to exit"):
                     sys.exit()
+
+    if logging.getLogger().isEnabledFor(logging.DEBUG):
+        logging.debug(SEP)
+        logging.debug("Aggregated dataframe:\n{}".format(df.to_string(line_width=80)))
 
     # show a statistics overview
     logging.debug(SEP)

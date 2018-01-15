@@ -122,7 +122,7 @@ def run(args):
             new_error_df = pd.DataFrame({key: df.loc["np_arrays", "error_array"][key]},
                                         index=df.loc["np_arrays", common_index][key])
             duplicates = new_error_df.index.duplicated(keep="first")
-            if len(duplicates) != 0:
+            if any(duplicates):
                 logging.warning("duplicate indices in error array of {} - "
                                 "keeping only first occurrence of duplicates".format(key))
                 new_error_df = new_error_df[~duplicates]

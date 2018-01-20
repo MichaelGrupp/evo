@@ -39,11 +39,12 @@ class PosePath3D(object):
     also: base class for real trajectory
     """
 
-    def __init__(self, positions_xyz=None, orientations_quat_wxyz=None, poses_se3=None):
+    def __init__(self, positions_xyz=None, orientations_quat_wxyz=None, poses_se3=None, meta=None):
         """
         :param positions_xyz: nx3 list of x,y,z positions
         :param orientations_quat_wxyz: nx4 list of quaternions (w,x,y,z format)
         :param poses_se3: list of SE(3) poses
+        :param meta: optional metadata
         """
         if (positions_xyz is None or orientations_quat_wxyz is None) and poses_se3 is None:
             raise TrajectoryException("must provide at least positions_xyz "
@@ -54,6 +55,7 @@ class PosePath3D(object):
             self._orientations_quat_wxyz = np.array(orientations_quat_wxyz)
         if poses_se3 is not None:
             self._poses_se3 = poses_se3
+        self.meta={} if meta is None else meta
 
     def __str__(self):
         return "{} poses, {:.3f}m path length".format(self.num_poses, self.path_length())
@@ -203,11 +205,12 @@ class PoseTrajectory3D(PosePath3D, object):
     """
 
     def __init__(self, positions_xyz=None, orientations_quat_wxyz=None,
-                 timestamps=None, poses_se3=None):
+                 timestamps=None, poses_se3=None, meta=None):
         """
         :param timestamps: optional nx1 list of timestamps
         """
-        super(PoseTrajectory3D, self).__init__(positions_xyz, orientations_quat_wxyz, poses_se3)
+        super(PoseTrajectory3D, self).__init__(positions_xyz, orientations_quat_wxyz, 
+                                               poses_se3, meta)
         # this is a bit ugly...
         if timestamps is None:
             raise TrajectoryException("no timestamps provided")

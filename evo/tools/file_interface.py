@@ -168,7 +168,10 @@ def read_bag_trajectory(bag_handle, topic):
     logging.debug("loaded " + str(len(stamps)) + " geometry_msgs/PoseStamped messages" 
                   + " of topic: " + topic)
     quat = np.roll(quat, 1, axis=1)  # shift 1 column -> w in front column
-    return PoseTrajectory3D(xyz, quat, stamps)
+    generator = bag_handle.read_messages(topic)
+    _, first_msg, _ = generator.next()
+    frame_id = first_msg.header.frame_id
+    return PoseTrajectory3D(xyz, quat, stamps, meta={"frame_id": frame_id})
 
 
 def write_bag_trajectory(bag_handle, traj, topic_name, frame_id=""):

@@ -372,10 +372,12 @@ def run(args):
         try:
             for name, traj in trajectories:
                 dest_topic = os.path.splitext(os.path.basename(name))[0]
-                file_interface.write_bag_trajectory(bag, traj, dest_topic)
+                frame_id = traj.meta["frame_id"] if "frame_id" in traj.meta else ""
+                file_interface.write_bag_trajectory(bag, traj, dest_topic, frame_id)
             if args.ref:
                 dest_topic = os.path.splitext(os.path.basename(args.ref))[0]
-                file_interface.write_bag_trajectory(bag, ref_traj, dest_topic)
+                frame_id = ref_traj.meta["frame_id"] if "frame_id" in ref_traj.meta else ""
+                file_interface.write_bag_trajectory(bag, ref_traj, dest_topic, frame_id)
         finally:
             bag.close()
 

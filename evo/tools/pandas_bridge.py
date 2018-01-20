@@ -46,7 +46,7 @@ def trajectory_to_df(traj):
     return pd.DataFrame(data=poses_dict, index=index)
 
 
-def result_to_df(result_obj):
+def result_to_df(result_obj, label=None):
     if not isinstance(result_obj, result.Result):
         raise TypeError("result.Result or derived required")
     data = {
@@ -59,8 +59,8 @@ def result_to_df(result_obj):
         data["np_arrays"][name] = array
     for name, traj in result_obj.trajectories.items():
         data["trajectories"][name] = trajectory_to_df(traj)
-    if "est_name" in data["info"]:
-        name = os.path.splitext(os.path.basename(data["info"]["est_name"]))[0]
-    else:
-        name = "unnamed_result"
-    return pd.DataFrame(data=data).T.stack().to_frame(name=name)
+    if label is None and "est_name" in data["info"]:
+        label = os.path.splitext(os.path.basename(data["info"]["est_name"]))[0]
+    elif label is None:
+        label = "unnamed_result"
+    return pd.DataFrame(data=data).T.stack().to_frame(name=label)

@@ -47,6 +47,8 @@ def parser():
     main_parser.add_argument("result_files", help="one or multiple result files", nargs='+')
     main_parser.add_argument("--use_rel_time",
                              help="use relative timestamps if available", action="store_true")
+    main_parser.add_argument("--use_filenames",
+                             help="use the filenames to label the data", action="store_true")
     output_opts.add_argument("-p", "--plot", help="show plot window", action="store_true")
     output_opts.add_argument("--plot_markers", help="plot with circle markers", action="store_true")
     output_opts.add_argument("--save_plot", help="path to save plot", default=None)
@@ -86,7 +88,8 @@ def run(args):
     df = pd.DataFrame()
     for result_file in args.result_files:
         result = file_interface.load_res_file(result_file)
-        df = pd.concat([df, pandas_bridge.result_to_df(result)], axis="columns")
+        name = result_file if args.use_filenames else None
+        df = pd.concat([df, pandas_bridge.result_to_df(result, name)], axis="columns")
 
     keys = df.columns.values.tolist()
     if SETTINGS.plot_usetex:
@@ -94,8 +97,9 @@ def run(args):
         df.columns = keys
     duplicates = [x for x in keys if keys.count(x) > 1]
     if duplicates:
-        logging.error("Values of 'est_name' must be unique "
-                      "- duplicates: {}".format(", ".join(duplicates)))
+        logging.error("Values of 'est_name' must be unique - duplicates: {}\n"
+                      "Try using the --use_filenames option to use filenames "
+                      "for labeling instead.".format(", ".join(duplicates)))
         sys.exit(1)
     
     # derive a common index type if possible - preferably timestamps

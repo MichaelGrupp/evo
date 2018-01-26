@@ -32,7 +32,7 @@ class Result(object):
         self.trajectories = {}
 
     def __str__(self):
-        return self.pretty_str(stats=False).replace("\n", " ")
+        return self.pretty_str(stats=True)
 
     def __eq__(self, other):
         if not isinstance(other, Result):

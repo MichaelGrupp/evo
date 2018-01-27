@@ -2,7 +2,7 @@
 
 ***Python package for the evaluation of odometry and SLAM***
 
-This packages provides executables and a small library for handling and evaluating the trajectory output of odometry and SLAM algorithms.
+This packages provides executables and a small library for handling, evaluating and comparing the trajectory output of odometry and SLAM algorithms.
 
 Supported trajectory formats:
 
@@ -21,6 +21,21 @@ See [here](https://github.com/MichaelGrupp/evo/wiki/Formats) for more infos abou
 <a href="doc/assets/res_violin.png" target="_blank"><img src="doc/assets/res_violin.png" alt="evo" height="200" border="5" /></a>
 <a href="doc/assets/res_stats.png" target="_blank"><img src="doc/assets/res_stats.png" alt="evo" height="200" border="5" /></a>
 </center>
+
+---
+
+## Why?
+
+evo has several advantages over other public benchmarking tools:
+
+* common tools for different formats
+* algorithmic options for association, alignment, scale adjustment for monocular SLAM etc.
+* flexible options for output, plot or export (e.g. LaTeX plots or Excel tables)
+* a powerful, configurable CLI that can cover many use cases
+* modular `core` and `tools` libraries for custom extensions
+* faster than other established Python-based tools ([see here](doc/performance.md))
+
+**What it's not:** a 1-to-1 re-implementation of a particular evaluation protocol tailored to a specific dataset. 
 
 ---
 
@@ -60,9 +75,9 @@ To load or export ROS bag files, you need to install ROS - see [here](http://www
 
 ---
 
-## Run Executables
+## Command Line Interface
 
-After installation with setup.py or from pip, the following console commands can be called globally from your command-line:
+After installation with setup.py or from pip, the following executables can be called globally from your command-line:
 
 **Metrics:**
 
@@ -77,7 +92,7 @@ After installation with setup.py or from pip, the following console commands can
 * `evo_fig` - (experimental) tool for re-opening serialized plots (saved with `--serialize_plot`)
 * `evo_config` - tool for global settings and config file manipulation
 
-Call the commands with `--help` to see the options, e.g. `evo_ape --help`. Tab-completion of command line parameters is available on UNIX systems.
+Call the commands with `--help` to see the options, e.g. `evo_ape --help`. Tab-completion of command line parameters is available on UNIX-like systems.
 
 **More documentation**
 Check out the [Wiki on GitHub](https://github.com/MichaelGrupp/evo/wiki).
@@ -176,6 +191,10 @@ If you have IPython installed, you can launch an IPython shell with a custom evo
 This can be caused if the Kernel version of Jupyter does not match the Python version of the evo installation.
 
 ---
+
+## Contributing
+
+Patches are welcome, preferably as pull requests.
 
 ## License
 

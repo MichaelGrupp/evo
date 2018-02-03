@@ -101,7 +101,7 @@ def run(args):
                       "Try using the --use_filenames option to use filenames "
                       "for labeling instead.".format(", ".join(duplicates)))
         sys.exit(1)
-    
+
     # derive a common index type if possible - preferably timestamps
     common_index = None
     time_indices = ["timestamps", "seconds_from_start", "sec_from_start"]
@@ -160,19 +160,32 @@ def run(args):
     if args.save_table:
         logging.debug(SEP)
         if args.no_warnings or user.check_and_confirm_overwrite(args.save_table):
-            table_fmt = SETTINGS.table_export_format
-            if SETTINGS.table_export_transpose:
-                getattr(df.loc["stats"].T, "to_" + table_fmt)(args.save_table)
+            if SETTINGS.table_export_data.lower() == "error_array":
+                data = error_df
+            elif SETTINGS.table_export_data.lower() in ("info", "stats"):
+                data = df.loc[SETTINGS.table_export_data.lower()]
             else:
-                getattr(df.loc["stats"], "to_" + table_fmt)(args.save_table)
-            logging.debug("{} table saved to: {}".format(table_fmt, args.save_table))
+                raise ValueError("unsupported export data specifier: {}".format(
+                    SETTINGS.table_export_data))
+            if SETTINGS.table_export_transpose:
+                data = data.T
+
+            if SETTINGS.table_export_format == "excel":
+                writer = pd.ExcelWriter(args.save_table)
+                data.to_excel(writer)
+                writer.save()
+                writer.close()
+            else:
+                getattr(data, "to_" + SETTINGS.table_export_format)(args.save_table)
+            logging.debug("{} table saved to: {}".format(
+                SETTINGS.table_export_format, args.save_table))
 
     if args.plot or args.save_plot or args.serialize_plot:
         # check if data has NaN "holes" due to different indices
         inconsistent = error_df.isnull().values.any()
         if inconsistent and common_index != "timestamps" and not args.no_warnings:
             logging.debug(SEP)
-            logging.warning("Data lengths/indices are not consistent, " 
+            logging.warning("Data lengths/indices are not consistent, "
                             "raw value plot might not be correctly aligned")
 
         from evo.tools import plot

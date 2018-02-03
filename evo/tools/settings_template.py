@@ -102,7 +102,11 @@ DEFAULT_SETTINGS_DICT_DOC = {
     ),
     "table_export_format": (
         "csv",
-        "format for exporting tables ('csv', 'excel', 'latex')",
+        "format for exporting tables, e.g. 'csv', 'excel', 'latex', 'json'...",
+    ),
+    "table_export_data": (
+        "stats",
+        "which data to export: 'info', 'stats' or 'error_array'",
     ),
     "table_export_transpose": (
         True,

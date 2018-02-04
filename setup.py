@@ -60,7 +60,7 @@ def _post_install(install_lib_dir):
             profile_dir = profile_dir.decode("UTF-8").replace("\n", "")
         else:
             profile_dir = profile_dir.replace("\n", "")
-        shutil.move(os.path.join(install_lib_dir, "evo", "ipython_config.py"),
+        shutil.copy(os.path.join(install_lib_dir, "evo", "ipython_config.py"),
                     os.path.join(profile_dir, "ipython_config.py"))
     except sp.CalledProcessError as e:
         print("IPython error", e.output, file=sys.stderr)

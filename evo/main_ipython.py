@@ -26,10 +26,11 @@ from __future__ import print_function
 import os
 import six
 import sys
+import shutil
 import argparse
-import argcomplete
 import subprocess as sp
 
+from evo.tools.settings import PACKAGE_BASE_PATH
 from evo.tools.compat import which
 
 DESC = '''
@@ -60,7 +61,11 @@ def main():
         sp.check_call([ipython, "profile", "locate", "evo"], stdout=FNULL, stderr=FNULL)
     except sp.CalledProcessError:
         print("IPython profile for evo is not installed", file=sys.stderr)
-        sys.exit(1)
+        sp.call([ipython, "profile", "create", "evo"])
+        config=os.path.join(PACKAGE_BASE_PATH, "ipython_config.py")
+        profile_dir = sp.check_output([ipython, "profile", "locate", "evo"]).decode("utf-8")
+        profile_dir = profile_dir.rstrip()
+        shutil.copy(config, os.path.join(profile_dir, "ipython_config.py"))
     try:
         sp.check_call([ipython, "--profile", "evo"] + other_args)
     except sp.CalledProcessError as e:

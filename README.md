@@ -47,9 +47,9 @@ You might also want to use a [virtual environment](doc/install_in_virtualenv.md)
 ### From PyPi
 If you just want to use the executables of the latest release version, the easiest way is to run:
 ```bash
-pip install evo --upgrade
+pip install evo --upgrade --no-binary evo
 ```
-This will download the package and its dependencies from PyPi and install them. Depending on your OS, you might be able to use `pip2` or `pip3` to specify the Python version you want. Tab completion for Bash terminals is supported via the argcomplete package on most UNIX systems - open a new shell after the installation to use it.
+This will download the package and its dependencies from PyPi and install them. Depending on your OS, you might be able to use `pip2` or `pip3` to specify the Python version you want. Tab completion for Bash terminals is supported via the [argcomplete](https://github.com/kislyuk/argcomplete/) package on most UNIX systems - open a new shell after the installation to use it.
 
 ### From Source
 Run this in the repository's base folder:

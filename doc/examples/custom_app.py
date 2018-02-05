@@ -7,10 +7,10 @@ from evo.core import trajectory, sync, metrics
 from evo.tools import file_interface
 
 print("loading trajectories")
-traj_ref = file_interface.read_tum_trajectory_file("../test/data/fr2_desk_groundtruth.txt")
-traj_est = file_interface.read_tum_trajectory_file("../test/data/fr2_desk_ORB.txt")
+traj_ref = file_interface.read_tum_trajectory_file("../../test/data/fr2_desk_groundtruth.txt")
+traj_est = file_interface.read_tum_trajectory_file("../../test/data/fr2_desk_ORB.txt")
 
-print("registering trajectories")
+print("registering and aligning trajectories")
 traj_ref, traj_est = sync.associate_trajectories(traj_ref, traj_est)
 traj_est = trajectory.align_trajectory(traj_est, traj_ref, correct_scale=False)
 

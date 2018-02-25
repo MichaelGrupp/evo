@@ -8,6 +8,4 @@ install:
   - pip install . --upgrade
   - evo_config set plot_backend Agg  # no X server
 script:
-  - evo  # check if installed correctly
-  - ls test
-  - cd test && pytest -sv
+  - pytest -sv

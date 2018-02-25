@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 import os
 import shutil
 import subprocess as sp
 
 tmp_dir = "tmp"
 cfg_dir = "cfg/ape_rpe"
+here = os.path.dirname(os.path.abspath(__file__))
 
 metrics = ["evo_ape", "evo_rpe"]
 
@@ -18,6 +21,13 @@ try:
 except:
   pass
 
+# always run in script location
+abspath = os.path.abspath(__file__)
+dirname = os.path.dirname(abspath)
+os.chdir(dirname)
+
+print("executing in {}".format(here))
+
 try:
   for m in metrics:
     for d in data:
@@ -26,8 +36,11 @@ try:
         cfg = os.path.join(cfg_dir, cfg)
         cmd = "{} {} -c {}".format(m, d, cfg)
         print("[smoke test] {}".format(cmd))
-        sp.check_output(cmd.split(" "))
+        output = sp.check_output(cmd.split(" "), cwd=here)
         shutil.rmtree(tmp_dir)
+except sp.CalledProcessError as e:
+  print(e.output.decode("utf-8"))
+  raise
 finally:
   if os.path.exists(tmp_dir):
     shutil.rmtree(tmp_dir)

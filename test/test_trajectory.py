@@ -21,6 +21,7 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function  # Python 2.7 backwards compatibility
 
+import os
 import unittest
 import copy
 
@@ -31,9 +32,13 @@ from evo.core import trajectory, geometry
 from evo.core import lie_algebra as lie
 from evo.tools import file_interface
 
+# use absolute paths!
+here = os.path.dirname(os.path.abspath(__file__))
+tum_traj_file = os.path.join(here, "data/fr2_desk_ORB.txt")
+kitti_traj_file = os.path.join(here, "data/KITTI_00_gt.txt")
 
-ex_tum_traj = file_interface.read_tum_trajectory_file("data/fr2_desk_ORB.txt")
-ex_kitti_traj = file_interface.read_kitti_poses_file("data/KITTI_00_gt.txt")
+ex_tum_traj = file_interface.read_tum_trajectory_file(tum_traj_file)
+ex_kitti_traj = file_interface.read_kitti_poses_file(kitti_traj_file)
 ex_kitti_traj_wrong = copy.deepcopy(ex_kitti_traj)
 ex_kitti_traj_wrong._poses_se3 = [
     np.zeros((4, 4)) for i in range(ex_kitti_traj.num_poses)]

@@ -4,7 +4,6 @@ python:
   - "3.4"
   - "3.5"
   - "3.6"
-  - "3.7-dev"  # 3.7 development branch
 install:
   - pip install . --upgrade
   - evo_config set plot_backend Agg  # no X server

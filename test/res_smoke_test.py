@@ -10,6 +10,9 @@ tmp_dir = "tmp"
 cfg_dir = "cfg/res"
 here = os.path.dirname(os.path.abspath(__file__))
 
+# always run in script location
+os.chdir(here)
+
 data = [
   "data/res_files/orb_rpe-for-each.zip data/res_files/sptam_rpe-for-each.zip",
   "data/res_files/orb_rpe.zip data/res_files/sptam_rpe.zip",

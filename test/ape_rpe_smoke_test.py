@@ -10,6 +10,9 @@ tmp_dir = "tmp"
 cfg_dir = "cfg/ape_rpe"
 here = os.path.dirname(os.path.abspath(__file__))
 
+# always run in script location
+os.chdir(here)
+
 metrics = ["evo_ape", "evo_rpe"]
 
 data = [

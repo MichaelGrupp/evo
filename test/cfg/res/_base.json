@@ -1,0 +1,11 @@
+{
+    "no_warnings": true,
+    "plot_markers": true,
+    "save_plot": "tmp/plot.pdf",
+    "save_table": "tmp/table.csv",
+    "serialize_plot": "tmp/plot.pickle",
+    "silent": true,
+    "use_filenames": true,
+    "use_rel_time": true, 
+    "verbose": true
+}

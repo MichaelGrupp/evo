@@ -12,21 +12,16 @@ here = os.path.dirname(os.path.abspath(__file__))
 
 metrics = ["evo_ape", "evo_rpe"]
 
-data = ["euroc data/V102_groundtruth.csv data/V102.txt",
-        "kitti data/KITTI_00_gt.txt data/KITTI_00_ORB.txt",
-        "tum data/fr2_desk_groundtruth.txt data/fr2_desk_ORB.txt"]
+data = [
+  "euroc data/V102_groundtruth.csv data/V102.txt",
+  "kitti data/KITTI_00_gt.txt data/KITTI_00_ORB.txt",
+  "tum data/fr2_desk_groundtruth.txt data/fr2_desk_ORB.txt"
+]
 try:
   import rosbag
   data.append("bag data/ROS_example.bag groundtruth S-PTAM")
 except:
   pass
-
-# always run in script location
-abspath = os.path.abspath(__file__)
-dirname = os.path.dirname(abspath)
-os.chdir(dirname)
-
-print("executing in {}".format(here))
 
 try:
   for m in metrics:

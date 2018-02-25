@@ -1,4 +1,6 @@
-# evo
+# evo 
+
+[![Build Status](https://travis-ci.org/MichaelGrupp/evo.svg?branch=master)](https://travis-ci.org/MichaelGrupp/evo)
 
 ***Python package for the evaluation of odometry and SLAM***
 

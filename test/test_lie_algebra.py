@@ -27,6 +27,7 @@ import unittest
 
 import numpy as np
 
+import context
 from evo.core import lie_algebra as lie
 
 
@@ -38,9 +39,9 @@ class TestSE3(unittest.TestCase):
                       [0, 0, 0, 1]])
         self.assertTrue(lie.is_se3(p))
         p_false = np.array([[1, 0, 0, 1],
-                      [0, 0, -4223, 2],
-                      [0, 111, 0, 3],
-                      [0, 0, 0, 1]])
+                            [0, 0, -4223, 2],
+                            [0, 111, 0, 3],
+                            [0, 0, 0, 1]])
         self.assertFalse(lie.is_se3(p_false))
 
     def test_random_se3(self):
@@ -101,12 +102,15 @@ class TestSO3(unittest.TestCase):
         axis, angle = lie.so3_log(r, return_angle_only=False)
         self.assertTrue(np.allclose(r, lie.so3_exp(axis, angle), atol=1e-6))
         angle = lie.so3_log(r)
-        self.assertTrue(np.allclose(r, lie.so3_exp(axis, angle), atol=1e-6))
+        # we ignore signs here, therefore check also transpose
+        self.assertTrue(np.allclose(r, lie.so3_exp(axis, angle).T)
+                        or np.allclose(r, lie.so3_exp(axis, angle)))
 
     def test_so3_log_exp_skew(self):
         r = lie.random_so3()
         log = lie.so3_log(r, return_skew=True)  # skew-symmetric tangent space
-        axis = lie.vee(log)  # here, axis is a rotation vector with norm = angle
+        # here, axis is a rotation vector with norm = angle
+        axis = lie.vee(log)
         angle = np.linalg.norm(axis)
         self.assertTrue(np.allclose(r, lie.so3_exp(axis, angle)))
 
@@ -127,7 +131,8 @@ class TestSim3(unittest.TestCase):
         p = lie.sim3(r, t, s)
         self.assertTrue(lie.is_sim3(p, s))
         x = p.dot(x)  # apply Sim(3) transformation
-        self.assertTrue(np.equal(x, lie.se3(r).dot(np.array([s, 0, 0, 1]))).all())
+        self.assertTrue(
+            np.equal(x, lie.se3(r).dot(np.array([s, 0, 0, 1]))).all())
 
 
 if __name__ == '__main__':
@@ -152,7 +157,8 @@ if __name__ == '__main__':
             "so3 = lie.se3(lie.random_so3(), [0, 0, 0])"
     print("time for 1000*tr.rotation_from_matrix(so3): ",
           timeit.timeit("tr.rotation_from_matrix(so3)", setup=setup, number=1000))
-    setup = "from evo.core import lie_algebra as lie; import numpy as np; so3 = lie.random_so3(); " \
+    setup = "from evo.core import lie_algebra as lie; " \
+            "import numpy as np; so3 = lie.random_so3(); " \
             "axis, angle = lie.so3_log(so3, False)"
     print("time for 1000*lie.so3_exp(axis, angle): ",
           timeit.timeit("lie.so3_exp(axis, angle)", setup=setup, number=1000))

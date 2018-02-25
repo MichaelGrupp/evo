@@ -1,0 +1,20 @@
+{
+    "align": false, 
+    "all_pairs": false, 
+    "correct_scale": false, 
+    "debug": true, 
+    "delta": 1.0, 
+    "delta_tol": 0.001, 
+    "delta_unit": "f", 
+    "no_warnings": false, 
+    "plot": false, 
+    "plot_mode": "zx", 
+    "pose_relation": "trans_part", 
+    "save_plot": "tmp/plot.pdf", 
+    "save_results": "tmp/result.zip", 
+    "serialize_plot": "tmp/plot.pickle", 
+    "silent": false, 
+    "t_max_diff": 0.01, 
+    "t_offset": 0.0, 
+    "verbose": false
+}

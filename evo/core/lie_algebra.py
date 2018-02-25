@@ -69,9 +69,7 @@ def so3_log(r, return_angle_only=True, return_skew=False):
     if return_angle_only and not return_skew:
         return np.arccos(min(1, max(-1, (np.trace(r) - 1)/2)))
     angle, axis, _ = tr.rotation_from_matrix(se3(r, [0, 0, 0]))  # exception for invalid matrix
-    if return_angle_only and not return_skew:
-        return angle
-    elif return_skew:
+    if return_skew:
         return hat(axis*angle)
     else:
         return axis, angle

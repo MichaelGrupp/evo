@@ -22,22 +22,22 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 import sys
 
-import matplotlib.pyplot as plt
-import numpy as np
-
 from evo.core import trajectory
 from evo.tools import plot, file_interface
 
 import evo.core.lie_algebra as lie
 
+import numpy as np
+import matplotlib.pyplot as plt
+
 logging.basicConfig(format="%(message)s", stream=sys.stdout, level=logging.DEBUG)
 
-traj_ref = file_interface.read_kitti_poses_file("data/KITTI_00_gt.txt")
-traj_est = file_interface.read_kitti_poses_file("data/KITTI_00_ORB.txt")
+traj_ref = file_interface.read_kitti_poses_file("../data/KITTI_00_gt.txt")
+traj_est = file_interface.read_kitti_poses_file("../data/KITTI_00_ORB.txt")
 
 # add artificial Sim(3) transformation
-traj_est.poses_se3 = [lie.sim3(np.eye(3), [0, 0, 0], 0.5).dot(p) for p in traj_est.poses_se3]
-traj_est.positions_xyz, traj_est.orientations_quat_wxyz = trajectory.se3_poses_to_xyz_quat_wxyz(traj_est.poses_se3)
+traj_est.transform(lie.se3(np.eye(3), [0, 0, 0]))
+traj_est.scale(0.5)
 
 logging.info("\nUmeyama alignment without scaling")
 traj_est_aligned = trajectory.align_trajectory(traj_est, traj_ref)
@@ -46,7 +46,7 @@ traj_est_aligned_scaled = trajectory.align_trajectory(traj_est, traj_ref, correc
 logging.info("\nUmeyama alignment with scaling only")
 traj_est_aligned_only_scaled = trajectory.align_trajectory(traj_est, traj_ref, correct_only_scale=True)
 
-fig = plt.figure(figsize=(5.5, 6))
+fig = plt.figure(figsize=(8, 8))
 # fig.suptitle("Umeyama $\mathrm{Sim}(3)$ alignment")
 plot_mode = plot.PlotMode.xz
 ax = plot.prepare_axis(fig, plot_mode, subplot_arg='221')  # 122 = 1*2 grid, second
@@ -73,4 +73,5 @@ plot.traj(ax, plot_mode, traj_est_aligned_only_scaled, '-', 'blue')#, 'only scal
 fig.axes.append(ax)
 #plt.legend()
 plt.title('only scaled')
+fig.tight_layout()
 plt.show()

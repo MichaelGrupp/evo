@@ -1,0 +1,12 @@
+language: python
+python:
+  - "2.7"
+  - "3.4"
+  - "3.5"
+  - "3.6"
+  - "3.7-dev"  # 3.7 development branch
+install:
+  - pip install . --upgrade
+script:
+  - evo  # check if installed correctly
+  - cd test && pytest -sv

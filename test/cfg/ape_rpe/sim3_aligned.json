@@ -1,0 +1,15 @@
+{
+    "align": true, 
+    "all_pairs": false, 
+    "correct_scale": true, 
+    "debug": true, 
+    "delta": 1.0, 
+    "delta_tol": 0.001, 
+    "delta_unit": "f", 
+    "no_warnings": false, 
+    "pose_relation": "trans_part", 
+    "silent": false, 
+    "t_max_diff": 0.01, 
+    "t_offset": 0.0, 
+    "verbose": false
+}

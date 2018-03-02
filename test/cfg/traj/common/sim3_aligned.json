@@ -1,0 +1,16 @@
+{
+    "align": true, 
+    "correct_scale": true, 
+    "full_check": false, 
+    "invert_transform": false, 
+    "merge": false, 
+    "n_to_align": -1, 
+    "no_warnings": false,
+    "save_as_bag": false, 
+    "save_as_kitti": false, 
+    "save_as_tum": false,
+    "silent": false, 
+    "t_max_diff": 0.01, 
+    "t_offset": 0.0,
+    "verbose": false
+}

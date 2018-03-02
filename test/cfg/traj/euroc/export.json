@@ -1,0 +1,6 @@
+{
+    "no_warnings": true,
+    "save_as_bag": false, 
+    "save_as_kitti": true, 
+    "save_as_tum": true
+}

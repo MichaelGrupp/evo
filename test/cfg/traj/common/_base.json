@@ -3,7 +3,7 @@
     "correct_scale": true, 
     "full_check": true, 
     "invert_transform": true, 
-    "merge": true, 
+    "merge": false, 
     "n_to_align": -1, 
     "no_warnings": true, 
     "plot_mode": "xy", 

@@ -14,7 +14,7 @@ here = os.path.dirname(os.path.abspath(__file__))
 os.chdir(here)
 
 data = [
-  "evo_traj euroc data/V102_groundtruth.csv --ref data/V102_groundtruth.csv",
+  "evo_traj euroc data/V102_groundtruth.csv",
   "evo_traj kitti data/KITTI_00_gt.txt data/KITTI_00_ORB.txt --ref data/KITTI_00_gt.txt",
   "evo_traj tum data/fr2_desk_groundtruth.txt data/fr2_desk_ORB.txt --ref data/fr2_desk_groundtruth.txt"
 ]

@@ -215,6 +215,8 @@ def run(args):
     if args.merge:
         if args.subcommand == "kitti":
             raise TypeError("can't merge KITTI files - but you can append them with 'cat'")
+        if len(trajectories) == 0:
+            raise RuntimeError("no trajectories to merge (excluding --ref)")
         merged_stamps = trajectories[0][1].timestamps
         merged_xyz = trajectories[0][1].positions_xyz
         merged_quat = trajectories[0][1].orientations_quat_wxyz

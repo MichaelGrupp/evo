@@ -201,7 +201,7 @@ def run(args):
 
         # labels according to first dataset
         title = first_title
-        if "xlabel" in df.columns:
+        if "xlabel" in df.loc["info"].index and not df.loc["info", "xlabel"].isnull().values.any():
             index_label = df.loc["info", "xlabel"][0]
         else:
             index_label = "$t$ (s)" if common_index else "index"

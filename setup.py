@@ -143,6 +143,7 @@ setup(
     ] + (["enum34"] if python_below_34() else []),
     classifiers=[
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "Topic :: Scientific/Engineering",
         "Programming Language :: Python",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",

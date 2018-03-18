@@ -28,6 +28,8 @@ import evo.core.transformations as tr
 import evo.core.geometry as geometry
 from evo.core import lie_algebra as lie
 
+logger = logging.getLogger(__name__)
+
 
 class TrajectoryException(Exception):
     pass
@@ -345,9 +347,9 @@ def align_trajectory(traj, traj_ref, correct_scale=False, correct_only_scale=Fal
         r_a, t_a, s = geometry.umeyama_alignment(traj_aligned.positions_xyz[:n, :].T,
                                                  traj_ref.positions_xyz[:n, :].T, with_scale)
     if not correct_only_scale:
-        logging.debug("rotation of alignment:\n" + str(r_a)
-                      + "\ntranslation of alignment:\n" + str(t_a))
-    logging.debug("scale correction: " + str(s))
+        logger.debug("rotation of alignment:\n" + str(r_a)
+                     + "\ntranslation of alignment:\n" + str(t_a))
+    logger.debug("scale correction: " + str(s))
 
     if correct_only_scale:
         traj_aligned.scale(s)

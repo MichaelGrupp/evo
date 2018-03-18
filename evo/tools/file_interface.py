@@ -32,7 +32,8 @@ from evo.core import sync
 from evo.core import result
 from evo.core.trajectory import PosePath3D, PoseTrajectory3D
 from evo.tools import user
-from evo.tools.settings import SETTINGS
+
+logger = logging.getLogger(__name__)
 
 
 class FileInterfaceException(Exception):
@@ -75,7 +76,7 @@ def read_tum_trajectory_file(file_path):
     quat = mat[:, 4:]  # n x 4
     quat = np.roll(quat, 1, axis=1)  # shift 1 column -> w in front column
     if not hasattr(file_path, 'read'):  # if not file handle
-        logging.debug("loaded " + str(len(stamps)) + " stamps and poses from: " + file_path)
+        logger.debug("loaded " + str(len(stamps)) + " stamps and poses from: " + file_path)
     return PoseTrajectory3D(xyz, quat, stamps)
 
 
@@ -99,7 +100,7 @@ def write_tum_trajectory_file(file_path, traj, quat_is_wxyz=True, confirm_overwr
     mat = np.column_stack((stamps, xyz, quat))
     np.savetxt(file_path, mat, delimiter=" ")
     if isinstance(file_path, str):
-        logging.info("trajectory saved to: " + file_path)
+        logger.info("trajectory saved to: " + file_path)
 
 
 def read_kitti_poses_file(file_path):
@@ -116,7 +117,7 @@ def read_kitti_poses_file(file_path):
                        [r[8], r[9], r[10], r[11]],
                        [0, 0, 0, 1]]) for r in mat]
     if not hasattr(file_path, 'read'):  # if not file handle
-        logging.debug("loaded " + str(len(poses)) + " poses from: " + file_path)
+        logger.debug("loaded " + str(len(poses)) + " poses from: " + file_path)
     return PosePath3D(poses_se3=poses)
 
 
@@ -132,7 +133,7 @@ def write_kitti_poses_file(file_path, traj, confirm_overwrite=False):
     poses_flat = [p.flatten()[:-4] for p in traj.poses_se3]  # first 3 rows flattened
     np.savetxt(file_path, poses_flat, delimiter=' ')
     if isinstance(file_path, str):
-        logging.info("poses saved to: " + file_path)
+        logger.info("poses saved to: " + file_path)
 
 
 def read_euroc_csv_trajectory(file_path):
@@ -147,7 +148,7 @@ def read_euroc_csv_trajectory(file_path):
     stamps = np.divide(mat[:, 0], 1e9)  # n x 1  -  nanoseconds to seconds
     xyz = mat[:, 1:4]  # n x 3
     quat = mat[:, 4:8]  # n x 4
-    logging.debug("loaded " + str(len(stamps)) + " stamps and poses from: " + file_path)
+    logger.debug("loaded " + str(len(stamps)) + " stamps and poses from: " + file_path)
     return PoseTrajectory3D(xyz, quat, stamps)
 
 
@@ -165,8 +166,8 @@ def read_bag_trajectory(bag_handle, topic):
         xyz.append([msg.pose.position.x, msg.pose.position.y, msg.pose.position.z])
         quat.append([msg.pose.orientation.x, msg.pose.orientation.y, 
                      msg.pose.orientation.z, msg.pose.orientation.w])
-    logging.debug("loaded " + str(len(stamps)) + " geometry_msgs/PoseStamped messages" 
-                  + " of topic: " + topic)
+    logger.debug("loaded " + str(len(stamps)) + " geometry_msgs/PoseStamped messages"
+                 + " of topic: " + topic)
     quat = np.roll(quat, 1, axis=1)  # shift 1 column -> w in front column
     generator = bag_handle.read_messages(topic)
     _, first_msg, _ = generator.next()
@@ -197,7 +198,7 @@ def write_bag_trajectory(bag_handle, traj, topic_name, frame_id=""):
         p.pose.orientation.y = quat[2]
         p.pose.orientation.z = quat[3]
         bag_handle.write(topic_name, p, t=p.header.stamp)
-    logging.info("saved geometry_msgs/PoseStamped topic: " + topic_name)
+    logger.info("saved geometry_msgs/PoseStamped topic: " + topic_name)
 
 
 def load_assoc_tum_trajectories(ref_file, est_file, max_diff=0.01, offset_2=0.0, invert=False):
@@ -261,7 +262,7 @@ def save_res_file(zip_path, result_obj, confirm_overwrite=False):
     :param confirm_overwrite: whether to require user interaction to overwrite existing files
     """
     from tempfile import TemporaryFile
-    logging.debug("saving results to " + zip_path + "...")
+    logger.debug("saving results to " + zip_path + "...")
     if confirm_overwrite and not user.check_and_confirm_overwrite(zip_path):
         return
     with zipfile.ZipFile(zip_path, 'w') as archive:
@@ -295,12 +296,12 @@ def load_res_file(zip_path, load_trajectories=False):
     :param load_trajectories: set to True to load also the (backup) trajectories
     :return: evo.core.result.Result instance
     """
-    logging.debug("loading result from {} ...".format(zip_path))
+    logger.debug("loading result from {} ...".format(zip_path))
     result_obj = result.Result()
     with zipfile.ZipFile(zip_path, mode='r') as archive:
         file_list = archive.namelist()
         if not {"error_array.npz", "info.json", "stats.json"} <= set(file_list):
-            logging.warning("{} has incorrect zip file structure for evo_res".format(zip_path))
+            logger.warning("{} has incorrect zip file structure for evo_res".format(zip_path))
         npz_files = [n for n in archive.namelist() if n.endswith(".npz")]
         for filename in npz_files:
             with io.BytesIO(archive.read(filename)) as f:

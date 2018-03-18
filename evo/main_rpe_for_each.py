@@ -25,6 +25,8 @@ from __future__ import print_function
 
 import logging
 
+logger = logging.getLogger(__name__)
+
 SEP = "-" * 80  # separator line
 
 
@@ -149,19 +151,19 @@ def main_rpe_for_each(traj_ref, traj_est, pose_relation, mode, bins, rel_tols,
 
     correct_only_scale = correct_scale and not align
     if align or correct_scale:
-        logging.debug(SEP)
+        logger.debug(SEP)
         if correct_only_scale:
-            logging.debug("correcting scale...")
+            logger.debug("correcting scale...")
         else:
-            logging.debug("aligning using Umeyama's method..."
+            logger.debug("aligning using Umeyama's method..."
                           + (" (with scale correction)" if correct_scale else ""))
         traj_est = trajectory.align_trajectory(traj_est, traj_ref, correct_scale,
                                                correct_only_scale)
 
     results = []
     for bin, rel_tol, in zip(bins, rel_tols):
-        logging.debug(SEP)
-        logging.info(
+        logger.debug(SEP)
+        logger.info(
             "calculating RPE for each sub-sequence of " + str(bin) + " (" + bin_unit.value + ")")
 
         tol = bin * rel_tol
@@ -215,8 +217,8 @@ def main_rpe_for_each(traj_ref, traj_est, pose_relation, mode, bins, rel_tols,
     rpe_for_each_result.add_np_array("seconds_from_start", bins)
     rpe_for_each_result.add_np_array("error_array", results)
 
-    logging.debug(SEP)
-    logging.info(rpe_for_each_result.pretty_str())
+    logger.debug(SEP)
+    logger.info(rpe_for_each_result.pretty_str())
 
     if show_plot or save_plot or serialize_plot:
         from evo.tools import plot
@@ -239,11 +241,11 @@ def main_rpe_for_each(traj_ref, traj_est, pose_relation, mode, bins, rel_tols,
         if save_plot:
             plot_collection.export(save_plot, confirm_overwrite=not no_warnings)
         if serialize_plot:
-            logging.debug(SEP)
+            logger.debug(SEP)
             plot_collection.serialize(serialize_plot, confirm_overwrite=not no_warnings)
 
     if save_results:
-        logging.debug(SEP)
+        logger.debug(SEP)
         if SETTINGS.save_traj_in_zip:
             rpe_for_each_result.add_trajectory("traj_ref", traj_ref)
             rpe_for_each_result.add_trajectory("traj_est", traj_est)
@@ -255,20 +257,21 @@ def main_rpe_for_each(traj_ref, traj_est, pose_relation, mode, bins, rel_tols,
 
 def run(args):
     import sys
+
     from evo.core import metrics
-    from evo.tools import file_interface, settings
+    from evo.tools import file_interface, log
 
     # manually check bins and tols arguments to allow them to be in config files
     if not args.bins or not args.tols:
-        logging.error("the following arguments are required: -b/--bins, -t/--tols")
+        logger.error("the following arguments are required: -b/--bins, -t/--tols")
         sys.exit(1)
 
-    settings.configure_logging(args.verbose, args.silent, args.debug)
+    log.configure_logging(args.verbose, args.silent, args.debug)
     if args.debug:
         import pprint
-        logging.debug("main_parser config:\n"
+        logger.debug("main_parser config:\n"
                       + pprint.pformat({arg: getattr(args, arg) for arg in vars(args)}) + "\n")
-    logging.debug(SEP)
+    logger.debug(SEP)
 
     pose_relation = None
     if args.pose_relation == "trans_part":
@@ -294,8 +297,8 @@ def run(args):
         ref_name, est_name = args.ref_file, args.est_file
     elif args.subcommand == "euroc":
         args.align = True
-        logging.info("forcing trajectory alignment implicitly (EuRoC ground truth is in IMU frame)")
-        logging.debug(SEP)
+        logger.info("forcing trajectory alignment implicitly (EuRoC ground truth is in IMU frame)")
+        logger.debug(SEP)
         traj_ref, traj_est = file_interface.load_assoc_euroc_trajectories(
             args.state_gt_csv,
             args.est_file,
@@ -305,7 +308,7 @@ def run(args):
         ref_name, est_name = args.state_gt_csv, args.est_file
     elif args.subcommand == "bag":
         import rosbag
-        logging.debug("opening bag file " + args.bag)
+        logger.debug("opening bag file " + args.bag)
         bag = rosbag.Bag(args.bag, 'r')
         try:
             traj_ref, traj_est = file_interface.load_assoc_bag_trajectories(

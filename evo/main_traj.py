@@ -23,6 +23,10 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 SEP = "-" * 80
 
 
@@ -114,24 +118,23 @@ def parser():
 # TODO refactor
 def print_traj_info(name, traj, verbose=False, full_check=False):
     import os
-    import logging
     from evo.core import trajectory
 
-    logging.info(SEP)
-    logging.info("name:\t" + os.path.splitext(os.path.basename(name))[0])
+    logger.info(SEP)
+    logger.info("name:\t" + os.path.splitext(os.path.basename(name))[0])
 
     if verbose or full_check:
         infos = traj.get_infos()
         info_str = ""
         for info, value in sorted(infos.items()):
             info_str += "\n\t" + info + "\t" + str(value)
-        logging.info("infos:" + info_str)
+        logger.info("infos:" + info_str)
         if full_check:
             passed, details = traj.check()
             check_str = ""
             for test, result in sorted(details.items()):
                 check_str += "\n\t" + test + "\t" + result
-            logging.info("checks:" + check_str)
+            logger.info("checks:" + check_str)
             stat_str = ""
             try:
                 stats = traj.get_statistics()
@@ -142,30 +145,29 @@ def print_traj_info(name, traj, verbose=False, full_check=False):
                         stat_str += value
             except trajectory.TrajectoryException as e:
                 stat_str += "\n\terror - " + str(e)
-            logging.info("stats:" + stat_str)
+            logger.info("stats:" + stat_str)
     else:
-        logging.info("infos:\t" + str(traj))
+        logger.info("infos:\t" + str(traj))
 
 
 def run(args):
     import os
     import sys
-    import logging
 
     import numpy as np
 
     import evo.core.lie_algebra as lie
     from evo.core import trajectory
     from evo.core.trajectory import PoseTrajectory3D
-    from evo.tools import file_interface, settings
+    from evo.tools import file_interface, log
     from evo.tools.settings import SETTINGS
 
-    settings.configure_logging(verbose=args.verbose, silent=args.silent, debug=args.debug)
+    log.configure_logging(verbose=args.verbose, silent=args.silent, debug=args.debug)
     if args.debug:
         import pprint
-        logging.debug("main_parser config:\n"
+        logger.debug("main_parser config:\n"
                       + pprint.pformat({arg: getattr(args, arg) for arg in vars(args)}) + "\n")
-    logging.debug(SEP)
+    logger.debug(SEP)
 
     trajectories = []
     ref_traj = None
@@ -196,12 +198,12 @@ def run(args):
                 topics = sorted([t for t in topic_info[1].keys() if topic_info[1][t][0] 
                                  == "geometry_msgs/PoseStamped" and t != args.ref])
                 if len(topics) == 0:
-                    logging.error("no geometry_msgs/PoseStamped topics found!")
+                    logger.error("no geometry_msgs/PoseStamped topics found!")
                     sys.exit(1)
             else:
                 topics = args.topics
                 if not topics:
-                    logging.warning("no topics used - specify topics or use the --all_topics flag")
+                    logger.warning("no topics used - specify topics or use the --all_topics flag")
                     sys.exit(1)
             for topic in topics:
                 trajectories.append((topic, file_interface.read_bag_trajectory(bag, topic)))
@@ -235,28 +237,28 @@ def run(args):
         tf_type = "left" if args.transform_left else "right"
         tf_path = args.transform_left if args.transform_left else args.transform_right
         t, xyz, quat = file_interface.load_transform_json(tf_path)
-        logging.debug(SEP)
+        logger.debug(SEP)
         if not lie.is_se3(t):
-            logging.warning("not a valid SE(3) transformation!")
+            logger.warning("not a valid SE(3) transformation!")
         if args.invert_transform:
             t = lie.se3_inverse(t)
-        logging.debug("applying a " + tf_type + "-multiplicative transformation:\n" + str(t))
+        logger.debug("applying a " + tf_type + "-multiplicative transformation:\n" + str(t))
         for name, traj in trajectories:
             traj.transform(t, right_mul=args.transform_right)
 
     if args.t_offset:
-        logging.debug(SEP)
+        logger.debug(SEP)
         for name, traj in trajectories:
             if type(traj) is trajectory.PosePath3D:
-                logging.warning("{} doesn't have timestamps - can't add t_offset".format(name))
+                logger.warning("{} doesn't have timestamps - can't add t_offset".format(name))
             else:
-                logging.info("adding time offset to {}: {} (s)".format(name, args.t_offset))
+                logger.info("adding time offset to {}: {} (s)".format(name, args.t_offset))
                 traj.timestamps += args.t_offset
 
     if args.align or args.correct_scale:
         if not args.ref:
-            logging.debug(SEP)
-            logging.warning("can't align without a reference! (--ref)  *grunt*")
+            logger.debug(SEP)
+            logger.warning("can't align without a reference! (--ref)  *grunt*")
         else:
             if args.subcommand == "kitti":
                 traj_tmp, ref_traj_tmp = trajectories, [ref_traj for n, t in trajectories]
@@ -264,7 +266,7 @@ def run(args):
                 traj_tmp, ref_traj_tmp = [], []
                 from evo.core import sync
                 for name, traj in trajectories:
-                    logging.debug(SEP)
+                    logger.debug(SEP)
                     ref_assoc, traj_assoc = sync.associate_trajectories(ref_traj, traj,
                                                                         max_diff=args.t_max_diff,
                                                                         first_name="ref",
@@ -275,8 +277,8 @@ def run(args):
             correct_only_scale = args.correct_scale and not args.align
             trajectories_new = []
             for nt, ref_assoc in zip(trajectories, ref_traj_tmp):
-                logging.debug(SEP)
-                logging.debug("aligning " + nt[0] + " to " + args.ref + "...")
+                logger.debug(SEP)
+                logger.debug("aligning " + nt[0] + " to " + args.ref + "...")
                 trajectories_new.append((nt[0], trajectory.align_trajectory(nt[1], ref_assoc, 
                                         args.correct_scale, correct_only_scale, args.n_to_align)))
             trajectories = trajectories_new
@@ -338,14 +340,14 @@ def run(args):
         if args.plot:
             plot_collection.show()
         if args.save_plot:
-            logging.info(SEP)
+            logger.info(SEP)
             plot_collection.export(args.save_plot, confirm_overwrite=not args.no_warnings)
         if args.serialize_plot:
-            logging.info(SEP)
+            logger.info(SEP)
             plot_collection.serialize(args.serialize_plot, confirm_overwrite=not args.no_warnings)
 
     if args.save_as_tum:
-        logging.info(SEP)
+        logger.info(SEP)
         for name, traj in trajectories:
             dest = os.path.splitext(os.path.basename(name))[0] + ".tum"
             file_interface.write_tum_trajectory_file(dest, traj,
@@ -355,7 +357,7 @@ def run(args):
             file_interface.write_tum_trajectory_file(dest, ref_traj,
                                                      confirm_overwrite=not args.no_warnings)
     if args.save_as_kitti:
-        logging.info(SEP)
+        logger.info(SEP)
         for name, traj in trajectories:
             dest = os.path.splitext(os.path.basename(name))[0] + ".kitti"
             file_interface.write_kitti_poses_file(dest, traj,
@@ -365,11 +367,11 @@ def run(args):
             file_interface.write_kitti_poses_file(dest, ref_traj,
                                                   confirm_overwrite=not args.no_warnings)
     if args.save_as_bag:
-        logging.info(SEP)
+        logger.info(SEP)
         import datetime
         import rosbag
         dest_bag_path = str(datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S.%f')) + ".bag"
-        logging.info("saving trajectories to " + dest_bag_path + "...")
+        logger.info("saving trajectories to " + dest_bag_path + "...")
         bag = rosbag.Bag(dest_bag_path, 'w')
         try:
             for name, traj in trajectories:

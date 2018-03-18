@@ -28,6 +28,8 @@ import numpy as np
 from evo.core import geometry, trajectory
 from evo.core import lie_algebra as lie
 
+logger = logging.getLogger(__name__)
+
 
 def bounded_binary_search(generator, length, target, lower_bound, upper_bound):
     """
@@ -141,7 +143,7 @@ def filter_pairs_by_path(poses, delta, tol=0.0, all_pairs=False):
         positions = np.array([pose[:3, 3] for pose in poses])
         res_avg = 0.0
         n_iter_avg = 0.0
-        print_progress = logging.getLogger("console").isEnabledFor(logging.DEBUG)
+        print_progress = logger.isEnabledFor(logging.DEBUG)
         num_pairs = 0
         for i in ids:
             found, j, res, n = bounded_binary_search(lambda x: geometry.arc_len(positions[i:x+1]),
@@ -158,10 +160,10 @@ def filter_pairs_by_path(poses, delta, tol=0.0, all_pairs=False):
         if print_progress:
             print("")
         if num_pairs != 0:
-            logging.debug("avg. target residual: " + "{0:.6f}".format(res_avg / num_pairs) + "m" 
+            logger.debug("avg. target residual: " + "{0:.6f}".format(res_avg / num_pairs) + "m"
                         + " | avg. num. iterations: " + "{0:.6f}".format(n_iter_avg / num_pairs))
         else:
-            logging.debug("found no pairs for delta " + str(delta) + "m")
+            logger.debug("found no pairs for delta " + str(delta) + "m")
     else:
         ids = []
         previous_pose = poses[0]

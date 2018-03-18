@@ -38,6 +38,8 @@ if sys.version_info[0] >= 3 and sys.version_info[1] >= 4:
 else:
     ABC = abc.ABCMeta('ABC', (), {})
 
+logger = logging.getLogger(__name__)
+
 
 class MetricsException(Exception):
     pass
@@ -228,7 +230,7 @@ class NEES(Metric):
                 if is_outlier:
                     self.num_outliers += 1
             except np.linalg.LinAlgError as e:
-                logging.warning(str(e) + ", ignoring value for NEES calculation")
+                logger.warning(str(e) + ", ignoring value for NEES calculation")
 
     def get_statistic(self, statistics_type=StatisticsType.mean):
         if statistics_type == StatisticsType.rmse:
@@ -353,11 +355,11 @@ class RPE(Metric):
         self.E = [self.rpe_base(traj_ref.poses_se3[i], traj_ref.poses_se3[j],
                                 traj_est.poses_se3[i], traj_est.poses_se3[j])
                   for i, j in id_pairs]
-        logging.debug("compared " + str(len(self.E)) + " relative pose pairs, delta = "
+        logger.debug("compared " + str(len(self.E)) + " relative pose pairs, delta = "
                       + str(self.delta) + " (" + str(self.delta_unit.value) + ") "
                       + ("with all possible pairs" if self.all_pairs else "with consecutive pairs"))
 
-        logging.debug("calculating RPE for " + str(self.pose_relation.value) + " pose relation...")
+        logger.debug("calculating RPE for " + str(self.pose_relation.value) + " pose relation...")
         if self.pose_relation == PoseRelation.translation_part:
             self.error = [np.linalg.norm(E_i[:3, 3]) for E_i in self.E]
         elif self.pose_relation == PoseRelation.rotation_part:
@@ -475,8 +477,8 @@ class APE(Metric):
             self.E = traj_est.positions_xyz - traj_ref.positions_xyz
         else:
             self.E = [self.ape_base(x_t, x_t_star) for x_t, x_t_star in zip(traj_est.poses_se3, traj_ref.poses_se3)]
-        logging.debug("compared " + str(len(self.E)) + " absolute pose pairs")
-        logging.debug("calculating APE for " + str(self.pose_relation.value) + " pose relation...")
+        logger.debug("compared " + str(len(self.E)) + " absolute pose pairs")
+        logger.debug("calculating APE for " + str(self.pose_relation.value) + " pose relation...")
         if self.pose_relation == PoseRelation.translation_part:
             # E is an array of position vectors only in this case
             self.error = [np.linalg.norm(E_i) for E_i in self.E]
@@ -556,7 +558,7 @@ def id_pairs_from_delta(poses, delta, delta_unit, rel_tol=0.1, all_pairs=False):
     if len(id_pairs) == 0:
         raise MetricsException("delta = " + str(delta) + " (" + str(delta_unit.value) + ") " +
                                "produced empty index list - try lower values or higher tolerance")
-    logging.debug("found " + str(len(id_pairs)) + " pairs with delta " + str(delta)
+    logger.debug("found " + str(len(id_pairs)) + " pairs with delta " + str(delta)
                   + " (" + str(delta_unit.value) + ") among " + str(len(poses)) + " poses "
                   + ("using consecutive pairs " if not all_pairs else "using all possible pairs"))
     return id_pairs

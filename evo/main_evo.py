@@ -76,11 +76,9 @@ def main():
                             choices=["error", "warning", "info", "debug"])
     cat_parser.add_argument("-m", "--message", help="explicit message instead of pipe")
     cat_parser.add_argument("-s", "--source", help="source name to use for the log message")
-    cat_parser.add_argument("--mark_entry", help="include the default log entry header", 
-                            action="store_true", default=False)
     cat_parser.add_argument("--clear_log", help="clear logfile before exiting", action="store_true")
     argcomplete.autocomplete(main_parser)
-    if len(sys.argv[1:])==0:
+    if len(sys.argv[1:]) == 0:
         sys.argv.extend(["pkg", "--info"])  # cheap trick because YOLO
     args = main_parser.parse_args()
     line_end = "\n" if sys.stdout.isatty() else ""
@@ -130,15 +128,17 @@ def main():
             sys.exit(1)
         else:
             import logging
-            dbg_fmt = None
+            logger = logging.getLogger(__name__)
+            from evo.tools import log
+            file_fmt = None
             if args.source:
-                dbg_fmt = "[%(levelname)s][%(asctime)s][" + args.source + "]\n%(message)s"
-            settings.configure_logging(silent=True, dbg_fmt=dbg_fmt, mark_entry=args.mark_entry)
+                file_fmt = "[%(levelname)s][%(asctime)s][" + args.source + "]\n%(message)s"
+            log.configure_logging(silent=True, file_fmt=file_fmt)
             if not args.message:
                 msg = sys.stdin.read()
             else:
                 msg = args.message
-            getattr(logging, args.loglevel)(msg)
+            getattr(logger, args.loglevel)(msg)
         if args.clear_log:
             open(settings.DEFAULT_LOGFILE_PATH, mode='w')
 

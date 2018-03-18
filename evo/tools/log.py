@@ -5,7 +5,7 @@ import sys
 import colorama
 from colorama import Fore
 
-from evo.tools.settings import SETTINGS, DEFAULT_LOGFILE_PATH, PACKAGE_VERSION
+from evo.tools.settings import SETTINGS, DEFAULT_LOGFILE_PATH
 
 
 CONSOLE_ERROR_FMT = "{}[%(levelname)s]{} %(msg)s".format(Fore.LIGHTRED_EX, Fore.RESET)

@@ -25,6 +25,8 @@ from __future__ import print_function
 
 import logging
 
+logger = logging.getLogger(__name__)
+
 SEP = "-" * 80  # separator line
 
 
@@ -117,14 +119,14 @@ def main_ape(traj_ref, traj_est, pose_relation, align=True, correct_scale=False,
 
     only_scale = correct_scale and not align
     if align or correct_scale:
-        logging.debug(SEP)
+        logger.debug(SEP)
         if only_scale:
-            logging.debug("correcting scale...")
+            logger.debug("correcting scale...")
         else:
-            logging.debug("aligning using Umeyama's method..."
+            logger.debug("aligning using Umeyama's method..."
                           + (" (with scale correction)" if correct_scale else ""))
         traj_est = trajectory.align_trajectory(traj_est, traj_ref, correct_scale, only_scale)
-    logging.debug(SEP)
+    logger.debug(SEP)
 
     # calculate APE
     data = (traj_ref, traj_est)
@@ -143,8 +145,8 @@ def main_ape(traj_ref, traj_est, pose_relation, align=True, correct_scale=False,
         title += "\n(not aligned)"
 
     ape_result = result.from_metric(ape_metric, title, ref_name, est_name)
-    logging.debug(SEP)
-    logging.info(ape_result.pretty_str())
+    logger.debug(SEP)
+    logger.info(ape_result.pretty_str())
 
     if isinstance(traj_est, trajectory.PoseTrajectory3D):
         seconds_from_start = [t - traj_est.timestamps[0] for t in traj_est.timestamps]
@@ -157,8 +159,8 @@ def main_ape(traj_ref, traj_est, pose_relation, align=True, correct_scale=False,
         if show_plot or save_plot or serialize_plot:
             from evo.tools import plot
             import matplotlib.pyplot as plt
-            logging.debug(SEP)
-            logging.debug("plotting results... ")
+            logger.debug(SEP)
+            logger.debug("plotting results... ")
             fig1 = plt.figure(figsize=(SETTINGS.plot_figsize[0], SETTINGS.plot_figsize[1]))
             # metric values
             plot.error_array(fig1, ape_metric.error, x_array=seconds_from_start,
@@ -188,11 +190,11 @@ def main_ape(traj_ref, traj_est, pose_relation, align=True, correct_scale=False,
             if save_plot:
                 plot_collection.export(save_plot, confirm_overwrite=not no_warnings)
             if serialize_plot:
-                logging.debug(SEP)
+                logger.debug(SEP)
                 plot_collection.serialize(serialize_plot, confirm_overwrite=not no_warnings)
 
     if save_results:
-        logging.debug(SEP)
+        logger.debug(SEP)
         if SETTINGS.save_traj_in_zip:
             ape_result.add_trajectory("traj_ref", traj_ref)
             ape_result.add_trajectory("traj_est", traj_est)
@@ -203,13 +205,14 @@ def main_ape(traj_ref, traj_est, pose_relation, align=True, correct_scale=False,
 
 def run(args):
     from evo.core import metrics
-    from evo.tools import file_interface, settings
-    settings.configure_logging(args.verbose, args.silent, args.debug)
+    from evo.tools import file_interface, log
+
+    log.configure_logging(args.verbose, args.silent, args.debug)
     if args.debug:
         import pprint
-        logging.debug("main_parser config:\n"
+        logger.debug("main_parser config:\n"
                       + pprint.pformat({arg: getattr(args, arg) for arg in vars(args)}) + "\n")
-    logging.debug(SEP)
+    logger.debug(SEP)
 
     pose_relation = None
     if args.pose_relation == "full":
@@ -246,8 +249,8 @@ def run(args):
             plot_mode = PlotMode.xz if not args.plot_mode else PlotMode[args.plot_mode]
     elif args.subcommand == "euroc":
         args.align = True
-        logging.info("forcing trajectory alignment implicitly (EuRoC ground truth is in IMU frame)")
-        logging.debug(SEP)
+        logger.info("forcing trajectory alignment implicitly (EuRoC ground truth is in IMU frame)")
+        logger.debug(SEP)
         traj_ref, traj_est = file_interface.load_assoc_euroc_trajectories(
             args.state_gt_csv,
             args.est_file,
@@ -260,7 +263,7 @@ def run(args):
             plot_mode = PlotMode.xyz if not args.plot_mode else PlotMode[args.plot_mode]
     elif args.subcommand == "bag":
         import rosbag
-        logging.debug("opening bag file " + args.bag)
+        logger.debug("opening bag file " + args.bag)
         bag = rosbag.Bag(args.bag, 'r')
         try:
             traj_ref, traj_est = file_interface.load_assoc_bag_trajectories(

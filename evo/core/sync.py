@@ -26,6 +26,8 @@ import numpy as np
 
 from evo.core.trajectory import PoseTrajectory3D
 
+logger = logging.getLogger(__name__)
+
 
 class SyncException(Exception):
     pass
@@ -66,7 +68,7 @@ def associate_trajectories(traj_1, traj_2, max_diff=0.01, offset_2=0.0, invert=F
     if not isinstance(traj_1, PoseTrajectory3D) or not isinstance(traj_2, PoseTrajectory3D):
         raise SyncException("trajectories must be PoseTrajectory3D objects")
     if invert:
-        logging.debug("using inverse matching logic")
+        logger.debug("using inverse matching logic")
     traj_1 = copy.deepcopy(traj_1)
     traj_2 = copy.deepcopy(traj_2)
     snd_longer = len(traj_2.timestamps) > len(traj_1.timestamps)
@@ -95,7 +97,7 @@ def associate_trajectories(traj_1, traj_2, max_diff=0.01, offset_2=0.0, invert=F
                             + first_name + " and " + snd_name + " with "
                             + "max. time diff.: " + str(max_diff)
                             + " (s) and time offset: " + str(offset_2) + " (s)")
-    logging.debug("found " + str(len(matching_indices)) + " of max. " + str(max_pairs)
+    logger.debug("found " + str(len(matching_indices)) + " of max. " + str(max_pairs)
                   + " possible matching timestamps between..."
                   + "\n\t" + first_name
                   + "\nand: \t" + snd_name

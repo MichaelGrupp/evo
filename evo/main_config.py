@@ -33,8 +33,10 @@ import colorama
 from colorama import Fore, Style
 from pygments import highlight, lexers, formatters
 
-from evo.tools import user, settings
+from evo.tools import log, user, settings
 from evo.tools.settings_template import DEFAULT_SETTINGS_DICT_DOC, DEFAULT_SETTINGS_DICT
+
+logger = logging.getLogger(__name__)
 
 SEP = "-" * 80
 
@@ -48,7 +50,7 @@ def log_info_dict_json(data_str, colored=True):
     if colored and os.name != "nt":
         data_str = highlight(data_str, lexers.JsonLexer(),
                              formatters.Terminal256Formatter(style="monokai"))
-    logging.info(data_str)
+    logger.info(data_str)
 
 
 def show(cfg_path, colored=True):
@@ -222,7 +224,7 @@ def main():
         other_args = [arg for arg in sys.argv[2:] if not arg.startswith('-')]
     else:
         args, other_args = main_parser.parse_known_args()
-    settings.configure_logging()
+    log.configure_logging()
     colorama.init()
 
     config = settings.DEFAULT_PATH
@@ -235,34 +237,34 @@ def main():
             style = Style.BRIGHT if not args.no_color else Style.NORMAL
             doc_str = "\n".join("{0}{1}{2}:\n{3}\n".format(style, k, Style.RESET_ALL, v[1])
                                 for k, v in sorted(DEFAULT_SETTINGS_DICT_DOC.items()))
-            logging.info(doc_str)
-            logging.info("{0}\n{1}\n{0}".format(SEP, config))
+            logger.info(doc_str)
+            logger.info("{0}\n{1}\n{0}".format(SEP, config))
         show(config, colored=not args.no_color)
         if config == settings.DEFAULT_PATH and not args.brief:
-            logging.info(SEP + "\nSee text above for parameter descriptions.")
+            logger.info(SEP + "\nSee text above for parameter descriptions.")
 
     elif args.subcommand == "set":
         if not os.access(config, os.W_OK):
-            logging.info("No permission to modify " + config)
+            logger.error("No permission to modify " + config)
             sys.exit()
         if other_args or args.merge:
-            logging.info("{0}\nOld configuration:\n{0}".format(SEP))
+            logger.info("{0}\nOld configuration:\n{0}".format(SEP))
             show(config, colored=not args.no_color)
             try:
                 set_cfg(config, other_args)
             except ConfigError as e:
-                logging.error(e)
+                logger.error(e)
                 sys.exit(1)
             if args.merge:
                 merge_json_union(config, args.merge, args.soft)
-            logging.info(SEP + "\nNew configuration:\n" + SEP)
+            logger.info(SEP + "\nNew configuration:\n" + SEP)
             show(config, colored=not args.no_color)
         else:
-            logging.info("No configuration parameters given (see --help).")
+            logger.error("No configuration parameters given (see --help).")
 
     elif args.subcommand == "generate":
         if other_args:
-            logging.info("{0}\nParsed by argparse:\n{1}\n"
+            logger.info("{0}\nParsed by argparse:\n{1}\n"
                          "{0}\nWARNING:\n"
                          "Make sure you use the 'long-style' -- options (e.g. --plot) if possible\n"
                          "and no combined short '-' flags, (e.g. -vp)\n{0}".format(SEP, other_args))
@@ -272,17 +274,17 @@ def main():
                 with open(args.out, 'w') as out:
                     out.write(json.dumps(data, indent=4, sort_keys=True))
             elif not args.out:
-                logging.info("{0}\n(-o | --out) not specified - saving nothing\n{0}".format(SEP))
+                logger.warning("{0}\n(-o | --out) not specified - saving nothing\n{0}".format(SEP))
         else:
-            logging.info("No command line arguments given (see --help)")
+            logger.error("No command line arguments given (see --help)")
 
     elif args.subcommand == "reset":
         if not os.access(config, os.W_OK):
-            logging.info("No permission to modify" + config)
+            logger.error("No permission to modify" + config)
             sys.exit()
         if args.y or user.confirm("Reset the package settings to the default settings? (y/n)"):
             settings.reset()
-            logging.info("{0}\nPackage settings after reset:\n{0}".format(SEP))
+            logger.info("{0}\nPackage settings after reset:\n{0}".format(SEP))
             show(settings.DEFAULT_PATH, colored=not args.no_color)
 
 

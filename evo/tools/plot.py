@@ -53,6 +53,8 @@ mpl.rcParams.update({
     "pgf.texsystem": SETTINGS.plot_texsystem
 })
 
+logger = logging.getLogger(__name__)
+
 
 class PlotException(Exception):
     pass
@@ -74,7 +76,7 @@ class PlotCollection:
         # hack to avoid premature garbage collection with Qt (stackoverflow.com/questions/600289)
         self.root_window = None  # for now: init later in tabbed_qt_window
         if deserialize is not None:
-            logging.debug("deserializing PlotCollection from " + deserialize + "...")
+            logger.debug("deserializing PlotCollection from " + deserialize + "...")
             self.figures = pickle.load(open(deserialize, 'rb'))
 
     def __str__(self):
@@ -156,7 +158,7 @@ class PlotCollection:
             plt.show()
 
     def serialize(self, dest, confirm_overwrite=True):
-        logging.info("serializing PlotCollection to " + dest + "...")
+        logger.info("serializing PlotCollection to " + dest + "...")
         if confirm_overwrite and not user.check_and_confirm_overwrite(dest):
             return
         else:
@@ -175,7 +177,7 @@ class PlotCollection:
                 # fig.tight_layout()  # TODO
                 pdf.savefig(fig)
             pdf.close()
-            logging.info("plots saved to " + file_path)
+            logger.info("plots saved to " + file_path)
         else:
             for name, fig in self.figures.items():
                 base, ext = os.path.splitext(file_path)
@@ -184,7 +186,7 @@ class PlotCollection:
                     return
                 fig.tight_layout()
                 fig.savefig(dest, fmt=fmt)
-                logging.info("plot saved to " + dest)
+                logger.info("plot saved to " + dest)
 
 
 def set_aspect_equal_3d(ax):

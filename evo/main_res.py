@@ -23,6 +23,10 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 SEP = "-" * 80  # separator line
 
 CONFLICT_TEMPLATE = """
@@ -69,21 +73,20 @@ def parser():
 
 def run(args):
     import sys
-    import logging
 
     import pandas as pd
 
-    from evo.tools import file_interface, user, settings, pandas_bridge
+    from evo.tools import file_interface, log, user, settings, pandas_bridge
     from evo.tools.settings import SETTINGS
 
     pd.options.display.width = 80
     pd.options.display.max_colwidth = 20
 
-    settings.configure_logging(args.verbose, args.silent, args.debug)
+    log.configure_logging(args.verbose, args.silent, args.debug)
     if args.debug:
         import pprint
         arg_dict = {arg: getattr(args, arg) for arg in vars(args)}
-        logging.debug("main_parser config:\n{}\n".format(pprint.pformat(arg_dict)))
+        logger.debug("main_parser config:\n{}\n".format(pprint.pformat(arg_dict)))
 
     df = pd.DataFrame()
     for result_file in args.result_files:
@@ -97,7 +100,7 @@ def run(args):
         df.columns = keys
     duplicates = [x for x in keys if keys.count(x) > 1]
     if duplicates:
-        logging.error("Values of 'est_name' must be unique - duplicates: {}\n"
+        logger.error("Values of 'est_name' must be unique - duplicates: {}\n"
                       "Try using the --use_filenames option to use filenames "
                       "for labeling instead.".format(", ".join(duplicates)))
         sys.exit(1)
@@ -127,7 +130,7 @@ def run(args):
                                         index=df.loc["np_arrays", common_index][key])
             duplicates = new_error_df.index.duplicated(keep="first")
             if any(duplicates):
-                logging.warning("duplicate indices in error array of {} - "
+                logger.warning("duplicate indices in error array of {} - "
                                 "keeping only first occurrence of duplicates".format(key))
                 new_error_df = new_error_df[~duplicates]
             error_df = pd.concat([error_df, new_error_df], axis=1)
@@ -143,22 +146,21 @@ def run(args):
             else:
                 mismatching_title = df.loc["info", "title"][i]
                 mismatching_file = args.result_files[i]
-                logging.debug(SEP)
-                logging.warning(CONFLICT_TEMPLATE.format(first_file, first_title,
+                logger.debug(SEP)
+                logger.warning(CONFLICT_TEMPLATE.format(first_file, first_title,
                                                          mismatching_title, mismatching_file))
                 if not user.confirm("Go on anyway? - enter 'y' or any other key to exit"):
                     sys.exit()
 
-    if logging.getLogger().isEnabledFor(logging.DEBUG):
-        logging.debug(SEP)
-        logging.debug("Aggregated dataframe:\n{}".format(df.to_string(line_width=80)))
+    logger.debug(SEP)
+    logger.debug("Aggregated dataframe:\n{}".format(df.to_string(line_width=80)))
 
     # show a statistics overview
-    logging.debug(SEP)
-    logging.info("\n{}\n\n{}\n".format(first_title, df.loc["stats"].T.to_string(line_width=80)))
+    logger.debug(SEP)
+    logger.info("\n{}\n\n{}\n".format(first_title, df.loc["stats"].T.to_string(line_width=80)))
 
     if args.save_table:
-        logging.debug(SEP)
+        logger.debug(SEP)
         if args.no_warnings or user.check_and_confirm_overwrite(args.save_table):
             if SETTINGS.table_export_data.lower() == "error_array":
                 data = error_df
@@ -177,15 +179,15 @@ def run(args):
                 writer.close()
             else:
                 getattr(data, "to_" + SETTINGS.table_export_format)(args.save_table)
-            logging.debug("{} table saved to: {}".format(
+            logger.debug("{} table saved to: {}".format(
                 SETTINGS.table_export_format, args.save_table))
 
     if args.plot or args.save_plot or args.serialize_plot:
         # check if data has NaN "holes" due to different indices
         inconsistent = error_df.isnull().values.any()
         if inconsistent and common_index != "timestamps" and not args.no_warnings:
-            logging.debug(SEP)
-            logging.warning("Data lengths/indices are not consistent, "
+            logger.debug(SEP)
+            logger.warning("Data lengths/indices are not consistent, "
                             "raw value plot might not be correctly aligned")
 
         from evo.tools import plot
@@ -250,10 +252,10 @@ def run(args):
         if args.plot:
             plot_collection.show()
         if args.save_plot:
-            logging.debug(SEP)
+            logger.debug(SEP)
             plot_collection.export(args.save_plot, confirm_overwrite=not args.no_warnings)
         if args.serialize_plot:
-            logging.debug(SEP)
+            logger.debug(SEP)
             plot_collection.serialize(args.serialize_plot, confirm_overwrite=not args.no_warnings)
 
 

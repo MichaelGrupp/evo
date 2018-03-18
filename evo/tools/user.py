@@ -21,6 +21,9 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import logging
 
+logger = logging.getLogger(__name__)
+
+
 # Python 2/3 compatibility
 try:
     input = raw_input
@@ -41,7 +44,7 @@ def confirm(msg="enter 'y' to confirm or any other key to cancel", key='y'):
 
 def check_and_confirm_overwrite(file_path):
     if os.path.isfile(file_path):
-        logging.warning(file_path + " exists, overwrite?")
+        logger.warning(file_path + " exists, overwrite?")
         return confirm("enter 'y' to overwrite or any other key to cancel")
     else:
         return True

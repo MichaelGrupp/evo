@@ -128,6 +128,7 @@ def main():
             sys.exit(1)
         else:
             import logging
+            logger = logging.getLogger(__name__)
             from evo.tools import log
             file_fmt = None
             if args.source:
@@ -137,7 +138,7 @@ def main():
                 msg = sys.stdin.read()
             else:
                 msg = args.message
-            getattr(logging, args.loglevel)(msg)
+            getattr(logger, args.loglevel)(msg)
         if args.clear_log:
             open(settings.DEFAULT_LOGFILE_PATH, mode='w')
 

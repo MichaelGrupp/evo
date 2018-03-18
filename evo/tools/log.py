@@ -73,7 +73,7 @@ def configure_logging(verbose=False, silent=False, debug=False,
     elif console_fmt is None:
         console_fmt = SETTINGS.logging_format
 
-    console_handler = logging.StreamHandler()
+    console_handler = logging.StreamHandler(stream=sys.stdout)
     console_handler.setLevel(console_level)
     console_handler.setFormatter(ConsoleFormatter(console_fmt))
     logger.addHandler(console_handler)

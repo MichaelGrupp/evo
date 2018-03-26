@@ -158,7 +158,7 @@ def main_rpe(traj_ref, traj_est, pose_relation, delta, delta_unit,
     else:
         title += "\n(not aligned)"
 
-    rpe_result = result.from_metric(rpe_metric, title, ref_name, est_name)
+    rpe_result = rpe_metric.get_result(ref_name, est_name)
     logger.debug(SEP)
     logger.info(rpe_result.pretty_str())
 

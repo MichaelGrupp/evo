@@ -144,7 +144,7 @@ def main_ape(traj_ref, traj_est, pose_relation, align=True, correct_scale=False,
     else:
         title += "\n(not aligned)"
 
-    ape_result = result.from_metric(ape_metric, title, ref_name, est_name)
+    ape_result = ape_metric.get_result(ref_name, est_name)
     logger.debug(SEP)
     logger.info(ape_result.pretty_str())
 

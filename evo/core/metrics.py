@@ -30,7 +30,7 @@ from enum import Enum  # requires enum34 in Python 2.7
 import numpy as np
 
 from evo.core import filters
-from evo.core import transformations as tr
+from evo.core.result import Result
 from evo.core import lie_algebra as lie
 
 if sys.version_info[0] >= 3 and sys.version_info[1] >= 4:
@@ -77,16 +77,6 @@ class VelUnit(Enum):
     degrees_per_sec = "deg/s"
 
 
-class StateModel(Enum):
-    """
-    conventions for state vectors
-    """
-    xyz = 1,  # translation only
-    xyz_rpy = 2,  # translation + roll, pitch, yaw
-    xyz_quat_xyzw = 3,  # translation + xyzw quaternion
-    xyz_quat_wxyz = 4,  # translation + wxyz quaternion
-
-
 class Metric(ABC):
     @abc.abstractmethod
     def reset_parameters(self, parameters):
@@ -97,161 +87,57 @@ class Metric(ABC):
         return
 
     @abc.abstractmethod
-    def get_statistic(self):
+    def get_statistic(self, statistics_type):
         return
 
     @abc.abstractmethod
     def get_all_statistics(self):
         return
 
-
-class Hausdorff(Metric):
-    def __init__(self, metric=lambda a, b: a - b, backward=True, two_way=False):
-        self.metric = metric
-        self.backward = backward
-        self.two_way = two_way
-
-    def reset_parameters(self, metric=lambda a, b: a - b, backward=True, two_way=False):
-        self.__init__(metric, backward, two_way)
-
-    def hausdorff_base(self, A, B):
-        h = 0.0
-        i = 0
-        u = 0
-        for a_i in A:
-            print("\r" + str(i), end="")
-            min_d = min([self.metric(a_i, b_i) for b_i in B])
-            if min_d > h:
-                h = min_d
-                u = i
-            i += 1
-        print(" winner: " + str(u))
-        return h
-
-    def process_data(self, data):
-        A, B = data
-        if self.backward:
-            return self.hausdorff_base(B, A)
-        elif self.two_way:
-            return max(self.hausdorff_base(A, B), self.hausdorff_base(B, A))
-        else:
-            return self.hausdorff_base(A, B)
-
-    def get_statistic(self):
-        pass
-
-    def get_all_statistics(self):
-        pass
+    @abc.abstractmethod
+    def get_result(self):
+        return
 
 
-class NEES(Metric):
+class PE(Metric):
     """
-    NEES: normalized estimation error squared
-    metric for determining the consistency of a state estimator w.r.t. a reference model
+    Abstract base class of pose error metrics.
     """
 
-    def __init__(self, threshold=0, state_model=StateModel.xyz_quat_wxyz):
-        self.threshold = threshold
-        self.state_model = state_model
-        self.nees = []
-        self.num_outliers = 0
+    def __str__(self):
+        return "PE metric base class"
 
-    def reset_parameters(self, threshold, state_model=StateModel.xyz_quat_wxyz):
-        """
-        resets the current parameters and results
-        :param threshold: values above will be counted as outliers
-        :param state_model: StateModel value describing how the state vectors are formed
-        """
-        self.threshold = threshold
-        self.state_model = state_model
-        self.nees = []
-        self.num_outliers = 0
+    @abc.abstractmethod
+    def reset_parameters(self, parameters):
+        return
 
-    @staticmethod
-    def nees_base(r, cov, threshold):
-        """
-        calculates the normalized estimation error squared (NEES) given a residual state vector
-        :param r: residual state vector (estimate minus reference)
-        :param cov: covariance matrix (inverse information matrix)
-        :param threshold: values above will be marked as outliers
-        :return: epsilon (NEES value), outlier (True or False)
-        """
-        n = np.dot(r.T, np.dot(np.linalg.inv(cov), r)),  # NEES value
-        if np.abs(n)[0] > threshold:
-            return n, True  # mark as outlier
-        else:
-            return n, False
-
-    # TODO quaternion version not yet tested
-    def calculate_residuals(self, states_ref, states_est):
-        """
-        calculate residual states ("inverse motion operator")
-        :param states_ref: list of reference state vectors
-        :param states_est: list of estimated state vectors
-        """
-        if self.state_model in {StateModel.xyz, StateModel.xyz_rpy}:
-            residuals = states_ref - states_est
-        elif self.state_model in {StateModel.xyz_quat_wxyz, StateModel.xyz_quat_xyzw}:
-            if self.state_model == StateModel.xyz_quat_xyzw:
-                # change quaternion order to wxyz for transformations.py
-                states_ref[:, 3:] = np.roll(states_ref[:, 3:], -1, axis=1)
-                states_est[:, 3:] = np.roll(states_est[:, 3:], -1, axis=1)
-            residuals_xyz = states_ref[:, :3] - states_est[:, :3]
-            residuals_quat = np.array(
-                [tr.quaternion_multiply(q_1, tr.quaternion_inverse(q_2))  # quaternion division
-                 for q_1, q_2 in zip(states_ref[:, 3:], states_est[:, 3:])])
-            residuals = np.hstack((residuals_xyz, residuals_quat))
-        else:
-            raise MetricsException("unsupported state model")
-        return residuals
-
-    # TODO quaternion version not yet tested
+    @abc.abstractmethod
     def process_data(self, data):
-        """
-        calculate the normalized estimation error squared (NEES)
-        for a batch of state vectors and covariances
-        :param data: tuple (states_ref, states_est, covariances) with:
-        states_ref: list of reference state vectors
-        states_est: list of estimated state vectors
-        covariances: list of covariance matrices
-        """
-        if len(data) != 3:
-            raise MetricsException(
-                "please provide data tuple as: (states_ref, states_est, covariances)")
-        states_ref, states_est, covariances = data
-        if len(states_est) != len(states_ref) != len(covariances):
-            raise MetricsException("data lists must have same length")
-        # calculate NEES
-        residuals = self.calculate_residuals(states_ref, states_est)
-        for r, cov in zip(residuals, covariances):
-            try:
-                epsilon, is_outlier = self.nees_base(r, cov, self.threshold)
-                self.nees.append(epsilon)
-                if is_outlier:
-                    self.num_outliers += 1
-            except np.linalg.LinAlgError as e:
-                logger.warning(str(e) + ", ignoring value for NEES calculation")
+        return
 
-    def get_statistic(self, statistics_type=StatisticsType.mean):
+    def get_statistic(self, statistics_type):
         if statistics_type == StatisticsType.rmse:
-            return np.sqrt(np.mean(np.power(self.nees, 2)))
+            squared_errors = np.power(self.error, 2)
+            return math.sqrt(np.mean(squared_errors))
+        elif statistics_type == StatisticsType.sse:
+            squared_errors = np.power(self.error, 2)
+            return np.sum(squared_errors)
         elif statistics_type == StatisticsType.mean:
-            return np.mean(self.nees)
+            return np.mean(self.error)
         elif statistics_type == StatisticsType.median:
-            return np.median(self.nees)
-        elif statistics_type == StatisticsType.std:
-            return np.std(self.nees)
-        elif statistics_type == StatisticsType.min:
-            return np.min(np.absolute(self.nees))
+            return np.median(self.error)
         elif statistics_type == StatisticsType.max:
-            return np.max(np.absolute(self.nees))
+            return np.max(self.error)
+        elif statistics_type == StatisticsType.min:
+            return np.min(self.error)
+        elif statistics_type == StatisticsType.std:
+            return np.std(self.error)
         else:
             raise MetricsException("unsupported statistics_type")
 
     def get_all_statistics(self):
         """
-        shortcut for calling get_statistics with all supported StatisticTypes
-        :return: a dictionary {StatisticsType_string : float}
+        :return: a dictionary {StatisticsType.value : float}
         """
         statistics = {}
         for s in StatisticsType:
@@ -262,8 +148,29 @@ class NEES(Metric):
                     raise
         return statistics
 
+    def get_result(self, ref_name="reference", est_name="estimate"):
+        """
+        Wrap the result in Result object
+        :param ref_name: optional, label of the reference data
+        :param est_name: optional, label of the estimated data
+        :return:
+        """
+        result = Result()
+        metric_name = self.__class__.__name__
+        unit_name = self.unit.value if self.unit is not None else ""
+        result.add_info({
+            "title": str(self),
+            "ref_name": ref_name,
+            "est_name": est_name,
+            "label": "{} {}".format(metric_name, "({})".format(unit_name))
+        })
+        result.add_stats(self.get_all_statistics())
+        if hasattr(self, "error"):
+            result.add_np_array("error_array", self.error)
+        return result
 
-class RPE(Metric):
+
+class RPE(PE):
     """
     RPE: relative pose error
     metric for investigating the odometry drift
@@ -348,18 +255,19 @@ class RPE(Metric):
             raise MetricsException("trajectories must have same number of poses")
 
         if id_pairs is None:
-            id_pairs = id_pairs_from_delta(traj_est.poses_se3, self.delta, self.delta_unit,
-                                           self.rel_delta_tol, all_pairs=self.all_pairs)
+            id_pairs = filters.id_pairs_from_delta(traj_est.poses_se3, self.delta, self.delta_unit,
+                                                   self.rel_delta_tol, all_pairs=self.all_pairs)
         if not self.all_pairs:
             self.delta_ids = [j for i, j in id_pairs]  # store flat id list e.g. for plotting
         self.E = [self.rpe_base(traj_ref.poses_se3[i], traj_ref.poses_se3[j],
                                 traj_est.poses_se3[i], traj_est.poses_se3[j])
                   for i, j in id_pairs]
         logger.debug("compared " + str(len(self.E)) + " relative pose pairs, delta = "
-                      + str(self.delta) + " (" + str(self.delta_unit.value) + ") "
-                      + ("with all possible pairs" if self.all_pairs else "with consecutive pairs"))
+                     + str(self.delta) + " (" + str(self.delta_unit.value) + ") "
+                     + ("with all possible pairs" if self.all_pairs else "with consecutive pairs"))
 
         logger.debug("calculating RPE for " + str(self.pose_relation.value) + " pose relation...")
+
         if self.pose_relation == PoseRelation.translation_part:
             self.error = [np.linalg.norm(E_i[:3, 3]) for E_i in self.E]
         elif self.pose_relation == PoseRelation.rotation_part:
@@ -376,47 +284,8 @@ class RPE(Metric):
         else:
             raise MetricsException("unsupported pose_relation: ", self.pose_relation)
 
-    def get_statistic(self, statistics_type=StatisticsType.rmse):
-        """
-        here, the statistics are the actual RPE value
-        :param statistics_type: StatisticsType value indicating the type of averaging
-        :return: a float RPE value
-        """
-        if statistics_type == StatisticsType.rmse:
-            squared_errors = np.power(self.error, 2)
-            return math.sqrt(np.mean(squared_errors))
-        elif statistics_type == StatisticsType.sse:
-            squared_errors = np.power(self.error, 2)
-            return np.sum(squared_errors)
-        elif statistics_type == StatisticsType.mean:
-            return np.mean(self.error)
-        elif statistics_type == StatisticsType.median:
-            return np.median(self.error)
-        elif statistics_type == StatisticsType.max:
-            return np.max(self.error)
-        elif statistics_type == StatisticsType.min:
-            return np.min(self.error)
-        elif statistics_type == StatisticsType.std:
-            return np.std(self.error)
-        else:
-            raise MetricsException("unsupported statistics_type")
 
-    def get_all_statistics(self):
-        """
-        shortcut for calling get_statistics with all supported StatisticTypes
-        :return: a dictionary {StatisticsType_string : float}
-        """
-        statistics = {}
-        for s in StatisticsType:
-            try:
-                statistics[s.value] = self.get_statistic(s)
-            except MetricsException as e:
-                if "unsupported statistics_type" not in str(e):  # ignore unsupported statistics
-                    raise
-        return statistics
-
-
-class APE(Metric):
+class APE(PE):
     """
     APE: absolute pose error
     metric for investigating the global consistency of a SLAM trajectory
@@ -476,9 +345,11 @@ class APE(Metric):
             # don't require full SE(3) matrices for faster computation
             self.E = traj_est.positions_xyz - traj_ref.positions_xyz
         else:
-            self.E = [self.ape_base(x_t, x_t_star) for x_t, x_t_star in zip(traj_est.poses_se3, traj_ref.poses_se3)]
+            self.E = [self.ape_base(x_t, x_t_star) for x_t, x_t_star in
+                      zip(traj_est.poses_se3, traj_ref.poses_se3)]
         logger.debug("compared " + str(len(self.E)) + " absolute pose pairs")
         logger.debug("calculating APE for " + str(self.pose_relation.value) + " pose relation...")
+
         if self.pose_relation == PoseRelation.translation_part:
             # E is an array of position vectors only in this case
             self.error = [np.linalg.norm(E_i) for E_i in self.E]
@@ -493,72 +364,3 @@ class APE(Metric):
             self.error = np.array([abs(lie.so3_log(E_i[:3, :3])) * 180 / np.pi for E_i in self.E])
         else:
             raise MetricsException("unsupported pose_relation")
-
-    def get_statistic(self, statistics_type=StatisticsType.rmse):
-        """
-        here, the statistics are the actual APE value
-        :param statistics_type: StatisticsType value indicating the type of averaging
-        :return: a float APE value
-        """
-        if statistics_type == StatisticsType.rmse:
-            squared_errors = np.power(self.error, 2)
-            return math.sqrt(np.mean(squared_errors))
-        elif statistics_type == StatisticsType.sse:
-            squared_errors = np.power(self.error, 2)
-            return np.sum(squared_errors)
-        elif statistics_type == StatisticsType.mean:
-            return np.mean(self.error)
-        elif statistics_type == StatisticsType.median:
-            return np.median(self.error)
-        elif statistics_type == StatisticsType.max:
-            return np.max(self.error)
-        elif statistics_type == StatisticsType.min:
-            return np.min(self.error)
-        elif statistics_type == StatisticsType.std:
-            return np.std(self.error)
-        else:
-            raise MetricsException("unsupported statistics_type")
-
-    def get_all_statistics(self):
-        """
-        shortcut for calling get_statistics with all supported StatisticTypes
-        :return: a dictionary {StatisticsType_string : float}
-        """
-        statistics = {}
-        for s in StatisticsType:
-            try:
-                statistics[s.value] = self.get_statistic(s)
-            except MetricsException as e:
-                if "unsupported statistics_type" not in str(e):  # ignore unsupported statistics
-                    raise
-        return statistics
-
-
-def id_pairs_from_delta(poses, delta, delta_unit, rel_tol=0.1, all_pairs=False):
-    """
-    get index tuples of pairs with distance==delta from a pose list
-    :param poses: list of SE(3) poses
-    :param delta: the interval step for indices
-    :param delta_unit: unit of delta (Unit enum member)
-    :param rel_tol: relative tolerance to accept or reject deltas
-    :param all_pairs: use all possible pairs instead of consecutive pairs
-    :return: list of index tuples (pairs)
-    """
-    if delta_unit == Unit.frames:
-        id_pairs = filters.filter_pairs_by_index(poses, delta, all_pairs)
-    elif delta_unit == Unit.meters:
-        id_pairs = filters.filter_pairs_by_path(poses, delta, delta * rel_tol, all_pairs)
-    elif delta_unit in {Unit.degrees, Unit.radians}:
-        use_degrees = (delta_unit == Unit.degrees)
-        id_pairs = filters.filter_pairs_by_angle(poses, delta, delta * rel_tol, use_degrees,
-                                                 all_pairs)
-    else:
-        raise MetricsException("unsupported delta unit: " + str(delta_unit))
-
-    if len(id_pairs) == 0:
-        raise MetricsException("delta = " + str(delta) + " (" + str(delta_unit.value) + ") " +
-                               "produced empty index list - try lower values or higher tolerance")
-    logger.debug("found " + str(len(id_pairs)) + " pairs with delta " + str(delta)
-                  + " (" + str(delta_unit.value) + ") among " + str(len(poses)) + " poses "
-                  + ("using consecutive pairs " if not all_pairs else "using all possible pairs"))
-    return id_pairs

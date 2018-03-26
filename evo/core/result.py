@@ -74,20 +74,3 @@ class Result(object):
 
     def add_trajectory(self, name, traj):
         self.trajectories[name] = traj
-
-
-def from_metric(metric, title, ref_name, est_name):
-    result = Result()
-    metric_name = metric.__class__.__name__
-    if hasattr(metric, "unit"):
-        unit_name = metric.unit.value if metric.unit is not None else ""
-    result.add_info({
-        "title": title,
-        "ref_name": ref_name,
-        "est_name": est_name,
-        "label": "{} {}".format(metric_name, "({})".format(unit_name))
-    })
-    result.add_stats(metric.get_all_statistics())
-    if hasattr(metric, "error"):
-        result.add_np_array("error_array", metric.error)
-    return result

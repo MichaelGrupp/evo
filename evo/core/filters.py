@@ -31,6 +31,10 @@ from evo.core import lie_algebra as lie
 logger = logging.getLogger(__name__)
 
 
+class FilterException(Exception):
+    pass
+
+
 def bounded_binary_search(generator, length, target, lower_bound, upper_bound):
     """
     efficient binary search for a <target> value within bounds [<lower_bound>, <upper_bound>]
@@ -254,4 +258,35 @@ def filter_pairs_by_angular_speed(poses, timestamps, speed, tol, degrees=False):
                                             timestamps[i], timestamps[i + 1], degrees)
               for i in range(len(poses) - 1)]
     id_pairs = [(i, i+1) for i, v in enumerate(speeds) if speed - tol <= v <= speed + tol]
+    return id_pairs
+
+
+def id_pairs_from_delta(poses, delta, delta_unit, rel_tol=0.1, all_pairs=False):
+    """
+    high-level function - get index tuples of pairs with distance==delta from a pose list
+    :param poses: list of SE(3) poses
+    :param delta: the interval step for indices
+    :param delta_unit: unit of delta (metrics.Unit enum member)
+    :param rel_tol: relative tolerance to accept or reject deltas
+    :param all_pairs: use all possible pairs instead of consecutive pairs
+    :return: list of index tuples (pairs)
+    """
+    from evo.core.metrics import Unit
+    if delta_unit == Unit.frames:
+        id_pairs = filter_pairs_by_index(poses, delta, all_pairs)
+    elif delta_unit == Unit.meters:
+        id_pairs = filter_pairs_by_path(poses, delta, delta * rel_tol, all_pairs)
+    elif delta_unit in {Unit.degrees, Unit.radians}:
+        use_degrees = (delta_unit == Unit.degrees)
+        id_pairs = filter_pairs_by_angle(poses, delta, delta * rel_tol, use_degrees, all_pairs)
+    else:
+        raise FilterException("unsupported delta unit: {}".format(delta_unit))
+
+    if len(id_pairs) == 0:
+        raise FilterException("delta = {} ({}) produced an empty index list - try lower values or "
+                              "a less strict tolerance".format(delta, delta_unit.value))
+
+    logger.debug("found {} pairs with delta {} ({})"
+                 "among {} poses ".format(len(id_pairs), delta, delta_unit.value, len(poses))
+                 + ("using consecutive pairs " if not all_pairs else "using all possible pairs"))
     return id_pairs

@@ -422,7 +422,7 @@ def trajectories(fig, trajectories, plot_mode=PlotMode.xy, title="", subplot_arg
     if isinstance(trajectories, trajectory.PosePath3D):
         draw(trajectories)
     elif isinstance(trajectories, dict):
-        for name, t in trajectories:
+        for name, t in trajectories.items():
             draw(t, name)
     else:
         for t in trajectories:

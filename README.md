@@ -32,7 +32,7 @@ evo has several advantages over other public benchmarking tools:
 
 * common tools for different formats
 * algorithmic options for association, alignment, scale adjustment for monocular SLAM etc.
-* flexible options for output, plot or export (e.g. LaTeX plots or Excel tables)
+* flexible options for output, [plotting](https://github.com/MichaelGrupp/evo/wiki/Plotting) or export (e.g. LaTeX plots or Excel tables)
 * a powerful, configurable CLI that can cover many use cases
 * modular `core` and `tools` libraries for custom extensions
 * faster than other established Python-based tools ([see here](doc/performance.md))

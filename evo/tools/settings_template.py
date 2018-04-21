@@ -33,23 +33,23 @@ except ImportError:
 DEFAULT_SETTINGS_DICT_DOC = {
     "plot_xyz_realistic": ( 
         True,
-        "equal axes ratio in 'xyz' plot mode for realistic trajectory plots"
+        "Equal axes ratio in 'xyz' plot mode for realistic trajectory plots."
     ),
     "plot_backend": (
         "Qt4Agg" if pyqt4_installed else "TkAgg",
-        "matplotlib backend - TkAgg (default) or Qt4Agg (if PyQt is installed)"
+        "matplotlib backend - TkAgg (default) or Qt4Agg (if PyQt is installed)."
     ),
     "plot_hideref": (
         False,
-        "hide the reference trajectory in trajectory plots"
+        "Hide the reference trajectory in trajectory plots."
     ),
     "plot_linewidth": (
         1.5,
-        "line width value supported by matplotlib"
+        "Line width value supported by matplotlib."
     ),
     "plot_usetex": (
         False,
-        "use LaTeX renderer for plots",
+        "Use the LaTeX renderer configured in plot_texsystem for plots.",
     ),
     "plot_texsystem": (
         "pdflatex",
@@ -57,72 +57,78 @@ DEFAULT_SETTINGS_DICT_DOC = {
     ),
     "plot_fontfamily": (
         "sans-serif",
-        "font family string supported by matplotlib"
+        "Font family string supported by matplotlib."
     ),
-    "plot_fontsize": (
-        12,
-        "font size value supported by matplotlib"
+    "plot_fontscale": (
+        1.0,
+        "Font scale value, see: https://seaborn.pydata.org/generated/seaborn.set.html"
     ),
     "plot_split": (
         False,
-        "show / save each figure separately"
+        "Show / save each figure separately instead of a collection."
     ),
     "plot_figsize": (
         [6, 6],
-        "the default size of one (sub)plot figure (width, height)"
+        "The default size of one (sub)plot figure (width, height)."
     ),
     "plot_info_text": (
         False,
-        "allow text boxes with additional infos below the plots"
+        "Show text with additional infos below the plots of the metrics."
     ),
     "plot_trajectory_cmap": (
         "jet",
-        "matplotlib color map used for mapping values on a trajectory",
+        "matplotlib color map used for mapping values on a trajectory.",
     ),
     "plot_multi_cmap": (
         "none",
-        "color map for coloring plots from multiple data sources"
-        + "\n'none' will use default color cycle"
+        "Color map for coloring plots from multiple data sources.\n"
+        + "'none' will use the default color palette, see plot_seaborn_palette."
     ),
     "plot_invert_xaxis": (
         False,
-        "invert the x-axes of plots"
+        "Invert the x-axis of plots."
     ),
     "plot_invert_yaxis": (
         False,
-        "invert the y-axes of plots"
+        "Invert the y-axis of plots."
     ),
     "plot_seaborn_style": (
         "darkgrid",
-        "defines plot background/grid: 'whitegrid', 'darkgrid', 'white' or 'dark'"
+        "Defines the plot background/grid.\n"
+        + "Options: 'whitegrid', 'darkgrid', 'white' or 'dark'."
+    ),
+    "plot_seaborn_palette": (
+        "deep",
+        "Default color palette of seaborn.\n"
+        + "See: https://seaborn.pydata.org/generated/seaborn.color_palette.html"
     ),
     "plot_export_format": (
         "pdf",
-        "file format supported by matplotlib for exporting plots"
+        "File format supported by matplotlib for exporting plots."
     ),
     "table_export_format": (
         "csv",
-        "format for exporting tables, e.g. 'csv', 'excel', 'latex', 'json'...",
+        "Format for exporting tables, e.g. 'csv', 'excel', 'latex', 'json'...",
     ),
     "table_export_data": (
         "stats",
-        "which data to export: 'info', 'stats' or 'error_array'",
+        "Which data to export: 'info', 'stats' or 'error_array'.",
     ),
     "table_export_transpose": (
         True,
-        "transpose tables for export"
+        "Transpose tables for export."
     ),
     "save_traj_in_zip": (
         False,
-        "backup trajectories in result zip files (increases size)"
+        "Store backup trajectories in result zip files (increases size)."
     ),
     "logging_format": (
         "%(message)s",
-        "format string for the logging module (console only)"
+        "Format string for the logging module (console only)."
     ),
     "logfile_enabled": (
         False,
-        "whether to write a logfile to the home folder"
+        "Whether to write a logfile to the home folder."
     )
 }
 

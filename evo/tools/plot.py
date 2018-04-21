@@ -44,14 +44,18 @@ from evo.tools import user
 from evo.core import trajectory
 
 # configure matplotlib and seaborn according to package settings
-sns.set(style=SETTINGS.plot_seaborn_style, font=SETTINGS.plot_fontfamily)
-mpl.rcParams.update({
+sns.set(style=SETTINGS.plot_seaborn_style,
+        palette=SETTINGS.plot_seaborn_palette,
+        font=SETTINGS.plot_fontfamily,
+        font_scale=SETTINGS.plot_fontscale
+)
+rc = {
     "lines.linewidth": SETTINGS.plot_linewidth,
     "text.usetex": SETTINGS.plot_usetex,
-    "font.size": SETTINGS.plot_fontsize,
     "font.family": SETTINGS.plot_fontfamily,
     "pgf.texsystem": SETTINGS.plot_texsystem
-})
+}
+mpl.rcParams.update(rc)
 
 logger = logging.getLogger(__name__)
 

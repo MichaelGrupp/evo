@@ -130,9 +130,9 @@ def main():
             import logging
             logger = logging.getLogger(__name__)
             from evo.tools import log
-            file_fmt = None
+            file_fmt = log.DEFAULT_LONG_FMT
             if args.source:
-                file_fmt = "[%(levelname)s][%(asctime)s][" + args.source + "]\n%(message)s"
+                file_fmt = file_fmt.replace("%(module)s.%(funcName)s():%(lineno)s", args.source)
             log.configure_logging(silent=True, file_fmt=file_fmt)
             if not args.message:
                 msg = sys.stdin.read()

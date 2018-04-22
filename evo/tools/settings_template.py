@@ -99,7 +99,7 @@ DEFAULT_SETTINGS_DICT_DOC = {
     ),
     "plot_seaborn_palette": (
         "deep",
-        "Default color palette of seaborn.\n"
+        "Default color palette of seaborn. Can also be a list of colors.\n"
         + "See: https://seaborn.pydata.org/generated/seaborn.color_palette.html"
     ),
     "plot_export_format": (

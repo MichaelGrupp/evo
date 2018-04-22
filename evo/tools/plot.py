@@ -166,8 +166,6 @@ class PlotCollection:
         if confirm_overwrite and not user.check_and_confirm_overwrite(dest):
             return
         else:
-            if os.name == "nt":
-                raise PlotException("plot serialization not supported on Windows")
             pickle.dump(self.figures, open(dest, 'wb'))
 
     def export(self, file_path, confirm_overwrite=True):

@@ -2,7 +2,7 @@
 
 ***Python package for the evaluation of odometry and SLAM***
 
-| Linux | Windows |
+| Linux / macOS | Windows |
 | :---: | :-----: |
 | [![Linux build Status](https://travis-ci.org/MichaelGrupp/evo.svg?branch=master)](https://travis-ci.org/MichaelGrupp/evo) | [![Windows build status](https://ci.appveyor.com/api/projects/status/usg1lqx59dqdqqal?svg=true)](https://ci.appveyor.com/project/MichaelGrupp/evo)
 

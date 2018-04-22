@@ -29,4 +29,5 @@ install:
   - evo_config set plot_backend Agg  # no X server
 
 script:
+  - ${pip} install pytest --upgrade
   - pytest -sv

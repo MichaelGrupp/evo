@@ -24,7 +24,8 @@ before_install:
   - bash .ci/mac-os_before_install.sh
 
 install:
-  - pip install . --upgrade
+  - source .ci/set_pip_name.sh
+  - ${pip} install . --upgrade
   - evo_config set plot_backend Agg  # no X server
 
 script:

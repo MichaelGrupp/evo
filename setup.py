@@ -58,7 +58,7 @@ def install_ipython_profile(install_lib_dir):
             return
     try:
         sp.check_call([ipython, "profile", "create", "evo",
-                       "--ipython-dir", ipython_dir], 
+                       "--ipython-dir", ipython_dir],
                        preexec_fn=_run_as_caller)
         profile_dir = sp.check_output([ipython, "profile", "locate", "evo"],
                                       preexec_fn=_run_as_caller)

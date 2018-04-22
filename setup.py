@@ -6,7 +6,6 @@ import os
 import sys
 import shutil
 import subprocess as sp
-from pwd import getpwnam
 
 
 # monkey patch because setuptools entry_points are slow as fuck
@@ -21,41 +20,48 @@ def python_below_34():
     return sys.version_info[0] < 3 or sys.version_info[1] < 4
 
 
-def run_as_caller():
-    caller = os.environ["SUDO_USER"] if "SUDO_USER" in os.environ else os.environ["USER"]
+def _run_as_caller():
+    if os.name == "nt":
+        return
+    from pwd import getpwnam
+    if "SUDO_USER" in os.environ:
+        caller = os.environ["SUDO_USER"]
+    else:
+        caller = os.environ["USER"]
     uid = getpwnam(caller).pw_uid
     gid = getpwnam(caller).pw_gid
     os.setgid(gid)
     os.setuid(uid)
 
 
-def _post_install(install_lib_dir):
+def _get_home_dir():
+    user = os.getenv("SUDO_USER")
+    if user is not None:
+        home_dir = os.path.expanduser("~{}".format(user))
+    else:
+        home_dir = os.path.expanduser("~")
+    return home_dir
+
+
+def install_ipython_profile(install_lib_dir):
     from evo.tools.compat import which
-    # argcomplete
-    print("activating argcomplete")
-    try:
-        sp.check_call("activate-global-python-argcomplete", shell=True)
-        print("done - argcomplete should work now")
-    except sp.CalledProcessError as e:
-        print("error:", e.output, file=sys.stderr)
-    # IPython profile
-    user = os.environ["SUDO_USER"] if "SUDO_USER" in os.environ else os.environ["USER"]
-    home_dir = os.path.expanduser("~{}".format(user))
+    home_dir = _get_home_dir()
     ipython_dir = os.path.join(home_dir, ".ipython")
     os.environ["IPYTHONDIR"] = ipython_dir
-    print("installing evo IPython profile for user", user)
+    print("Installing evo IPython profile...")
     ipython = "ipython3" if sys.version_info >= (3, 0) else "ipython2"
     if which(ipython) is None:
-        # fall back to the non-explicit ipython name if ipython2/3 is not in PATH
+        # Use the non-explicit ipython name if ipython2/3 is not in PATH.
         ipython = "ipython"
         if which(ipython) is None:
             print("IPython is not installed", file=sys.stderr)
             return
     try:
         sp.check_call([ipython, "profile", "create", "evo",
-                       "--ipython-dir", ipython_dir], preexec_fn=run_as_caller)
+                       "--ipython-dir", ipython_dir], 
+                       preexec_fn=_run_as_caller)
         profile_dir = sp.check_output([ipython, "profile", "locate", "evo"],
-                                      preexec_fn=run_as_caller)
+                                      preexec_fn=_run_as_caller)
         if sys.version_info >= (3, 0):
             profile_dir = profile_dir.decode("UTF-8").replace("\n", "")
         else:
@@ -63,16 +69,32 @@ def _post_install(install_lib_dir):
         shutil.copy(os.path.join(install_lib_dir, "evo", "ipython_config.py"),
                     os.path.join(profile_dir, "ipython_config.py"))
     except sp.CalledProcessError as e:
-        print("IPython error", e.output, file=sys.stderr)
+        print("IPython error:", e.output, file=sys.stderr)
     except Exception as e:
-        print("unexpected error", e.message, file=sys.stderr)
+        print("Unexpected error:", e.message, file=sys.stderr)
+
+
+def activate_argcomplete():
+    if os.name == "nt":
+        return
+    print("Activating argcomplete...")
+    try:
+        sp.check_call("activate-global-python-argcomplete", shell=True)
+        print("Done - argcomplete should work now.")
+    except sp.CalledProcessError as e:
+        print("Error:", e.output, file=sys.stderr)
+
+
+def _post_install(install_lib_dir):
+    activate_argcomplete()
+    install_ipython_profile(install_lib_dir)
 
 
 class CustomInstall(install):
     def run(self):
         install.run(self)
         self.execute(_post_install, (self.install_lib,),
-                     msg="running post install task")
+                     msg="Running post install task of evo...")
 
 
 # cmd: python setup.py upload

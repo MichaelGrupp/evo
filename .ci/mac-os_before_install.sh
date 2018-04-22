@@ -8,6 +8,8 @@ if [ "$TRAVIS_OS_NAME" == "osx" ]; then
     brew outdated pyenv || brew upgrade pyenv
 
     brew install pyenv-virtualenv
+    eval "$(pyenv init -)"
+    eval "$(pyenv virtualenv-init -)"
     pyenv install $PYTHON
 
     export PYENV_VERSION=$PYTHON

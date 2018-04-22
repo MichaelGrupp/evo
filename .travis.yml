@@ -1,14 +1,31 @@
 os:
   - linux
-  - osx
+
 language: python
+
 python:
   - "2.7"
   - "3.4"
   - "3.5"
   - "3.6"
+
+# Python for Mac is not yet officially supported by Travis.
+# We test only 2.7 and 3.6 on macOS for now.
+matrix:
+  include:
+    - os: osx
+      language: generic
+      env: PYTHON=2.7.10
+    - os: osx
+      language: generic
+      env: PYTHON=3.6.0
+
+before_install:
+  - bash .ci/mac-os_before_install.sh
+
 install:
   - pip install . --upgrade
   - evo_config set plot_backend Agg  # no X server
+
 script:
   - pytest -sv

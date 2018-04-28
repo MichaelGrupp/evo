@@ -116,7 +116,7 @@ class PlotCollection:
         app.exec_()
 
     def tabbed_tk_window(self):
-        from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+        from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
         import sys
         if sys.version_info[0] < 3:
             import Tkinter as tkinter
@@ -134,9 +134,9 @@ class PlotCollection:
             fig.tight_layout()
             tab = ttk.Frame(nb)
             canvas = FigureCanvasTkAgg(self.figures[name], master=tab)
-            canvas.show()
+            canvas.draw()
             canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
-            toolbar = NavigationToolbar2TkAgg(canvas, tab)
+            toolbar = NavigationToolbar2Tk(canvas, tab)
             toolbar.update()
             canvas._tkcanvas.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
             for axes in fig.get_axes():

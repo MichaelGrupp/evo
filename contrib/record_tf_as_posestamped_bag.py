@@ -117,7 +117,7 @@ if __name__ == '__main__':
     if args.output_topic is None:
         output_topic = args.child_frame
     else:
-        args.output_topic
+        output_topic = args.output_topic
 
     main(args.parent_frame, args.child_frame, args.lookup_frequency,
          args.bagfile, output_topic, args.append)

@@ -53,6 +53,7 @@ class Recorder(object):
                 try:
                     transform = self.tf_buffer.lookup_transform(
                         self.parent_frame, self.child_frame, rospy.Time())
+                    rate.sleep()
                 except (tf2_ros.LookupException,
                         tf2_ros.ConnectivityException,
                         tf2_ros.ExtrapolationException):
@@ -103,7 +104,7 @@ if __name__ == '__main__':
     parser.add_argument("--lookup_frequency",
                         help="maximum frequency at which transforms "
                              "are looked up",
-                        default=5.0, type=float)
+                        default=100.0, type=float)
     parser.add_argument("--output_topic", help="name of the output topic",
                         default=None)
     parser.add_argument("--bagfile", help="output bagfile path",

@@ -61,7 +61,7 @@ class Recorder(object):
                 if last_stamp == transform.header.stamp:
                     continue
                 pose = transformstamped_to_posestamped(transform)
-                bag.write(self.output_topic, pose)
+                bag.write(self.output_topic, pose, t=pose.header.stamp)
                 msg_count += 1
                 last_stamp = transform.header.stamp
                 rospy.loginfo_throttle(

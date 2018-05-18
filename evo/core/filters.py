@@ -286,7 +286,7 @@ def id_pairs_from_delta(poses, delta, delta_unit, rel_tol=0.1, all_pairs=False):
         raise FilterException("delta = {} ({}) produced an empty index list - try lower values or "
                               "a less strict tolerance".format(delta, delta_unit.value))
 
-    logger.debug("found {} pairs with delta {} ({})"
-                 "among {} poses ".format(len(id_pairs), delta, delta_unit.value, len(poses))
-                 + ("using consecutive pairs " if not all_pairs else "using all possible pairs"))
+    logger.debug("found {} pairs with delta {} ({}) "
+                 "among {} poses ".format(len(id_pairs), delta, delta_unit.value, len(poses)) +
+                 ("using consecutive pairs " if not all_pairs else "using all possible pairs"))
     return id_pairs

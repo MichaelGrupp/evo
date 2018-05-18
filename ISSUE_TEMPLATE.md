@@ -29,7 +29,7 @@ delete the part below if your issue is NOT a bug / error report
 
 **Command:**
 ```
-# replace this line with the command you used
+# replace this line with the command(s) you used
 ```
 
 **Console output:**

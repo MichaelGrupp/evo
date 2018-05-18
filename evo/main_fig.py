@@ -60,7 +60,7 @@ def main():
                        "If not, try: evo_config show/set \n" + SEP)
 
     plot_collection = plot.PlotCollection(title, deserialize=args.in_file)
-    logger.debug("deserialized PlotCollection: " + str(plot_collection))
+    logger.debug("Deserialized PlotCollection: " + str(plot_collection))
     plot_collection.show()
 
     if args.serialize_plot:
@@ -80,8 +80,8 @@ def main():
                 f.write(html)
     if not args.no_warnings:
         logger.debug(SEP)
-        if user.confirm("save changes & overwrite original file "
-                                + args.in_file + "? (y/n)"):
+        if user.confirm("Save changes & overwrite original file " +
+                        args.in_file + "? (y/n)"):
             plot_collection.serialize(args.in_file, confirm_overwrite=False)
 
 

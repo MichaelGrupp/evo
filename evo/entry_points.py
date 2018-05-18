@@ -95,7 +95,7 @@ def launch(main_module, parser):
     except SystemExit as e:
         sys.exit(e.code)
     except:
-        logger.exception("unhandled error in " + main_module.__name__)
+        logger.exception("Unhandled error in " + main_module.__name__)
         print("")
         err_msg = "evo module " + main_module.__name__ + " crashed"
         if settings.SETTINGS.logfile_enabled:
@@ -105,7 +105,7 @@ def launch(main_module, parser):
         logger.error(err_msg)
         from evo.tools import user
         if not args.no_warnings:
-            if settings.SETTINGS.logfile_enabled and user.confirm("open logfile? (y/n)"):
+            if settings.SETTINGS.logfile_enabled and user.confirm("Open logfile? (y/n)"):
                 import webbrowser
                 webbrowser.open(settings.DEFAULT_LOGFILE_PATH)
         sys.exit(1)

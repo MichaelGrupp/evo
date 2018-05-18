@@ -347,9 +347,9 @@ def align_trajectory(traj, traj_ref, correct_scale=False, correct_only_scale=Fal
         r_a, t_a, s = geometry.umeyama_alignment(traj_aligned.positions_xyz[:n, :].T,
                                                  traj_ref.positions_xyz[:n, :].T, with_scale)
     if not correct_only_scale:
-        logger.debug("rotation of alignment:\n" + str(r_a)
-                     + "\ntranslation of alignment:\n" + str(t_a))
-    logger.debug("scale correction: " + str(s))
+        logger.debug("Rotation of alignment:\n{}"
+                     "\nTranslation of alignment:\{}".format(r_a, t_a))
+    logger.debug("Scale correction: ".format(s))
 
     if correct_only_scale:
         traj_aligned.scale(s)

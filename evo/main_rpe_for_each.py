@@ -153,9 +153,9 @@ def main_rpe_for_each(traj_ref, traj_est, pose_relation, mode, bins, rel_tols,
     if align or correct_scale:
         logger.debug(SEP)
         if correct_only_scale:
-            logger.debug("correcting scale...")
+            logger.debug("Correcting scale...")
         else:
-            logger.debug("aligning using Umeyama's method..."
+            logger.debug("Aligning using Umeyama's method..."
                           + (" (with scale correction)" if correct_scale else ""))
         traj_est = trajectory.align_trajectory(traj_est, traj_ref, correct_scale,
                                                correct_only_scale)
@@ -164,7 +164,7 @@ def main_rpe_for_each(traj_ref, traj_est, pose_relation, mode, bins, rel_tols,
     for bin, rel_tol, in zip(bins, rel_tols):
         logger.debug(SEP)
         logger.info(
-            "calculating RPE for each sub-sequence of " + str(bin) + " (" + bin_unit.value + ")")
+            "Calculating RPE for each sub-sequence of " + str(bin) + " (" + bin_unit.value + ")")
 
         tol = bin * rel_tol
         id_pairs = []
@@ -263,7 +263,7 @@ def run(args):
 
     # manually check bins and tols arguments to allow them to be in config files
     if not args.bins or not args.tols:
-        logger.error("the following arguments are required: -b/--bins, -t/--tols")
+        logger.error(The following arguments are required: -b/--bins, -t/--tols")
         sys.exit(1)
 
     log.configure_logging(args.verbose, args.silent, args.debug)
@@ -297,7 +297,7 @@ def run(args):
         ref_name, est_name = args.ref_file, args.est_file
     elif args.subcommand == "euroc":
         args.align = True
-        logger.info("forcing trajectory alignment implicitly (EuRoC ground truth is in IMU frame)")
+        logger.info("Forcing trajectory alignment implicitly (EuRoC ground truth is in IMU frame)")
         logger.debug(SEP)
         traj_ref, traj_est = file_interface.load_assoc_euroc_trajectories(
             args.state_gt_csv,
@@ -308,7 +308,7 @@ def run(args):
         ref_name, est_name = args.state_gt_csv, args.est_file
     elif args.subcommand == "bag":
         import rosbag
-        logger.debug("opening bag file " + args.bag)
+        logger.debug("Opening bag file {} ...".format(args.bag))
         bag = rosbag.Bag(args.bag, 'r')
         try:
             traj_ref, traj_est = file_interface.load_assoc_bag_trajectories(

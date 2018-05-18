@@ -198,12 +198,12 @@ def run(args):
                 topics = sorted([t for t in topic_info[1].keys() if topic_info[1][t][0] 
                                  == "geometry_msgs/PoseStamped" and t != args.ref])
                 if len(topics) == 0:
-                    logger.error("no geometry_msgs/PoseStamped topics found!")
+                    logger.error("No geometry_msgs/PoseStamped topics found!")
                     sys.exit(1)
             else:
                 topics = args.topics
                 if not topics:
-                    logger.warning("no topics used - specify topics or use the --all_topics flag")
+                    logger.warning("No topics used - specify topics or use the --all_topics flag.")
                     sys.exit(1)
             for topic in topics:
                 trajectories.append((topic, file_interface.read_bag_trajectory(bag, topic)))
@@ -239,10 +239,10 @@ def run(args):
         t, xyz, quat = file_interface.load_transform_json(tf_path)
         logger.debug(SEP)
         if not lie.is_se3(t):
-            logger.warning("not a valid SE(3) transformation!")
+            logger.warning("Not a valid SE(3) transformation!")
         if args.invert_transform:
             t = lie.se3_inverse(t)
-        logger.debug("applying a " + tf_type + "-multiplicative transformation:\n" + str(t))
+        logger.debug("Applying a {}-multiplicative transformation:\n{}".format(tf_type, t))
         for name, traj in trajectories:
             traj.transform(t, right_mul=args.transform_right)
 
@@ -250,15 +250,15 @@ def run(args):
         logger.debug(SEP)
         for name, traj in trajectories:
             if type(traj) is trajectory.PosePath3D:
-                logger.warning("{} doesn't have timestamps - can't add t_offset".format(name))
+                logger.warning("{} doesn't have timestamps - can't add time offset.".format(name))
             else:
-                logger.info("adding time offset to {}: {} (s)".format(name, args.t_offset))
+                logger.info("Adding time offset to {}: {} (s)".format(name, args.t_offset))
                 traj.timestamps += args.t_offset
 
     if args.align or args.correct_scale:
         if not args.ref:
             logger.debug(SEP)
-            logger.warning("can't align without a reference! (--ref)  *grunt*")
+            logger.warning("Can't align without a reference! (--ref)  *grunt*")
         else:
             if args.subcommand == "kitti":
                 traj_tmp, ref_traj_tmp = trajectories, [ref_traj for n, t in trajectories]
@@ -278,7 +278,7 @@ def run(args):
             trajectories_new = []
             for nt, ref_assoc in zip(trajectories, ref_traj_tmp):
                 logger.debug(SEP)
-                logger.debug("aligning " + nt[0] + " to " + args.ref + "...")
+                logger.debug("Aligning " + nt[0] + " to " + args.ref + "...")
                 trajectories_new.append((nt[0], trajectory.align_trajectory(nt[1], ref_assoc, 
                                         args.correct_scale, correct_only_scale, args.n_to_align)))
             trajectories = trajectories_new
@@ -371,7 +371,7 @@ def run(args):
         import datetime
         import rosbag
         dest_bag_path = str(datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S.%f')) + ".bag"
-        logger.info("saving trajectories to " + dest_bag_path + "...")
+        logger.info("Saving trajectories to " + dest_bag_path + "...")
         bag = rosbag.Bag(dest_bag_path, 'w')
         try:
             for name, traj in trajectories:

@@ -262,11 +262,11 @@ class RPE(PE):
         self.E = [self.rpe_base(traj_ref.poses_se3[i], traj_ref.poses_se3[j],
                                 traj_est.poses_se3[i], traj_est.poses_se3[j])
                   for i, j in id_pairs]
-        logger.debug("compared " + str(len(self.E)) + " relative pose pairs, delta = "
-                     + str(self.delta) + " (" + str(self.delta_unit.value) + ") "
-                     + ("with all possible pairs" if self.all_pairs else "with consecutive pairs"))
+        logger.debug("Compared " + str(len(self.E)) + " relative pose pairs, delta = " +
+                     str(self.delta) + " (" + str(self.delta_unit.value) + ") " +
+                     ("with all possible pairs." if self.all_pairs else "with consecutive pairs."))
 
-        logger.debug("calculating RPE for " + str(self.pose_relation.value) + " pose relation...")
+        logger.debug("Calculating RPE for " + str(self.pose_relation.value) + " pose relation...")
 
         if self.pose_relation == PoseRelation.translation_part:
             self.error = [np.linalg.norm(E_i[:3, 3]) for E_i in self.E]
@@ -347,8 +347,8 @@ class APE(PE):
         else:
             self.E = [self.ape_base(x_t, x_t_star) for x_t, x_t_star in
                       zip(traj_est.poses_se3, traj_ref.poses_se3)]
-        logger.debug("compared " + str(len(self.E)) + " absolute pose pairs")
-        logger.debug("calculating APE for " + str(self.pose_relation.value) + " pose relation...")
+        logger.debug("Compared " + str(len(self.E)) + " absolute pose pairs.")
+        logger.debug("Calculating APE for " + str(self.pose_relation.value) + " pose relation...")
 
         if self.pose_relation == PoseRelation.translation_part:
             # E is an array of position vectors only in this case

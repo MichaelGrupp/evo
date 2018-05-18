@@ -68,7 +68,7 @@ def associate_trajectories(traj_1, traj_2, max_diff=0.01, offset_2=0.0, invert=F
     if not isinstance(traj_1, PoseTrajectory3D) or not isinstance(traj_2, PoseTrajectory3D):
         raise SyncException("trajectories must be PoseTrajectory3D objects")
     if invert:
-        logger.debug("using inverse matching logic")
+        logger.debug("Using inverse matching logic.")
     traj_1 = copy.deepcopy(traj_1)
     traj_2 = copy.deepcopy(traj_2)
     snd_longer = len(traj_2.timestamps) > len(traj_1.timestamps)
@@ -92,16 +92,16 @@ def associate_trajectories(traj_1, traj_2, max_diff=0.01, offset_2=0.0, invert=F
 
     traj_1 = traj_short if snd_longer else traj_long
     traj_2 = traj_long if snd_longer else traj_short
+
     if len(matching_indices) == 0:
-        raise SyncException("found no matching timestamps between "
-                            + first_name + " and " + snd_name + " with "
-                            + "max. time diff.: " + str(max_diff)
-                            + " (s) and time offset: " + str(offset_2) + " (s)")
-    logger.debug("found " + str(len(matching_indices)) + " of max. " + str(max_pairs)
-                  + " possible matching timestamps between..."
-                  + "\n\t" + first_name
-                  + "\nand: \t" + snd_name
-                  + "\n...with max. time diff.: " + str(max_diff)
-                  + " (s) and time offset: " + str(offset_2) + " (s)")
+        raise SyncException(
+            "found no matching timestamps between {} and {} with max. time diff {} (s) and "
+            "time offset {} (s)".format(first_name, snd_name, max_diff, offset_2))
+
+    logger.debug("Found {} of max. {} possible matching timestamps between...\n"
+                 "\t{}\nand:\t{}\n"
+                 "...with max. time diff.: {} (s) "
+                 "and time offset: {} (s).".format(
+                     len(matching_indices), max_pairs, first_name, snd_name, max_diff, offset_2))
 
     return traj_1, traj_2

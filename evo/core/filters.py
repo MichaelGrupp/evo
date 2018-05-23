@@ -159,7 +159,7 @@ def filter_pairs_by_path(poses, delta, tol=0.0, all_pairs=False):
                 res_avg += res
                 id_pairs.append((i, j))
             if print_progress:
-                print("\rsearching", delta, "m path sub-sequences - found", num_pairs, end="\r")
+                print("\rSearching", delta, "m path sub-sequences - found", num_pairs, end="\r")
                 sys.stdout.flush()
         if print_progress:
             print("")
@@ -167,7 +167,7 @@ def filter_pairs_by_path(poses, delta, tol=0.0, all_pairs=False):
             logger.debug("avg. target residual: " + "{0:.6f}".format(res_avg / num_pairs) + "m"
                         + " | avg. num. iterations: " + "{0:.6f}".format(n_iter_avg / num_pairs))
         else:
-            logger.debug("found no pairs for delta " + str(delta) + "m")
+            logger.debug("Found no pairs for delta '" + str(delta) + "m'.")
     else:
         ids = []
         previous_pose = poses[0]
@@ -286,7 +286,8 @@ def id_pairs_from_delta(poses, delta, delta_unit, rel_tol=0.1, all_pairs=False):
         raise FilterException("delta = {} ({}) produced an empty index list - try lower values or "
                               "a less strict tolerance".format(delta, delta_unit.value))
 
-    logger.debug("found {} pairs with delta {} ({}) "
+    logger.debug("Found {} pairs with delta {} ({}) "
                  "among {} poses ".format(len(id_pairs), delta, delta_unit.value, len(poses)) +
-                 ("using consecutive pairs " if not all_pairs else "using all possible pairs"))
+                 ("using consecutive pairs." if not all_pairs else "using all possible pairs."))
+
     return id_pairs

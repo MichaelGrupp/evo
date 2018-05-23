@@ -147,9 +147,9 @@ def main_rpe(traj_ref, traj_est, pose_relation, delta, delta_unit,
     if align or correct_scale:
         logger.debug(SEP)
         if only_scale:
-            logger.debug("correcting scale...")
+            logger.debug("Correcting scale...")
         else:
-            logger.debug("aligning using Umeyama's method..."
+            logger.debug("Aligning using Umeyama's method..."
                           + (" (with scale correction)" if correct_scale else ""))
         traj_est = trajectory.align_trajectory(traj_est, traj_ref, correct_scale, only_scale)
     logger.debug(SEP)
@@ -193,7 +193,7 @@ def main_rpe(traj_ref, traj_est, pose_relation, delta, delta_unit,
         from evo.tools import plot
         import matplotlib.pyplot as plt
         logger.debug(SEP)
-        logger.debug("plotting results... ")
+        logger.debug("Plotting results... ")
         fig1 = plt.figure(figsize=(SETTINGS.plot_figsize[0], SETTINGS.plot_figsize[1]))
         # metric values
         plot.error_array(fig1, rpe_metric.error, x_array=seconds_from_start,
@@ -302,7 +302,7 @@ def run(args):
             plot_mode = PlotMode.xz if not args.plot_mode else PlotMode[args.plot_mode]
     elif args.subcommand == "euroc":
         args.align = True
-        logger.info("forcing trajectory alignment implicitly (EuRoC ground truth is in IMU frame)")
+        logger.info("Forcing trajectory alignment implicitly (EuRoC ground truth is in IMU frame)")
         logger.debug(SEP)
         traj_ref, traj_est = file_interface.load_assoc_euroc_trajectories(
             args.state_gt_csv,
@@ -316,7 +316,7 @@ def run(args):
             plot_mode = PlotMode.xyz if not args.plot_mode else PlotMode[args.plot_mode]
     elif args.subcommand == "bag":
         import rosbag
-        logger.debug("opening bag file " + args.bag)
+        logger.debug("Opening bag file {} ...".format(args.bag))
         bag = rosbag.Bag(args.bag, 'r')
         try:
             traj_ref, traj_est = file_interface.load_assoc_bag_trajectories(

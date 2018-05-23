@@ -48,6 +48,15 @@ def parser():
     output_opts.add_argument("-p", "--plot", help="show plot window", action="store_true")
     output_opts.add_argument("--plot_mode", help="the axes for  plot projection", default=None,
                              choices=["xy", "yx", "xz", "zx", "yz", "xyz"])
+    output_opts.add_argument("--plot_colormap_max", type=float,
+                             help="the upper bound used for the color map plot "
+                             "(default: maximum error value)")
+    output_opts.add_argument("--plot_colormap_min", type=float,
+                             help="the lower bound used for the color map plot "
+                             "(default: minimum error value)")
+    output_opts.add_argument("--plot_colormap_max_percentile", type=float,
+                             help="percentile of the error distribution to be used as the upper "
+                             "bound of the color map plot (in %%, overrides --plot_colormap_min)")
     output_opts.add_argument("--save_plot", help="path to save plot", default=None)
     output_opts.add_argument("--serialize_plot", help="path to serialize plot (experimental)",
                              default=None)
@@ -110,12 +119,15 @@ def parser():
 
 def main_ape(traj_ref, traj_est, pose_relation, align=True, correct_scale=False,
              ref_name="", est_name="", show_plot=False, save_plot=None,
-             plot_mode=None, save_results=None, no_warnings=False, serialize_plot=None):
+             plot_mode=None, save_results=None, no_warnings=False, serialize_plot=None,
+             plot_colormap_max=None, plot_colormap_min=None, plot_colormap_max_percentile=None):
 
     from evo.core import metrics, result
     from evo.core import trajectory
     from evo.tools import file_interface
     from evo.tools.settings import SETTINGS
+
+    import numpy as np
 
     only_scale = correct_scale and not align
     if align or correct_scale:
@@ -172,16 +184,26 @@ def main_ape(traj_ref, traj_est, pose_relation, align=True, correct_scale=False,
                 ax = fig1.gca()
                 ax.text(0, -0.12, "estimate:  " + est_name + "\nreference: " + ref_name,
                         transform=ax.transAxes, fontsize=8, color="gray")
+
             # trajectory colormapped
             fig2 = plt.figure(figsize=(SETTINGS.plot_figsize[0], SETTINGS.plot_figsize[1]))
             plot_mode = plot_mode if plot_mode is not None else plot.PlotMode.xyz
             ax = plot.prepare_axis(fig2, plot_mode)
             plot.traj(ax, plot_mode, traj_ref, '--', 'gray', 'reference',
                       alpha=0.0 if SETTINGS.plot_hideref else 1.0)
+
+            min_map = ape_statistics["min"] if plot_colormap_min is None else plot_colormap_min
+            if plot_colormap_max_percentile is not None:
+                max_map = np.percentile(
+                    ape_result.np_arrays["error_array"], plot_colormap_max_percentile)
+            else:
+                max_map = ape_statistics["max"] if plot_colormap_max is None else plot_colormap_max
+
             plot.traj_colormap(ax, traj_est, ape_metric.error, plot_mode,
-                               min_map=ape_statistics["min"], max_map=ape_statistics["max"],
+                               min_map=min_map, max_map=max_map,
                                title="APE mapped onto trajectory")
             fig2.axes.append(ax)
+
             plot_collection = plot.PlotCollection(title)
             plot_collection.add_figure("raw", fig1)
             plot_collection.add_figure("map", fig2)
@@ -280,9 +302,24 @@ def run(args):
             from evo.tools.plot import PlotMode
             plot_mode = PlotMode.xy if not args.plot_mode else PlotMode[args.plot_mode]
 
-    main_ape(traj_ref, traj_est, pose_relation, args.align, args.correct_scale,
-             ref_name, est_name, args.plot, args.save_plot, plot_mode,
-             args.save_results, args.no_warnings, serialize_plot=args.serialize_plot)
+    main_ape(
+        traj_ref=traj_ref,
+        traj_est=traj_est,
+        pose_relation=pose_relation,
+        align=args.align,
+        correct_scale=args.correct_scale,
+        ref_name=ref_name,
+        est_name=est_name,
+        show_plot=args.plot,
+        save_plot=args.save_plot,
+        plot_mode=plot_mode,
+        save_results=args.save_results,
+        no_warnings=args.no_warnings,
+        serialize_plot=args.serialize_plot,
+        plot_colormap_max=args.plot_colormap_max,
+        plot_colormap_min=args.plot_colormap_min,
+        plot_colormap_max_percentile=args.plot_colormap_max_percentile,
+    )
 
 
 if __name__ == '__main__':

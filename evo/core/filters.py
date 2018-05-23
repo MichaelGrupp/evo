@@ -289,4 +289,5 @@ def id_pairs_from_delta(poses, delta, delta_unit, rel_tol=0.1, all_pairs=False):
     logger.debug("Found {} pairs with delta {} ({}) "
                  "among {} poses ".format(len(id_pairs), delta, delta_unit.value, len(poses)) +
                  ("using consecutive pairs." if not all_pairs else "using all possible pairs."))
+
     return id_pairs

@@ -156,7 +156,7 @@ def main_rpe_for_each(traj_ref, traj_est, pose_relation, mode, bins, rel_tols,
             logger.debug("Correcting scale...")
         else:
             logger.debug("Aligning using Umeyama's method..."
-                          + (" (with scale correction)" if correct_scale else ""))
+                         + (" (with scale correction)" if correct_scale else ""))
         traj_est = trajectory.align_trajectory(traj_est, traj_ref, correct_scale,
                                                correct_only_scale)
 
@@ -263,14 +263,14 @@ def run(args):
 
     # manually check bins and tols arguments to allow them to be in config files
     if not args.bins or not args.tols:
-        logger.error(The following arguments are required: -b/--bins, -t/--tols")
+        logger.error("The following arguments are required: -b/--bins, -t/--tols")
         sys.exit(1)
 
     log.configure_logging(args.verbose, args.silent, args.debug)
     if args.debug:
         import pprint
         logger.debug("main_parser config:\n"
-                      + pprint.pformat({arg: getattr(args, arg) for arg in vars(args)}) + "\n")
+                     + pprint.pformat({arg: getattr(args, arg) for arg in vars(args)}) + "\n")
     logger.debug(SEP)
 
     pose_relation = None

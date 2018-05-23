@@ -348,7 +348,7 @@ def align_trajectory(traj, traj_ref, correct_scale=False, correct_only_scale=Fal
                                                  traj_ref.positions_xyz[:n, :].T, with_scale)
     if not correct_only_scale:
         logger.debug("Rotation of alignment:\n{}"
-                     "\nTranslation of alignment:\{}".format(r_a, t_a))
+                     "\nTranslation of alignment:\n{}".format(r_a, t_a))
     logger.debug("Scale correction: {}".format(s))
 
     if correct_only_scale:

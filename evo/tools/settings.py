@@ -97,7 +97,7 @@ if not os.path.exists(USER_ASSETS_VERSION_PATH):
 if not os.path.exists(DEFAULT_PATH):
     try:
         reset()
-        print(Fore.LIGHTYELLOW_EX + "initialized new " + DEFAULT_PATH + Fore.RESET)
+        print(Fore.LIGHTYELLOW_EX + "Initialized new " + DEFAULT_PATH + Fore.RESET)
     except:
         print(Fore.LIGHTRED_EX
             + "fatal: failed to write package settings file " + DEFAULT_PATH + Fore.RESET)
@@ -109,7 +109,7 @@ if not open(USER_ASSETS_VERSION_PATH).read() == PACKAGE_VERSION:
     with open(DEFAULT_PATH, 'w') as cfg_file:
         cfg_file.write(json.dumps(updated_settings, indent=4, sort_keys=True))
     open(os.path.join(USER_ASSETS_PATH, "assets_version"), 'w').write(PACKAGE_VERSION)
-    print(Fore.LIGHTYELLOW_EX + "updated outdated " + DEFAULT_PATH + Fore.RESET)
+    print(Fore.LIGHTYELLOW_EX + "Updated outdated " + DEFAULT_PATH + Fore.RESET)
 
 
 # load the user settings into this container

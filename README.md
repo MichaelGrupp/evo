@@ -78,7 +78,7 @@ PyQt5 will give you the enhanced GUI for plot figures from the "*Qt5Agg*" matplo
 
 **ROS (optional)**
 
-To load or export ROS bag files, you need to install ROS - see [here](http://www.ros.org/). We tested this package with ROS Indigo, Kinetic and Melodic.
+All ROS-related features like reading bagfiles require a ROS installation, see [here](http://www.ros.org/). We tested this package with ROS Melodic, Kinetic and Indigo.
 
 ---
 

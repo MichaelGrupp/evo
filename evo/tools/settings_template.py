@@ -21,12 +21,15 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 import imp  # TODO deprecated in Python 3
 
 
-pyqt4_installed = False
-try:
-    imp.find_module("PyQt4")
-    pyqt4_installed = True
-except ImportError:
-    pass
+def get_default_plot_backend():
+    backends = {"PyQt5": "Qt5Agg", "PyQt4": "Qt4Agg"}
+    for module in backends:
+        try:
+            imp.find_module(module)
+            return backends[module]
+        except ImportError:
+            pass
+    return "TkAgg"
 
 
 # default settings with documentation
@@ -36,8 +39,8 @@ DEFAULT_SETTINGS_DICT_DOC = {
         "Equal axes ratio in 'xyz' plot mode for realistic trajectory plots."
     ),
     "plot_backend": (
-        "Qt4Agg" if pyqt4_installed else "TkAgg",
-        "matplotlib backend - TkAgg (default) or Qt4Agg (if PyQt is installed)."
+        get_default_plot_backend(),
+        "matplotlib backend - default: 'Qt{4, 5}Agg' (if PyQt is installed) or 'TkAgg'."
     ),
     "plot_hideref": (
         False,

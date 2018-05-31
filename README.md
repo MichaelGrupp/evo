@@ -72,13 +72,13 @@ evo has the following dependencies that are ***automatically resolved*** during 
 
 *numpy, matplotlib, scipy, pandas, seaborn, natsort, argcomplete, colorama, pygments, enum34 (only Python 2.7)*
 
-**PyQt4 (optional)**
+**PyQt5 / PyQt4 (optional)**
 
-It is optional but recommended to install PyQt4 before installation, which will give you the enhanced editing tools for plot figures from the "*Qt4Agg*" matplotlib backend (otherwise: "*TkAgg*"). If PyQt4 is already installed when installing this package, it will be used as a default. To change the plot backend afterwards, run `evo_config set plot_backend Qt4Agg`.   
+PyQt5 will give you the enhanced GUI for plot figures from the "*Qt5Agg*" matplotlib backend (otherwise: "*TkAgg*"). If PyQt5 is already installed when installing this package, it will be used as a default (see `evo_config show`). To change the plot backend afterwards, run `evo_config set plot_backend Qt5Agg`. PyQt4 can be set equivalently.
 
 **ROS (optional)**
 
-To load or export ROS bag files, you need to install ROS - see [here](http://www.ros.org/). We tested this package with ROS Indigo and Kinetic.
+All ROS-related features like reading bagfiles require a ROS installation, see [here](http://www.ros.org/). We tested this package with ROS Melodic, Kinetic and Indigo.
 
 ---
 

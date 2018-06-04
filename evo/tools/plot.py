@@ -121,7 +121,7 @@ class PlotCollection:
         # mpl backend can already create instance - https://stackoverflow.com/a/40031190
         app = QtGui.QGuiApplication.instance()
         if app is None:
-            app = QtGui.QApplication([self.title])
+            app = QtWidgets.QApplication([self.title])
         self.root_window = QtWidgets.QTabWidget()
         self.root_window.setWindowTitle(self.title)
         for name, fig in self.figures.items():

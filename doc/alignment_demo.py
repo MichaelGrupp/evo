@@ -33,8 +33,8 @@ logger = logging.getLogger("evo")
 log.configure_logging(verbose=True)
 
 
-traj_ref = file_interface.read_kitti_poses_file("../data/KITTI_00_gt.txt")
-traj_est = file_interface.read_kitti_poses_file("../data/KITTI_00_ORB.txt")
+traj_ref = file_interface.read_kitti_poses_file("../test/data/KITTI_00_gt.txt")
+traj_est = file_interface.read_kitti_poses_file("../test/data/KITTI_00_ORB.txt")
 
 # add artificial Sim(3) transformation
 traj_est.transform(lie.se3(np.eye(3), [0, 0, 0]))

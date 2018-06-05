@@ -274,7 +274,7 @@ def main():
                 with open(args.out, 'w') as out:
                     out.write(json.dumps(data, indent=4, sort_keys=True))
             elif not args.out:
-                logger.warning("{0}\n(-o | --out) not specified - saving nothing\n{0}".format(SEP))
+                logger.warning("\n(-o | --out) not specified - saving nothing")
         else:
             logger.error("No command line arguments given (see --help)")
 

@@ -19,7 +19,7 @@ if [ -e cfg.json ]; then
 fi
 
 log "set some package settings"
-echo_and_run sudo evo_config set plot_figsize 6 5 plot_usetex plot_fontfamily serif
+echo_and_run evo_config set plot_figsize 6 5 plot_usetex plot_fontfamily serif
 
 if [ -e cfg.json ]; then
     log "set parameter of some arbitrary .json config"
@@ -27,7 +27,7 @@ if [ -e cfg.json ]; then
 fi
 
 log "reset package settings to defaults"
-echo_and_run sudo evo_config reset
+echo_and_run evo_config reset
 
 log "generate a .json config from arbitrary command line options"
-echo_and_run sudo evo_config generate --flag --number 2.5 --string plot.pdf --list 1 2.3 4
+echo_and_run evo_config generate --flag --number 2.5 --string plot.pdf --list 1 2.3 4

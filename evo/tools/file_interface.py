@@ -30,7 +30,7 @@ import numpy as np
 
 import evo.core.lie_algebra as lie
 import evo.core.transformations as tr
-from evo.core import result, sync
+from evo.core import result
 from evo.core.trajectory import PosePath3D, PoseTrajectory3D
 from evo.tools import user
 

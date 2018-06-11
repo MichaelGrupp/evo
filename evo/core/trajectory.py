@@ -340,6 +340,11 @@ def align_trajectory(traj, traj_ref, correct_scale=False, correct_only_scale=Fal
     """
     traj_aligned = copy.deepcopy(traj)  # otherwise np arrays will be references and mess up stuff
     with_scale = correct_scale or correct_only_scale
+    if correct_only_scale:
+        logger.debug("Correcting scale...")
+    else:
+        logger.debug("Aligning using Umeyama's method..."
+                     + (" (with scale correction)" if with_scale else ""))
     if n == -1:
         r_a, t_a, s = geometry.umeyama_alignment(traj_aligned.positions_xyz.T,
                                                  traj_ref.positions_xyz.T, with_scale)

@@ -1,6 +1,6 @@
 # -*- coding: UTF8 -*-
 """
-low- and high-level read/write functions for different file formats
+Low- and high-level read/write functions for different file formats.
 author: Michael Grupp
 
 This file is part of evo (github.com/MichaelGrupp/evo).
@@ -19,17 +19,18 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import io
-import zipfile
 import csv
+import io
+import json
 import logging
 import os
-import json
+import zipfile
 
 import numpy as np
 
-from evo.core import sync
-from evo.core import result
+import evo.core.lie_algebra as lie
+import evo.core.transformations as tr
+from evo.core import result, sync
 from evo.core.trajectory import PosePath3D, PoseTrajectory3D
 from evo.tools import user
 
@@ -49,14 +50,17 @@ def csv_read_matrix(file_path, delim=',', comment_str="#"):
     :return: 2D list with raw data (string)
     """
     if hasattr(file_path, 'read'):  # if file handle
-        generator = (line for line in file_path if not line.startswith(comment_str))
+        generator = (
+            line for line in file_path if not line.startswith(comment_str))
         reader = csv.reader(generator, delimiter=delim)
         mat = [row for row in reader]
     else:
         if not os.path.isfile(file_path):
-            raise FileInterfaceException("csv file " + str(file_path) + " does not exist")
+            raise FileInterfaceException(
+                "csv file " + str(file_path) + " does not exist")
         with open(file_path) as f:
-            generator = (line for line in f if not line.startswith(comment_str))
+            generator = (
+                line for line in f if not line.startswith(comment_str))
             reader = csv.reader(generator, delimiter=delim)
             mat = [row for row in reader]
     return mat
@@ -68,35 +72,37 @@ def read_tum_trajectory_file(file_path):
     :param file_path: the trajectory file path (or file handle)
     :return: trajectory.PoseTrajectory3D object
     """
-    mat = np.array(csv_read_matrix(file_path, delim=" ", comment_str="#")).astype(float)
+    mat = np.array(csv_read_matrix(
+        file_path, delim=" ", comment_str="#")).astype(float)
     if mat.shape[1] != 8:
-        raise FileInterfaceException("TUM trajectory files must have 8 entries per row")
+        raise FileInterfaceException(
+            "TUM trajectory files must have 8 entries per row")
     stamps = mat[:, 0]  # n x 1
     xyz = mat[:, 1:4]  # n x 3
     quat = mat[:, 4:]  # n x 4
     quat = np.roll(quat, 1, axis=1)  # shift 1 column -> w in front column
     if not hasattr(file_path, 'read'):  # if not file handle
-        logger.debug("Loaded " + str(len(stamps)) + " stamps and poses from: " + file_path)
+        logger.debug("Loaded {} stamps and poses from: {}".format(
+            len(stamps), file_path))
     return PoseTrajectory3D(xyz, quat, stamps)
 
 
-def write_tum_trajectory_file(file_path, traj, quat_is_wxyz=True, confirm_overwrite=False):
+def write_tum_trajectory_file(file_path, traj, confirm_overwrite=False):
     """
     :param file_path: desired text file for trajectory (string or handle)
     :param traj: trajectory.PoseTrajectory3D
-    :param quat_is_wxyz: set to False if you use xyzw quaternion order
-    :param confirm_overwrite: whether to require user interaction to overwrite existing files
+    :param confirm_overwrite: whether to require user interaction
+           to overwrite existing files
     """
     if isinstance(file_path, str) and confirm_overwrite:
         if not user.check_and_confirm_overwrite(file_path):
             return
     if not isinstance(traj, PoseTrajectory3D):
-        raise FileInterfaceException("trajectory must be a PoseTrajectory3D object")
+        raise FileInterfaceException(
+            "trajectory must be a PoseTrajectory3D object")
     stamps = traj.timestamps
     xyz = traj.positions_xyz
     quat = traj.orientations_quat_wxyz
-    if quat_is_wxyz:
-        quat = np.roll(quat, -1, axis=1)  # shift -1 column -> w in back column
     mat = np.column_stack((stamps, xyz, quat))
     np.savetxt(file_path, mat, delimiter=" ")
     if isinstance(file_path, str):
@@ -109,15 +115,17 @@ def read_kitti_poses_file(file_path):
     :param file_path: the trajectory file path (or file handle)
     :return: trajectory.PosePath3D
     """
-    mat = np.array(csv_read_matrix(file_path, delim=" ", comment_str="#")).astype(float)
+    mat = np.array(csv_read_matrix(
+        file_path, delim=" ", comment_str="#")).astype(float)
     if mat.shape[1] != 12:
-        raise FileInterfaceException("KITTI pose files must have 12 entries per row")
+        raise FileInterfaceException(
+            "KITTI pose files must have 12 entries per row")
     poses = [np.array([[r[0], r[1], r[2], r[3]],
                        [r[4], r[5], r[6], r[7]],
                        [r[8], r[9], r[10], r[11]],
                        [0, 0, 0, 1]]) for r in mat]
     if not hasattr(file_path, 'read'):  # if not file handle
-        logger.debug("Loaded " + str(len(poses)) + " poses from: " + file_path)
+        logger.debug("Loaded {} poses from: {}".format(len(poses), file_path))
     return PosePath3D(poses_se3=poses)
 
 
@@ -125,12 +133,14 @@ def write_kitti_poses_file(file_path, traj, confirm_overwrite=False):
     """
     :param file_path: desired text file for trajectory (string or handle)
     :param traj: trajectory.PosePath3D or trajectory.PoseTrajectory3D
-    :param confirm_overwrite: whether to require user interaction to overwrite existing files
+    :param confirm_overwrite: whether to require user interaction
+           to overwrite existing files
     """
     if isinstance(file_path, str) and confirm_overwrite:
         if not user.check_and_confirm_overwrite(file_path):
             return
-    poses_flat = [p.flatten()[:-4] for p in traj.poses_se3]  # first 3 rows flattened
+    # first 3 rows  of SE(3) matrix flattened
+    poses_flat = [p.flatten()[:-4] for p in traj.poses_se3]
     np.savetxt(file_path, poses_flat, delimiter=' ')
     if isinstance(file_path, str):
         logger.info("Poses saved to: " + file_path)
@@ -142,13 +152,16 @@ def read_euroc_csv_trajectory(file_path):
     :param file_path: <sequence>/mav0/state_groundtruth_estimate0/data.csv
     :return: trajectory.PoseTrajectory3D object
     """
-    mat = np.array(csv_read_matrix(file_path, delim=",", comment_str="#")).astype(float)
+    mat = np.array(csv_read_matrix(
+        file_path, delim=",", comment_str="#")).astype(float)
     if mat.shape[1] != 17:
-        raise FileInterfaceException("EuRoC MAV state ground truth must have 17 entries per row")
+        raise FileInterfaceException(
+            "EuRoC MAV state ground truth must have 17 entries per row")
     stamps = np.divide(mat[:, 0], 1e9)  # n x 1  -  nanoseconds to seconds
     xyz = mat[:, 1:4]  # n x 3
     quat = mat[:, 4:8]  # n x 4
-    logger.debug("Loaded " + str(len(stamps)) + " stamps and poses from: " + file_path)
+    logger.debug("Loaded {} stamps and poses from: {}".format(
+        len(stamps), file_path))
     return PoseTrajectory3D(xyz, quat, stamps)
 
 
@@ -159,16 +172,19 @@ def read_bag_trajectory(bag_handle, topic):
     :return: trajectory.PoseTrajectory3D
     """
     if not bag_handle.get_message_count(topic) > 0:
-        raise FileInterfaceException("no messages for topic '" + topic + "' in bag")
+        raise FileInterfaceException(
+            "no messages for topic '" + topic + "' in bag")
     stamps, xyz, quat = [], [], []
     for topic, msg, t in bag_handle.read_messages(topic):
         stamps.append(t.secs + (t.nsecs * 1e-9))
-        xyz.append([msg.pose.position.x, msg.pose.position.y, msg.pose.position.z])
-        quat.append([msg.pose.orientation.x, msg.pose.orientation.y, 
+        xyz.append(
+            [msg.pose.position.x, msg.pose.position.y, msg.pose.position.z])
+        quat.append([msg.pose.orientation.x, msg.pose.orientation.y,
                      msg.pose.orientation.z, msg.pose.orientation.w])
-    logger.debug("Loaded " + str(len(stamps)) + " geometry_msgs/PoseStamped messages"
-                 + " of topic: " + topic)
     quat = np.roll(quat, 1, axis=1)  # shift 1 column -> w in front column
+    logger.debug(
+        "Loaded {} geometry_msgs/PoseStamped messages of topic: {}".format(
+            len(stamps), topic))
     generator = bag_handle.read_messages(topic)
     _, first_msg, _ = generator.next()
     frame_id = first_msg.header.frame_id
@@ -185,8 +201,10 @@ def write_bag_trajectory(bag_handle, traj, topic_name, frame_id=""):
     import rospy
     from geometry_msgs.msg import PoseStamped
     if not isinstance(traj, PoseTrajectory3D):
-        raise FileInterfaceException("trajectory must be a PoseTrajectory3D object")
-    for stamp, xyz, quat in zip(traj.timestamps, traj.positions_xyz, traj.orientations_quat_wxyz):
+        raise FileInterfaceException(
+            "trajectory must be a PoseTrajectory3D object")
+    for stamp, xyz, quat in zip(
+            traj.timestamps, traj.positions_xyz, traj.orientations_quat_wxyz):
         p = PoseStamped()
         p.header.stamp = rospy.Time.from_sec(stamp)
         p.header.frame_id = frame_id
@@ -214,8 +232,8 @@ def load_assoc_tum_trajectories(ref_file, est_file, max_diff=0.01, offset_2=0.0,
     """
     traj_ref = read_tum_trajectory_file(ref_file)
     traj_est = read_tum_trajectory_file(est_file)
-    return sync.associate_trajectories(traj_ref, traj_est, max_diff, offset_2,
-                                       invert, ref_file, est_file)
+    return sync.associate_trajectories(
+        traj_ref, traj_est, max_diff, offset_2, invert, ref_file, est_file)
 
 
 def load_assoc_euroc_trajectories(ref_file, est_file, max_diff=0.01, offset_2=0.0, invert=False):
@@ -283,7 +301,8 @@ def save_res_file(zip_path, result_obj, confirm_overwrite=False):
                 fmt_suffix = ".tum"
                 write_tum_trajectory_file(tmp_file, traj)
             else:
-                raise FileInterfaceException("unknown format of trajectory {}".format(name))
+                raise FileInterfaceException(
+                    "unknown format of trajectory {}".format(name))
             tmp_file.seek(0)
             archive.writestr("{}{}".format(name, fmt_suffix), tmp_file.read())
             tmp_file.close()
@@ -301,7 +320,8 @@ def load_res_file(zip_path, load_trajectories=False):
     with zipfile.ZipFile(zip_path, mode='r') as archive:
         file_list = archive.namelist()
         if not {"error_array.npz", "info.json", "stats.json"} <= set(file_list):
-            logger.warning("{} has incorrect zip file structure for evo_res".format(zip_path))
+            logger.warning(
+                "{} has incorrect zip file structure for evo_res".format(zip_path))
         npz_files = [n for n in archive.namelist() if n.endswith(".npz")]
         for filename in npz_files:
             with io.BytesIO(archive.read(filename)) as f:
@@ -315,14 +335,16 @@ def load_res_file(zip_path, load_trajectories=False):
                     traj = read_tum_trajectory_file(f)
                     name = os.path.splitext(os.path.basename(filename))[0]
                     result_obj.add_trajectory(name, traj)
-            kitti_files = [n for n in archive.namelist() if n.endswith(".kitti")]
+            kitti_files = [
+                n for n in archive.namelist() if n.endswith(".kitti")]
             for filename in kitti_files:
                 with io.TextIOWrapper(archive.open(filename, mode='r')) as f:
                     traj = read_kitti_poses_file(f)
                     name = os.path.splitext(os.path.basename(filename))[0]
                     result_obj.add_trajectory(name, traj)
         result_obj.info = json.loads(archive.read("info.json").decode("utf-8"))
-        result_obj.stats = json.loads(archive.read("stats.json").decode("utf-8"))
+        result_obj.stats = json.loads(
+            archive.read("stats.json").decode("utf-8"))
     return result_obj
 
 
@@ -332,13 +354,12 @@ def load_transform_json(json_path):
     :param json_path: path to the .json file
     :return: t (SE(3) matrix), xyz (position), quat (orientation quaternion)
     """
-    import evo.core.lie_algebra as lie
-    import evo.core.transformations as tr
     with open(json_path, 'r') as tf_file:
         data = json.load(tf_file)
         keys = ("x", "y", "z", "qx", "qy", "qz", "qw")
         if not all(key in data for key in keys):
-            raise FileInterfaceException("invalid transform file - expected keys " + str(keys))
+            raise FileInterfaceException(
+                "invalid transform file - expected keys " + str(keys))
         xyz = np.array([data["x"], data["y"], data["z"]])
         quat = np.array([data["qw"], data["qx"], data["qy"], data["qz"]])
         t = lie.se3(lie.so3_from_se3(tr.quaternion_matrix(quat)), xyz)

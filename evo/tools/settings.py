@@ -43,12 +43,9 @@ class SettingsException(Exception):
 class SettingsContainer(dict):
     def __init__(self, data, lock=True):
         super(SettingsContainer, self).__init__()
-        try:
-            for k, v in data.items():
-                setattr(self, k, v)
-            setattr(self, "__locked__", lock)
-        except Exception as e:
-            logger.error(str(e))
+        for k, v in data.items():
+            setattr(self, k, v)
+        setattr(self, "__locked__", lock)
 
     @classmethod
     def from_json_file(cls, settings_path):

@@ -71,10 +71,6 @@ DEFAULT_SETTINGS_DICT_DOC = {
         [6, 6],
         "The default size of one (sub)plot figure (width, height)."
     ),
-    "plot_info_text": (
-        False,
-        "Show text with additional infos below the plots of the metrics."
-    ),
     "plot_trajectory_cmap": (
         "jet",
         "matplotlib color map used for mapping values on a trajectory.",
@@ -133,4 +129,4 @@ DEFAULT_SETTINGS_DICT_DOC = {
 }
 
 # without documentation
-DEFAULT_SETTINGS_DICT = {k : v[0] for k, v in DEFAULT_SETTINGS_DICT_DOC.items()}
+DEFAULT_SETTINGS_DICT = {k: v[0] for k, v in DEFAULT_SETTINGS_DICT_DOC.items()}

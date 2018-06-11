@@ -57,8 +57,6 @@ def result_to_df(result_obj, label=None):
     }
     for name, array in result_obj.np_arrays.items():
         data["np_arrays"][name] = array
-    for name, traj in result_obj.trajectories.items():
-        data["trajectories"][name] = trajectory_to_df(traj)
     if label is None and "est_name" in data["info"]:
         label = os.path.splitext(os.path.basename(data["info"]["est_name"]))[0]
     elif label is None:

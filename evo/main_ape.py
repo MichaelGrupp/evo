@@ -146,7 +146,7 @@ def parser():
 
 
 def ape(traj_ref, traj_est, pose_relation, align=False,
-        correct_scale=False, ref_name="", est_name=""):
+        correct_scale=False, ref_name="reference", est_name="estimate"):
     from evo.core import metrics
     from evo.core import trajectory
 
@@ -179,6 +179,8 @@ def ape(traj_ref, traj_est, pose_relation, align=False,
     logger.debug(SEP)
     logger.info(ape_result.pretty_str())
 
+    ape_result.add_trajectory(ref_name, traj_ref)
+    ape_result.add_trajectory(est_name, traj_est)
     if isinstance(traj_est, trajectory.PoseTrajectory3D):
         seconds_from_start = [t - traj_est.timestamps[0]
                               for t in traj_est.timestamps]
@@ -214,13 +216,16 @@ def run(args):
     )
 
     if args.plot or args.save_plot or args.serialize_plot:
-        common.plot(args, result, traj_ref, traj_est)
+        common.plot(
+            args, result,
+            result.trajectories[ref_name],
+            result.trajectories[est_name])
 
     if args.save_results:
         logger.debug(SEP)
-        if SETTINGS.save_traj_in_zip:
-            result.add_trajectory("traj_ref", traj_ref)
-            result.add_trajectory("traj_est", traj_est)
+        if not SETTINGS.save_traj_in_zip:
+            del result.trajectories[ref_name]
+            del result.trajectories[est_name]
         file_interface.save_res_file(
             args.save_results, result, confirm_overwrite=not args.no_warnings)
 

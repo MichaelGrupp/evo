@@ -161,7 +161,7 @@ def parser():
 def rpe(traj_ref, traj_est, pose_relation, delta, delta_unit,
         rel_delta_tol=0.1, all_pairs=False,
         align=False, correct_scale=False,
-        ref_name="", est_name="", support_loop=False):
+        ref_name="reference", est_name="estimate", support_loop=False):
 
     from evo.core import metrics
     from evo.core import trajectory

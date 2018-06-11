@@ -202,6 +202,8 @@ def rpe(traj_ref, traj_est, pose_relation, delta, delta_unit,
         traj_est = copy.deepcopy(traj_est)
     traj_ref.reduce_to_ids(rpe_metric.delta_ids)
     traj_est.reduce_to_ids(rpe_metric.delta_ids)
+    rpe_result.add_trajectory(ref_name, traj_ref)
+    rpe_result.add_trajectory(est_name, traj_est)
 
     if isinstance(traj_est, trajectory.PoseTrajectory3D) and not all_pairs:
         seconds_from_start = [t - traj_est.timestamps[0]
@@ -247,13 +249,16 @@ def run(args):
     )
 
     if args.plot or args.save_plot or args.serialize_plot:
-        common.plot(args, result, traj_ref, traj_est)
+        common.plot(
+            args, result,
+            result.trajectories[ref_name],
+            result.trajectories[est_name])
 
     if args.save_results:
         logger.debug(SEP)
-        if SETTINGS.save_traj_in_zip:
-            result.add_trajectory("traj_ref", traj_ref)
-            result.add_trajectory("traj_est", traj_est)
+        if not SETTINGS.save_traj_in_zip:
+            del result.trajectories[ref_name]
+            del result.trajectories[est_name]
         file_interface.save_res_file(
             args.save_results, result, confirm_overwrite=not args.no_warnings)
 

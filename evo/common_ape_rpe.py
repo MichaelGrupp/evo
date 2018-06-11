@@ -34,7 +34,7 @@ def load_trajectories(args):
         try:
             traj_ref = file_interface.read_bag_trajectory(bag, args.ref_topic)
             traj_est = file_interface.read_bag_trajectory(bag, args.est_topic)
-            ref_name, est_name = args.ref_file, args.est_file
+            ref_name, est_name = args.ref_topic, args.est_topic
         finally:
             bag.close()
     else:

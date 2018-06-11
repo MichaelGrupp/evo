@@ -18,17 +18,14 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import imp  # TODO deprecated in Python 3
+import pkgutil
 
 
 def get_default_plot_backend():
     backends = {"PyQt5": "Qt5Agg", "PyQt4": "Qt4Agg"}
-    for module in backends:
-        try:
-            imp.find_module(module)
-            return backends[module]
-        except ImportError:
-            pass
+    for pkg in backends:
+        if pkgutil.find_loader(pkg) is not None:
+            return backends[pkg]
     return "TkAgg"
 
 

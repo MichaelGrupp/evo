@@ -26,8 +26,6 @@ import logging
 
 from colorama import Fore
 
-from evo.tools.settings_template import DEFAULT_SETTINGS_DICT
-
 logger = logging.getLogger(__name__)
 
 PACKAGE_BASE_PATH = os.path.abspath(__file__ + "/../../")
@@ -83,6 +81,7 @@ def merge_dicts(first, second, soft=False):
 
 
 def reset(dest=DEFAULT_PATH):
+    from evo.tools.settings_template import DEFAULT_SETTINGS_DICT
     with open(dest, 'w') as cfg_file:
         cfg_file.write(json.dumps(DEFAULT_SETTINGS_DICT, indent=4, sort_keys=True))
     
@@ -104,6 +103,7 @@ if not os.path.exists(DEFAULT_PATH):
         raise
 
 if not open(USER_ASSETS_VERSION_PATH).read() == PACKAGE_VERSION:
+    from evo.tools.settings_template import DEFAULT_SETTINGS_DICT
     old_settings = json.loads(open(DEFAULT_PATH).read())
     updated_settings = merge_dicts(old_settings, DEFAULT_SETTINGS_DICT, soft=True)
     with open(DEFAULT_PATH, 'w') as cfg_file:

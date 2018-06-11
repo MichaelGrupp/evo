@@ -34,13 +34,13 @@ Supported trajectory formats:
 * TUM trajectory files
 * KITTI pose files
 * ROS bagfile with geometry_msgs/PoseStamped topics
+* EuRoC MAV dataset groundtruth files
 
 The following executables are available:
 
 Metrics:
    evo_ape - absolute pose error
    evo_rpe - relative pose error
-   evo_rpe-for-each - sub-sequence-wise averaged relative pose error
 
 Tools:
    evo_traj - tool for analyzing, plotting or exporting multiple trajectories

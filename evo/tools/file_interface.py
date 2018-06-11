@@ -219,65 +219,13 @@ def write_bag_trajectory(bag_handle, traj, topic_name, frame_id=""):
     logger.info("Saved geometry_msgs/PoseStamped topic: " + topic_name)
 
 
-def load_assoc_tum_trajectories(ref_file, est_file, max_diff=0.01, offset_2=0.0, invert=False):
-    """
-    parses two trajectory files in TUM format (timestamp tx ty tz qx qy qz qw)
-    and returns the data with associated (matching) timestamps according to the time parameters
-    :param ref_file: first trajectory file
-    :param est_file: second trajectory file
-    :param max_diff: max. allowed absolute time difference for associating
-    :param offset_2: optional time offset of second timestamp vector
-    :param invert: set to True to match from longer list to short (default: short to longer list)
-    :return: trajectory.PoseTrajectory3D objects traj_ref and traj_est
-    """
-    traj_ref = read_tum_trajectory_file(ref_file)
-    traj_est = read_tum_trajectory_file(est_file)
-    return sync.associate_trajectories(
-        traj_ref, traj_est, max_diff, offset_2, invert, ref_file, est_file)
-
-
-def load_assoc_euroc_trajectories(ref_file, est_file, max_diff=0.01, offset_2=0.0, invert=False):
-    """
-    parses ground truth trajectory from EuRoC MAV state estimate .csv and estimated TUM trajectory
-    and returns the data with associated (matching) timestamps according to the time parameters
-    :param ref_file: ground truth: <sequence>/mav0/state_groundtruth_estimate0/data.csv
-    :param est_file: estimated TUM trajectory file
-    :param max_diff: max. allowed absolute time difference for associating
-    :param offset_2: optional time offset of second timestamp vector
-    :param invert: set to True to match from longer list to short (default: short to longer list)
-    :return: trajectory.PoseTrajectory3D objects traj_ref and traj_est
-    """
-    traj_ref = read_euroc_csv_trajectory(ref_file)
-    traj_est = read_tum_trajectory_file(est_file)
-    return sync.associate_trajectories(traj_ref, traj_est, max_diff, offset_2, invert,
-                                       ref_file, est_file)
-
-
-def load_assoc_bag_trajectories(bag_handle, ref_topic, est_topic,
-                                max_diff=0.01, offset_2=0.0, invert=False):
-    """
-    reads trajectory data from a ROS bag file with two geometry_msgs/PoseStamped topics
-    and returns the data with associated (matching) timestamps according to the time parameters
-    :param bag_handle: opened bag handle, from rosbag.Bag(...)
-    :param ref_topic: first geometry_msgs/PoseStamped topic
-    :param est_topic: second geometry_msgs/PoseStamped topic
-    :param max_diff: max. allowed absolute time difference for associating
-    :param offset_2: optional time offset of second timestamp vector
-    :param invert: set to True to match from longer list to short (default: short to longer list)
-    :return: trajectory.PoseTrajectory3D objects traj_ref and traj_est
-    """
-    traj_ref = read_bag_trajectory(bag_handle, ref_topic)
-    traj_est = read_bag_trajectory(bag_handle, est_topic)
-    return sync.associate_trajectories(traj_ref, traj_est, max_diff, offset_2, invert,
-                                       ref_topic, est_topic)
-
-
 def save_res_file(zip_path, result_obj, confirm_overwrite=False):
     """
     save results of a pose error metric (pe_metric) to a zip file
     :param zip_path: path to zip file
     :param result_obj: evo.core.result.Result instance
-    :param confirm_overwrite: whether to require user interaction to overwrite existing files
+    :param confirm_overwrite: whether to require user interaction
+           to overwrite existing files
     """
     from tempfile import TemporaryFile
     logger.debug("Saving results to " + zip_path + "...")
@@ -319,9 +267,11 @@ def load_res_file(zip_path, load_trajectories=False):
     result_obj = result.Result()
     with zipfile.ZipFile(zip_path, mode='r') as archive:
         file_list = archive.namelist()
-        if not {"error_array.npz", "info.json", "stats.json"} <= set(file_list):
+        if not {"error_array.npz",
+                "info.json",
+                "stats.json"} <= set(file_list):
             logger.warning(
-                "{} has incorrect zip file structure for evo_res".format(zip_path))
+                "{} not suitable for evo_res".format(zip_path))
         npz_files = [n for n in archive.namelist() if n.endswith(".npz")]
         for filename in npz_files:
             with io.BytesIO(archive.read(filename)) as f:

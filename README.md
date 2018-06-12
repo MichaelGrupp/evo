@@ -131,7 +131,7 @@ There are some example trajectories in the source folder in `test/data`.
 
   ```
   mkdir results
-  evo_ape kitti KITTI_00_gt.txt KITTI_00_ORB.txt -va --plot --save_results results/ORB.zip
+  evo_ape kitti KITTI_00_gt.txt KITTI_00_ORB.txt -va --plot --plot_mode xz --save_results results/ORB.zip
   ```
 
   <center>
@@ -142,7 +142,7 @@ There are some example trajectories in the source folder in `test/data`.
   *Second trajectory (S-PTAM):*
   
   ```
-  evo_ape kitti KITTI_00_gt.txt KITTI_00_SPTAM.txt -va --plot --save_results results/SPTAM.zip
+  evo_ape kitti KITTI_00_gt.txt KITTI_00_SPTAM.txt -va --plot --plot_mode xz --save_results results/SPTAM.zip
   ```
 
   <center>

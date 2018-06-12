@@ -44,7 +44,7 @@ evo has several advantages over other public benchmarking tools:
 
 ---
 
-## Installation
+## Installation / Upgrade
 
 Installation is easy-peasy if you're familiar with this: https://xkcd.com/1987/#
 
@@ -56,12 +56,12 @@ If you just want to use the executables of the latest release version, the easie
 ```bash
 pip install evo --upgrade --no-binary evo
 ```
-This will download the package and its dependencies from PyPi and install or upgrade them. Depending on your OS, you might be able to use `pip2` or `pip3` to specify the Python version you want. Tab completion for Bash terminals is supported via the [argcomplete](https://github.com/kislyuk/argcomplete/) package on most UNIX systems - open a new shell after the installation to use it. If you want, you can subscribe to new releases via https://libraries.io/pypi/evo.
+This will download the package and its dependencies from PyPi and install or upgrade them. Depending on your OS, you might be able to use `pip2` or `pip3` to specify the Python version you want. Tab completion for Bash terminals is supported via the [argcomplete](https://github.com/kislyuk/argcomplete/) package on most UNIX systems - open a new shell after the installation to use it (without `--no-binary evo` the tab completion might not be installed properly). If you want, you can subscribe to new releases via https://libraries.io/pypi/evo.
 
 ### From Source
 Run this in the repository's base folder:
 ```bash
-pip install . --upgrade
+pip install . --upgrade --no-binary evo
 ```
 
 ### Dependencies

@@ -13,12 +13,12 @@ if [[ $* == *--no_plots* ]]; then
     p=
 fi
 
-for m in ape rpe rpe-for-each
+for m in ape rpe
 do
     ls *$m.zip > /dev/null
     retcode=$?; if [ $retcode != 0 ]; then
         echo "missing files: "*$m.zip
-        echo "run [ape, rpe, rpe-for-each]_demo.sh before this demo"
+        echo "run {ape, rpe}_demo.sh before this demo"
         exit 1
     else
         echo "found files for $m"
@@ -27,7 +27,7 @@ done
 
 set -e  # exit on error
 
-for m in ape rpe rpe-for-each
+for m in ape rpe
 do
     log "load results from evo_${m}..."
     echo_and_run evo_res *"$m".zip
@@ -41,6 +41,3 @@ do
     log "load results from evo_$m and save stats in table"
     echo_and_run evo_res *"$m".zip --save_table "$m".csv
 done
-
-log "bonus content: --plot_markers"
-echo_and_run evo_res *rpe-for-each.zip $p --plot_markers

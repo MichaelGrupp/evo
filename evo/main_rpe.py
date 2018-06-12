@@ -2,7 +2,7 @@
 # -*- coding: UTF8 -*-
 # PYTHON_ARGCOMPLETE_OK
 """
-main executable for calculating the relative pose error (RPE) metric
+Main executable for calculating the relative pose error (RPE) metric.
 author: Michael Grupp
 
 This file is part of evo (github.com/MichaelGrupp/evo).
@@ -32,133 +32,152 @@ SEP = "-" * 80  # separator line
 
 def parser():
     import argparse
-    basic_desc = "relative pose error (RPE) metric app"
+    basic_desc = "Relative pose error (RPE) metric app"
     lic = "(c) michael.grupp@tum.de"
+
     shared_parser = argparse.ArgumentParser(add_help=False)
     algo_opts = shared_parser.add_argument_group("algorithm options")
     output_opts = shared_parser.add_argument_group("output options")
     usability_opts = shared_parser.add_argument_group("usability options")
-    algo_opts.add_argument("-r", "--pose_relation",
-                           help="pose relation on which the RPE is based", default="trans_part",
-                           choices=["full", "trans_part", "rot_part", "angle_deg", "angle_rad"])
-    algo_opts.add_argument("-d", "--delta", help="delta between relative poses",
-                           default=1, type=float)
-    algo_opts.add_argument("-t", "--delta_tol", help="relative delta tolerance for all_pairs mode",
-                           default=0.1, type=float)
-    algo_opts.add_argument("-u", "--delta_unit",
-                           help="unit of delta - `f` (frames), `d` (deg), `r` (rad), `m`(meters)",
-                           default="f", choices=['f', 'd', 'r', 'm'])
-    algo_opts.add_argument("--all_pairs", help="use all possible pairs (incompatible with plot)",
-                           action="store_true")
-    algo_opts.add_argument("-a", "--align", help="alignment with Umeyama's method (no scale) - "
-                                                 "only useful for plotting with RPE",
-                           action="store_true")
-    algo_opts.add_argument("-s", "--correct_scale", help="correct scale with Umeyama's method",
-                           action="store_true")
-    output_opts.add_argument("-p", "--plot", help="show plot window", action="store_true")
-    output_opts.add_argument("--plot_colormap_max", type=float,
-                             help="the upper bound used for the color map plot "
-                             "(default: maximum error value)")
-    output_opts.add_argument("--plot_colormap_min", type=float,
-                             help="the lower bound used for the color map plot "
-                             "(default: minimum error value)")
-    output_opts.add_argument("--plot_colormap_max_percentile", type=float,
-                             help="percentile of the error distribution to be used as the upper "
-                             "bound of the color map plot (in %%, overrides --plot_colormap_min)")
-    output_opts.add_argument("--plot_mode", help="the axes for  plot projection",
-                             default=None, choices=["xy", "yx", "xz", "zx", "yz", "xyz"])
-    output_opts.add_argument("--save_plot", help="path to save plot", default=None)
-    output_opts.add_argument("--serialize_plot", help="path to serialize plot (experimental)",
-                             default=None)
-    output_opts.add_argument("--save_results", help=".zip file path to store results")
-    usability_opts.add_argument("--no_warnings", help="no warnings requiring user confirmation",
-                                action="store_true")
-    usability_opts.add_argument("-v", "--verbose", help="verbose output", action="store_true")
-    usability_opts.add_argument("--silent", help="don't print any output", action="store_true")
-    usability_opts.add_argument("--debug", help="verbose output with additional debug info",
-                                action="store_true")
-    usability_opts.add_argument("-c", "--config",
-                                help=".json file with parameters (priority over command line args)")
 
-    main_parser = argparse.ArgumentParser(description="%s %s" % (basic_desc, lic))
+    algo_opts.add_argument(
+        "-r", "--pose_relation", default="trans_part",
+        help="pose relation on which the RPE is based",
+        choices=["full", "trans_part", "rot_part", "angle_deg", "angle_rad"])
+    algo_opts.add_argument(
+        "-a", "--align",
+        help="alignment with Umeyama's method (no scale)",
+        action="store_true")
+    algo_opts.add_argument(
+        "-s", "--correct_scale", action="store_true",
+        help="correct scale with Umeyama's method")
+    algo_opts.add_argument(
+        "-d", "--delta", type=float, default=1,
+        help="delta between relative poses")
+    algo_opts.add_argument(
+        "-t", "--delta_tol", type=float, default=0.1,
+        help="relative delta tolerance for all_pairs mode")
+    algo_opts.add_argument(
+        "-u", "--delta_unit", default="f",
+        help="unit of delta - `f` (frames), `d` (deg), `r` (rad), `m`(meters)",
+        choices=['f', 'd', 'r', 'm'])
+    algo_opts.add_argument(
+        "--all_pairs", action="store_true",
+        help="use all possible pairs (incompatible with plot)",)
+
+    output_opts.add_argument(
+        "-p", "--plot", action="store_true",
+        help="show plot window",)
+    output_opts.add_argument(
+        "--plot_mode", default="xyz",
+        help="the axes for plot projection",
+        choices=["xy", "yx", "xz", "zx", "yz", "xyz"])
+    output_opts.add_argument(
+        "--plot_colormap_max", type=float,
+        help="the upper bound used for the color map plot "
+        "(default: maximum error value)")
+    output_opts.add_argument(
+        "--plot_colormap_min", type=float,
+        help="the lower bound used for the color map plot "
+             "(default: minimum error value)")
+    output_opts.add_argument(
+        "--plot_colormap_max_percentile", type=float,
+        help="percentile of the error distribution to be used "
+             "as the upper bound of the color map plot "
+             "(in %%, overrides --plot_colormap_min)")
+    output_opts.add_argument(
+        "--save_plot", default=None,
+        help="path to save plot")
+    output_opts.add_argument(
+        "--serialize_plot", default=None,
+        help="path to serialize plot (experimental)")
+    output_opts.add_argument(
+        "--save_results",
+        help=".zip file path to store results")
+    usability_opts.add_argument(
+        "--no_warnings", action="store_true",
+        help="no warnings requiring user confirmation")
+    usability_opts.add_argument(
+        "-v", "--verbose", action="store_true",
+        help="verbose output")
+    usability_opts.add_argument(
+        "--silent", action="store_true",
+        help="don't print any output")
+    usability_opts.add_argument(
+        "--debug", action="store_true",
+        help="verbose output with additional debug info")
+    usability_opts.add_argument(
+        "-c", "--config",
+        help=".json file with parameters (priority over command line args)")
+
+    main_parser = argparse.ArgumentParser(
+        description="{} {}".format(basic_desc, lic))
     sub_parsers = main_parser.add_subparsers(dest="subcommand")
     sub_parsers.required = True
-    kitti_parser = sub_parsers.add_parser("kitti", description="%s for KITTI pose files - %s"
-                                                               % (basic_desc, lic),
-                                          parents=[shared_parser])
-    kitti_parser.add_argument("ref_file", help="reference pose file (ground truth)")
+
+    kitti_parser = sub_parsers.add_parser(
+        "kitti", parents=[shared_parser],
+        description="{} for KITTI pose files - {}".format(basic_desc, lic))
+    kitti_parser.add_argument(
+        "ref_file", help="reference pose file (ground truth)")
     kitti_parser.add_argument("est_file", help="estimated pose file")
 
-    tum_parser = sub_parsers.add_parser("tum", description="%s for TUM trajectory files - %s"
-                                                           % (basic_desc, lic),
-                                        parents=[shared_parser])
+    tum_parser = sub_parsers.add_parser(
+        "tum", parents=[shared_parser],
+        description="{} for TUM trajectory files - {}".format(basic_desc, lic))
     tum_parser.add_argument("ref_file", help="reference trajectory file")
     tum_parser.add_argument("est_file", help="estimated trajectory file")
-    tum_parser.add_argument("--t_max_diff",
-                            help="maximum timestamp difference for data association",
-                            default=0.01, type=float)
-    tum_parser.add_argument("--t_offset", help="constant timestamp offset for data association",
-                            default=0.0, type=float)
 
-    euroc_parser = sub_parsers.add_parser("euroc", description="%s for EuRoC MAV .csv's - %s"
-                                                               % (basic_desc, lic),
-                                          parents=[shared_parser])
-    euroc_parser.add_argument("state_gt_csv",
-                              help="ground truth: <seq>/mav0/state_groundtruth_estimate0/data.csv")
-    euroc_parser.add_argument("est_file", help="estimated trajectory file in TUM format")
-    euroc_parser.add_argument("--t_max_diff",
-                              help="maximum timestamp difference for data association",
-                              default=0.01, type=float)
-    euroc_parser.add_argument("--t_offset", help="constant timestamp offset for data association",
-                              default=0.0, type=float)
+    euroc_parser = sub_parsers.add_parser(
+        "euroc", parents=[shared_parser],
+        description="{} for EuRoC MAV files - {}".format(basic_desc, lic))
+    euroc_parser.add_argument(
+        "state_gt_csv",
+        help="ground truth: <seq>/mav0/state_groundtruth_estimate0/data.csv")
+    euroc_parser.add_argument(
+        "est_file", help="estimated trajectory file in TUM format")
 
-    bag_parser = sub_parsers.add_parser("bag", description="%s for ROS bag files - %s"
-                                                           % (basic_desc, lic),
-                                        parents=[shared_parser])
+    bag_parser = sub_parsers.add_parser(
+        "bag", parents=[shared_parser],
+        description="{} for ROS bag files - {}".format(basic_desc, lic))
     bag_parser.add_argument("bag", help="ROS bag file")
-    bag_parser.add_argument("ref_topic", help="reference geometry_msgs/PoseStamped topic")
-    bag_parser.add_argument("est_topic", help="estimated geometry_msgs/PoseStamped topic")
-    bag_parser.add_argument("--t_max_diff",
-                            help="maximum timestamp difference for data association",
-                            default=0.01, type=float)
-    bag_parser.add_argument("--t_offset", help="constant timestamp offset for data association",
-                            default=0.0, type=float)
+    bag_parser.add_argument(
+        "ref_topic", help="reference geometry_msgs/PoseStamped topic")
+    bag_parser.add_argument(
+        "est_topic", help="estimated geometry_msgs/PoseStamped topic")
+
+    # Add time-sync options to parser of trajectory formats.
+    for trajectory_parser in {bag_parser, euroc_parser, tum_parser}:
+        trajectory_parser.add_argument(
+            "--t_max_diff", type=float, default=0.01,
+            help="maximum timestamp difference for data association")
+        trajectory_parser.add_argument(
+            "--t_offset", type=float, default=0.0,
+            help="constant timestamp offset for data association")
+
     return main_parser
 
 
-def main_rpe(traj_ref, traj_est, pose_relation, delta, delta_unit,
-             rel_delta_tol=0.1, all_pairs=False, align=False, correct_scale=False,
-             ref_name="", est_name="", show_plot=False, save_plot=None,
-             plot_mode=None, save_results=None, no_warnings=False, support_loop=False,
-             serialize_plot=None, plot_colormap_max=None, plot_colormap_min=None,
-             plot_colormap_max_percentile=None):
+def rpe(traj_ref, traj_est, pose_relation, delta, delta_unit,
+        rel_delta_tol=0.1, all_pairs=False,
+        align=False, correct_scale=False,
+        ref_name="reference", est_name="estimate", support_loop=False):
 
-    from evo.core import metrics, result
+    from evo.core import metrics
     from evo.core import trajectory
-    from evo.tools import file_interface
-    from evo.tools.settings import SETTINGS
 
-    import numpy as np
-
-    if (show_plot or save_plot or serialize_plot) and all_pairs:
-        raise metrics.MetricsException("all_pairs mode cannot be used with plotting functions")
-
+    # Align the trajectories.
     only_scale = correct_scale and not align
     if align or correct_scale:
         logger.debug(SEP)
-        if only_scale:
-            logger.debug("Correcting scale...")
-        else:
-            logger.debug("Aligning using Umeyama's method..."
-                          + (" (with scale correction)" if correct_scale else ""))
-        traj_est = trajectory.align_trajectory(traj_est, traj_ref, correct_scale, only_scale)
-    logger.debug(SEP)
+        traj_est = trajectory.align_trajectory(
+            traj_est, traj_ref, correct_scale, only_scale)
 
-    # calculate RPE
+    # Calculate RPE.
+    logger.debug(SEP)
     data = (traj_ref, traj_est)
     rpe_metric = metrics.RPE(pose_relation, delta, delta_unit, rel_delta_tol, all_pairs)
     rpe_metric.process_data(data)
-    rpe_statistics = rpe_metric.get_all_statistics()
 
     title = str(rpe_metric)
     if align and not correct_scale:
@@ -171,169 +190,51 @@ def main_rpe(traj_ref, traj_est, pose_relation, delta, delta_unit,
         title += "\n(not aligned)"
 
     rpe_result = rpe_metric.get_result(ref_name, est_name)
+    rpe_result.info["title"] = title
     logger.debug(SEP)
     logger.info(rpe_result.pretty_str())
 
-    # restrict trajectories to delta ids
+    # Restrict trajectories to delta ids for further processing steps.
     if support_loop:
-        # avoid overwriting if called repeatedly e.g. in Jupyter notebook
+        # Avoid overwriting if called repeatedly e.g. in Jupyter notebook.
         import copy
         traj_ref = copy.deepcopy(traj_ref)
         traj_est = copy.deepcopy(traj_est)
     traj_ref.reduce_to_ids(rpe_metric.delta_ids)
     traj_est.reduce_to_ids(rpe_metric.delta_ids)
+    rpe_result.add_trajectory(ref_name, traj_ref)
+    rpe_result.add_trajectory(est_name, traj_est)
+
     if isinstance(traj_est, trajectory.PoseTrajectory3D) and not all_pairs:
-        seconds_from_start = [t - traj_est.timestamps[0] for t in traj_est.timestamps]
+        seconds_from_start = [t - traj_est.timestamps[0]
+                              for t in traj_est.timestamps]
         rpe_result.add_np_array("seconds_from_start", seconds_from_start)
         rpe_result.add_np_array("timestamps", traj_est.timestamps)
-    else:
-        seconds_from_start = None
-
-    if show_plot or save_plot or serialize_plot and not all_pairs:
-        from evo.tools import plot
-        import matplotlib.pyplot as plt
-        logger.debug(SEP)
-        logger.debug("Plotting results... ")
-        fig1 = plt.figure(figsize=(SETTINGS.plot_figsize[0], SETTINGS.plot_figsize[1]))
-        # metric values
-        plot.error_array(fig1, rpe_metric.error, x_array=seconds_from_start,
-                         statistics=rpe_statistics,
-                         name="RPE" + (" (" + rpe_metric.unit.value + ")") if rpe_metric.unit else "",
-                         title=title, xlabel="$t$ (s)" if seconds_from_start else "index")
-        # info text
-        if SETTINGS.plot_info_text and est_name and ref_name:
-            ax = fig1.gca()
-            ax.text(0, -0.12, "estimate:  " + est_name + "\nreference: " + ref_name,
-                    transform=ax.transAxes, fontsize=8, color="gray")
-
-        # trajectory colormapped
-        fig2 = plt.figure(figsize=(SETTINGS.plot_figsize[0], SETTINGS.plot_figsize[1]))
-        plot_mode = plot_mode if plot_mode is not None else plot.PlotMode.xyz
-        ax = plot.prepare_axis(fig2, plot_mode)
-        plot.traj(ax, plot_mode, traj_ref, '--', 'gray', 'reference',
-                  alpha=0 if SETTINGS.plot_hideref else 1)
-
-        min_map = rpe_statistics["min"] if plot_colormap_min is None else plot_colormap_min
-        if plot_colormap_max_percentile is not None:
-            max_map = np.percentile(
-                rpe_result.np_arrays["error_array"], plot_colormap_max_percentile)
-        else:
-            max_map = rpe_statistics["max"] if plot_colormap_max is None else plot_colormap_max
-
-        plot.traj_colormap(ax, traj_est, rpe_metric.error, plot_mode,
-                           min_map=min_map, max_map=max_map,
-                           title="RPE mapped onto trajectory")
-        fig2.axes.append(ax)
-
-        plot_collection = plot.PlotCollection(title)
-        plot_collection.add_figure("raw", fig1)
-        plot_collection.add_figure("map", fig2)
-        if show_plot:
-            plot_collection.show()
-        if save_plot:
-            plot_collection.export(save_plot, confirm_overwrite=not no_warnings)
-        if serialize_plot:
-            logger.debug(SEP)
-            plot_collection.serialize(serialize_plot, confirm_overwrite=not no_warnings)
-
-    if save_results:
-        logger.debug(SEP)
-        if SETTINGS.save_traj_in_zip:
-            rpe_result.add_trajectory("traj_ref", traj_ref)
-            rpe_result.add_trajectory("traj_est", traj_est)
-        file_interface.save_res_file(save_results, rpe_result, confirm_overwrite=not no_warnings)
 
     return rpe_result
 
 
 def run(args):
-    from evo.core import metrics
+    import evo.common_ape_rpe as common
     from evo.tools import file_interface, log
+    from evo.tools.settings import SETTINGS
 
     log.configure_logging(args.verbose, args.silent, args.debug)
     if args.debug:
-        import pprint
-        logger.debug("main_parser config:\n"
-                     + pprint.pformat({arg: getattr(args, arg) for arg in vars(args)}) + "\n")
+        from pprint import pformat
+        parser_str = pformat({arg: getattr(args, arg) for arg in vars(args)})
+        logger.debug("main_parser config:\n{}".format(parser_str))
     logger.debug(SEP)
 
-    pose_relation = None
-    if args.pose_relation == "full":
-        pose_relation = metrics.PoseRelation.full_transformation
-    elif args.pose_relation == "rot_part":
-        pose_relation = metrics.PoseRelation.rotation_part
-    elif args.pose_relation == "trans_part":
-        pose_relation = metrics.PoseRelation.translation_part
-    elif args.pose_relation == "angle_deg":
-        pose_relation = metrics.PoseRelation.rotation_angle_deg
-    elif args.pose_relation == "angle_rad":
-        pose_relation = metrics.PoseRelation.rotation_angle_rad
+    if (args.plot or args.save_plot or args.serialize_plot) and args.all_pairs:
+        raise NotImplementedError(
+            "all_pairs mode cannot be used with plotting functions")
 
-    delta_unit = None
-    if args.delta_unit == "f":
-        delta_unit = metrics.Unit.frames
-    elif args.delta_unit == "d":
-        delta_unit = metrics.Unit.degrees
-    elif args.delta_unit == "r":
-        delta_unit = metrics.Unit.radians
-    elif args.delta_unit == "m":
-        delta_unit = metrics.Unit.meters
+    traj_ref, traj_est, ref_name, est_name = common.load_trajectories(args)
+    pose_relation = common.get_pose_relation(args)
+    delta_unit = common.get_delta_unit(args)
 
-    traj_ref, traj_est, stamps_est = None, None, None
-    ref_name, est_name = "", ""
-    plot_mode = None  # no plot imports unless really needed (slow)
-    if args.subcommand == "tum":
-        traj_ref, traj_est = file_interface.load_assoc_tum_trajectories(
-            args.ref_file,
-            args.est_file,
-            args.t_max_diff,
-            args.t_offset,
-        )
-        ref_name, est_name = args.ref_file, args.est_file
-        if args.plot or args.save_plot:
-            from evo.tools.plot import PlotMode
-            plot_mode = PlotMode.xyz if not args.plot_mode else PlotMode[args.plot_mode]
-    elif args.subcommand == "kitti":
-        traj_ref = file_interface.read_kitti_poses_file(args.ref_file)
-        traj_est = file_interface.read_kitti_poses_file(args.est_file)
-        ref_name, est_name = args.ref_file, args.est_file
-        if args.plot or args.save_plot:
-            from evo.tools.plot import PlotMode
-            plot_mode = PlotMode.xz if not args.plot_mode else PlotMode[args.plot_mode]
-    elif args.subcommand == "euroc":
-        args.align = True
-        logger.info("Forcing trajectory alignment implicitly (EuRoC ground truth is in IMU frame)")
-        logger.debug(SEP)
-        traj_ref, traj_est = file_interface.load_assoc_euroc_trajectories(
-            args.state_gt_csv,
-            args.est_file,
-            args.t_max_diff,
-            args.t_offset,
-        )
-        ref_name, est_name = args.state_gt_csv, args.est_file
-        if args.plot or args.save_plot:
-            from evo.tools.plot import PlotMode
-            plot_mode = PlotMode.xyz if not args.plot_mode else PlotMode[args.plot_mode]
-    elif args.subcommand == "bag":
-        import rosbag
-        logger.debug("Opening bag file {} ...".format(args.bag))
-        bag = rosbag.Bag(args.bag, 'r')
-        try:
-            traj_ref, traj_est = file_interface.load_assoc_bag_trajectories(
-                bag,
-                args.ref_topic,
-                args.est_topic,
-                args.t_max_diff,
-                args.t_offset,
-            )
-        finally:
-            bag.close()
-        ref_name, est_name = args.ref_topic, args.est_topic
-        if args.plot or args.save_plot:
-            from evo.tools.plot import PlotMode
-            plot_mode = PlotMode.xy if not args.plot_mode else PlotMode[args.plot_mode]
-
-    main_rpe(
+    result = rpe(
         traj_ref=traj_ref,
         traj_est=traj_est,
         pose_relation=pose_relation,
@@ -345,17 +246,21 @@ def run(args):
         correct_scale=args.correct_scale,
         ref_name=ref_name,
         est_name=est_name,
-        show_plot=args.plot,
-        save_plot=args.save_plot,
-        plot_mode=plot_mode,
-        save_results=args.save_results,
-        no_warnings=args.no_warnings,
-        serialize_plot=args.serialize_plot,
-        plot_colormap_max=args.plot_colormap_max,
-        plot_colormap_min=args.plot_colormap_min,
-        plot_colormap_max_percentile=args.plot_colormap_max_percentile,
     )
 
+    if args.plot or args.save_plot or args.serialize_plot:
+        common.plot(
+            args, result,
+            result.trajectories[ref_name],
+            result.trajectories[est_name])
+
+    if args.save_results:
+        logger.debug(SEP)
+        if not SETTINGS.save_traj_in_zip:
+            del result.trajectories[ref_name]
+            del result.trajectories[est_name]
+        file_interface.save_res_file(
+            args.save_results, result, confirm_overwrite=not args.no_warnings)
 
 if __name__ == '__main__':
     from evo import entry_points

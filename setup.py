@@ -140,7 +140,6 @@ setup(
         "evo_rpe=evo.entry_points:rpe",
         "evo_traj=evo.entry_points:traj",
         "evo_res=evo.entry_points:res",
-        "evo_rpe-for-each=evo.entry_points:rpe_for_each",
         "evo_config=evo.main_config:main",
         "evo_fig=evo.main_fig:main",
         "evo_ipython=evo.main_ipython:main",

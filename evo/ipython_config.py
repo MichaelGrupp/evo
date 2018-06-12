@@ -36,9 +36,8 @@ c.InteractiveShellApp.exec_lines = [
     'from __future__ import print_function',
     'from evo.core import lie_algebra, metrics, result, sync, trajectory',
     'from evo.tools import file_interface, pandas_bridge, plot, settings',
-    'from evo.main_ape import main_ape',
-    'from evo.main_rpe import main_rpe',
-    'from evo.main_rpe_for_each import main_rpe_for_each',
+    'from evo.main_ape import ape',
+    'from evo.main_rpe import rpe',
     'import matplotlib.pyplot as plt',
     'import numpy as np',
     'import seaborn as sns',
@@ -195,9 +194,8 @@ Pre-loaded modules from {bright}evo.tools:{blue}
     plot
 {fr}{sr}
 Pre-loaded high-level functions for metrics:{blue}
-    main_ape(...)
-    main_rpe(...)
-    main_rpe_for_each(...)
+    ape(...)
+    rpe(...)
 {fr}
 Others: numpy as np, matplotlib.pyplot as plt, pandas as pd, seaborn as sns
 '''.format(fr=Fore.RESET, sr=Style.RESET_ALL, bright=Style.BRIGHT, 

@@ -90,7 +90,6 @@ After installation with setup.py or from pip, the following executables can be c
 
 * `evo_ape` - absolute pose error
 * `evo_rpe` - relative pose error
-* `evo_rpe-for-each` - sub-sequence-wise averaged relative pose error
 
 **Tools:**
 

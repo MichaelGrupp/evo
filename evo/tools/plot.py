@@ -189,7 +189,7 @@ class PlotCollection:
             plt.show()
 
     def serialize(self, dest, confirm_overwrite=True):
-        logger.info("Serializing PlotCollection to " + dest + "...")
+        logger.debug("Serializing PlotCollection to " + dest + "...")
         if confirm_overwrite and not user.check_and_confirm_overwrite(dest):
             return
         else:

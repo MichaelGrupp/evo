@@ -48,13 +48,6 @@ def rpe():
     launch(main_rpe, parser)
 
 
-def rpe_for_each():
-    from evo import main_rpe_for_each
-    parser = main_rpe_for_each.parser()
-    argcomplete.autocomplete(parser)
-    launch(main_rpe_for_each, parser)
-
-
 def res():
     from evo import main_res
     parser = main_res.parser()

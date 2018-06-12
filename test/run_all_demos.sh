@@ -11,7 +11,6 @@ fi
 yes | demos/traj_demo.sh "$n"
 yes | demos/ape_demo.sh "$n"
 yes | demos/rpe_demo.sh "$n"
-yes | demos/rpe-for-each_demo.sh "$n"
 yes | demos/res_demo.sh "$n"
 yes | demos/latex_demo.sh "$n"
 

@@ -1,5 +1,5 @@
 """
-stuff related to package settings
+Provides functionality for loading and resetting the package settings.
 author: Michael Grupp
 
 This file is part of evo (github.com/MichaelGrupp/evo).
@@ -26,8 +26,6 @@ import logging
 
 from colorama import Fore
 
-from evo.tools.settings_template import DEFAULT_SETTINGS_DICT
-
 logger = logging.getLogger(__name__)
 
 PACKAGE_BASE_PATH = os.path.abspath(__file__ + "/../../")
@@ -43,18 +41,17 @@ class SettingsException(Exception):
 
     
 class SettingsContainer(dict):
-    def __init__(self, settings_path, data=None, lock=True):
+    def __init__(self, data, lock=True):
         super(SettingsContainer, self).__init__()
-        try:
-            if not data:
-                with open(settings_path) as settings_file:
-                    data = json.load(settings_file)
-            for k, v in data.items():
-                setattr(self, k, v)
-            setattr(self, "__locked__", lock)
-        except Exception as e:
-            logger.error(str(e))
-            raise SettingsException("fatal: failed to load package settings file " + settings_path)
+        for k, v in data.items():
+            setattr(self, k, v)
+        setattr(self, "__locked__", lock)
+
+    @classmethod
+    def from_json_file(cls, settings_path):
+        with open(settings_path) as settings_file:
+            data = json.load(settings_file)
+        return SettingsContainer(data)
 
     def locked(self):
         if "__locked__" in self:
@@ -62,55 +59,78 @@ class SettingsContainer(dict):
 
     def __getattr__(self, attr):
         # allow dot access
-        if not attr in self:
+        if attr not in self:
             raise SettingsException("unknown settings parameter: " + str(attr))
         return self[attr]
 
     def __setattr__(self, attr, value):
         # allow dot access
-        if self.locked() and not attr in self:
-            raise SettingsException("write-access locked, can't add new parameter {}".format(attr))
+        if self.locked() and attr not in self:
+            raise SettingsException(
+                "write-access locked, can't add new parameter {}".format(attr))
         else:
             self[attr] = value
 
 
 def merge_dicts(first, second, soft=False):
     if soft:
-        first.update({k: v for k, v in second.items() if not k in first})
+        first.update({k: v for k, v in second.items() if k not in first})
     else:
         first.update(second)
     return first
 
 
+def write_to_json_file(json_path, dictionary):
+    with open(json_path, 'w') as json_file:
+        json_file.write(json.dumps(
+            dictionary, indent=4, sort_keys=True))
+
+
 def reset(dest=DEFAULT_PATH):
-    with open(dest, 'w') as cfg_file:
-        cfg_file.write(json.dumps(DEFAULT_SETTINGS_DICT, indent=4, sort_keys=True))
-    
+    from evo.tools.settings_template import DEFAULT_SETTINGS_DICT
+    write_to_json_file(dest, DEFAULT_SETTINGS_DICT)
 
-# initialize .evo user folder after first installation (or if it was deleted)
-if not os.path.isdir(USER_ASSETS_PATH):
-    os.makedirs(USER_ASSETS_PATH)
 
-if not os.path.exists(USER_ASSETS_VERSION_PATH):
-    open(os.path.join(USER_ASSETS_PATH, "assets_version"), 'w').write(PACKAGE_VERSION)
+def initialize_if_needed():
+    """
+    Initialize evo user folder after first installation
+    (or if it was deleted).
+    """
+    if not os.path.isdir(USER_ASSETS_PATH):
+        os.makedirs(USER_ASSETS_PATH)
 
-if not os.path.exists(DEFAULT_PATH):
-    try:
-        reset()
-        print(Fore.LIGHTYELLOW_EX + "Initialized new " + DEFAULT_PATH + Fore.RESET)
-    except:
-        print(Fore.LIGHTRED_EX
-            + "fatal: failed to write package settings file " + DEFAULT_PATH + Fore.RESET)
-        raise
+    if not os.path.exists(USER_ASSETS_VERSION_PATH):
+        open(USER_ASSETS_VERSION_PATH, 'w').write(PACKAGE_VERSION)
 
-if not open(USER_ASSETS_VERSION_PATH).read() == PACKAGE_VERSION:
+    if not os.path.exists(DEFAULT_PATH):
+        try:
+            reset(dest=DEFAULT_PATH)
+            print("{}Initialized new {}{}".format(
+                Fore.LIGHTYELLOW_EX, DEFAULT_PATH, Fore.RESET))
+        except:
+            logger.error(
+                "Fatal: failed to write package settings file {}".format(
+                    DEFAULT_PATH))
+            raise
+
+
+def update_if_outdated():
+    """
+    Update user settings to a new version if needed.
+    """
+    if open(USER_ASSETS_VERSION_PATH).read() == PACKAGE_VERSION:
+        return
+    from evo.tools.settings_template import DEFAULT_SETTINGS_DICT
     old_settings = json.loads(open(DEFAULT_PATH).read())
-    updated_settings = merge_dicts(old_settings, DEFAULT_SETTINGS_DICT, soft=True)
-    with open(DEFAULT_PATH, 'w') as cfg_file:
-        cfg_file.write(json.dumps(updated_settings, indent=4, sort_keys=True))
-    open(os.path.join(USER_ASSETS_PATH, "assets_version"), 'w').write(PACKAGE_VERSION)
-    print(Fore.LIGHTYELLOW_EX + "Updated outdated " + DEFAULT_PATH + Fore.RESET)
+    updated_settings = merge_dicts(
+        old_settings, DEFAULT_SETTINGS_DICT, soft=True)
+    write_to_json_file(DEFAULT_PATH, updated_settings)
+    open(USER_ASSETS_VERSION_PATH, 'w').write(PACKAGE_VERSION)
+    print("{}Updated outdated {}{}".format(
+        Fore.LIGHTYELLOW_EX, DEFAULT_PATH, Fore.RESET))
 
 
-# load the user settings into this container
-SETTINGS = SettingsContainer(DEFAULT_PATH)
+# Load the user settings into this container.
+initialize_if_needed()
+update_if_outdated()
+SETTINGS = SettingsContainer.from_json_file(DEFAULT_PATH)

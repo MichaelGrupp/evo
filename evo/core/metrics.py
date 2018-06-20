@@ -162,7 +162,8 @@ class PE(Metric):
             "title": str(self),
             "ref_name": ref_name,
             "est_name": est_name,
-            "label": "{} {}".format(metric_name, "({})".format(unit_name))
+            "label": "{} {}".format(
+                metric_name, "({})".format(unit_name) if unit_name else "")
         })
         result.add_stats(self.get_all_statistics())
         if hasattr(self, "error"):

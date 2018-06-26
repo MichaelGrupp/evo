@@ -155,17 +155,17 @@ class PosePath3D(object):
         if hasattr(self, "_positions_xyz"):
             self._positions_xyz = s * self._positions_xyz
 
-    def reduce_to_ids(self, ids):
+    def reduce_to_ids(self, id_init,id_end):
         """
         reduce the elements to the ones specified in ids
         :param ids: list of integer indices
         """
         if hasattr(self, "_positions_xyz"):
-            self._positions_xyz = self._positions_xyz[ids]
+            self._positions_xyz = self._positions_xyz[id_init:id_end]
         if hasattr(self, "_orientations_quat_wxyz"):
-            self._orientations_quat_wxyz = self._orientations_quat_wxyz[ids]
+            self._orientations_quat_wxyz = self._orientations_quat_wxyz[id_init:id_end]
         if hasattr(self, "_poses_se3"):
-            self._poses_se3 = [self._poses_se3[idx] for idx in ids]
+            self._poses_se3 = [self._poses_se3[idx] for idx in ids[id_init:id_end]]
 
     def check(self):
         """
@@ -232,8 +232,8 @@ class PoseTrajectory3D(PosePath3D, object):
     def __ne__(self, other):
         return not self == other
 
-    def reduce_to_ids(self, ids):
-        super(PoseTrajectory3D, self).reduce_to_ids(ids)
+    def reduce_to_ids(self, id_init,id_end):
+        super(PoseTrajectory3D, self).reduce_to_ids(id_init,id_end)
         self.timestamps = self.timestamps[ids]
 
     def check(self):

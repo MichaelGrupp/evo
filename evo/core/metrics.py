@@ -210,7 +210,7 @@ class RPE(PE):
         if not self.all_pairs:
             title += " using consecutive pairs"
         else:
-            title += " using all possible pairs"
+            title += " using all pairs"
         return title
 
     def reset_parameters(self, pose_relation=PoseRelation.translation_part, delta=1.0,
@@ -221,7 +221,7 @@ class RPE(PE):
         :param delta: the interval step for indices (default: 1)
         :param delta_unit: unit of delta (Unit enum member)
         :param pose_relation: MotionType value defining how the RPE should be calculated
-        :param all_pairs: use all possible pairs instead of consecutive pairs
+        :param all_pairs: use all pairs instead of consecutive pairs
         """
         self.__init__(pose_relation, delta, delta_unit, all_pairs)
 
@@ -265,7 +265,7 @@ class RPE(PE):
                   for i, j in id_pairs]
         logger.debug("Compared " + str(len(self.E)) + " relative pose pairs, delta = " +
                      str(self.delta) + " (" + str(self.delta_unit.value) + ") " +
-                     ("with all possible pairs." if self.all_pairs else "with consecutive pairs."))
+                     ("with all pairs." if self.all_pairs else "with consecutive pairs."))
 
         logger.debug("Calculating RPE for " + str(self.pose_relation.value) + " pose relation...")
 

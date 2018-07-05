@@ -79,7 +79,7 @@ def filter_pairs_by_index(poses, delta, all_pairs=False):
     filters pairs in a list of SE(3) poses by their index distance
     :param poses: list of SE(3) poses
     :param delta: the index distance used for filtering
-    :param all_pairs: use all possible pairs instead of consecutive pairs
+    :param all_pairs: use all pairs instead of consecutive pairs
     :return: list of index tuples of the filtered pairs
     """
     if all_pairs:
@@ -98,7 +98,7 @@ def filter_pairs_by_distance(poses, delta, tol=0.0, all_pairs=False):
     :param poses: list of SE(3) poses
     :param delta: the distance in meters used for filtering
     :param tol: absolute distance tolerance to accept or reject pairs in all_pairs mode
-    :param all_pairs: use all possible pairs instead of consecutive pairs
+    :param all_pairs: use all pairs instead of consecutive pairs
     :return: list of index tuples of the filtered pairs
     """
     if all_pairs:
@@ -136,7 +136,7 @@ def filter_pairs_by_path(poses, delta, tol=0.0, all_pairs=False):
     :param poses: list of SE(3) poses
     :param delta: the path distance in meters used for filtering
     :param tol: absolute path tolerance to accept or reject pairs in all_pairs mode
-    :param all_pairs: use all possible pairs instead of consecutive pairs
+    :param all_pairs: use all pairs instead of consecutive pairs
     :return: list of index tuples of the filtered pairs
     """
     if all_pairs:
@@ -191,7 +191,7 @@ def filter_pairs_by_angle(poses, delta, tol=0.0, degrees=False, all_pairs=False)
     :param delta: the angle in radians used for filtering
     :param tol: absolute angle tolerance to accept or reject pairs in all_pairs mode
     :param degrees: set to True if <delta> is in degrees instead of radians
-    :param all_pairs: use all possible pairs instead of consecutive pairs
+    :param all_pairs: use all pairs instead of consecutive pairs
     :return: list of index tuples of the filtered pairs
     """
     if all_pairs:
@@ -268,7 +268,7 @@ def id_pairs_from_delta(poses, delta, delta_unit, rel_tol=0.1, all_pairs=False):
     :param delta: the interval step for indices
     :param delta_unit: unit of delta (metrics.Unit enum member)
     :param rel_tol: relative tolerance to accept or reject deltas
-    :param all_pairs: use all possible pairs instead of consecutive pairs
+    :param all_pairs: use all pairs instead of consecutive pairs
     :return: list of index tuples (pairs)
     """
     from evo.core.metrics import Unit
@@ -288,6 +288,6 @@ def id_pairs_from_delta(poses, delta, delta_unit, rel_tol=0.1, all_pairs=False):
 
     logger.debug("Found {} pairs with delta {} ({}) "
                  "among {} poses ".format(len(id_pairs), delta, delta_unit.value, len(poses)) +
-                 ("using consecutive pairs." if not all_pairs else "using all possible pairs."))
+                 ("using consecutive pairs." if not all_pairs else "using all pairs."))
 
     return id_pairs

@@ -63,7 +63,7 @@ def parser():
         choices=['f', 'd', 'r', 'm'])
     algo_opts.add_argument(
         "--all_pairs", action="store_true",
-        help="use all possible pairs (incompatible with plot)",)
+        help="use all pairs instead of consecutive pairs (disables plot)",)
 
     output_opts.add_argument(
         "-p", "--plot", action="store_true",

@@ -43,6 +43,7 @@ def matching_time_indices(stamps_1, stamps_2, max_diff=0.01, offset_2=0.0):
     :return: the indices of the matching stamps in stamps_1
     """
     matching_indices = []
+    stamps_2 = copy.deepcopy(stamps_2)
     stamps_2 += offset_2
     for stamp in stamps_1:
         diffs = np.abs(stamps_2 - stamp)

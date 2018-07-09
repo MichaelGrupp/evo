@@ -257,7 +257,7 @@ class RPE(PE):
         id_pairs = filters.id_pairs_from_delta(
             traj_est.poses_se3, self.delta, self.delta_unit,
             self.rel_delta_tol, all_pairs=self.all_pairs)
-        
+
         if not self.all_pairs:
             # Store flat id list e.g. for plotting.
             self.delta_ids = [j for i, j in id_pairs]
@@ -268,7 +268,7 @@ class RPE(PE):
         
         logger.debug(
             "Compared {} relative pose pairs, delta = {} ({}) {}".format(
-                len(self.E), self.delta, self.delta_unit.value, 
+                len(self.E), self.delta, self.delta_unit.value,
                 ("with all pairs." if self.all_pairs \
                 else "with consecutive pairs.")))
 

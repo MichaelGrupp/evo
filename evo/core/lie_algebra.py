@@ -63,9 +63,9 @@ def so3_log(r, return_angle_only=True, return_skew=False):
     :param r: SO(3) rotation matrix
     :param return_angle_only: return only the angle (default)
     :param return_skew: return skew symmetric Lie algebra element
-    :return: axis/angle, 
+    :return: axis/angle
         or if skew:
-            the 3x3 skew symmetric logarithmic map in so(3) (Ma, Soatto eq. 2.8)
+             3x3 skew symmetric logarithmic map in so(3) (Ma, Soatto eq. 2.8)
     """
     if not is_so3(r):
         raise LieAlgebraException("matrix is not a valid SO(3) group element")

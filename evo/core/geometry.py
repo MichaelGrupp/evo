@@ -1,5 +1,5 @@
 """
-geometry algorithms
+Provides generic geometry algorithms.
 author: Michael Grupp
 
 This file is part of evo (github.com/MichaelGrupp/evo).
@@ -27,17 +27,17 @@ class GeometryException(Exception):
 
 def umeyama_alignment(x, y, with_scale=False):
     """
-    least squares solution parameters of an Sim(m) matrix
-    that minimizes the distance between a set of registered points
+    Computes the least squares solution parameters of an Sim(m) matrix
+    that minimizes the distance between a set of registered points.
     Umeyama, Shinji: Least-squares estimation of transformation parameters
                      between two point patterns. IEEE PAMI, 1991
     :param x: mxn matrix of points, m = dimension, n = nr. of data points
     :param y: mxn matrix of points, m = dimension, n = nr. of data points
-    :param with_scale: set to True to align also the scale (default: 1.0 scaling)
+    :param with_scale: set to True to align also the scale (default: 1.0 scale)
     :return: r, t, c - rotation matrix, translation vector and scale factor
     """
     if x.shape != y.shape:
-        raise GeometryException("data matrices must have same shape")
+        raise GeometryException("data matrices must have the same shape")
 
     # m = dimension, n = nr. of data points
     m, n = x.shape
@@ -62,7 +62,8 @@ def umeyama_alignment(x, y, with_scale=False):
     # S matrix, eq. 43
     s = np.eye(m)
     if np.linalg.det(u) * np.linalg.det(v) < 0.0:
-        s[m-1, m-1] = -1  # ensure RHS coord. sys. (see Wikipedia: Kabsch algorithm)
+        # Ensure a RHS coordinate system (Kabsch algorithm).
+        s[m-1, m-1] = -1
 
     # rotation, eq. 40
     r = u.dot(s).dot(v)

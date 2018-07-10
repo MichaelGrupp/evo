@@ -1,6 +1,6 @@
 # -*- coding: UTF8 -*-
 """
-some functions for Lie group calculations
+Provides functions for Lie group calculations.
 author: Michael Grupp
 
 This file is part of evo (github.com/MichaelGrupp/evo).
@@ -49,10 +49,11 @@ def vee(m):
 
 def so3_exp(axis, angle):
     """
-    Rodrigues' formula from axis/angle - code source: http://stackoverflow.com/a/25709323
+    Computes an SO(3) matrix from an axis/angle representation.
+    Code source: http://stackoverflow.com/a/25709323
     :param axis: 3x1 rotation axis (unit vector!)
     :param angle: radians
-    :return: SO(3) rotation matrix (matrix exponential of se(3))
+    :return: SO(3) rotation matrix (matrix exponential of so(3))
     """
     return sl.expm(np.cross(np.eye(3), axis / np.linalg.norm(axis) * angle))
 
@@ -61,14 +62,16 @@ def so3_log(r, return_angle_only=True, return_skew=False):
     """
     :param r: SO(3) rotation matrix
     :param return_angle_only: return only the angle (default)
-    :param return_skew: set to True to return skew symmetric Lie algebra element
-    :return: axis/angle, or if skew: the 3x3 skew symmetric logarithmic map in so(3) (Ma, Soatto eq. 2.8)
+    :param return_skew: return skew symmetric Lie algebra element
+    :return: axis/angle
+        or if skew:
+             3x3 skew symmetric logarithmic map in so(3) (Ma, Soatto eq. 2.8)
     """
     if not is_so3(r):
-        raise LieAlgebraException("matrix is not a valid SO(3) group element")  # important to avoid errors below...
+        raise LieAlgebraException("matrix is not a valid SO(3) group element")
     if return_angle_only and not return_skew:
         return np.arccos(min(1, max(-1, (np.trace(r) - 1)/2)))
-    angle, axis, _ = tr.rotation_from_matrix(se3(r, [0, 0, 0]))  # exception for invalid matrix
+    angle, axis, _ = tr.rotation_from_matrix(se3(r, [0, 0, 0]))
     if return_skew:
         return hat(axis*angle)
     else:
@@ -123,8 +126,10 @@ def is_so3(r):
     :param r: a 3x3 matrix
     :return: True if r is in the SO(3) group
     """
-    det_valid = np.isclose(np.linalg.det(r), [1.0], atol=1e-6)  # check determinant of rotation
-    inv_valid = np.allclose(r.transpose().dot(r), np.eye(3), atol=1e-6)  # check inverse of rotation
+    # Check the determinant.
+    det_valid = np.isclose(np.linalg.det(r), [1.0], atol=1e-6)
+    # Check if the transpose is the inverse.
+    inv_valid = np.allclose(r.transpose().dot(r), np.eye(3), atol=1e-6)
     return det_valid and inv_valid
 
 
@@ -141,7 +146,7 @@ def is_se3(p):
 def is_sim3(p, s):
     """
     :param p: a 4x4 matrix
-    :param s: scale factor (determinant of scaled rotation matrix in p should be s^3)
+    :param s: expected scale factor
     :return: True if p is in the Sim(3) group with scale s
     """
     rot = p[:3, :3]
@@ -153,8 +158,7 @@ def is_sim3(p, s):
 
 def relative_so3(r1, r2):
     """
-    :param r1: absolute SO(3) rotation at timestamp 1
-    :param r2: absolute SO(3) rotation at timestamp 2
+    :param r1, r2: SO(3) matrices
     :return: the relative rotation r1^{⁻1} * r2
     """
     return np.dot(r1.transpose(), r2)
@@ -162,20 +166,10 @@ def relative_so3(r1, r2):
 
 def relative_se3(p1, p2):
     """
-    :param p1: absolute SE(3) pose at timestamp 1
-    :param p2: absolute SE(3) pose at timestamp 2
-    :return: the relative pose p1^{⁻1} * p2
+    :param p1, p2: SE(3) matrices
+    :return: the relative transformation p1^{⁻1} * p2
     """
     return np.dot(se3_inverse(p1), p2)
-
-
-def relative_se3_rot(p1, p2):
-    """
-    :param p1: absolute SE(3) pose at timestamp 1
-    :param p2: absolute SE(3) pose at timestamp 2
-    :return: only the rotation matrix of the relative pose p1^{⁻1} * p2
-    """
-    return relative_so3(p1[:3, :3], p2[:3, :3])
 
 
 def random_so3():

@@ -1,6 +1,6 @@
 # -*- coding: UTF8 -*-
 """
-algorithms for time synchronization
+Provides algorithms for time synchronization.
 author: Michael Grupp
 
 This file is part of evo (github.com/MichaelGrupp/evo).
@@ -35,7 +35,8 @@ class SyncException(Exception):
 
 def matching_time_indices(stamps_1, stamps_2, max_diff=0.01, offset_2=0.0):
     """
-    searches for the best matching timestamps of 2 lists and returns their list indices
+    Searches for the best matching timestamps of two lists of timestamps
+    and returns the list indices of the best matches.
     :param stamps_1: first vector of timestamps
     :param stamps_2: second vector of timestamps
     :param max_diff: max. allowed absolute time difference
@@ -53,42 +54,38 @@ def matching_time_indices(stamps_1, stamps_2, max_diff=0.01, offset_2=0.0):
     return matching_indices
 
 
-def associate_trajectories(traj_1, traj_2, max_diff=0.01, offset_2=0.0, invert=False,
-                           first_name="first trajectory", snd_name="estimated trajectory"):
+def associate_trajectories(traj_1, traj_2,
+        max_diff=0.01, offset_2=0.0,
+        first_name="first trajectory", snd_name="second trajectory"):
     """
-    synchronize two trajectories via matching timestamps (e.g. for TUM RGB-D dataset, ROS bags, ...)
+    Synchronizes two trajectories by matching their timestamps.
     :param traj_1: trajectory.PoseTrajectory3D object of first trajectory
     :param traj_2: trajectory.PoseTrajectory3D object of second trajectory
     :param max_diff: max. allowed absolute time difference for associating
-    :param offset_2: optional time offset of second timestamp vector
-    :param invert: set to True to match from longer list to short (default: short to longer list)
-    :param first_name: optional name of reference trajectory for verbose/debug logging
-    :param snd_name: optional name of estimated trajectory for verbose/debug logging
-    :return: synchronized traj_1 and traj_2 of same length
+    :param offset_2: optional time offset of second trajectory
+    :param first_name: name of first trajectory for verbose logging
+    :param snd_name: name of second trajectory for verbose/debug logging
+    :return: traj_1, traj_2 (synchronized)
     """
-    if not isinstance(traj_1, PoseTrajectory3D) or not isinstance(traj_2, PoseTrajectory3D):
+    if not isinstance(traj_1, PoseTrajectory3D) \
+        or not isinstance(traj_2, PoseTrajectory3D):
         raise SyncException("trajectories must be PoseTrajectory3D objects")
-    if invert:
-        logger.debug("Using inverse matching logic.")
-    traj_1 = copy.deepcopy(traj_1)
-    traj_2 = copy.deepcopy(traj_2)
-    snd_longer = len(traj_2.timestamps) > len(traj_1.timestamps)
-    max_pairs = len(traj_2.timestamps) if not snd_longer and not invert else len(traj_1.timestamps)
-    if invert:
-        snd_longer = not snd_longer
-    traj_long = traj_2 if snd_longer else traj_1
-    traj_short = traj_1 if snd_longer else traj_2
 
-    # associate the timestamps of the shorter trajectory to the longer one
-    # select matching data from longer one
-    matching_indices = matching_time_indices(traj_short.timestamps, traj_long.timestamps,
-                                             max_diff, offset_2 if snd_longer else -offset_2)
+    snd_longer = len(traj_2.timestamps) > len(traj_1.timestamps)
+    traj_long = copy.deepcopy(traj_2) if snd_longer else copy.deepcopy(traj_1)
+    traj_short = copy.deepcopy(traj_1) if snd_longer else copy.deepcopy(traj_2)
+    max_pairs = len(traj_long.timestamps)
+
+    # First, match the timestamps of the shorter trajectory to the longer one.
+    matching_indices = matching_time_indices(
+        traj_short.timestamps, traj_long.timestamps,
+        max_diff, offset_2 if snd_longer else -offset_2)
     traj_long.reduce_to_ids(matching_indices)
 
-    # reversely select matching data from shorter one
-    # (if longer one is now smaller than shorter one)
-    matching_indices = matching_time_indices(traj_long.timestamps, traj_short.timestamps,
-                                             max_diff, -offset_2 if snd_longer else offset_2)
+    # Next, reversely match the reduced long trajectory to the shorter one.
+    matching_indices = matching_time_indices(
+        traj_long.timestamps, traj_short.timestamps,
+        max_diff, -offset_2 if snd_longer else offset_2)
     traj_short.reduce_to_ids(matching_indices)
 
     traj_1 = traj_short if snd_longer else traj_long
@@ -96,13 +93,15 @@ def associate_trajectories(traj_1, traj_2, max_diff=0.01, offset_2=0.0, invert=F
 
     if len(matching_indices) == 0:
         raise SyncException(
-            "found no matching timestamps between {} and {} with max. time diff {} (s) and "
-            "time offset {} (s)".format(first_name, snd_name, max_diff, offset_2))
+            "found no matching timestamps between {} and {} with max. time "
+            "diff {} (s) and time offset {} (s)".format(
+                first_name, snd_name, max_diff, offset_2))
 
-    logger.debug("Found {} of max. {} possible matching timestamps between...\n"
-                 "\t{}\nand:\t{}\n"
-                 "...with max. time diff.: {} (s) "
-                 "and time offset: {} (s).".format(
-                     len(matching_indices), max_pairs, first_name, snd_name, max_diff, offset_2))
+    logger.debug(
+        "Found {} of max. {} possible matching timestamps between...\n"
+        "\t{}\nand:\t{}\n..with max. time diff.: {} (s) "
+        "and time offset: {} (s).".format(
+            len(matching_indices), max_pairs, first_name,
+            snd_name, max_diff, offset_2))
 
     return traj_1, traj_2

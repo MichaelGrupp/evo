@@ -1,6 +1,9 @@
 os:
   - linux
 
+sudo: required
+services: docker
+
 language: python
 
 python:
@@ -19,15 +22,24 @@ matrix:
     - os: osx
       language: generic
       env: PYTHON=3.6.0
+    - os: linux
+      language: python
+      env: EVO_DOCKERFILE="Dockerfile.melodic"
 
 before_install:
   - bash .ci/mac-os_before_install.sh
 
 install:
-  - source .ci/set_pip_name.sh
-  - ${pip} install . --upgrade
-  - evo_config set plot_backend Agg  # no X server
+  - if [ -z $EVO_DOCKERFILE ]; then
+      source .ci/set_pip_name.sh;
+      ${pip} install . --upgrade;
+      evo_config set plot_backend Agg;  # no X server
+    fi
 
 script:
-  - ${pip} install pytest --upgrade
-  - pytest -sv
+  - if [ -z $EVO_DOCKERFILE ]; then
+      ${pip} install pytest --upgrade;
+      pytest -sv;
+    else
+      docker build . --file $EVO_DOCKERFILE
+    fi

@@ -19,7 +19,7 @@ FROM ros:melodic
 COPY . container-local/
 
 # In case an image of this container gets executed, source ROS environment.
-# In here, we have to do it manually.
+# In here, for 'docker build', we have to do it manually.
 ENTRYPOINT ["container-local/.ci/ros_entrypoint.sh"]
 
 # Use Python 2.x for ROS.

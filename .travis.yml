@@ -30,14 +30,16 @@ before_install:
   - bash .ci/mac-os_before_install.sh
 
 install:
-  - if [ -z $EVO_DOCKERFILE ]; then
+  - |
+    if [ -z $EVO_DOCKERFILE ]; then
       source .ci/set_pip_name.sh;
       ${pip} install . --upgrade;
       evo_config set plot_backend Agg;  # no X server
     fi
 
 script:
-  - if [ -z $EVO_DOCKERFILE ]; then
+  - |
+    if [ -z $EVO_DOCKERFILE ]; then
       ${pip} install pytest --upgrade;
       pytest -sv;
     else

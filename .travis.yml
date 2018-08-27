@@ -24,8 +24,9 @@ matrix:
       env: PYTHON=3.6.0
     - os: linux
       language: python
-      env: EVO_DOCKERFILE="Dockerfile.rosmelodic"
-      env: EVO_DOCKER_IMAGE="evoslam/evopython:rosmelodic"
+      env: 
+        - EVO_DOCKERFILE="Dockerfile.rosmelodic"
+        - EVO_DOCKER_IMAGE="evoslam/evopython:rosmelodic"
 
 before_install:
   - bash .ci/mac-os_before_install.sh

@@ -40,7 +40,7 @@ install:
 
 script:
   - |
-    if [[ -z $EVO_DOCKERFILE ]]; then
+    if [ -z $EVO_DOCKERFILE ]; then
       ${pip} install pytest --upgrade;
       pytest -sv;
     else

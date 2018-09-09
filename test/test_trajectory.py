@@ -28,6 +28,7 @@ import copy
 import numpy as np
 
 import context
+import helpers
 from evo.core import trajectory, geometry
 from evo.core import lie_algebra as lie
 from evo.tools import file_interface
@@ -47,7 +48,9 @@ ex_tum_traj_wrong_quat = copy.deepcopy(ex_tum_traj)
 ex_tum_traj_wrong_quat._orientations_quat_wxyz[3] = [5000, 0, 0, 0]
 
 ex_tum_traj_wrong_stamps = copy.deepcopy(ex_tum_traj)
-ex_tum_traj_wrong_stamps.timestamps = [1, 2, 3]
+# unsorted timestamps
+ex_tum_traj_wrong_stamps.timestamps = np.roll(
+    helpers.fake_timestamps(ex_tum_traj.num_poses, 0.1), 1)
 
 
 class TestPosePath3D(unittest.TestCase):
@@ -77,10 +80,13 @@ class TestPosePath3D(unittest.TestCase):
             self.fail("unexpected init failure with xyz + quaternion")
         # all
         try:
-            trajectory.PosePath3D(ex_tum_traj.positions_xyz, ex_tum_traj.orientations_quat_wxyz,
-                                  ex_tum_traj.poses_se3)
+            trajectory.PosePath3D(
+                ex_tum_traj.positions_xyz,
+                ex_tum_traj.orientations_quat_wxyz,
+                ex_tum_traj.poses_se3)
         except trajectory.TrajectoryException:
-            self.fail("unexpected init failure with xyz + quaternion + poses_se3")
+            self.fail(
+                "unexpected init failure with xyz + quaternion + poses_se3")
 
     def test_equals(self):
         ex_kitti_traj_copy = copy.deepcopy(ex_kitti_traj)

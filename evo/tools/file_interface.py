@@ -73,11 +73,14 @@ def read_tum_trajectory_file(file_path):
     :return: trajectory.PoseTrajectory3D object
     """
     raw_mat = csv_read_matrix(file_path, delim=" ", comment_str="#")
+    error_msg = ("TUM trajectory files must have 8 entries per row ",
+                 "and no trailing delimiter at the end of the rows (space)")
     if len(raw_mat) > 0 and len(raw_mat[0]) != 8:
-        raise FileInterfaceException(
-            "TUM trajectory files must have 8 entries per row "
-            "and no trailing delimiter at the end of the rows (space)")
-    mat = np.array(raw_mat).astype(float)
+        raise FileInterfaceException(error_msg)
+    try:
+        mat = np.array(raw_mat).astype(float)
+    except ValueError:
+        raise FileInterfaceException(error_msg)
     stamps = mat[:, 0]  # n x 1
     xyz = mat[:, 1:4]  # n x 3
     quat = mat[:, 4:]  # n x 4
@@ -103,7 +106,8 @@ def write_tum_trajectory_file(file_path, traj, confirm_overwrite=False):
             "trajectory must be a PoseTrajectory3D object")
     stamps = traj.timestamps
     xyz = traj.positions_xyz
-    quat = traj.orientations_quat_wxyz
+    # shift -1 column -> w in back column
+    quat = np.roll(traj.orientations_quat_wxyz, -1, axis=1)
     mat = np.column_stack((stamps, xyz, quat))
     np.savetxt(file_path, mat, delimiter=" ")
     if isinstance(file_path, str):
@@ -117,11 +121,14 @@ def read_kitti_poses_file(file_path):
     :return: trajectory.PosePath3D
     """
     raw_mat = csv_read_matrix(file_path, delim=" ", comment_str="#")
+    error_msg = ("KITTI pose files must have 12 entries per row ",
+                 "and no trailing delimiter at the end of the rows (space)")
     if len(raw_mat) > 0 and len(raw_mat[0]) != 12:
-        raise FileInterfaceException(
-            "KITTI pose files must have 12 entries per row "
-            "and no trailing delimiter at the end of the rows (space)")
-    mat = np.array(raw_mat).astype(float)
+        raise FileInterfaceException(error_msg)
+    try:
+        mat = np.array(raw_mat).astype(float)
+    except ValueError:
+        raise FileInterfaceException(error_msg)
     poses = [np.array([[r[0], r[1], r[2], r[3]],
                        [r[4], r[5], r[6], r[7]],
                        [r[8], r[9], r[10], r[11]],
@@ -155,11 +162,14 @@ def read_euroc_csv_trajectory(file_path):
     :return: trajectory.PoseTrajectory3D object
     """
     raw_mat = csv_read_matrix(file_path, delim=",", comment_str="#")
+    error_msg = ("EuRoC MAV state ground truth must have 17 entries per row ",
+                 "and no trailing delimiter at the end of the rows (comma)")
     if len(raw_mat) > 0 and len(raw_mat[0]) != 17:
-        raise FileInterfaceException(
-            "EuRoC MAV state ground truth must have 17 entries per row "
-            "and no trailing delimiter at the end of the rows (comma)")
-    mat = np.array(raw_mat).astype(float)
+        raise FileInterfaceException(error_msg)
+    try:
+        mat = np.array(raw_mat).astype(float)
+    except ValueError:
+        raise FileInterfaceException(error_msg)
     stamps = np.divide(mat[:, 0], 1e9)  # n x 1  -  nanoseconds to seconds
     xyz = mat[:, 1:4]  # n x 3
     quat = mat[:, 4:8]  # n x 4

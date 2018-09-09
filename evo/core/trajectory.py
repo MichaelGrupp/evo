@@ -65,6 +65,8 @@ class PosePath3D(object):
     def __eq__(self, other):
         if type(other) != type(self):
             return False
+        if not self.num_poses == other.num_poses:
+            return False
         equal = True
         equal &= all([np.allclose(p1, p2) for p1, p2 in zip(self.poses_se3, other.poses_se3)])
         equal &= np.allclose(self.orientations_quat_wxyz, other.orientations_quat_wxyz)
@@ -224,6 +226,8 @@ class PoseTrajectory3D(PosePath3D, object):
 
     def __eq__(self, other):
         if type(other) != type(self):
+            return False
+        if not self.num_poses == other.num_poses:
             return False
         equal = super(PoseTrajectory3D, self).__eq__(other)
         equal &= np.allclose(self.timestamps, other.timestamps)

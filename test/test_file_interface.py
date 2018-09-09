@@ -20,7 +20,6 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import io
-import mock
 import six
 import tempfile
 import unittest
@@ -44,14 +43,6 @@ class MockFileTestCase(unittest.TestCase):
             finally:
                 self.mock_file.seek(0)
                 self.mock_file.truncate()
-        return _decorator
-
-    @staticmethod
-    def mock_builtin_open(test_method):
-        def _decorator(self, *args, **kwargs):
-            builtin_open = "builtins.open" if six.PY3 else "__builtin__.open"
-            with mock.patch(builtin_open, return_value=self.mock_file):
-                test_method(self, *args, **kwargs)
         return _decorator
 
     @staticmethod

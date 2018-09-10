@@ -26,7 +26,7 @@ ENTRYPOINT ["container-local/.ci/ros_entrypoint.sh"]
 RUN container-local/.ci/debian_install_pip2.sh
 
 # Build and install.
-RUN pip2 install /container-local --no-binary evo
+RUN pip2 install /container-local --upgrade --no-binary evo
 RUN evo_config set plot_backend Agg
 
 # Run tests.

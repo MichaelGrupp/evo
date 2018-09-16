@@ -176,8 +176,7 @@ class RPE(PE):
     """
 
     def __init__(self, pose_relation=PoseRelation.translation_part, delta=1.0,
-                 delta_unit=Unit.frames,
-                 rel_delta_tol=0.1, all_pairs=False):
+                 delta_unit=Unit.frames, rel_delta_tol=0.1, all_pairs=False):
         if delta < 0:
             raise MetricsException("delta must be a positive number")
         if delta_unit == Unit.frames and not isinstance(delta, int) \
@@ -213,7 +212,7 @@ class RPE(PE):
         return title
 
     def reset_parameters(self, pose_relation=PoseRelation.translation_part,
-            delta=1.0, delta_unit=Unit.frames, all_pairs=False):
+                         delta=1.0, delta_unit=Unit.frames, all_pairs=False):
         """
         Resets the current parameters and results.
         :param delta: the interval step for indices (default: 1)
@@ -261,11 +260,13 @@ class RPE(PE):
         if not self.all_pairs:
             # Store flat id list e.g. for plotting.
             self.delta_ids = [j for i, j in id_pairs]
-        
-        self.E = [self.rpe_base(traj_ref.poses_se3[i], traj_ref.poses_se3[j],
-                                traj_est.poses_se3[i], traj_est.poses_se3[j])
-                  for i, j in id_pairs]
-        
+
+        self.E = [
+            self.rpe_base(traj_ref.poses_se3[i], traj_ref.poses_se3[j],
+                          traj_est.poses_se3[i], traj_est.poses_se3[j])
+            for i, j in id_pairs
+        ]
+
         logger.debug(
             "Compared {} relative pose pairs, delta = {} ({}) {}".format(
                 len(self.E), self.delta, self.delta_unit.value,
@@ -279,9 +280,10 @@ class RPE(PE):
             self.error = [np.linalg.norm(E_i[:3, 3]) for E_i in self.E]
         elif self.pose_relation == PoseRelation.rotation_part:
             # ideal: rot(E_i) = 3x3 identity
-            self.error = np.array(
-                [np.linalg.norm(
-                    lie.so3_from_se3(E_i) - np.eye(3)) for E_i in self.E])
+            self.error = np.array([
+                np.linalg.norm(lie.so3_from_se3(E_i) - np.eye(3))
+                for E_i in self.E
+            ])
         elif self.pose_relation == PoseRelation.full_transformation:
             # ideal: E_i = 4x4 identity
             self.error = np.array(
@@ -290,12 +292,12 @@ class RPE(PE):
             self.error = np.array(
                 [abs(lie.so3_log(E_i[:3, :3])) for E_i in self.E])
         elif self.pose_relation == PoseRelation.rotation_angle_deg:
-            self.error = np.array(
-                [abs(
-                    lie.so3_log(E_i[:3, :3])) * 180 / np.pi for E_i in self.E])
+            self.error = np.array([
+                abs(lie.so3_log(E_i[:3, :3])) * 180 / np.pi for E_i in self.E
+            ])
         else:
-            raise MetricsException(
-                "unsupported pose_relation: ", self.pose_relation)
+            raise MetricsException("unsupported pose_relation: ",
+                                   self.pose_relation)
 
 
 class APE(PE):
@@ -319,8 +321,8 @@ class APE(PE):
 
     def __str__(self):
         title = "APE w.r.t. "
-        title += (str(self.pose_relation.value) + " "
-                  + ("(" + self.unit.value + ")" if self.unit else ""))
+        title += (str(self.pose_relation.value) + " " +
+                  ("(" + self.unit.value + ")" if self.unit else ""))
         return title
 
     def reset_parameters(self, pose_relation=PoseRelation.translation_part):
@@ -360,8 +362,10 @@ class APE(PE):
             # don't require full SE(3) matrices for faster computation
             self.E = traj_est.positions_xyz - traj_ref.positions_xyz
         else:
-            self.E = [self.ape_base(x_t, x_t_star) for x_t, x_t_star in
-                      zip(traj_est.poses_se3, traj_ref.poses_se3)]
+            self.E = [
+                self.ape_base(x_t, x_t_star) for x_t, x_t_star in zip(
+                    traj_est.poses_se3, traj_ref.poses_se3)
+            ]
         logger.debug("Compared {} absolute pose pairs.".format(len(self.E)))
         logger.debug("Calculating APE for {} pose relation...".format(
             (self.pose_relation.value)))
@@ -370,9 +374,10 @@ class APE(PE):
             # E is an array of position vectors only in this case
             self.error = [np.linalg.norm(E_i) for E_i in self.E]
         elif self.pose_relation == PoseRelation.rotation_part:
-            self.error = np.array(
-                [np.linalg.norm(
-                    lie.so3_from_se3(E_i) - np.eye(3)) for E_i in self.E])
+            self.error = np.array([
+                np.linalg.norm(lie.so3_from_se3(E_i) - np.eye(3))
+                for E_i in self.E
+            ])
         elif self.pose_relation == PoseRelation.full_transformation:
             self.error = np.array(
                 [np.linalg.norm(E_i - np.eye(4)) for E_i in self.E])
@@ -380,7 +385,8 @@ class APE(PE):
             self.error = np.array(
                 [abs(lie.so3_log(E_i[:3, :3])) for E_i in self.E])
         elif self.pose_relation == PoseRelation.rotation_angle_deg:
-            self.error = np.array(
-                [abs(lie.so3_log(E_i[:3, :3])) * 180 / np.pi for E_i in self.E])
+            self.error = np.array([
+                abs(lie.so3_log(E_i[:3, :3])) * 180 / np.pi for E_i in self.E
+            ])
         else:
             raise MetricsException("unsupported pose_relation")

@@ -37,10 +37,12 @@ class FilterException(Exception):
 
 def bounded_binary_search(generator, length, target, lower_bound, upper_bound):
     """
-    efficient binary search for a <target> value within bounds [<lower_bound>, <upper_bound>]
+    efficient binary search for a <target> value within bounds
+    [<lower_bound>, <upper_bound>]
     - converges to a locally optimal result within the bounds
     - instead of indexing an iterable, lazy evaluate a functor for performance
-    :param generator: a generator or functor that yields a value of the search area given an index
+    :param generator: a generator or functor that yields a value of the search
+                      area given an index
     :param length: full length of the search area
     :param target: the value to search
     :param lower_bound: the lower bound up to which results are accepted
@@ -97,7 +99,8 @@ def filter_pairs_by_distance(poses, delta, tol=0.0, all_pairs=False):
      - only the direct distance between the two pair points is considered
     :param poses: list of SE(3) poses
     :param delta: the distance in meters used for filtering
-    :param tol: absolute distance tolerance to accept or reject pairs in all_pairs mode
+    :param tol: absolute distance tolerance to accept or reject pairs
+                in all_pairs mode
     :param all_pairs: use all pairs instead of consecutive pairs
     :return: list of index tuples of the filtered pairs
     """
@@ -119,7 +122,8 @@ def filter_pairs_by_distance(poses, delta, tol=0.0, all_pairs=False):
             current_pose = poses[i]
             for j, next_pose in enumerate(poses[i:]):
                 j += i
-                current_dist = np.linalg.norm(current_pose[:3, 3] - next_pose[:3, 3])
+                current_dist = np.linalg.norm(current_pose[:3, 3] -
+                                              next_pose[:3, 3])
                 if current_dist >= delta:
                     ids.append(i)
                     i = j
@@ -132,10 +136,12 @@ def filter_pairs_by_distance(poses, delta, tol=0.0, all_pairs=False):
 def filter_pairs_by_path(poses, delta, tol=0.0, all_pairs=False):
     """
     filters pairs in a list of SE(3) poses by their path distance in meters
-     - the accumulated, traveled path distance between the two pair points is considered
+     - the accumulated, traveled path distance between the two pair points
+       is considered
     :param poses: list of SE(3) poses
     :param delta: the path distance in meters used for filtering
-    :param tol: absolute path tolerance to accept or reject pairs in all_pairs mode
+    :param tol: absolute path tolerance to accept or reject pairs
+                in all_pairs mode
     :param all_pairs: use all pairs instead of consecutive pairs
     :return: list of index tuples of the filtered pairs
     """
@@ -150,22 +156,25 @@ def filter_pairs_by_path(poses, delta, tol=0.0, all_pairs=False):
         print_progress = logger.isEnabledFor(logging.DEBUG)
         num_pairs = 0
         for i in ids:
-            found, j, res, n = bounded_binary_search(lambda x: geometry.arc_len(positions[i:x+1]),
-                                                     len(positions), delta, 
-                                                     lower_bound, upper_bound)
+            found, j, res, n = bounded_binary_search(
+                lambda x: geometry.arc_len(positions[i:x + 1]), len(positions),
+                delta, lower_bound, upper_bound)
             n_iter_avg += n
             if found:
                 num_pairs += 1
                 res_avg += res
                 id_pairs.append((i, j))
             if print_progress:
-                print("\rSearching", delta, "m path sub-sequences - found", num_pairs, end="\r")
+                print("\rSearching", delta, "m path sub-sequences - found",
+                      num_pairs, end="\r")
                 sys.stdout.flush()
         if print_progress:
             print("")
         if num_pairs != 0:
-            logger.debug("avg. target residual: " + "{0:.6f}".format(res_avg / num_pairs) + "m"
-                        + " | avg. num. iterations: " + "{0:.6f}".format(n_iter_avg / num_pairs))
+            logger.debug("avg. target residual: " +
+                         "{0:.6f}".format(res_avg / num_pairs) + "m" +
+                         " | avg. num. iterations: " +
+                         "{0:.6f}".format(n_iter_avg / num_pairs))
         else:
             logger.debug("Found no pairs for delta '" + str(delta) + "m'.")
     else:
@@ -173,7 +182,8 @@ def filter_pairs_by_path(poses, delta, tol=0.0, all_pairs=False):
         previous_pose = poses[0]
         current_path = 0.0
         for i, current_pose in enumerate(poses):
-            current_path += np.linalg.norm(current_pose[:3, 3] - previous_pose[:3, 3])
+            current_path += np.linalg.norm(current_pose[:3, 3] -
+                                           previous_pose[:3, 3])
             previous_pose = current_pose
             if current_path >= delta:
                 ids.append(i)
@@ -182,14 +192,18 @@ def filter_pairs_by_path(poses, delta, tol=0.0, all_pairs=False):
     return id_pairs
 
 
-def filter_pairs_by_angle(poses, delta, tol=0.0, degrees=False, all_pairs=False):
+def filter_pairs_by_angle(poses, delta, tol=0.0, degrees=False,
+                          all_pairs=False):
     """
     filters pairs in a list of SE(3) poses by their absolute relative angle
-     - by default, the angle accumulated on the path between the two pair poses is considered
-     - if <all_pairs> is set to True, the direct angle between the two pair poses is considered
+     - by default, the angle accumulated on the path between the two pair poses
+       is considered
+     - if <all_pairs> is set to True, the direct angle between the two pair
+       poses is considered
     :param poses: list of SE(3) poses
     :param delta: the angle in radians used for filtering
-    :param tol: absolute angle tolerance to accept or reject pairs in all_pairs mode
+    :param tol: absolute angle tolerance to accept or reject pairs
+                in all_pairs mode
     :param degrees: set to True if <delta> is in degrees instead of radians
     :param all_pairs: use all pairs instead of consecutive pairs
     :return: list of index tuples of the filtered pairs
@@ -229,7 +243,8 @@ def filter_pairs_by_angle(poses, delta, tol=0.0, degrees=False, all_pairs=False)
 
 def filter_pairs_by_speed(poses, timestamps, speed, tol):
     """
-    filters pairs in a list of SE(3) poses by the linear speed of the motion in between them
+    filters pairs in a list of SE(3) poses by the linear speed of the motion
+    in between them
     :param poses: list of SE(3) poses
     :param timestamps: list of timestamps corresponding to the poses
     :param speed: in m/s
@@ -237,16 +252,21 @@ def filter_pairs_by_speed(poses, timestamps, speed, tol):
     :return: list of index tuples of the filtered pairs
     """
     positions = [pose[:3, 3] for pose in poses]
-    speeds = [trajectory.calc_speed(positions[i], positions[i + 1],
-                                    timestamps[i], timestamps[i + 1])
-              for i in range(len(positions) - 1)]
-    id_pairs = [(i, i+1) for i, v in enumerate(speeds) if speed - tol <= v <= speed + tol]
+    speeds = [
+        trajectory.calc_speed(positions[i], positions[i + 1], timestamps[i],
+                              timestamps[i + 1])
+        for i in range(len(positions) - 1)
+    ]
+    id_pairs = [(i, i + 1) for i, v in enumerate(speeds)
+                if speed - tol <= v <= speed + tol]
     return id_pairs
 
 
-def filter_pairs_by_angular_speed(poses, timestamps, speed, tol, degrees=False):
+def filter_pairs_by_angular_speed(poses, timestamps, speed, tol,
+                                  degrees=False):
     """
-    filters pairs in a list of SE(3) poses by the angular speed of the motion in between them
+    filters pairs in a list of SE(3) poses by the angular speed of the motion
+    in between them
     :param poses: list of SE(3) poses
     :param timestamps: list of timestamps corresponding to the poses
     :param speed: in rad/s
@@ -254,16 +274,21 @@ def filter_pairs_by_angular_speed(poses, timestamps, speed, tol, degrees=False):
     :param degrees: set to True to use deg/s
     :return: list of index tuples of the filtered pairs
     """
-    speeds = [trajectory.calc_angular_speed(poses[i], poses[i + 1],
-                                            timestamps[i], timestamps[i + 1], degrees)
-              for i in range(len(poses) - 1)]
-    id_pairs = [(i, i+1) for i, v in enumerate(speeds) if speed - tol <= v <= speed + tol]
+    speeds = [
+        trajectory.calc_angular_speed(poses[i], poses[i + 1], timestamps[i],
+                                      timestamps[i + 1], degrees)
+        for i in range(len(poses) - 1)
+    ]
+    id_pairs = [(i, i + 1) for i, v in enumerate(speeds)
+                if speed - tol <= v <= speed + tol]
     return id_pairs
 
 
-def id_pairs_from_delta(poses, delta, delta_unit, rel_tol=0.1, all_pairs=False):
+def id_pairs_from_delta(poses, delta, delta_unit, rel_tol=0.1,
+                        all_pairs=False):
     """
-    high-level function - get index tuples of pairs with distance==delta from a pose list
+    high-level function - get index tuples of pairs with distance==delta
+    from a pose list
     :param poses: list of SE(3) poses
     :param delta: the interval step for indices
     :param delta_unit: unit of delta (metrics.Unit enum member)
@@ -275,19 +300,24 @@ def id_pairs_from_delta(poses, delta, delta_unit, rel_tol=0.1, all_pairs=False):
     if delta_unit == Unit.frames:
         id_pairs = filter_pairs_by_index(poses, delta, all_pairs)
     elif delta_unit == Unit.meters:
-        id_pairs = filter_pairs_by_path(poses, delta, delta * rel_tol, all_pairs)
+        id_pairs = filter_pairs_by_path(poses, delta, delta * rel_tol,
+                                        all_pairs)
     elif delta_unit in {Unit.degrees, Unit.radians}:
         use_degrees = (delta_unit == Unit.degrees)
-        id_pairs = filter_pairs_by_angle(poses, delta, delta * rel_tol, use_degrees, all_pairs)
+        id_pairs = filter_pairs_by_angle(poses, delta, delta * rel_tol,
+                                         use_degrees, all_pairs)
     else:
         raise FilterException("unsupported delta unit: {}".format(delta_unit))
 
     if len(id_pairs) == 0:
-        raise FilterException("delta = {} ({}) produced an empty index list - try lower values or "
-                              "a less strict tolerance".format(delta, delta_unit.value))
+        raise FilterException(
+            "delta = {} ({}) produced an empty index list - try lower values"
+            "or a less strict tolerance".format(delta, delta_unit.value))
 
-    logger.debug("Found {} pairs with delta {} ({}) "
-                 "among {} poses ".format(len(id_pairs), delta, delta_unit.value, len(poses)) +
-                 ("using consecutive pairs." if not all_pairs else "using all pairs."))
+    logger.debug(
+        "Found {} pairs with delta {} ({}) "
+        "among {} poses ".format(
+            len(id_pairs), delta, delta_unit.value, len(poses)) +
+        ("using consecutive pairs." if not all_pairs else "using all pairs."))
 
     return id_pairs

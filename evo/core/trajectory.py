@@ -41,14 +41,16 @@ class PosePath3D(object):
     also: base class for real trajectory
     """
 
-    def __init__(self, positions_xyz=None, orientations_quat_wxyz=None, poses_se3=None, meta=None):
+    def __init__(self, positions_xyz=None, orientations_quat_wxyz=None,
+                 poses_se3=None, meta=None):
         """
         :param positions_xyz: nx3 list of x,y,z positions
         :param orientations_quat_wxyz: nx4 list of quaternions (w,x,y,z format)
         :param poses_se3: list of SE(3) poses
         :param meta: optional metadata
         """
-        if (positions_xyz is None or orientations_quat_wxyz is None) and poses_se3 is None:
+        if (positions_xyz is None
+                or orientations_quat_wxyz is None) and poses_se3 is None:
             raise TrajectoryException("must provide at least positions_xyz "
                                       "& orientations_quat_wxyz or poses_se3")
         if positions_xyz is not None:
@@ -57,10 +59,11 @@ class PosePath3D(object):
             self._orientations_quat_wxyz = np.array(orientations_quat_wxyz)
         if poses_se3 is not None:
             self._poses_se3 = poses_se3
-        self.meta={} if meta is None else meta
+        self.meta = {} if meta is None else meta
 
     def __str__(self):
-        return "{} poses, {:.3f}m path length".format(self.num_poses, self.path_length())
+        return "{} poses, {:.3f}m path length".format(self.num_poses,
+                                                      self.path_length())
 
     def __eq__(self, other):
         if type(other) != type(self):
@@ -68,8 +71,12 @@ class PosePath3D(object):
         if not self.num_poses == other.num_poses:
             return False
         equal = True
-        equal &= all([np.allclose(p1, p2) for p1, p2 in zip(self.poses_se3, other.poses_se3)])
-        equal &= np.allclose(self.orientations_quat_wxyz, other.orientations_quat_wxyz)
+        equal &= all([
+            np.allclose(p1, p2)
+            for p1, p2 in zip(self.poses_se3, other.poses_se3)
+        ])
+        equal &= np.allclose(self.orientations_quat_wxyz,
+                             other.orientations_quat_wxyz)
         equal &= np.allclose(self.positions_xyz, other.positions_xyz)
         return equal
 
@@ -88,7 +95,9 @@ class PosePath3D(object):
         if not hasattr(self, "_orientations_quat_wxyz"):
             assert hasattr(self, "_poses_se3")
             self._orientations_quat_wxyz \
-                = np.array([tr.quaternion_from_matrix(p) for p in self._poses_se3])
+                = np.array(
+                    [tr.quaternion_from_matrix(p)
+                     for p in self._poses_se3])
         return self._orientations_quat_wxyz
 
     @property
@@ -96,7 +105,9 @@ class PosePath3D(object):
         if not hasattr(self, "_orientations_euler"):
             if hasattr(self, "_poses_se3"):
                 self._orientations_euler \
-                    = np.array([tr.euler_from_matrix(p, axes="sxyz") for p in self._poses_se3])
+                    = np.array(
+                        [tr.euler_from_matrix(p, axes="sxyz")
+                         for p in self._poses_se3])
             elif hasattr(self, "_orientations_quat_wxyz"):
                 self._orientations_euler \
                     = np.array([tr.euler_from_quaternion(q, axes="sxyz")
@@ -109,7 +120,8 @@ class PosePath3D(object):
             assert hasattr(self, "_positions_xyz")
             assert hasattr(self, "_orientations_quat_wxyz")
             self._poses_se3 \
-                = xyz_quat_wxyz_to_se3_poses(self.positions_xyz, self.orientations_quat_wxyz)
+                = xyz_quat_wxyz_to_se3_poses(self.positions_xyz,
+                                             self.orientations_quat_wxyz)
         return self._poses_se3
 
     @property
@@ -127,7 +139,8 @@ class PosePath3D(object):
         """
         if ids is not None:
             if len(ids) != 2 or not all(type(i) is int for i in ids):
-                raise TrajectoryException("ids must be a tuple of positive integers")
+                raise TrajectoryException(
+                    "ids must be a tuple of positive integers")
             return float(geometry.arc_len(self.positions_xyz[ids[0]:ids[1]]))
         else:
             return float(geometry.arc_len(self.positions_xyz))
@@ -139,21 +152,24 @@ class PosePath3D(object):
         :param right_mul: whether to apply it right-multiplicative or not
         """
         if not lie.is_se3(t):
-            raise TrajectoryException("transformation is not a valid SE(3) matrix")
+            raise TrajectoryException(
+                "transformation is not a valid SE(3) matrix")
         if right_mul:
             self._poses_se3 = [np.dot(p, t) for p in self.poses_se3]
         else:
             self._poses_se3 = [np.dot(t, p) for p in self.poses_se3]
         self._positions_xyz, self._orientations_quat_wxyz \
             = se3_poses_to_xyz_quat_wxyz(self.poses_se3)
-    
+
     def scale(self, s):
         """
         apply a scaling to the whole path
         :param s: scale factor
         """
         if hasattr(self, "_poses_se3"):
-            self._poses_se3 = [lie.se3(p[:3, :3], s*p[:3, 3]) for p in self._poses_se3]
+            self._poses_se3 = [
+                lie.se3(p[:3, :3], s * p[:3, 3]) for p in self._poses_se3
+            ]
         if hasattr(self, "_positions_xyz"):
             self._positions_xyz = s * self._positions_xyz
 
@@ -182,9 +198,12 @@ class PosePath3D(object):
         quat_normed = np.allclose(norms, np.ones(norms.shape))
         valid = same_len and se3_valid and quat_normed
         details = {
-            "array shapes": "ok" if same_len else "invalid (lists must have same length)",
-            "SE(3) conform": "yes" if se3_valid else "no (poses are not valid SE(3) matrices)",
-            "quaternions": "ok" if quat_normed else "invalid (must be unit quaternions)"
+            "array shapes": "ok"
+            if same_len else "invalid (lists must have same length)",
+            "SE(3) conform": "yes"
+            if se3_valid else "no (poses are not valid SE(3) matrices)",
+            "quaternions": "ok"
+            if quat_normed else "invalid (must be unit quaternions)"
         }
         return valid, details
 
@@ -213,8 +232,8 @@ class PoseTrajectory3D(PosePath3D, object):
         """
         :param timestamps: optional nx1 list of timestamps
         """
-        super(PoseTrajectory3D, self).__init__(positions_xyz, orientations_quat_wxyz, 
-                                               poses_se3, meta)
+        super(PoseTrajectory3D, self).__init__(
+            positions_xyz, orientations_quat_wxyz, poses_se3, meta)
         # this is a bit ugly...
         if timestamps is None:
             raise TrajectoryException("no timestamps provided")
@@ -222,7 +241,8 @@ class PoseTrajectory3D(PosePath3D, object):
 
     def __str__(self):
         s = super(PoseTrajectory3D, self).__str__()
-        return s + ", {:.3f}s duration".format(self.timestamps[-1] - self.timestamps[0])
+        return s + ", {:.3f}s duration".format(self.timestamps[-1] -
+                                               self.timestamps[0])
 
     def __eq__(self, other):
         if type(other) != type(self):
@@ -245,10 +265,15 @@ class PoseTrajectory3D(PosePath3D, object):
         len_stamps_valid = (len(self.timestamps) == len(self.positions_xyz))
         valid &= len_stamps_valid
         details["nr. of stamps"] = "ok" if len_stamps_valid else "wrong"
-        stamps_ascending = np.alltrue(np.sort(self.timestamps) == self.timestamps)
-        stamps_ascending &= np.unique(self.timestamps).size == len(self.timestamps)
+        stamps_ascending = np.alltrue(
+            np.sort(self.timestamps) == self.timestamps)
+        stamps_ascending &= np.unique(self.timestamps).size == len(
+            self.timestamps)
         valid &= stamps_ascending
-        details["timestamps"] = "ok" if stamps_ascending else "wrong, not ascending or duplicates"
+        if stamps_ascending:
+            details["timestamps"] = "ok"
+        else:
+            details["timestamps"] = "wrong, not ascending or duplicates"
         return valid, details
 
     def get_infos(self):
@@ -266,9 +291,11 @@ class PoseTrajectory3D(PosePath3D, object):
         :return: dictionary with some statistics of the trajectory
         """
         stats = super(PoseTrajectory3D, self).get_statistics()
-        speeds = [calc_speed(self.positions_xyz[i], self.positions_xyz[i + 1],
-                             self.timestamps[i], self.timestamps[i + 1])
-                  for i in range(len(self.positions_xyz) - 1)]
+        speeds = [
+            calc_speed(self.positions_xyz[i], self.positions_xyz[i + 1],
+                       self.timestamps[i], self.timestamps[i + 1])
+            for i in range(len(self.positions_xyz) - 1)
+        ]
         vmax = max(speeds)
         vmin = min(speeds)
         vmean = np.mean(speeds)
@@ -296,7 +323,8 @@ def calc_speed(xyz_1, xyz_2, t_1, t_2):
     :return: speed in m/s
     """
     if (t_2 - t_1) <= 0:
-        raise TrajectoryException("bad timestamps: " + str(t_1) + " & " + str(t_2))
+        raise TrajectoryException("bad timestamps: " + str(t_1) + " & " +
+                                  str(t_2))
     return np.linalg.norm(xyz_2 - xyz_1) / (t_2 - t_1)
 
 
@@ -310,7 +338,8 @@ def calc_angular_speed(p_1, p_2, t_1, t_2, degrees=False):
     :return: speed in rad/s
     """
     if (t_2 - t_1) <= 0:
-        raise TrajectoryException("bad timestamps: " + str(t_1) + " & " + str(t_2))
+        raise TrajectoryException("bad timestamps: " + str(t_1) + " & " +
+                                  str(t_2))
     if degrees:
         angle_1 = lie.so3_log(p_1[:3, :3]) * 180 / np.pi
         angle_2 = lie.so3_log(p_2[:3, :3]) * 180 / np.pi
@@ -321,8 +350,10 @@ def calc_angular_speed(p_1, p_2, t_1, t_2, degrees=False):
 
 
 def xyz_quat_wxyz_to_se3_poses(xyz, quat):
-    poses = [lie.se3(lie.so3_from_se3(tr.quaternion_matrix(quat)), xyz)
-             for quat, xyz in zip(quat, xyz)]
+    poses = [
+        lie.se3(lie.so3_from_se3(tr.quaternion_matrix(quat)), xyz)
+        for quat, xyz in zip(quat, xyz)
+    ]
     return poses
 
 
@@ -332,7 +363,8 @@ def se3_poses_to_xyz_quat_wxyz(poses):
     return xyz, quat_wxyz
 
 
-def align_trajectory(traj, traj_ref, correct_scale=False, correct_only_scale=False, n=-1):
+def align_trajectory(traj, traj_ref, correct_scale=False,
+                     correct_only_scale=False, n=-1):
     """
     align a trajectory to a reference using Umeyama alignment
     :param traj: the trajectory to align
@@ -342,19 +374,21 @@ def align_trajectory(traj, traj_ref, correct_scale=False, correct_only_scale=Fal
     :param n: the number of poses to use, counted from the start (default: all)
     :return: the aligned trajectory
     """
-    traj_aligned = copy.deepcopy(traj)  # otherwise np arrays will be references and mess up stuff
+    traj_aligned = copy.deepcopy(
+        traj)  # otherwise np arrays will be references and mess up stuff
     with_scale = correct_scale or correct_only_scale
     if correct_only_scale:
         logger.debug("Correcting scale...")
     else:
-        logger.debug("Aligning using Umeyama's method..."
-                     + (" (with scale correction)" if with_scale else ""))
+        logger.debug("Aligning using Umeyama's method..." +
+                     (" (with scale correction)" if with_scale else ""))
     if n == -1:
-        r_a, t_a, s = geometry.umeyama_alignment(traj_aligned.positions_xyz.T,
-                                                 traj_ref.positions_xyz.T, with_scale)
+        r_a, t_a, s = geometry.umeyama_alignment(
+            traj_aligned.positions_xyz.T, traj_ref.positions_xyz.T, with_scale)
     else:
-        r_a, t_a, s = geometry.umeyama_alignment(traj_aligned.positions_xyz[:n, :].T,
-                                                 traj_ref.positions_xyz[:n, :].T, with_scale)
+        r_a, t_a, s = geometry.umeyama_alignment(
+            traj_aligned.positions_xyz[:n, :].T,
+            traj_ref.positions_xyz[:n, :].T, with_scale)
     if not correct_only_scale:
         logger.debug("Rotation of alignment:\n{}"
                      "\nTranslation of alignment:\n{}".format(r_a, t_a))

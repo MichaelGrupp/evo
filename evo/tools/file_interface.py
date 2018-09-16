@@ -50,17 +50,17 @@ def csv_read_matrix(file_path, delim=',', comment_str="#"):
     :return: 2D list with raw data (string)
     """
     if hasattr(file_path, 'read'):  # if file handle
-        generator = (
-            line for line in file_path if not line.startswith(comment_str))
+        generator = (line for line in file_path
+                     if not line.startswith(comment_str))
         reader = csv.reader(generator, delimiter=delim)
         mat = [row for row in reader]
     else:
         if not os.path.isfile(file_path):
-            raise FileInterfaceException(
-                "csv file " + str(file_path) + " does not exist")
+            raise FileInterfaceException("csv file " + str(file_path) +
+                                         " does not exist")
         with open(file_path) as f:
-            generator = (
-                line for line in f if not line.startswith(comment_str))
+            generator = (line for line in f
+                         if not line.startswith(comment_str))
             reader = csv.reader(generator, delimiter=delim)
             mat = [row for row in reader]
     return mat
@@ -129,10 +129,12 @@ def read_kitti_poses_file(file_path):
         mat = np.array(raw_mat).astype(float)
     except ValueError:
         raise FileInterfaceException(error_msg)
+    # yapf: disable
     poses = [np.array([[r[0], r[1], r[2], r[3]],
                        [r[4], r[5], r[6], r[7]],
                        [r[8], r[9], r[10], r[11]],
                        [0, 0, 0, 1]]) for r in mat]
+    # yapf: enable
     if not hasattr(file_path, 'read'):  # if not file handle
         logger.debug("Loaded {} poses from: {}".format(len(poses), file_path))
     return PosePath3D(poses_se3=poses)
@@ -185,15 +187,17 @@ def read_bag_trajectory(bag_handle, topic):
     :return: trajectory.PoseTrajectory3D
     """
     if not bag_handle.get_message_count(topic) > 0:
-        raise FileInterfaceException(
-            "no messages for topic '" + topic + "' in bag")
+        raise FileInterfaceException("no messages for topic '" + topic +
+                                     "' in bag")
     stamps, xyz, quat = [], [], []
     for topic, msg, t in bag_handle.read_messages(topic):
         stamps.append(t.secs + (t.nsecs * 1e-9))
         xyz.append(
             [msg.pose.position.x, msg.pose.position.y, msg.pose.position.z])
-        quat.append([msg.pose.orientation.x, msg.pose.orientation.y,
-                     msg.pose.orientation.z, msg.pose.orientation.w])
+        quat.append([
+            msg.pose.orientation.x, msg.pose.orientation.y,
+            msg.pose.orientation.z, msg.pose.orientation.w
+        ])
     quat = np.roll(quat, 1, axis=1)  # shift 1 column -> w in front column
     logger.debug(
         "Loaded {} geometry_msgs/PoseStamped messages of topic: {}".format(
@@ -216,8 +220,8 @@ def write_bag_trajectory(bag_handle, traj, topic_name, frame_id=""):
     if not isinstance(traj, PoseTrajectory3D):
         raise FileInterfaceException(
             "trajectory must be a PoseTrajectory3D object")
-    for stamp, xyz, quat in zip(
-            traj.timestamps, traj.positions_xyz, traj.orientations_quat_wxyz):
+    for stamp, xyz, quat in zip(traj.timestamps, traj.positions_xyz,
+                                traj.orientations_quat_wxyz):
         p = PoseStamped()
         p.header.stamp = rospy.Time.from_sec(stamp)
         p.header.frame_id = frame_id
@@ -280,11 +284,9 @@ def load_res_file(zip_path, load_trajectories=False):
     result_obj = result.Result()
     with zipfile.ZipFile(zip_path, mode='r') as archive:
         file_list = archive.namelist()
-        if not {"error_array.npz",
-                "info.json",
-                "stats.json"} <= set(file_list):
-            logger.warning(
-                "{} not suitable for evo_res".format(zip_path))
+        if not {"error_array.npz", "info.json", "stats.json"
+                } <= set(file_list):
+            logger.warning("{} not suitable for evo_res".format(zip_path))
         npz_files = [n for n in archive.namelist() if n.endswith(".npz")]
         for filename in npz_files:
             with io.BytesIO(archive.read(filename)) as f:
@@ -299,7 +301,8 @@ def load_res_file(zip_path, load_trajectories=False):
                     name = os.path.splitext(os.path.basename(filename))[0]
                     result_obj.add_trajectory(name, traj)
             kitti_files = [
-                n for n in archive.namelist() if n.endswith(".kitti")]
+                n for n in archive.namelist() if n.endswith(".kitti")
+            ]
             for filename in kitti_files:
                 with io.TextIOWrapper(archive.open(filename, mode='r')) as f:
                     traj = read_kitti_poses_file(f)

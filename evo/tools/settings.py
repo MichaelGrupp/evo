@@ -39,7 +39,7 @@ DEFAULT_LOGFILE_PATH = os.path.join(USER_ASSETS_PATH, "evo.log")
 class SettingsException(Exception):
     pass
 
-    
+
 class SettingsContainer(dict):
     def __init__(self, data, lock=True):
         super(SettingsContainer, self).__init__()
@@ -82,8 +82,7 @@ def merge_dicts(first, second, soft=False):
 
 def write_to_json_file(json_path, dictionary):
     with open(json_path, 'w') as json_file:
-        json_file.write(json.dumps(
-            dictionary, indent=4, sort_keys=True))
+        json_file.write(json.dumps(dictionary, indent=4, sort_keys=True))
 
 
 def reset(dest=DEFAULT_PATH):
@@ -105,12 +104,11 @@ def initialize_if_needed():
     if not os.path.exists(DEFAULT_PATH):
         try:
             reset(dest=DEFAULT_PATH)
-            print("{}Initialized new {}{}".format(
-                Fore.LIGHTYELLOW_EX, DEFAULT_PATH, Fore.RESET))
+            print("{}Initialized new {}{}".format(Fore.LIGHTYELLOW_EX,
+                                                  DEFAULT_PATH, Fore.RESET))
         except:
-            logger.error(
-                "Fatal: failed to write package settings file {}".format(
-                    DEFAULT_PATH))
+            logger.error("Fatal: failed to write package settings file {}".
+                         format(DEFAULT_PATH))
             raise
 
 
@@ -122,12 +120,12 @@ def update_if_outdated():
         return
     from evo.tools.settings_template import DEFAULT_SETTINGS_DICT
     old_settings = json.loads(open(DEFAULT_PATH).read())
-    updated_settings = merge_dicts(
-        old_settings, DEFAULT_SETTINGS_DICT, soft=True)
+    updated_settings = merge_dicts(old_settings, DEFAULT_SETTINGS_DICT,
+                                   soft=True)
     write_to_json_file(DEFAULT_PATH, updated_settings)
     open(USER_ASSETS_VERSION_PATH, 'w').write(PACKAGE_VERSION)
-    print("{}Updated outdated {}{}".format(
-        Fore.LIGHTYELLOW_EX, DEFAULT_PATH, Fore.RESET))
+    print("{}Updated outdated {}{}".format(Fore.LIGHTYELLOW_EX, DEFAULT_PATH,
+                                           Fore.RESET))
 
 
 # Load the user settings into this container.

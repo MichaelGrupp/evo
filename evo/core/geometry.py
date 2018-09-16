@@ -48,13 +48,13 @@ def umeyama_alignment(x, y, with_scale=False):
 
     # variance, eq. 36
     # "transpose" for column subtraction
-    sigma_x = 1.0/n * (np.linalg.norm(x - mean_x[:, np.newaxis])**2)
+    sigma_x = 1.0 / n * (np.linalg.norm(x - mean_x[:, np.newaxis])**2)
 
     # covariance matrix, eq. 38
     outer_sum = np.zeros((m, m))
     for i in range(n):
         outer_sum += np.outer((y[:, i] - mean_y), (x[:, i] - mean_x))
-    cov_xy = np.multiply(1.0/n, outer_sum)
+    cov_xy = np.multiply(1.0 / n, outer_sum)
 
     # SVD (text betw. eq. 38 and 39)
     u, d, v = np.linalg.svd(cov_xy)
@@ -63,13 +63,13 @@ def umeyama_alignment(x, y, with_scale=False):
     s = np.eye(m)
     if np.linalg.det(u) * np.linalg.det(v) < 0.0:
         # Ensure a RHS coordinate system (Kabsch algorithm).
-        s[m-1, m-1] = -1
+        s[m - 1, m - 1] = -1
 
     # rotation, eq. 40
     r = u.dot(s).dot(v)
 
     # scale & translation, eq. 42 and 41
-    c = 1/sigma_x * np.trace(np.diag(d).dot(s)) if with_scale else 1.0
+    c = 1 / sigma_x * np.trace(np.diag(d).dot(s)) if with_scale else 1.0
     t = mean_y - np.multiply(c, r.dot(mean_x))
 
     return r, t, c

@@ -43,6 +43,7 @@ class MockFileTestCase(unittest.TestCase):
             finally:
                 self.mock_file.seek(0)
                 self.mock_file.truncate()
+
         return _decorator
 
     @staticmethod
@@ -52,11 +53,12 @@ class MockFileTestCase(unittest.TestCase):
                 test_method(self, *args, **kwargs)
             except ImportError:
                 pass
+
         return _decorator
 
 
 class TestTumFile(MockFileTestCase):
-    def __init__(self,  *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(TestTumFile, self).__init__(io.StringIO(), *args, **kwargs)
 
     @MockFileTestCase.run_and_clear
@@ -100,7 +102,7 @@ class TestTumFile(MockFileTestCase):
 
 
 class TestKittiFile(MockFileTestCase):
-    def __init__(self,  *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(TestKittiFile, self).__init__(io.StringIO(), *args, **kwargs)
 
     @MockFileTestCase.run_and_clear
@@ -144,7 +146,7 @@ class TestKittiFile(MockFileTestCase):
 
 
 class TestBagFile(MockFileTestCase):
-    def __init__(self,  *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(TestBagFile, self).__init__(io.BytesIO(), *args, **kwargs)
 
     @MockFileTestCase.allow_import_error
@@ -154,8 +156,8 @@ class TestBagFile(MockFileTestCase):
         bag_out = rosbag.Bag(tmp_file.name, 'w')
         traj_out = helpers.fake_trajectory(1000, 0.1)
         self.assertTrue(traj_out.check())
-        file_interface.write_bag_trajectory(
-            bag_out, traj_out, "/test", frame_id="map")
+        file_interface.write_bag_trajectory(bag_out, traj_out, "/test",
+                                            frame_id="map")
         bag_out.close()
         bag_in = rosbag.Bag(tmp_file.name, 'r')
         traj_in = file_interface.read_bag_trajectory(bag_in, "/test")

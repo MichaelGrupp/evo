@@ -21,16 +21,20 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 from evo.core import lie_algebra as lie
 from evo.core.trajectory import PosePath3D, PoseTrajectory3D
 
+
 def random_se3_list(length):
     return [lie.random_se3() for i in range(length)]
+
 
 def fake_timestamps(length, distance):
     return [0. + (distance * i) for i in range(length)]
 
+
 def fake_path(length):
     return PosePath3D(poses_se3=random_se3_list(length))
 
+
 def fake_trajectory(length, timestamp_distance):
     return PoseTrajectory3D(
-        poses_se3=random_se3_list(length),
-        timestamps=fake_timestamps(length, timestamp_distance))
+        poses_se3=random_se3_list(length), timestamps=fake_timestamps(
+            length, timestamp_distance))

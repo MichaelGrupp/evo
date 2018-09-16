@@ -34,7 +34,8 @@ from colorama import Fore, Style
 from pygments import highlight, lexers, formatters
 
 from evo.tools import log, user, settings
-from evo.tools.settings_template import DEFAULT_SETTINGS_DICT_DOC, DEFAULT_SETTINGS_DICT
+from evo.tools.settings_template import DEFAULT_SETTINGS_DICT_DOC
+from evo.tools.settings_template import DEFAULT_SETTINGS_DICT
 
 logger = logging.getLogger(__name__)
 
@@ -103,10 +104,12 @@ def set_cfg(cfg_path, arg_list):
                             values.append(value)
                     if len(values) == 1:
                         values = values[0]
-                    data[arg] = not data[arg] if isinstance(data[arg], bool) else values
+                    data[arg] = not data[arg] if isinstance(data[arg],
+                                                            bool) else values
             elif i + 1 > max_idx or arg_list[i + 1] in data:
                 # toggle boolean parameter
-                data[arg] = not data[arg] if isinstance(data[arg], bool) else data[arg]
+                data[arg] = not data[arg] if isinstance(data[arg],
+                                                        bool) else data[arg]
     with open(cfg_path, 'w') as cfg_file:
         cfg_file.write(json.dumps(data, indent=4, sort_keys=True))
 
@@ -117,7 +120,8 @@ def generate(arg_list):
     for i, arg in enumerate(arg_list):
         if arg.startswith("-"):
             arg = arg[1:] if not arg.startswith("--") else arg[2:]
-            if (i + 1 <= max_idx and arg_list[i + 1].startswith("-")) or i + 1 > max_idx:
+            if (i + 1 <= max_idx
+                    and arg_list[i + 1].startswith("-")) or i + 1 > max_idx:
                 data[arg] = True  # just a boolean flag
             else:
                 values = []
@@ -186,37 +190,49 @@ def main():
     basic_desc = "crappy configuration tool"
     lic = "(c) michael.grupp@tum.de"
     shared_parser = argparse.ArgumentParser(add_help=False)
-    shared_parser.add_argument("--no_color", help="don't color output", action="store_true")
-    main_parser = argparse.ArgumentParser(description="%s %s" % (basic_desc, lic))
+    shared_parser.add_argument("--no_color", help="don't color output",
+                               action="store_true")
+    main_parser = argparse.ArgumentParser(
+        description="%s %s" % (basic_desc, lic))
     sub_parsers = main_parser.add_subparsers(dest="subcommand")
     sub_parsers.required = True
 
-    show_parser = sub_parsers.add_parser("show", description="show configuration - %s" % lic,
-                                         parents=[shared_parser])
-    show_parser.add_argument("config",
-                             help="optional config file to display (default: package settings)",
-                             nargs='?')
+    show_parser = sub_parsers.add_parser(
+        "show", description="show configuration - %s" % lic,
+        parents=[shared_parser])
+    show_parser.add_argument(
+        "config",
+        help="optional config file to display (default: package settings)",
+        nargs='?')
     show_parser.add_argument("--brief", help="show only the .json data",
                              action="store_true")
 
-    set_parser = sub_parsers.add_parser("set", description=SET_HELP, parents=[shared_parser],
-                                        formatter_class=argparse.RawTextHelpFormatter)
-    set_parser.add_argument("params", choices=list(DEFAULT_SETTINGS_DICT.keys()),
-                            nargs=argparse.REMAINDER, help="parameters to set")
-    set_parser.add_argument("-c", "--config",
-                            help="optional config file (default: package settings)", default=None)
+    set_parser = sub_parsers.add_parser(
+        "set", description=SET_HELP, parents=[shared_parser],
+        formatter_class=argparse.RawTextHelpFormatter)
+    set_parser.add_argument("params", choices=list(
+        DEFAULT_SETTINGS_DICT.keys()), nargs=argparse.REMAINDER,
+                            help="parameters to set")
+    set_parser.add_argument(
+        "-c", "--config",
+        help="optional config file (default: package settings)", default=None)
     set_parser.add_argument("-m", "--merge",
-                            help="other config file to merge in (priority)", default=None)
-    set_parser.add_argument("--soft", help="do a soft-merge (no overwriting)", action="store_true")
+                            help="other config file to merge in (priority)",
+                            default=None)
+    set_parser.add_argument("--soft", help="do a soft-merge (no overwriting)",
+                            action="store_true")
 
-    gen_parser = sub_parsers.add_parser("generate", description=GENERATE_HELP,
-                                        parents=[shared_parser],
-                                        formatter_class=argparse.RawTextHelpFormatter)
-    gen_parser.add_argument("-o", "--out", help="path for config file to generate")
+    gen_parser = sub_parsers.add_parser(
+        "generate", description=GENERATE_HELP, parents=[shared_parser],
+        formatter_class=argparse.RawTextHelpFormatter)
+    gen_parser.add_argument("-o", "--out",
+                            help="path for config file to generate")
 
-    reset_parser = sub_parsers.add_parser("reset", description="reset package settings - %s" % lic,
-                                          parents=[shared_parser])
-    reset_parser.add_argument("-y", help="acknowledge automatically", action="store_true")
+    reset_parser = sub_parsers.add_parser(
+        "reset", description="reset package settings - %s" % lic,
+        parents=[shared_parser])
+    reset_parser.add_argument("-y", help="acknowledge automatically",
+                              action="store_true")
 
     argcomplete.autocomplete(main_parser)
     if len(sys.argv) > 1 and sys.argv[1] == "set":
@@ -235,8 +251,9 @@ def main():
     if args.subcommand == "show":
         if not args.brief and not args.config:
             style = Style.BRIGHT if not args.no_color else Style.NORMAL
-            doc_str = "\n".join("{0}{1}{2}:\n{3}\n".format(style, k, Style.RESET_ALL, v[1])
-                                for k, v in sorted(DEFAULT_SETTINGS_DICT_DOC.items()))
+            doc_str = "\n".join(
+                "{0}{1}{2}:\n{3}\n".format(style, k, Style.RESET_ALL, v[1])
+                for k, v in sorted(DEFAULT_SETTINGS_DICT_DOC.items()))
             logger.info(doc_str)
             logger.info("{0}\n{1}\n{0}".format(SEP, config))
         show(config, colored=not args.no_color)
@@ -264,10 +281,11 @@ def main():
 
     elif args.subcommand == "generate":
         if other_args:
-            logger.info("{0}\nParsed by argparse:\n{1}\n"
-                         "{0}\nWARNING:\n"
-                         "Make sure you use the 'long-style' -- options (e.g. --plot) if possible\n"
-                         "and no combined short '-' flags, (e.g. -vp)\n{0}".format(SEP, other_args))
+            logger.info(
+                "{0}\nParsed by argparse:\n{1}\n"
+                "{0}\nWARNING:\nMake sure you use the 'long-style' -- options "
+                "(e.g. --plot) if possible\nand no combined short '-' flags, "
+                "(e.g. -vp)\n{0}".format(SEP, other_args))
             data = generate(other_args)
             log_info_dict_json(data, colored=not args.no_color)
             if args.out and user.check_and_confirm_overwrite(args.out):
@@ -282,7 +300,8 @@ def main():
         if not os.access(config, os.W_OK):
             logger.error("No permission to modify" + config)
             sys.exit()
-        if args.y or user.confirm("Reset the package settings to the default settings? (y/n)"):
+        if args.y or user.confirm(
+                "Reset the package settings to the default settings? (y/n)"):
             settings.reset()
             logger.info("{0}\nPackage settings after reset:\n{0}".format(SEP))
             show(settings.DEFAULT_PATH, colored=not args.no_color)

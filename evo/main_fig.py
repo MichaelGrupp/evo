@@ -32,17 +32,24 @@ SEP = "-" * 80  # separator line
 def main():
     import argparse
     import argcomplete
-    basic_desc = "experimental tool for opening a serialized PlotCollection (pickle format)"
+    basic_desc = "experimental tool for opening a serialized PlotCollection"
     lic = "(c) michael.grupp@tum.de"
-    main_parser = argparse.ArgumentParser(description="%s %s" % (basic_desc, lic))
-    main_parser.add_argument("in_file", help="path to a serialized plot_collection")
-    main_parser.add_argument("-t", "--title", help="custom title (default: file name)")
-    main_parser.add_argument("--save_plot", help="path to save plot", default=None)
-    main_parser.add_argument("--serialize_plot", help="path to re-serialize PlotCollection",
+    main_parser = argparse.ArgumentParser(
+        description="%s %s" % (basic_desc, lic))
+    main_parser.add_argument("in_file",
+                             help="path to a serialized plot_collection")
+    main_parser.add_argument("-t", "--title",
+                             help="custom title (default: file name)")
+    main_parser.add_argument("--save_plot", help="path to save plot",
                              default=None)
-    main_parser.add_argument("--to_html", help="convert to html (requires mpld3 library)",
+    main_parser.add_argument("--serialize_plot",
+                             help="path to re-serialize PlotCollection",
+                             default=None)
+    main_parser.add_argument("--to_html",
+                             help="convert to html (requires mpld3 library)",
                              action="store_true")
-    main_parser.add_argument("--no_warnings", help="no warnings requiring user confirmation",
+    main_parser.add_argument("--no_warnings",
+                             help="no warnings requiring user confirmation",
                              action="store_true")
     argcomplete.autocomplete(main_parser)
     args = main_parser.parse_args()
@@ -55,9 +62,10 @@ def main():
     else:
         title = args.title
     if not args.no_warnings:
-        logger.warning("Please note that this tool is experimental and not guranteed to work.\n"
-                       "Only works if the same plot settings are used as for serialization.\n"
-                       "If not, try: evo_config show/set \n" + SEP)
+        logger.warning(
+            "This tool is experimental and not guranteed to work.\nOnly works "
+            "if the same plot settings are used as for serialization.\n"
+            "If not, try: evo_config show/set \n" + SEP)
 
     plot_collection = plot.PlotCollection(title, deserialize=args.in_file)
     logger.debug("Deserialized PlotCollection: " + str(plot_collection))
@@ -65,10 +73,12 @@ def main():
 
     if args.serialize_plot:
         logger.debug(SEP)
-        plot_collection.serialize(args.serialize_plot, confirm_overwrite=not args.no_warnings)
+        plot_collection.serialize(args.serialize_plot,
+                                  confirm_overwrite=not args.no_warnings)
     if args.save_plot:
         logger.debug(SEP)
-        plot_collection.export(args.save_plot, confirm_overwrite=not args.no_warnings)
+        plot_collection.export(args.save_plot,
+                               confirm_overwrite=not args.no_warnings)
     if args.to_html:
         import mpld3
         logger.debug(SEP + "\nhtml export\n")

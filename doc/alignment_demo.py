@@ -32,9 +32,9 @@ import matplotlib.pyplot as plt
 logger = logging.getLogger("evo")
 log.configure_logging(verbose=True)
 
-
 traj_ref = file_interface.read_kitti_poses_file("../test/data/KITTI_00_gt.txt")
-traj_est = file_interface.read_kitti_poses_file("../test/data/KITTI_00_ORB.txt")
+traj_est = file_interface.read_kitti_poses_file(
+    "../test/data/KITTI_00_ORB.txt")
 
 # add artificial Sim(3) transformation
 traj_est.transform(lie.se3(np.eye(3), [0, 0, 0]))
@@ -44,8 +44,8 @@ logger.info("\nUmeyama alignment without scaling")
 traj_est_aligned = trajectory.align_trajectory(traj_est, traj_ref)
 
 logger.info("\nUmeyama alignment with scaling")
-traj_est_aligned_scaled = trajectory.align_trajectory(
-    traj_est, traj_ref, correct_scale=True)
+traj_est_aligned_scaled = trajectory.align_trajectory(traj_est, traj_ref,
+                                                      correct_scale=True)
 
 logger.info("\nUmeyama alignment with scaling only")
 traj_est_aligned_only_scaled = trajectory.align_trajectory(

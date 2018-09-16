@@ -54,9 +54,9 @@ def matching_time_indices(stamps_1, stamps_2, max_diff=0.01, offset_2=0.0):
     return matching_indices
 
 
-def associate_trajectories(traj_1, traj_2,
-        max_diff=0.01, offset_2=0.0,
-        first_name="first trajectory", snd_name="second trajectory"):
+def associate_trajectories(traj_1, traj_2, max_diff=0.01, offset_2=0.0,
+                           first_name="first trajectory",
+                           snd_name="second trajectory"):
     """
     Synchronizes two trajectories by matching their timestamps.
     :param traj_1: trajectory.PoseTrajectory3D object of first trajectory
@@ -78,14 +78,14 @@ def associate_trajectories(traj_1, traj_2,
 
     # First, match the timestamps of the shorter trajectory to the longer one.
     matching_indices = matching_time_indices(
-        traj_short.timestamps, traj_long.timestamps,
-        max_diff, offset_2 if snd_longer else -offset_2)
+        traj_short.timestamps, traj_long.timestamps, max_diff,
+        offset_2 if snd_longer else -offset_2)
     traj_long.reduce_to_ids(matching_indices)
 
     # Next, reversely match the reduced long trajectory to the shorter one.
     matching_indices = matching_time_indices(
-        traj_long.timestamps, traj_short.timestamps,
-        max_diff, -offset_2 if snd_longer else offset_2)
+        traj_long.timestamps, traj_short.timestamps, max_diff,
+        -offset_2 if snd_longer else offset_2)
     traj_short.reduce_to_ids(matching_indices)
 
     traj_1 = traj_short if snd_longer else traj_long
@@ -101,7 +101,7 @@ def associate_trajectories(traj_1, traj_2,
         "Found {} of max. {} possible matching timestamps between...\n"
         "\t{}\nand:\t{}\n..with max. time diff.: {} (s) "
         "and time offset: {} (s).".format(
-            len(matching_indices), max_pairs, first_name,
-            snd_name, max_diff, offset_2))
+            len(matching_indices), max_pairs, first_name, snd_name, max_diff,
+            offset_2))
 
     return traj_1, traj_2

@@ -30,8 +30,9 @@ def get_default_plot_backend():
 
 
 # default settings with documentation
+# yapf: disable
 DEFAULT_SETTINGS_DICT_DOC = {
-    "plot_xyz_realistic": ( 
+    "plot_xyz_realistic": (
         True,
         "Equal axes ratio in 'xyz' plot mode for realistic trajectory plots."
     ),
@@ -127,6 +128,7 @@ DEFAULT_SETTINGS_DICT_DOC = {
         "Whether to write a logfile to the home folder."
     )
 }
+# yapf: enable
 
 # without documentation
 DEFAULT_SETTINGS_DICT = {k: v[0] for k, v in DEFAULT_SETTINGS_DICT_DOC.items()}

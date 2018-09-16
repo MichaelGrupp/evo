@@ -28,58 +28,66 @@ import context
 from evo.core import filters
 from evo.core import lie_algebra as lie
 
-# some synthetic poses for testing
-#                          [0]                                       [1]
-poses_1 = [lie.se3(np.eye(3), np.array([0, 0, 0])), lie.se3(np.eye(3), np.array([0, 0, 0.5])),
-           lie.se3(np.eye(3), np.array([0, 0, 0])), lie.se3(np.eye(3), np.array([0, 0, 1]))]
-#                          [2]                                       [3]
+poses_1 = [
+    lie.se3(np.eye(3), np.array([0, 0, 0])),
+    lie.se3(np.eye(3), np.array([0, 0, 0.5])),
+    lie.se3(np.eye(3), np.array([0, 0, 0])),
+    lie.se3(np.eye(3), np.array([0, 0, 1]))
+]
 
-#                          [0]                                       [1]
-poses_2 = [lie.se3(np.eye(3), np.array([0, 0, 0])), lie.se3(np.eye(3), np.array([0, 0, 0.5])),
-           lie.se3(np.eye(3), np.array([0, 0, 0.99])), lie.se3(np.eye(3), np.array([0, 0, 1.0]))]
-#                          [2]                                       [3]
+poses_2 = [
+    lie.se3(np.eye(3), np.array([0, 0, 0])),
+    lie.se3(np.eye(3), np.array([0, 0, 0.5])),
+    lie.se3(np.eye(3), np.array([0, 0, 0.99])),
+    lie.se3(np.eye(3), np.array([0, 0, 1.0]))
+]
 
+poses_3 = [
+    lie.se3(np.eye(3), np.array([0, 0, 0.0])),
+    lie.se3(np.eye(3), np.array([0, 0, 0.9])),
+    lie.se3(np.eye(3), np.array([0, 0, 0.99])),
+    lie.se3(np.eye(3), np.array([0, 0, 0.999])),
+    lie.se3(np.eye(3), np.array([0, 0, 0.9999])),
+    lie.se3(np.eye(3), np.array([0, 0, 0.99999])),
+    lie.se3(np.eye(3), np.array([0, 0, 0.999999])),
+    lie.se3(np.eye(3), np.array([0, 0, 0.9999999]))
+]
 
-#                          [0]                                       [1]
-poses_3 = [lie.se3(np.eye(3), np.array([0, 0, 0.0])), lie.se3(np.eye(3), np.array([0, 0, 0.9])),
-           lie.se3(np.eye(3), np.array([0, 0, 0.99])), lie.se3(np.eye(3), np.array([0, 0, 0.999])),
-           lie.se3(np.eye(3), np.array([0, 0, 0.9999])), lie.se3(np.eye(3), np.array([0, 0, 0.99999])),
-           lie.se3(np.eye(3), np.array([0, 0, 0.999999])), lie.se3(np.eye(3), np.array([0, 0, 0.9999999]))]
-#                          [6]                                       [7]
-
-#                          [0]                                       [1]
-poses_4 = [lie.se3(np.eye(3), np.array([0, 0, 0])), lie.se3(np.eye(3), np.array([0, 0, 1])),
-           lie.se3(np.eye(3), np.array([0, 0, 1])), lie.se3(np.eye(3), np.array([0, 0, 1]))]
-#                          [2]                                       [3]
+poses_4 = [
+    lie.se3(np.eye(3), np.array([0, 0, 0])),
+    lie.se3(np.eye(3), np.array([0, 0, 1])),
+    lie.se3(np.eye(3), np.array([0, 0, 1])),
+    lie.se3(np.eye(3), np.array([0, 0, 1]))
+]
 
 
 class TestFilterPairsByPath(unittest.TestCase):
     def test_poses1_all_pairs(self):
         target_path = 1.0
         tol = 0.0
-        id_pairs = filters.filter_pairs_by_path(
-            poses_1, target_path, tol, all_pairs=True)
+        id_pairs = filters.filter_pairs_by_path(poses_1, target_path, tol,
+                                                all_pairs=True)
         self.assertEqual(id_pairs, [(0, 2), (2, 3)])
 
     def test_poses1_wrong_target(self):
         target_path = 2.5
         tol = 0.0
-        id_pairs = filters.filter_pairs_by_path(
-            poses_1, target_path, tol, all_pairs=True)
+        id_pairs = filters.filter_pairs_by_path(poses_1, target_path, tol,
+                                                all_pairs=True)
         self.assertEqual(id_pairs, [])
 
     def test_poses2_all_pairs_low_tolerance(self):
         target_path = 1.0
         tol = 0.001
-        id_pairs = filters.filter_pairs_by_path(
-            poses_2, target_path, tol, all_pairs=True)
+        id_pairs = filters.filter_pairs_by_path(poses_2, target_path, tol,
+                                                all_pairs=True)
         self.assertEqual(id_pairs, [(0, 3)])
 
     def test_convergence_all_pairs(self):
         target_path = 1.0
         tol = 0.2
-        id_pairs = filters.filter_pairs_by_path(
-            poses_3, target_path, tol, all_pairs=True)
+        id_pairs = filters.filter_pairs_by_path(poses_3, target_path, tol,
+                                                all_pairs=True)
         self.assertEqual(id_pairs, [(0, 7)])
 
 
@@ -87,39 +95,40 @@ class TestFilterPairsByDistance(unittest.TestCase):
     def test_poses1_all_pairs(self):
         target_path = 1.0
         tol = 0.0
-        id_pairs = filters.filter_pairs_by_distance(
-            poses_1, target_path, tol, all_pairs=True)
+        id_pairs = filters.filter_pairs_by_distance(poses_1, target_path, tol,
+                                                    all_pairs=True)
         self.assertEqual(id_pairs, [(0, 3), (2, 3)])
 
     def test_poses1_wrong_target(self):
         target_path = 2.5
         tol = 0.0
-        id_pairs = filters.filter_pairs_by_distance(
-            poses_1, target_path, tol, all_pairs=True)
+        id_pairs = filters.filter_pairs_by_distance(poses_1, target_path, tol,
+                                                    all_pairs=True)
         self.assertEqual(id_pairs, [])
 
     def test_poses2_all_pairs_low_tolerance(self):
         target_path = 1.0
         tol = 0.001
-        id_pairs = filters.filter_pairs_by_distance(
-            poses_2, target_path, tol, all_pairs=True)
+        id_pairs = filters.filter_pairs_by_distance(poses_2, target_path, tol,
+                                                    all_pairs=True)
         self.assertEqual(id_pairs, [(0, 3)])
 
     def test_poses4_all_pairs(self):
         target_path = 1.0
         tol = 0.2
-        id_pairs = filters.filter_pairs_by_distance(
-            poses_4, target_path, tol, all_pairs=True)
+        id_pairs = filters.filter_pairs_by_distance(poses_4, target_path, tol,
+                                                    all_pairs=True)
         self.assertEqual(id_pairs, [(0, 1), (0, 2), (0, 3)])
 
 
-# some synthetic poses for testing
 axis = np.array([1, 0, 0])
-poses_5 = [lie.se3(lie.so3_exp(axis, 0.0), np.array([0, 0, 0])),
-           lie.se3(lie.so3_exp(axis, math.pi), np.array([0, 0, 0])),
-           lie.se3(lie.so3_exp(axis, 0.0), np.array([0, 0, 0])),
-           lie.se3(lie.so3_exp(axis, math.pi / 3), np.array([0, 0, 0])),
-           lie.se3(lie.so3_exp(axis, math.pi), np.array([0, 0, 0]))]
+poses_5 = [
+    lie.se3(lie.so3_exp(axis, 0.0), np.array([0, 0, 0])),
+    lie.se3(lie.so3_exp(axis, math.pi), np.array([0, 0, 0])),
+    lie.se3(lie.so3_exp(axis, 0.0), np.array([0, 0, 0])),
+    lie.se3(lie.so3_exp(axis, math.pi / 3), np.array([0, 0, 0])),
+    lie.se3(lie.so3_exp(axis, math.pi), np.array([0, 0, 0]))
+]
 stamps_5 = np.array([0, 1, 2, 3, 4])
 
 axis = np.array([1, 0, 0])
@@ -136,39 +145,46 @@ class TestFilterPairsByAngle(unittest.TestCase):
     def test_poses5(self):
         target_angle = math.pi
         tol = 0.001
-        id_pairs = filters.filter_pairs_by_angle(
-            poses_5, target_angle, tol, all_pairs=False)
+        id_pairs = filters.filter_pairs_by_angle(poses_5, target_angle, tol,
+                                                 all_pairs=False)
         self.assertEqual(id_pairs, [(0, 1), (1, 2), (2, 4)])
 
     def test_poses5_all_pairs(self):
         target_angle = math.pi
         tol = 0.01
-        id_pairs = filters.filter_pairs_by_angle(
-            poses_5, target_angle, tol, all_pairs=True)
+        id_pairs = filters.filter_pairs_by_angle(poses_5, target_angle, tol,
+                                                 all_pairs=True)
         self.assertEqual(id_pairs, [(0, 1), (0, 4), (1, 2), (2, 4)])
 
     def test_poses6(self):
         target_angle = math.pi
         tol = 0.001
-        id_pairs = filters.filter_pairs_by_angle(
-            poses_6, target_angle, tol, all_pairs=False)
+        id_pairs = filters.filter_pairs_by_angle(poses_6, target_angle, tol,
+                                                 all_pairs=False)
         self.assertEqual(id_pairs, [(0, 3)])
 
     def test_poses6_all_pairs(self):
         target_angle = math.pi
         tol = 0.001
-        id_pairs = filters.filter_pairs_by_angle(
-            poses_6, target_angle, tol, all_pairs=True)
+        id_pairs = filters.filter_pairs_by_angle(poses_6, target_angle, tol,
+                                                 all_pairs=True)
         self.assertEqual(id_pairs, [(0, 3), (0, 4)])
 
 
-# some synthetic poses and timestamps for testing
-poses_7 = [lie.se3(np.eye(3), np.array([0, 0, 1])), lie.se3(np.eye(3), np.array([0, 0, 2])),
-           lie.se3(np.eye(3), np.array([0, 0, 3])), lie.se3(np.eye(3), np.array([0, 0, 4]))]
+poses_7 = [
+    lie.se3(np.eye(3), np.array([0, 0, 1])),
+    lie.se3(np.eye(3), np.array([0, 0, 2])),
+    lie.se3(np.eye(3), np.array([0, 0, 3])),
+    lie.se3(np.eye(3), np.array([0, 0, 4]))
+]
 stamps_7 = np.array([0, 1, 2, 3])
 
-poses_8 = [lie.se3(np.eye(3), np.array([0, 0, 1])), lie.se3(np.eye(3), np.array([0, 0, 1])),
-           lie.se3(np.eye(3), np.array([0, 0, 3])), lie.se3(np.eye(3), np.array([0, 0, 4]))]
+poses_8 = [
+    lie.se3(np.eye(3), np.array([0, 0, 1])),
+    lie.se3(np.eye(3), np.array([0, 0, 1])),
+    lie.se3(np.eye(3), np.array([0, 0, 3])),
+    lie.se3(np.eye(3), np.array([0, 0, 4]))
+]
 stamps_8 = np.array([0, 1, 2, 3])
 
 
@@ -176,15 +192,15 @@ class TestFilterPosesBySpeed(unittest.TestCase):
     def test_poses_7_stamps_7(self):
         target_speed = 1.0  # m/s
         tol = 0.01
-        id_pairs = filters.filter_pairs_by_speed(
-            poses_7, stamps_7, target_speed, tol)
+        id_pairs = filters.filter_pairs_by_speed(poses_7, stamps_7,
+                                                 target_speed, tol)
         self.assertEqual(id_pairs, [(0, 1), (1, 2), (2, 3)])
 
     def test_poses_8_stamps_8(self):
         target_speed = 1.0  # m/s
         tol = 0.01
-        id_pairs = filters.filter_pairs_by_speed(
-            poses_8, stamps_8, target_speed, tol)
+        id_pairs = filters.filter_pairs_by_speed(poses_8, stamps_8,
+                                                 target_speed, tol)
         self.assertEqual(id_pairs, [(2, 3)])
 
 
@@ -234,4 +250,3 @@ class TestFilterPosesByAngularSpeed(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
-

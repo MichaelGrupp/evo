@@ -23,7 +23,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
 # Python 2/3 compatibility
 try:
     input = raw_input

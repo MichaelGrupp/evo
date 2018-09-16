@@ -26,11 +26,11 @@ import logging
 import argcomplete
 
 logger = logging.getLogger(__name__)
-
 """ 
 the actual entry points:
 to save time for argcomplete (tab bash completion),
-only do required imports in respective module when creating parser (no expensive global imports)
+only do required imports in respective module when creating parser
+(no expensive global imports)
 """
 
 
@@ -72,8 +72,10 @@ def merge_config(args):
     if args.config:
         with open(args.config) as config:
             merged_config_dict = vars(args).copy()
-            merged_config_dict.update(json.loads(config.read()))  # merge both parameter dicts
-            args = argparse.Namespace(**merged_config_dict)  # override args the hacky way
+            # merge both parameter dicts
+            merged_config_dict.update(json.loads(config.read()))
+            # override args the hacky way
+            args = argparse.Namespace(**merged_config_dict)
     return args
 
 
@@ -98,7 +100,8 @@ def launch(main_module, parser):
         logger.error(err_msg)
         from evo.tools import user
         if not args.no_warnings:
-            if settings.SETTINGS.logfile_enabled and user.confirm("Open logfile? (y/n)"):
+            if settings.SETTINGS.logfile_enabled and user.confirm(
+                    "Open logfile? (y/n)"):
                 import webbrowser
                 webbrowser.open(settings.DEFAULT_LOGFILE_PATH)
         sys.exit(1)

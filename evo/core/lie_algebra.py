@@ -34,9 +34,11 @@ def hat(v):
     :param v: 3x1 vector
     :return: 3x3 skew symmetric matrix
     """
+    # yapf: disable
     return np.array([[0.0, -v[2], v[1]],
                      [v[2], 0.0, -v[0]],
                      [-v[1], v[0], 0.0]])
+    # yapf: enable
 
 
 def vee(m):
@@ -70,10 +72,10 @@ def so3_log(r, return_angle_only=True, return_skew=False):
     if not is_so3(r):
         raise LieAlgebraException("matrix is not a valid SO(3) group element")
     if return_angle_only and not return_skew:
-        return np.arccos(min(1, max(-1, (np.trace(r) - 1)/2)))
+        return np.arccos(min(1, max(-1, (np.trace(r) - 1) / 2)))
     angle, axis, _ = tr.rotation_from_matrix(se3(r, [0, 0, 0]))
     if return_skew:
-        return hat(axis*angle)
+        return hat(axis * angle)
     else:
         return axis, angle
 
@@ -150,7 +152,7 @@ def is_sim3(p, s):
     :return: True if p is in the Sim(3) group with scale s
     """
     rot = p[:3, :3]
-    rot_unscaled = np.multiply(rot, 1.0/s)
+    rot_unscaled = np.multiply(rot, 1.0 / s)
     rot_valid = is_so3(rot_unscaled)
     lower_valid = np.equal(p[3, :], np.array([0.0, 0.0, 0.0, 1.0])).all()
     return rot_valid and lower_valid

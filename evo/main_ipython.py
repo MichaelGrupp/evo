@@ -42,8 +42,8 @@ Unknown command line arguments are forwarded to the ipython executable
 
 
 def main():
-    main_parser = argparse.ArgumentParser(description=DESC,
-                                          formatter_class=argparse.RawTextHelpFormatter)
+    main_parser = argparse.ArgumentParser(
+        description=DESC, formatter_class=argparse.RawTextHelpFormatter)
     args, other_args = main_parser.parse_known_args()
     other_args = [] if other_args is None else other_args
     FNULL = open(os.devnull, 'w')
@@ -58,12 +58,14 @@ def main():
             sys.exit(1)
 
     try:
-        sp.check_call([ipython, "profile", "locate", "evo"], stdout=FNULL, stderr=FNULL)
+        sp.check_call([ipython, "profile", "locate", "evo"], stdout=FNULL,
+                      stderr=FNULL)
     except sp.CalledProcessError:
         print("IPython profile for evo is not installed", file=sys.stderr)
         sp.call([ipython, "profile", "create", "evo"])
-        config=os.path.join(PACKAGE_BASE_PATH, "ipython_config.py")
-        profile_dir = sp.check_output([ipython, "profile", "locate", "evo"]).decode("utf-8")
+        config = os.path.join(PACKAGE_BASE_PATH, "ipython_config.py")
+        profile_dir = sp.check_output([ipython, "profile", "locate",
+                                       "evo"]).decode("utf-8")
         profile_dir = profile_dir.rstrip()
         shutil.copy(config, os.path.join(profile_dir, "ipython_config.py"))
     try:

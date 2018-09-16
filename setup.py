@@ -7,11 +7,9 @@ import sys
 import shutil
 import subprocess as sp
 
-
 # monkey patch because setuptools entry_points are slow as fuck
 # https://github.com/ninjaaron/fast-entry_points
 import fastentrypoints
-
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 
@@ -57,17 +55,18 @@ def install_ipython_profile(install_lib_dir):
             print("IPython is not installed", file=sys.stderr)
             return
     try:
-        sp.check_call([ipython, "profile", "create", "evo",
-                       "--ipython-dir", ipython_dir],
-                       preexec_fn=_run_as_caller)
+        sp.check_call([
+            ipython, "profile", "create", "evo", "--ipython-dir", ipython_dir
+        ], preexec_fn=_run_as_caller)
         profile_dir = sp.check_output([ipython, "profile", "locate", "evo"],
                                       preexec_fn=_run_as_caller)
         if sys.version_info >= (3, 0):
             profile_dir = profile_dir.decode("UTF-8").replace("\n", "")
         else:
             profile_dir = profile_dir.replace("\n", "")
-        shutil.copy(os.path.join(install_lib_dir, "evo", "ipython_config.py"),
-                    os.path.join(profile_dir, "ipython_config.py"))
+        shutil.copy(
+            os.path.join(install_lib_dir, "evo", "ipython_config.py"),
+            os.path.join(profile_dir, "ipython_config.py"))
     except sp.CalledProcessError as e:
         print("IPython error:", e.output, file=sys.stderr)
     except Exception as e:
@@ -93,7 +92,7 @@ def _post_install(install_lib_dir):
 class CustomInstall(install):
     def run(self):
         install.run(self)
-        self.execute(_post_install, (self.install_lib,),
+        self.execute(_post_install, (self.install_lib, ),
                      msg="Running post install task of evo...")
 
 
@@ -121,6 +120,7 @@ class UploadCommand(Command):
         sys.exit()
 
 
+# yapf: disable
 setup(
     name="evo",
     version=open("evo/version").read(),
@@ -175,3 +175,4 @@ setup(
         "Programming Language :: Python :: Implementation :: CPython"
     ]
 )
+# yapf: enable

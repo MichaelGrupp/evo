@@ -28,9 +28,10 @@ from colorama import Fore
 
 from evo.tools.settings import SETTINGS, DEFAULT_LOGFILE_PATH
 
-
-CONSOLE_ERROR_FMT = "{}[%(levelname)s]{} %(msg)s".format(Fore.LIGHTRED_EX, Fore.RESET)
-CONSOLE_WARN_FMT = "{}[%(levelname)s]{} %(msg)s".format(Fore.LIGHTYELLOW_EX, Fore.RESET)
+CONSOLE_ERROR_FMT = "{}[%(levelname)s]{} %(msg)s".format(
+    Fore.LIGHTRED_EX, Fore.RESET)
+CONSOLE_WARN_FMT = "{}[%(levelname)s]{} %(msg)s".format(
+    Fore.LIGHTYELLOW_EX, Fore.RESET)
 DEFAULT_LONG_FMT = "[%(levelname)s][%(asctime)s][%(module)s.%(funcName)s():%(lineno)s]\n%(message)s"
 
 
@@ -61,7 +62,8 @@ class ConsoleFormatter(logging.Formatter):
 
 # configures the package's root logger (see __init__.py)
 def configure_logging(verbose=False, silent=False, debug=False,
-                      console_fmt=None, file_fmt=DEFAULT_LONG_FMT, file_path=None):
+                      console_fmt=None, file_fmt=DEFAULT_LONG_FMT,
+                      file_path=None):
 
     logger = logging.getLogger("evo")
     logger.setLevel(logging.DEBUG)
@@ -105,6 +107,5 @@ def configure_logging(verbose=False, silent=False, debug=False,
         import platform as pf
         logger.debug(
             "System info:\nPython {pyversion}\n{platform}\n{user}\n".format(
-                pyversion=pf.python_version(),
-                platform=pf.platform(),
+                pyversion=pf.python_version(), platform=pf.platform(),
                 user=gp.getuser() + "@" + pf.node()))

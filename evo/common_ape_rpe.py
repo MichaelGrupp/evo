@@ -115,13 +115,10 @@ def plot(args, result, traj_ref, traj_est):
     else:
         seconds_from_start = None
 
-    plot.error_array(
-        fig1, result.np_arrays["error_array"],
-        x_array=seconds_from_start,
-        statistics=result.stats,
-        name=result.info["label"],
-        title=result.info["title"],
-        xlabel="$t$ (s)" if seconds_from_start else "index")
+    plot.error_array(fig1, result.np_arrays["error_array"],
+                     x_array=seconds_from_start, statistics=result.stats,
+                     name=result.info["label"], title=result.info["title"],
+                     xlabel="$t$ (s)" if seconds_from_start else "index")
 
     # Plot the values color-mapped onto the trajectory.
     fig2 = plt.figure(figsize=SETTINGS.plot_figsize)
@@ -135,15 +132,12 @@ def plot(args, result, traj_ref, traj_est):
         args.plot_colormap_max = result.stats["max"]
     if args.plot_colormap_max_percentile is not None:
         args.plot_colormap_max = np.percentile(
-            result.np_arrays["error_array"],
-            args.plot_colormap_max_percentile)
+            result.np_arrays["error_array"], args.plot_colormap_max_percentile)
 
-    plot.traj_colormap(
-        ax, traj_est, result.np_arrays["error_array"],
-        plot_mode,
-        min_map=args.plot_colormap_min,
-        max_map=args.plot_colormap_max,
-        title="Error mapped onto trajectory")
+    plot.traj_colormap(ax, traj_est, result.np_arrays["error_array"],
+                       plot_mode, min_map=args.plot_colormap_min,
+                       max_map=args.plot_colormap_max,
+                       title="Error mapped onto trajectory")
     fig2.axes.append(ax)
 
     plot_collection = plot.PlotCollection(result.info["title"])
@@ -152,9 +146,9 @@ def plot(args, result, traj_ref, traj_est):
     if args.plot:
         plot_collection.show()
     if args.save_plot:
-        plot_collection.export(
-            args.save_plot, confirm_overwrite=not args.no_warnings)
+        plot_collection.export(args.save_plot,
+                               confirm_overwrite=not args.no_warnings)
     if args.serialize_plot:
         logger.debug(SEP)
-        plot_collection.serialize(
-            args.serialize_plot, confirm_overwrite=not args.no_warnings)
+        plot_collection.serialize(args.serialize_plot,
+                                  confirm_overwrite=not args.no_warnings)

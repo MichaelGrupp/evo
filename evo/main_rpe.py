@@ -44,34 +44,34 @@ def parser():
         "-r", "--pose_relation", default="trans_part",
         help="pose relation on which the RPE is based",
         choices=["full", "trans_part", "rot_part", "angle_deg", "angle_rad"])
-    algo_opts.add_argument(
-        "-a", "--align",
-        help="alignment with Umeyama's method (no scale)",
-        action="store_true")
-    algo_opts.add_argument(
-        "-s", "--correct_scale", action="store_true",
-        help="correct scale with Umeyama's method")
-    algo_opts.add_argument(
-        "-d", "--delta", type=float, default=1,
-        help="delta between relative poses")
-    algo_opts.add_argument(
-        "-t", "--delta_tol", type=float, default=0.1,
-        help="relative delta tolerance for all_pairs mode")
+    algo_opts.add_argument("-a", "--align",
+                           help="alignment with Umeyama's method (no scale)",
+                           action="store_true")
+    algo_opts.add_argument("-s", "--correct_scale", action="store_true",
+                           help="correct scale with Umeyama's method")
+    algo_opts.add_argument("-d", "--delta", type=float, default=1,
+                           help="delta between relative poses")
+    algo_opts.add_argument("-t", "--delta_tol", type=float, default=0.1,
+                           help="relative delta tolerance for all_pairs mode")
     algo_opts.add_argument(
         "-u", "--delta_unit", default="f",
         help="unit of delta - `f` (frames), `d` (deg), `r` (rad), `m`(meters)",
         choices=['f', 'd', 'r', 'm'])
     algo_opts.add_argument(
-        "--all_pairs", action="store_true",
-        help="use all pairs instead of consecutive pairs (disables plot)",)
+        "--all_pairs",
+        action="store_true",
+        help="use all pairs instead of consecutive pairs (disables plot)",
+    )
 
     output_opts.add_argument(
-        "-p", "--plot", action="store_true",
-        help="show plot window",)
-    output_opts.add_argument(
-        "--plot_mode", default="xyz",
-        help="the axes for plot projection",
-        choices=["xy", "yx", "xz", "zx", "yz", "xyz"])
+        "-p",
+        "--plot",
+        action="store_true",
+        help="show plot window",
+    )
+    output_opts.add_argument("--plot_mode", default="xyz",
+                             help="the axes for plot projection",
+                             choices=["xy", "yx", "xz", "zx", "yz", "xyz"])
     output_opts.add_argument(
         "--plot_colormap_max", type=float,
         help="the upper bound used for the color map plot "
@@ -79,30 +79,24 @@ def parser():
     output_opts.add_argument(
         "--plot_colormap_min", type=float,
         help="the lower bound used for the color map plot "
-             "(default: minimum error value)")
+        "(default: minimum error value)")
     output_opts.add_argument(
         "--plot_colormap_max_percentile", type=float,
         help="percentile of the error distribution to be used "
-             "as the upper bound of the color map plot "
-             "(in %%, overrides --plot_colormap_min)")
-    output_opts.add_argument(
-        "--save_plot", default=None,
-        help="path to save plot")
-    output_opts.add_argument(
-        "--serialize_plot", default=None,
-        help="path to serialize plot (experimental)")
-    output_opts.add_argument(
-        "--save_results",
-        help=".zip file path to store results")
-    usability_opts.add_argument(
-        "--no_warnings", action="store_true",
-        help="no warnings requiring user confirmation")
-    usability_opts.add_argument(
-        "-v", "--verbose", action="store_true",
-        help="verbose output")
-    usability_opts.add_argument(
-        "--silent", action="store_true",
-        help="don't print any output")
+        "as the upper bound of the color map plot "
+        "(in %%, overrides --plot_colormap_min)")
+    output_opts.add_argument("--save_plot", default=None,
+                             help="path to save plot")
+    output_opts.add_argument("--serialize_plot", default=None,
+                             help="path to serialize plot (experimental)")
+    output_opts.add_argument("--save_results",
+                             help=".zip file path to store results")
+    usability_opts.add_argument("--no_warnings", action="store_true",
+                                help="no warnings requiring user confirmation")
+    usability_opts.add_argument("-v", "--verbose", action="store_true",
+                                help="verbose output")
+    usability_opts.add_argument("--silent", action="store_true",
+                                help="don't print any output")
     usability_opts.add_argument(
         "--debug", action="store_true",
         help="verbose output with additional debug info")
@@ -118,8 +112,8 @@ def parser():
     kitti_parser = sub_parsers.add_parser(
         "kitti", parents=[shared_parser],
         description="{} for KITTI pose files - {}".format(basic_desc, lic))
-    kitti_parser.add_argument(
-        "ref_file", help="reference pose file (ground truth)")
+    kitti_parser.add_argument("ref_file",
+                              help="reference pose file (ground truth)")
     kitti_parser.add_argument("est_file", help="estimated pose file")
 
     tum_parser = sub_parsers.add_parser(
@@ -134,17 +128,17 @@ def parser():
     euroc_parser.add_argument(
         "state_gt_csv",
         help="ground truth: <seq>/mav0/state_groundtruth_estimate0/data.csv")
-    euroc_parser.add_argument(
-        "est_file", help="estimated trajectory file in TUM format")
+    euroc_parser.add_argument("est_file",
+                              help="estimated trajectory file in TUM format")
 
     bag_parser = sub_parsers.add_parser(
         "bag", parents=[shared_parser],
         description="{} for ROS bag files - {}".format(basic_desc, lic))
     bag_parser.add_argument("bag", help="ROS bag file")
-    bag_parser.add_argument(
-        "ref_topic", help="reference geometry_msgs/PoseStamped topic")
-    bag_parser.add_argument(
-        "est_topic", help="estimated geometry_msgs/PoseStamped topic")
+    bag_parser.add_argument("ref_topic",
+                            help="reference geometry_msgs/PoseStamped topic")
+    bag_parser.add_argument("est_topic",
+                            help="estimated geometry_msgs/PoseStamped topic")
 
     # Add time-sync options to parser of trajectory formats.
     for trajectory_parser in {bag_parser, euroc_parser, tum_parser}:
@@ -159,8 +153,7 @@ def parser():
 
 
 def rpe(traj_ref, traj_est, pose_relation, delta, delta_unit,
-        rel_delta_tol=0.1, all_pairs=False,
-        align=False, correct_scale=False,
+        rel_delta_tol=0.1, all_pairs=False, align=False, correct_scale=False,
         ref_name="reference", est_name="estimate", support_loop=False):
 
     from evo.core import metrics
@@ -170,13 +163,14 @@ def rpe(traj_ref, traj_est, pose_relation, delta, delta_unit,
     only_scale = correct_scale and not align
     if align or correct_scale:
         logger.debug(SEP)
-        traj_est = trajectory.align_trajectory(
-            traj_est, traj_ref, correct_scale, only_scale)
+        traj_est = trajectory.align_trajectory(traj_est, traj_ref,
+                                               correct_scale, only_scale)
 
     # Calculate RPE.
     logger.debug(SEP)
     data = (traj_ref, traj_est)
-    rpe_metric = metrics.RPE(pose_relation, delta, delta_unit, rel_delta_tol, all_pairs)
+    rpe_metric = metrics.RPE(pose_relation, delta, delta_unit, rel_delta_tol,
+                             all_pairs)
     rpe_metric.process_data(data)
 
     title = str(rpe_metric)
@@ -206,8 +200,9 @@ def rpe(traj_ref, traj_est, pose_relation, delta, delta_unit,
     rpe_result.add_trajectory(est_name, traj_est)
 
     if isinstance(traj_est, trajectory.PoseTrajectory3D) and not all_pairs:
-        seconds_from_start = [t - traj_est.timestamps[0]
-                              for t in traj_est.timestamps]
+        seconds_from_start = [
+            t - traj_est.timestamps[0] for t in traj_est.timestamps
+        ]
         rpe_result.add_np_array("seconds_from_start", seconds_from_start)
         rpe_result.add_np_array("timestamps", traj_est.timestamps)
 
@@ -249,18 +244,17 @@ def run(args):
     )
 
     if args.plot or args.save_plot or args.serialize_plot:
-        common.plot(
-            args, result,
-            result.trajectories[ref_name],
-            result.trajectories[est_name])
+        common.plot(args, result, result.trajectories[ref_name],
+                    result.trajectories[est_name])
 
     if args.save_results:
         logger.debug(SEP)
         if not SETTINGS.save_traj_in_zip:
             del result.trajectories[ref_name]
             del result.trajectories[est_name]
-        file_interface.save_res_file(
-            args.save_results, result, confirm_overwrite=not args.no_warnings)
+        file_interface.save_res_file(args.save_results, result,
+                                     confirm_overwrite=not args.no_warnings)
+
 
 if __name__ == '__main__':
     from evo import entry_points

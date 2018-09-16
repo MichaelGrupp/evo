@@ -45,10 +45,8 @@ from evo.core import trajectory
 
 # configure matplotlib and seaborn according to package settings
 sns.set(style=SETTINGS.plot_seaborn_style,
-        palette=SETTINGS.plot_seaborn_palette,
-        font=SETTINGS.plot_fontfamily,
-        font_scale=SETTINGS.plot_fontscale
-)
+        palette=SETTINGS.plot_seaborn_palette, font=SETTINGS.plot_fontfamily,
+        font_scale=SETTINGS.plot_fontscale)
 rc = {
     "lines.linewidth": SETTINGS.plot_linewidth,
     "text.usetex": SETTINGS.plot_usetex,
@@ -77,10 +75,12 @@ class PlotCollection:
     def __init__(self, title="", deserialize=None):
         self.title = " ".join(title.splitlines())  # one line title
         self.figures = collections.OrderedDict()  # remember placement order
-        # hack to avoid premature garbage collection with Qt (stackoverflow.com/questions/600289)
+        # hack to avoid premature garbage collection with Qt
+        # (stackoverflow.com/questions/600289)
         self.root_window = None  # for now: init later in tabbed_qt_window
         if deserialize is not None:
-            logger.debug("Deserializing PlotCollection from " + deserialize + "...")
+            logger.debug("Deserializing PlotCollection from " + deserialize +
+                         "...")
             self.figures = pickle.load(open(deserialize, 'rb'))
 
     def __str__(self):
@@ -93,7 +93,8 @@ class PlotCollection:
     def tabbed_qt4_window(self):
         from PyQt4 import QtGui
         from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg, NavigationToolbar2QT
-        # mpl backend can already create instance - https://stackoverflow.com/a/40031190
+        # mpl backend can already create instance
+        # https://stackoverflow.com/a/40031190
         app = QtGui.QApplication.instance()
         if app is None:
             app = QtGui.QApplication([self.title])
@@ -118,7 +119,8 @@ class PlotCollection:
     def tabbed_qt5_window(self):
         from PyQt5 import QtGui, QtWidgets
         from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT
-        # mpl backend can already create instance - https://stackoverflow.com/a/40031190
+        # mpl backend can already create instance
+        # https://stackoverflow.com/a/40031190
         app = QtGui.QGuiApplication.instance()
         if app is None:
             app = QtWidgets.QApplication([self.title])
@@ -160,10 +162,12 @@ class PlotCollection:
             tab = ttk.Frame(nb)
             canvas = FigureCanvasTkAgg(self.figures[name], master=tab)
             canvas.draw()
-            canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
+            canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH,
+                                        expand=True)
             toolbar = NavigationToolbar2Tk(canvas, tab)
             toolbar.update()
-            canvas._tkcanvas.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
+            canvas._tkcanvas.pack(side=tkinter.TOP, fill=tkinter.BOTH,
+                                  expand=True)
             for axes in fig.get_axes():
                 if isinstance(axes, Axes3D):
                     # must explicitly allow mouse dragging for 3D plots
@@ -198,7 +202,8 @@ class PlotCollection:
     def export(self, file_path, confirm_overwrite=True):
         fmt = SETTINGS.plot_export_format.lower()
         if fmt == "pdf" and not SETTINGS.plot_split:
-            if confirm_overwrite and not user.check_and_confirm_overwrite(file_path):
+            if confirm_overwrite and not user.check_and_confirm_overwrite(
+                    file_path):
                 return
             import matplotlib.backends.backend_pdf
             pdf = matplotlib.backends.backend_pdf.PdfPages(file_path)
@@ -211,7 +216,8 @@ class PlotCollection:
             for name, fig in self.figures.items():
                 base, ext = os.path.splitext(file_path)
                 dest = base + '_' + name + ext
-                if confirm_overwrite and not user.check_and_confirm_overwrite(dest):
+                if confirm_overwrite and not user.check_and_confirm_overwrite(
+                        dest):
                     return
                 fig.tight_layout()
                 fig.savefig(dest, fmt=fmt)
@@ -232,11 +238,11 @@ def set_aspect_equal_3d(ax):
     ymean = mean(ylim)
     zmean = mean(zlim)
 
-    plot_radius = max([abs(lim - mean_)
-                       for lims, mean_ in ((xlim, xmean),
-                                           (ylim, ymean),
-                                           (zlim, zmean))
-                       for lim in lims])
+    plot_radius = max([
+        abs(lim - mean_)
+        for lims, mean_ in ((xlim, xmean), (ylim, ymean), (zlim, zmean))
+        for lim in lims
+    ])
 
     ax.set_xlim3d([xmean - plot_radius, xmean + plot_radius])
     ax.set_ylim3d([ymean - plot_radius, ymean + plot_radius])
@@ -256,9 +262,12 @@ def prepare_axis(fig, plot_mode=PlotMode.xy, subplot_arg="111"):
     else:
         ax = fig.add_subplot(subplot_arg, aspect="equal")
     plt.axis("equal")
-    xlabel = "$x$ (m)" if plot_mode in {PlotMode.xy, PlotMode.xz, PlotMode.xyz} else "$z$ (m)"
+    xlabel = "$x$ (m)" if plot_mode in {
+        PlotMode.xy, PlotMode.xz, PlotMode.xyz
+    } else "$z$ (m)"
     xlabel = "$y$ (m)" if plot_mode in {PlotMode.yz, PlotMode.yx} else xlabel
-    ylabel = "$y$ (m)" if plot_mode in {PlotMode.xy, PlotMode.xyz} else "$z$ (m)"
+    ylabel = "$y$ (m)" if plot_mode in {PlotMode.xy, PlotMode.xyz
+                                        } else "$z$ (m)"
     ylabel = "$x$ (m)" if plot_mode in {PlotMode.zx, PlotMode.yx} else ylabel
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
@@ -315,26 +324,31 @@ def traj(ax, plot_mode, traj, style='-', color='black', label="", alpha=1.0):
         ax.legend(frameon=True)
 
 
-def colored_line_collection(xyz, colors, plot_mode=PlotMode.xy, linestyles="solid"):
+def colored_line_collection(xyz, colors, plot_mode=PlotMode.xy,
+                            linestyles="solid"):
     if len(xyz) != len(colors):
-        raise PlotException("color values must have same length as xyz data: %d vs. %d"
-                            % (len(xyz), len(colors)))
+        raise PlotException(
+            "color values must have same length as xyz data: %d vs. %d" %
+            (len(xyz), len(colors)))
     x_idx, y_idx, z_idx = plot_mode_to_idx(plot_mode)
     xs = [[x_1, x_2] for x_1, x_2 in zip(xyz[:-1, x_idx], xyz[1:, x_idx])]
     ys = [[x_1, x_2] for x_1, x_2 in zip(xyz[:-1, y_idx], xyz[1:, y_idx])]
     if plot_mode == PlotMode.xyz:
         zs = [[x_1, x_2] for x_1, x_2 in zip(xyz[:-1, z_idx], xyz[1:, z_idx])]
         segs = [list(zip(x, y, z)) for x, y, z in zip(xs, ys, zs)]
-        line_collection = art3d.Line3DCollection(segs, colors=colors, linestyles=linestyles)
+        line_collection = art3d.Line3DCollection(segs, colors=colors,
+                                                 linestyles=linestyles)
     else:
         segs = [list(zip(x, y)) for x, y in zip(xs, ys)]
-        line_collection = LineCollection(segs, colors=colors, linestyle=linestyles)
+        line_collection = LineCollection(segs, colors=colors,
+                                         linestyle=linestyles)
     return line_collection
 
 
 def traj_colormap(ax, traj, array, plot_mode, min_map, max_map, title=""):
     """
-    color map a path/trajectory in xyz coordinates according to an array of values
+    color map a path/trajectory in xyz coordinates according to
+    an array of values
     :param ax: plot axis
     :param traj: trajectory.PosePath3D or trajectory.PoseTrajectory3D object
     :param array: Nx1 array of values used for color mapping
@@ -345,69 +359,86 @@ def traj_colormap(ax, traj, array, plot_mode, min_map, max_map, title=""):
     """
     pos = traj.positions_xyz
     norm = mpl.colors.Normalize(vmin=min_map, vmax=max_map, clip=True)
-    mapper = cm.ScalarMappable(norm=norm,
-                               cmap=SETTINGS.plot_trajectory_cmap)  # cm.*_r is reversed cmap
+    mapper = cm.ScalarMappable(
+        norm=norm,
+        cmap=SETTINGS.plot_trajectory_cmap)  # cm.*_r is reversed cmap
     mapper.set_array(array)
     colors = [mapper.to_rgba(a) for a in array]
     line_collection = colored_line_collection(pos, colors, plot_mode)
     ax.add_collection(line_collection)
     if plot_mode == PlotMode.xyz:
-        ax.set_zlim(np.amin(traj.positions_xyz[:, 2]), np.amax(traj.positions_xyz[:, 2]))
+        ax.set_zlim(
+            np.amin(traj.positions_xyz[:, 2]),
+            np.amax(traj.positions_xyz[:, 2]))
         if SETTINGS.plot_xyz_realistic:
             set_aspect_equal_3d(ax)
     fig = plt.gcf()
-    cbar = fig.colorbar(mapper, ticks=[min_map, (max_map - (max_map - min_map) / 2), max_map])
-    cbar.ax.set_yticklabels(
-        ["{0:0.3f}".format(min_map), "{0:0.3f}".format(max_map - (max_map - min_map) / 2),
-         "{0:0.3f}".format(max_map)])
+    cbar = fig.colorbar(
+        mapper, ticks=[min_map, (max_map - (max_map - min_map) / 2), max_map])
+    cbar.ax.set_yticklabels([
+        "{0:0.3f}".format(min_map),
+        "{0:0.3f}".format(max_map - (max_map - min_map) / 2),
+        "{0:0.3f}".format(max_map)
+    ])
     if title:
         ax.legend(frameon=True)
         plt.title(title)
 
 
-def traj_xyz(axarr, traj, style='-', color='black', label="", alpha=1.0, start_timestamp=None):
+def traj_xyz(axarr, traj, style='-', color='black', label="", alpha=1.0,
+             start_timestamp=None):
     """
     plot a path/trajectory based on xyz coordinates into an axis
-    :param axarr: an axis array (for x, y & z) e.g. from 'fig, axarr = plt.subplots(3)'
+    :param axarr: an axis array (for x, y & z)
+                  e.g. from 'fig, axarr = plt.subplots(3)'
     :param traj: trajectory.PosePath3D or trajectory.PoseTrajectory3D object
     :param style: matplotlib line style
     :param color: matplotlib color
     :param label: label (for legend)
     :param alpha: alpha value for transparency
-    :param start_timestamp: optional start time of the reference (for x-axis alignment)
+    :param start_timestamp: optional start time of the reference
+                            (for x-axis alignment)
     """
     if len(axarr) != 3:
-        raise PlotException("expected an axis array with 3 subplots - got " + str(len(axarr)))
+        raise PlotException("expected an axis array with 3 subplots - got " +
+                            str(len(axarr)))
     if isinstance(traj, trajectory.PoseTrajectory3D):
-        x = traj.timestamps - (traj.timestamps[0] if start_timestamp is None else start_timestamp)
+        x = traj.timestamps - (traj.timestamps[0]
+                               if start_timestamp is None else start_timestamp)
         xlabel = "$t$ (s)"
     else:
         x = range(0, len(traj.positions_xyz))
         xlabel = "index"
     ylabels = ["$x$ (m)", "$y$ (m)", "$z$ (m)"]
     for i in range(0, 3):
-        axarr[i].plot(x, traj.positions_xyz[:, i], style, color=color, label=label, alpha=alpha)
+        axarr[i].plot(x, traj.positions_xyz[:, i], style, color=color,
+                      label=label, alpha=alpha)
         axarr[i].set_ylabel(ylabels[i])
     axarr[2].set_xlabel(xlabel)
     if label:
         axarr[0].legend(frameon=True)
 
 
-def traj_rpy(axarr, traj, style='-', color='black', label="", alpha=1.0, start_timestamp=None):
+def traj_rpy(axarr, traj, style='-', color='black', label="", alpha=1.0,
+             start_timestamp=None):
     """
     plot a path/trajectory's Euler RPY angles into an axis
-    :param axarr: an axis array (for R, P & Y) e.g. from 'fig, axarr = plt.subplots(3)'
+    :param axarr: an axis array (for R, P & Y)
+                  e.g. from 'fig, axarr = plt.subplots(3)'
     :param traj: trajectory.PosePath3D or trajectory.PoseTrajectory3D object
     :param style: matplotlib line style
     :param color: matplotlib color
     :param label: label (for legend)
     :param alpha: alpha value for transparency
-    :param start_timestamp: optional start time of the reference (for x-axis alignment)
+    :param start_timestamp: optional start time of the reference
+                            (for x-axis alignment)
     """
     if len(axarr) != 3:
-        raise PlotException("expected an axis array with 3 subplots - got " + str(len(axarr)))
+        raise PlotException("expected an axis array with 3 subplots - got " +
+                            str(len(axarr)))
     if isinstance(traj, trajectory.PoseTrajectory3D):
-        x = traj.timestamps - (traj.timestamps[0] if start_timestamp is None else start_timestamp)
+        x = traj.timestamps - (traj.timestamps[0]
+                               if start_timestamp is None else start_timestamp)
         xlabel = "$t$ (s)"
     else:
         x = range(0, len(traj.orientations_euler))
@@ -422,7 +453,8 @@ def traj_rpy(axarr, traj, style='-', color='black', label="", alpha=1.0, start_t
         axarr[0].legend(frameon=True)
 
 
-def trajectories(fig, trajectories, plot_mode=PlotMode.xy, title="", subplot_arg="111"):
+def trajectories(fig, trajectories, plot_mode=PlotMode.xy, title="",
+                 subplot_arg="111"):
     """
     high-level function for plotting multiple trajectories
     :param fig: matplotlib figure
@@ -437,7 +469,7 @@ def trajectories(fig, trajectories, plot_mode=PlotMode.xy, title="", subplot_arg
     if SETTINGS.plot_multi_cmap.lower() != "none":
         cmap = getattr(cm, SETTINGS.plot_multi_cmap)
         cmap_colors = iter(cmap(np.linspace(0, 1, len(trajectories))))
-    
+
     # helper function
     def draw(t, name=""):
         if cmap_colors is None:
@@ -458,9 +490,10 @@ def trajectories(fig, trajectories, plot_mode=PlotMode.xy, title="", subplot_arg
             draw(t)
 
 
-def error_array(fig, err_array, x_array=None, statistics=None, threshold=None, cumulative=False,
-                color='grey', name="error", title="",
-                xlabel="index", ylabel=None, subplot_arg='111', linestyle="-", marker=None):
+def error_array(fig, err_array, x_array=None, statistics=None, threshold=None,
+                cumulative=False, color='grey', name="error", title="",
+                xlabel="index", ylabel=None, subplot_arg='111', linestyle="-",
+                marker=None):
     """
     high-level function for plotting raw error values of a metric
     :param fig: matplotlib figure
@@ -481,26 +514,32 @@ def error_array(fig, err_array, x_array=None, statistics=None, threshold=None, c
     ax = fig.add_subplot(subplot_arg)
     if cumulative:
         if x_array:
-            ax.plot(x_array, np.cumsum(err_array),
-                    linestyle=linestyle, marker=marker, color=color, label=name)
+            ax.plot(x_array, np.cumsum(err_array), linestyle=linestyle,
+                    marker=marker, color=color, label=name)
         else:
-            ax.plot(np.cumsum(err_array),
-                    linestyle=linestyle, marker=marker, color=color, label=name)
+            ax.plot(
+                np.cumsum(err_array), linestyle=linestyle, marker=marker,
+                color=color, label=name)
     else:
         if x_array:
-            ax.plot(x_array, err_array, linestyle=linestyle, marker=marker, color=color, label=name)
+            ax.plot(x_array, err_array, linestyle=linestyle, marker=marker,
+                    color=color, label=name)
         else:
-            ax.plot(err_array, linestyle=linestyle, marker=marker, color=color, label=name)
+            ax.plot(err_array, linestyle=linestyle, marker=marker, color=color,
+                    label=name)
     if statistics is not None:
         for stat_name, value in statistics.items():
             color = next(ax._get_lines.prop_cycler)['color']
             if stat_name in {"mean", "median", "rmse"}:
-                ax.axhline(y=value, color=color, linewidth=2.0, label=stat_name)
+                ax.axhline(y=value, color=color, linewidth=2.0,
+                           label=stat_name)
             if stat_name == "std" and "mean" in statistics:
                 mean, std = statistics["mean"], statistics["std"]
-                ax.axhspan(mean - std / 2, mean + std / 2, color=color, alpha=0.5, label=stat_name)
+                ax.axhspan(mean - std / 2, mean + std / 2, color=color,
+                           alpha=0.5, label=stat_name)
     if threshold is not None:
-        ax.axhline(y=threshold, color='red', linestyle='dashed', linewidth=2.0, label="threshold")
+        ax.axhline(y=threshold, color='red', linestyle='dashed', linewidth=2.0,
+                   label="threshold")
     plt.ylabel(ylabel if ylabel else name)
     plt.xlabel(xlabel)
     plt.title(title)

@@ -183,7 +183,7 @@ def read_euroc_csv_trajectory(file_path):
 def read_bag_trajectory(bag_handle, topic):
     """
     :param bag_handle: opened bag handle, from rosbag.Bag(...)
-    :param topic: geometry_msgs/PoseStamped topic
+    :param topic: geometry_msgs/PoseStamped or nav_msgs/Odometry topic
     :return: trajectory.PoseTrajectory3D
     """
     if not bag_handle.get_message_count(topic) > 0:
@@ -192,6 +192,9 @@ def read_bag_trajectory(bag_handle, topic):
     stamps, xyz, quat = [], [], []
     for topic, msg, t in bag_handle.read_messages(topic):
         stamps.append(t.secs + (t.nsecs * 1e-9))
+
+        while not hasattr(msg.pose, 'position') and not hasattr(msg.pose, 'orientation'):
+            msg = msg.pose
         xyz.append(
             [msg.pose.position.x, msg.pose.position.y, msg.pose.position.z])
         quat.append([

@@ -193,7 +193,8 @@ def read_bag_trajectory(bag_handle, topic):
     for topic, msg, t in bag_handle.read_messages(topic):
         stamps.append(t.secs + (t.nsecs * 1e-9))
 
-        while not hasattr(msg.pose, 'position') and not hasattr(msg.pose, 'orientation'):
+        while not hasattr(msg.pose, 'position') and not hasattr(
+                msg.pose, 'orientation'):
             msg = msg.pose
         xyz.append(
             [msg.pose.position.x, msg.pose.position.y, msg.pose.position.z])

@@ -135,10 +135,12 @@ def parser():
         "bag", parents=[shared_parser],
         description="{} for ROS bag files - {}".format(basic_desc, lic))
     bag_parser.add_argument("bag", help="ROS bag file")
-    bag_parser.add_argument("ref_topic",
-                            help="reference geometry_msgs/PoseStamped topic")
-    bag_parser.add_argument("est_topic",
-                            help="estimated geometry_msgs/PoseStamped topic")
+    bag_parser.add_argument(
+        "ref_topic",
+        help="reference geometry_msgs/PoseStamped or nav_msgs/Odometry topic")
+    bag_parser.add_argument(
+        "est_topic",
+        help="estimated geometry_msgs/PoseStamped or nav_msgs/Odometry topic")
 
     # Add time-sync options to parser of trajectory formats.
     for trajectory_parser in {bag_parser, euroc_parser, tum_parser}:

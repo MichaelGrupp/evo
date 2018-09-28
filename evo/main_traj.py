@@ -137,9 +137,12 @@ def parser():
         parents=[shared_parser])
     bag_parser.add_argument("bag", help="ROS bag file")
     bag_parser.add_argument(
-        "topics", help="multiple geometry_msgs/PoseStamped topics", nargs='*')
+        "topics",
+        help="multiple geometry_msgs/PoseStamped or nav_msgs/Odometry topics",
+        nargs='*')
     bag_parser.add_argument(
-        "--all_topics", help="use all topics geometry_msgs/PoseStamped in bag",
+        "--all_topics", help=
+        "use all geometry_msgs/PoseStamped and nav_msgs/Odometry topics in the bag",
         action="store_true")
     return main_parser
 
@@ -234,12 +237,14 @@ def run(args):
             if args.all_topics:
                 topic_info = bag.get_type_and_topic_info()
                 topics = sorted([
-                    t for t in topic_info[1].keys()
-                    if topic_info[1][t][0] == "geometry_msgs/PoseStamped"
+                    t for t in topic_info[1].keys() if topic_info[1][t][0] in
+                    {"geometry_msgs/PoseStamped", "nav_msgs/Odometry"}
                     and t != args.ref
                 ])
                 if len(topics) == 0:
-                    logger.error("No geometry_msgs/PoseStamped topics found!")
+                    logger.error(
+                        "No geometry_msgs/PoseStamped or nav_msgs/Odometry topics found!"
+                    )
                     sys.exit(1)
             else:
                 topics = args.topics

@@ -183,15 +183,23 @@ def read_euroc_csv_trajectory(file_path):
 def read_bag_trajectory(bag_handle, topic):
     """
     :param bag_handle: opened bag handle, from rosbag.Bag(...)
-    :param topic: geometry_msgs/PoseStamped topic
+    :param topic: geometry_msgs/PoseStamped or nav_msgs/Odometry topic
     :return: trajectory.PoseTrajectory3D
     """
     if not bag_handle.get_message_count(topic) > 0:
         raise FileInterfaceException("no messages for topic '" + topic +
                                      "' in bag")
+    msg_type = bag_handle.get_type_and_topic_info().topics[topic].msg_type
+    if msg_type not in {"geometry_msgs/PoseStamped", "nav_msgs/Odometry"}:
+        raise FileInterfaceException(
+            "unsupported message type: {}".format(msg_type))
     stamps, xyz, quat = [], [], []
     for topic, msg, t in bag_handle.read_messages(topic):
         stamps.append(t.secs + (t.nsecs * 1e-9))
+        # Make nav_msgs/Odometry behave like geometry_msgs/PoseStamped.
+        while not hasattr(msg.pose, 'position') and not hasattr(
+                msg.pose, 'orientation'):
+            msg = msg.pose
         xyz.append(
             [msg.pose.position.x, msg.pose.position.y, msg.pose.position.z])
         quat.append([
@@ -199,9 +207,8 @@ def read_bag_trajectory(bag_handle, topic):
             msg.pose.orientation.z, msg.pose.orientation.w
         ])
     quat = np.roll(quat, 1, axis=1)  # shift 1 column -> w in front column
-    logger.debug(
-        "Loaded {} geometry_msgs/PoseStamped messages of topic: {}".format(
-            len(stamps), topic))
+    logger.debug("Loaded {} {} messages of topic: {}".format(
+        len(stamps), msg_type, topic))
     generator = bag_handle.read_messages(topic)
     _, first_msg, _ = generator.next()
     frame_id = first_msg.header.frame_id

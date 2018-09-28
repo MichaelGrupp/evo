@@ -33,7 +33,7 @@ Python package for the evaluation of odometry and SLAM
 Supported trajectory formats:
 * TUM trajectory files
 * KITTI pose files
-* ROS bagfile with geometry_msgs/PoseStamped topics
+* ROS bagfile with geometry_msgs/PoseStamped or nav_msgs/Odometry topics
 * EuRoC MAV dataset groundtruth files
 
 The following executables are available:

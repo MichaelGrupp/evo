@@ -374,8 +374,8 @@ def align_trajectory(traj, traj_ref, correct_scale=False,
     :param n: the number of poses to use, counted from the start (default: all)
     :return: the aligned trajectory
     """
-    traj_aligned = copy.deepcopy(
-        traj)  # otherwise np arrays will be references and mess up stuff
+    # otherwise np arrays will be references and mess up stuff
+    traj_aligned = copy.deepcopy(traj)
     with_scale = correct_scale or correct_only_scale
     if correct_only_scale:
         logger.debug("Correcting scale...")
@@ -403,3 +403,20 @@ def align_trajectory(traj, traj_ref, correct_scale=False,
         traj_aligned.transform(lie.se3(r_a, t_a))
 
     return traj_aligned
+
+
+def merge(trajectories):
+    """
+    Merges multiple trajectories into a single, timestamp-sorted one.
+    :param trajectories: list of PoseTrajectory3D objects
+    :return: merged PoseTrajectory3D
+    """
+    merged_stamps = np.concatenate([t.timestamps for t in trajectories])
+    merged_xyz = np.concatenate([t.positions_xyz for t in trajectories])
+    merged_quat = np.concatenate(
+        [t.orientations_quat_wxyz for t in trajectories])
+    order = merged_stamps.argsort()
+    merged_stamps = merged_stamps[order]
+    merged_xyz = merged_xyz[order]
+    merged_quat = merged_quat[order]
+    return PoseTrajectory3D(merged_xyz, merged_quat, merged_stamps)

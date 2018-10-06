@@ -15,7 +15,7 @@ here = os.path.dirname(os.path.abspath(__file__))
 os.chdir(here)
 
 data = {
-    "evo_traj euroc data/V102_groundtruth.csv": "cfg/traj/euroc",
+    "evo_traj euroc data/V102_groundtruth.csv --ref data/V102_groundtruth.csv": "cfg/traj/euroc",
     "evo_traj kitti data/KITTI_00_gt.txt data/KITTI_00_ORB.txt data/KITTI_00_SPTAM.txt "
     "--ref data/KITTI_00_gt.txt": "cfg/traj/kitti",
     "evo_traj tum data/fr2_desk_groundtruth.txt data/fr2_desk_ORB.txt data/fr2_desk_ORB_kf_mono.txt "
@@ -44,7 +44,6 @@ except sp.CalledProcessError as e:
 finally:
     traj_files = glob.glob("./*.bag") + glob.glob("./*.kitti") + glob.glob(
         "./*.tum")
-    print(repr(traj_files))
     for traj_file in traj_files:
         os.remove(traj_file)
     if os.path.exists(tmp_dir):

@@ -313,10 +313,10 @@ def run(args):
             logger.debug(SEP)
             die("Can't align or sync without a reference! (--ref)  *grunt*")
         for name, traj in trajectories.items():
-            logger.debug(SEP)
             if args.subcommand == "kitti":
                 ref_traj_tmp = ref_traj
             else:
+                logger.debug(SEP)
                 ref_traj_tmp, trajectories[name] = sync.associate_trajectories(
                     ref_traj, traj, max_diff=args.t_max_diff,
                     first_name="reference", snd_name=name)

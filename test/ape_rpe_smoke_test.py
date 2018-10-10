@@ -6,9 +6,6 @@ import os
 import shutil
 import subprocess as sp
 
-import sys
-sys.exit(1)
-
 tmp_dir = "tmp"
 cfg_dir = "cfg/ape_rpe"
 here = os.path.dirname(os.path.abspath(__file__))

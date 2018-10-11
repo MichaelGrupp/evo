@@ -45,7 +45,7 @@ script:
       ${pip} install pytest --upgrade;
       pytest -sv;
     else
-      docker build . --file $EVO_DOCKERFILE --tag $EVO_DOCKER_IMAGE
+      docker build . --file $EVO_DOCKERFILE --tag $EVO_DOCKER_IMAGE || exit 1
       if [[ $TRAVIS_BRANCH == "master" ]] && [[ $TRAVIS_PULL_REQUEST == "false" ]]; then
         echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
         docker push $EVO_DOCKER_IMAGE

@@ -52,6 +52,10 @@ def parser():
         help="the number of poses to use for Umeyama alignment, "
         "counted from the start (default: all)", default=-1, type=int)
     algo_opts.add_argument(
+        "--sync",
+        help="associate trajectories via matching timestamps - requires --ref",
+        action="store_true")
+    algo_opts.add_argument(
         "--transform_left", help="path to a .json file with a transformation"
         " to apply to the trajectories (left multiplicative)")
     algo_opts.add_argument(
@@ -147,6 +151,69 @@ def parser():
     return main_parser
 
 
+def die(msg):
+    import sys
+    logger.error(msg)
+    sys.exit(1)
+
+
+def load_trajectories(args):
+    from evo.tools import file_interface
+    trajectories = {}
+    ref_traj = None
+    if args.subcommand == "tum":
+        for traj_file in args.traj_files:
+            if traj_file == args.ref:
+                continue
+            trajectories[traj_file] = file_interface.read_tum_trajectory_file(
+                traj_file)
+        if args.ref:
+            ref_traj = file_interface.read_tum_trajectory_file(args.ref)
+    elif args.subcommand == "kitti":
+        for pose_file in args.pose_files:
+            if pose_file == args.ref:
+                continue
+            trajectories[pose_file] = file_interface.read_kitti_poses_file(
+                pose_file)
+        if args.ref:
+            ref_traj = file_interface.read_kitti_poses_file(args.ref)
+    elif args.subcommand == "euroc":
+        for csv_file in args.state_gt_csv:
+            if csv_file == args.ref:
+                continue
+                trajectories[
+                    csv_file] = file_interface.read_euroc_csv_trajectory(
+                        csv_file)
+        if args.ref:
+            ref_traj = file_interface.read_euroc_csv_trajectory(args.ref)
+    elif args.subcommand == "bag":
+        if not (args.topics or args.all_topics):
+            die("No topics used - specify topics or set --all_topics.")
+        import rosbag
+        bag = rosbag.Bag(args.bag)
+        try:
+            if args.all_topics:
+                topic_info = bag.get_type_and_topic_info()
+                topics = sorted([
+                    t for t in topic_info[1].keys() if topic_info[1][t][0] in
+                    {"geometry_msgs/PoseStamped", "nav_msgs/Odometry"}
+                    and t != args.ref
+                ])
+                if len(topics) == 0:
+                    die("No geometry_msgs/PoseStamped or nav_msgs/Odometry "
+                        "topics found!")
+            else:
+                topics = args.topics
+            for topic in topics:
+                trajectories[topic] = file_interface.read_bag_trajectory(
+                    bag, topic)
+            if args.ref:
+                ref_traj = file_interface.read_bag_trajectory(bag, args.ref)
+        finally:
+            bag.close()
+    return trajectories, ref_traj
+
+
 # TODO refactor
 def print_traj_info(name, traj, verbose=False, full_check=False):
     import os
@@ -204,146 +271,65 @@ def run(args):
              for arg in vars(args)}) + "\n")
     logger.debug(SEP)
 
-    trajectories = []
-    ref_traj = None
-    if args.subcommand == "tum":
-        for traj_file in args.traj_files:
-            if traj_file != args.ref:
-                trajectories.append(
-                    (traj_file,
-                     file_interface.read_tum_trajectory_file(traj_file)))
-        if args.ref:
-            ref_traj = file_interface.read_tum_trajectory_file(args.ref)
-    elif args.subcommand == "kitti":
-        for pose_file in args.pose_files:
-            if pose_file != args.ref:
-                trajectories.append(
-                    (pose_file,
-                     file_interface.read_kitti_poses_file(pose_file)))
-        if args.ref:
-            ref_traj = file_interface.read_kitti_poses_file(args.ref)
-    elif args.subcommand == "euroc":
-        for csv_file in args.state_gt_csv:
-            if csv_file != args.ref:
-                trajectories.append(
-                    (csv_file,
-                     file_interface.read_euroc_csv_trajectory(csv_file)))
-        if args.ref:
-            ref_traj = file_interface.read_euroc_csv_trajectory(args.ref)
-    elif args.subcommand == "bag":
-        import rosbag
-        bag = rosbag.Bag(args.bag)
-        try:
-            if args.all_topics:
-                topic_info = bag.get_type_and_topic_info()
-                topics = sorted([
-                    t for t in topic_info[1].keys() if topic_info[1][t][0] in
-                    {"geometry_msgs/PoseStamped", "nav_msgs/Odometry"}
-                    and t != args.ref
-                ])
-                if len(topics) == 0:
-                    logger.error(
-                        "No geometry_msgs/PoseStamped or nav_msgs/Odometry topics found!"
-                    )
-                    sys.exit(1)
-            else:
-                topics = args.topics
-                if not topics:
-                    logger.warning(
-                        "No topics used - specify topics or set --all_topics.")
-                    sys.exit(1)
-            for topic in topics:
-                trajectories.append((topic,
-                                     file_interface.read_bag_trajectory(
-                                         bag, topic)))
-            if args.ref:
-                ref_traj = file_interface.read_bag_trajectory(bag, args.ref)
-        finally:
-            bag.close()
-    else:
-        raise RuntimeError("unsupported subcommand: " + args.subcommand)
+    trajectories, ref_traj = load_trajectories(args)
 
     if args.merge:
         if args.subcommand == "kitti":
-            raise TypeError(
-                "can't merge KITTI files - but you can append them with 'cat'")
+            die("Can't merge KITTI files.")
         if len(trajectories) == 0:
-            raise RuntimeError("no trajectories to merge (excluding --ref)")
-        merged_stamps = trajectories[0][1].timestamps
-        merged_xyz = trajectories[0][1].positions_xyz
-        merged_quat = trajectories[0][1].orientations_quat_wxyz
-        for _, traj in trajectories[1:]:
-            merged_stamps = np.concatenate((merged_stamps, traj.timestamps))
-            merged_xyz = np.concatenate((merged_xyz, traj.positions_xyz))
-            merged_quat = np.concatenate((merged_quat,
-                                          traj.orientations_quat_wxyz))
-        order = merged_stamps.argsort()
-        merged_stamps = merged_stamps[order]
-        merged_xyz = merged_xyz[order]
-        merged_quat = merged_quat[order]
-        trajectories = [("merged_trajectory",
-                         PoseTrajectory3D(merged_xyz, merged_quat,
-                                          merged_stamps))]
+            die("No trajectories to merge (excluding --ref).")
+        trajectories = {
+            "merged_trajectory": trajectory.merge(trajectories.values())
+        }
 
     if args.transform_left or args.transform_right:
         tf_type = "left" if args.transform_left else "right"
-        tf_path = args.transform_left if args.transform_left else args.transform_right
-        t, xyz, quat = file_interface.load_transform_json(tf_path)
+        tf_path = args.transform_left \
+                if args.transform_left else args.transform_right
+        transform = file_interface.load_transform_json(tf_path)
         logger.debug(SEP)
-        if not lie.is_se3(t):
+        if not lie.is_se3(transform):
             logger.warning("Not a valid SE(3) transformation!")
         if args.invert_transform:
-            t = lie.se3_inverse(t)
+            transform = lie.se3_inverse(transform)
         logger.debug("Applying a {}-multiplicative transformation:\n{}".format(
-            tf_type, t))
-        for name, traj in trajectories:
-            traj.transform(t, right_mul=args.transform_right)
+            tf_type, transform))
+        for traj in trajectories.values():
+            traj.transform(transform, right_mul=args.transform_right)
 
     if args.t_offset:
         logger.debug(SEP)
-        for name, traj in trajectories:
+        for name, traj in trajectories.items():
             if type(traj) is trajectory.PosePath3D:
-                logger.warning(
-                    "{} doesn't have timestamps - can't add time offset.".
+                die("{} doesn't have timestamps - can't add time offset.".
                     format(name))
-            else:
-                logger.info("Adding time offset to {}: {} (s)".format(
-                    name, args.t_offset))
-                traj.timestamps += args.t_offset
+            logger.info("Adding time offset to {}: {} (s)".format(
+                name, args.t_offset))
+            traj.timestamps += args.t_offset
 
-    if args.align or args.correct_scale:
+    if args.sync or args.align or args.correct_scale:
+        from evo.core import sync
         if not args.ref:
             logger.debug(SEP)
-            logger.warning("Can't align without a reference! (--ref)  *grunt*")
-        else:
+            die("Can't align or sync without a reference! (--ref)  *grunt*")
+        for name, traj in trajectories.items():
             if args.subcommand == "kitti":
-                traj_tmp, ref_traj_tmp = trajectories, [
-                    ref_traj for n, t in trajectories
-                ]
+                ref_traj_tmp = ref_traj
             else:
-                traj_tmp, ref_traj_tmp = [], []
-                from evo.core import sync
-                for name, traj in trajectories:
-                    logger.debug(SEP)
-                    ref_assoc, traj_assoc = sync.associate_trajectories(
-                        ref_traj, traj, max_diff=args.t_max_diff,
-                        first_name="ref", snd_name=name)
-                    ref_traj_tmp.append(ref_assoc)
-                    traj_tmp.append((name, traj_assoc))
-                    trajectories = traj_tmp
-            correct_only_scale = args.correct_scale and not args.align
-            trajectories_new = []
-            for nt, ref_assoc in zip(trajectories, ref_traj_tmp):
                 logger.debug(SEP)
-                logger.debug("Aligning " + nt[0] + " to " + args.ref + "...")
-                trajectories_new.append(
-                    (nt[0],
-                     trajectory.align_trajectory(
-                         nt[1], ref_assoc, args.correct_scale,
-                         correct_only_scale, args.n_to_align)))
-            trajectories = trajectories_new
+                ref_traj_tmp, trajectories[name] = sync.associate_trajectories(
+                    ref_traj, traj, max_diff=args.t_max_diff,
+                    first_name="reference", snd_name=name)
+            if args.align or args.correct_scale:
+                logger.debug(SEP)
+                logger.debug("Aligning {} to reference.".format(name))
+                trajectories[name] = trajectory.align_trajectory(
+                    trajectories[name], ref_traj_tmp,
+                    correct_scale=args.correct_scale,
+                    correct_only_scale=args.correct_scale and not args.align,
+                    n=args.n_to_align)
 
-    for name, traj in trajectories:
+    for name, traj in trajectories.items():
         print_traj_info(name, traj, args.verbose, args.full_check)
     if args.ref:
         print_traj_info(args.ref, ref_traj, args.verbose, args.full_check)
@@ -356,17 +342,15 @@ def run(args):
         from evo.tools import plot
         import matplotlib.pyplot as plt
         import matplotlib.cm as cm
+
         plot_collection = plot.PlotCollection("evo_traj - trajectory plot")
         fig_xyz, axarr_xyz = plt.subplots(3, sharex="col",
                                           figsize=tuple(SETTINGS.plot_figsize))
         fig_rpy, axarr_rpy = plt.subplots(3, sharex="col",
                                           figsize=tuple(SETTINGS.plot_figsize))
         fig_traj = plt.figure(figsize=tuple(SETTINGS.plot_figsize))
-        if (args.align or args.correct_scale) and not args.ref:
-            plt.xkcd(scale=2, randomness=4)
-            fig_traj.suptitle("what if --ref?")
-            fig_xyz.suptitle("what if --ref?")
         ax_traj = plot.prepare_axis(fig_traj, plot_mode)
+
         if args.ref:
             short_traj_name = os.path.splitext(os.path.basename(args.ref))[0]
             if SETTINGS.plot_usetex:
@@ -377,11 +361,13 @@ def run(args):
                           alpha=0 if SETTINGS.plot_hideref else 1)
             plot.traj_rpy(axarr_rpy, ref_traj, '--', 'grey', short_traj_name,
                           alpha=0 if SETTINGS.plot_hideref else 1)
+
         cmap_colors = None
         if SETTINGS.plot_multi_cmap.lower() != "none":
             cmap = getattr(cm, SETTINGS.plot_multi_cmap)
             cmap_colors = iter(cmap(np.linspace(0, 1, len(trajectories))))
-        for name, traj in trajectories:
+
+        for name, traj in trajectories.items():
             if cmap_colors is None:
                 color = next(ax_traj._get_lines.prop_cycler)['color']
             else:
@@ -398,7 +384,7 @@ def run(args):
                           start_timestamp=start_time)
             plot.traj_rpy(axarr_rpy, traj, '-', color, short_traj_name,
                           start_timestamp=start_time)
-        plt.tight_layout()
+
         plot_collection.add_figure("trajectories", fig_traj)
         plot_collection.add_figure("xyz_view", fig_xyz)
         plot_collection.add_figure("rpy_view", fig_rpy)
@@ -415,7 +401,7 @@ def run(args):
 
     if args.save_as_tum:
         logger.info(SEP)
-        for name, traj in trajectories:
+        for name, traj in trajectories.items():
             dest = os.path.splitext(os.path.basename(name))[0] + ".tum"
             file_interface.write_tum_trajectory_file(
                 dest, traj, confirm_overwrite=not args.no_warnings)
@@ -425,7 +411,7 @@ def run(args):
                 dest, ref_traj, confirm_overwrite=not args.no_warnings)
     if args.save_as_kitti:
         logger.info(SEP)
-        for name, traj in trajectories:
+        for name, traj in trajectories.items():
             dest = os.path.splitext(os.path.basename(name))[0] + ".kitti"
             file_interface.write_kitti_poses_file(
                 dest, traj, confirm_overwrite=not args.no_warnings)
@@ -434,15 +420,15 @@ def run(args):
             file_interface.write_kitti_poses_file(
                 dest, ref_traj, confirm_overwrite=not args.no_warnings)
     if args.save_as_bag:
-        logger.info(SEP)
         import datetime
         import rosbag
         dest_bag_path = str(
-            datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S.%f')) + ".bag"
+            datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")) + ".bag"
+        logger.info(SEP)
         logger.info("Saving trajectories to " + dest_bag_path + "...")
         bag = rosbag.Bag(dest_bag_path, 'w')
         try:
-            for name, traj in trajectories:
+            for name, traj in trajectories.items():
                 dest_topic = os.path.splitext(os.path.basename(name))[0]
                 frame_id = traj.meta[
                     "frame_id"] if "frame_id" in traj.meta else ""

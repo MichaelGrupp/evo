@@ -325,7 +325,7 @@ def load_transform_json(json_path):
     """
     load a transformation stored in xyz + quaternion format in a .json file
     :param json_path: path to the .json file
-    :return: t (SE(3) matrix), xyz (position), quat (orientation quaternion)
+    :return: t (SE(3) matrix)
     """
     with open(json_path, 'r') as tf_file:
         data = json.load(tf_file)
@@ -336,4 +336,4 @@ def load_transform_json(json_path):
         xyz = np.array([data["x"], data["y"], data["z"]])
         quat = np.array([data["qw"], data["qx"], data["qy"], data["qz"]])
         t = lie.se3(lie.so3_from_se3(tr.quaternion_matrix(quat)), xyz)
-        return t, xyz, quat
+        return t

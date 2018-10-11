@@ -31,4 +31,4 @@ RUN evo_config set plot_backend Agg
 
 # Run tests.
 RUN pip2 install pytest --upgrade
-RUN cd container-local && .ci/ros_run_tests.sh .
+RUN /container-local/.ci/ros_run_tests.sh /container-local

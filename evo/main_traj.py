@@ -181,6 +181,7 @@ def load_trajectories(args):
         for csv_file in args.state_gt_csv:
             if csv_file == args.ref:
                 continue
+            else:
                 trajectories[
                     csv_file] = file_interface.read_euroc_csv_trajectory(
                         csv_file)

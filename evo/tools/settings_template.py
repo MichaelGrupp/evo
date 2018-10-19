@@ -95,7 +95,7 @@ DEFAULT_SETTINGS_DICT_DOC = {
         + "Options: 'whitegrid', 'darkgrid', 'white' or 'dark'."
     ),
     "plot_seaborn_palette": (
-        "deep",
+        "deep6",
         "Default color palette of seaborn. Can also be a list of colors.\n"
         + "See: https://seaborn.pydata.org/generated/seaborn.color_palette.html"
     ),

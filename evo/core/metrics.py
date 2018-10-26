@@ -203,7 +203,7 @@ class RPE(PE):
 
     def __str__(self):
         title = "RPE w.r.t. {} ({})\nfor delta = {} ({})".format(
-            self.pose_relation.value, self.unit.value, self.unit.value,
+            self.pose_relation.value, self.unit.value, self.delta,
             self.delta_unit.value)
         if self.all_pairs:
             title += " using all pairs"

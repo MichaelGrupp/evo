@@ -364,7 +364,7 @@ def se3_poses_to_xyz_quat_wxyz(poses):
 
 
 def align_trajectory(traj, traj_ref, correct_scale=False,
-                     correct_only_scale=False, n=-1):
+                     correct_only_scale=False, n=-1, return_parameters=False):
     """
     align a trajectory to a reference using Umeyama alignment
     :param traj: the trajectory to align
@@ -372,7 +372,10 @@ def align_trajectory(traj, traj_ref, correct_scale=False,
     :param correct_scale: set to True to adjust also the scale
     :param correct_only_scale: set to True to correct the scale, but not the pose
     :param n: the number of poses to use, counted from the start (default: all)
+    :param return_parameters: also return result parameters of Umeyama's method
     :return: the aligned trajectory
+    If return_parameters is set, the rotation matrix, translation vector and
+    scaling parameter of Umeyama's method are also returned.
     """
     # otherwise np arrays will be references and mess up stuff
     traj_aligned = copy.deepcopy(traj)
@@ -402,7 +405,10 @@ def align_trajectory(traj, traj_ref, correct_scale=False,
     else:
         traj_aligned.transform(lie.se3(r_a, t_a))
 
-    return traj_aligned
+    if return_parameters:
+        return traj_aligned, r_a, t_a, s
+    else:
+        return traj_aligned
 
 
 def merge(trajectories):

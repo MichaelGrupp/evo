@@ -81,7 +81,7 @@ def parser():
                              action="store_true")
     output_opts.add_argument(
         "--plot_mode", help="the axes for  plot projection", default=None,
-        choices=["xy", "yx", "xz", "zx", "yz", "xyz"])
+        choices=["xy", "xz", "yx", "yz", "zx", "zy", "xyz"])
     output_opts.add_argument("--save_plot", help="path to save plot",
                              default=None)
     output_opts.add_argument("--serialize_plot",

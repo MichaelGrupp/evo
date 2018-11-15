@@ -69,9 +69,9 @@ def parser():
         action="store_true",
         help="show plot window",
     )
-    output_opts.add_argument("--plot_mode", default="xyz",
-                             help="the axes for plot projection",
-                             choices=["xy", "yx", "xz", "zx", "yz", "xyz"])
+    output_opts.add_argument(
+        "--plot_mode", default="xyz", help="the axes for plot projection",
+        choices=["xy", "xz", "yx", "yz", "zx", "zy", "xyz"])
     output_opts.add_argument(
         "--plot_colormap_max", type=float,
         help="the upper bound used for the color map plot "

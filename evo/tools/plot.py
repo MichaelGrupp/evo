@@ -64,10 +64,11 @@ class PlotException(Exception):
 
 class PlotMode(Enum):
     xy = "xy"
-    yx = "yx"
     xz = "xz"
+    yx = "yx"
     yz = "yz"
     zx = "zx"
+    zy = "zy"
     xyz = "xyz"
 
 
@@ -262,13 +263,18 @@ def prepare_axis(fig, plot_mode=PlotMode.xy, subplot_arg="111"):
     else:
         ax = fig.add_subplot(subplot_arg, aspect="equal")
     plt.axis("equal")
-    xlabel = "$x$ (m)" if plot_mode in {
-        PlotMode.xy, PlotMode.xz, PlotMode.xyz
-    } else "$z$ (m)"
-    xlabel = "$y$ (m)" if plot_mode in {PlotMode.yz, PlotMode.yx} else xlabel
-    ylabel = "$y$ (m)" if plot_mode in {PlotMode.xy, PlotMode.xyz
-                                        } else "$z$ (m)"
-    ylabel = "$x$ (m)" if plot_mode in {PlotMode.zx, PlotMode.yx} else ylabel
+    if plot_mode in {PlotMode.xy, PlotMode.xz, PlotMode.xyz}:
+        xlabel = "$x$ (m)"
+    elif plot_mode in {PlotMode.yz, PlotMode.yx}:
+        xlabel = "$y$ (m)"
+    else:
+        xlabel = "$z$ (m)"
+    if plot_mode in {PlotMode.xy, PlotMode.zy, PlotMode.xyz}:
+        ylabel = "$y$ (m)"
+    elif plot_mode in {PlotMode.zx, PlotMode.yx}:
+        ylabel = "$x$ (m)"
+    else:
+        ylabel = "$z$ (m)"
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     if plot_mode == PlotMode.xyz:
@@ -281,20 +287,24 @@ def prepare_axis(fig, plot_mode=PlotMode.xy, subplot_arg="111"):
 
 
 def plot_mode_to_idx(plot_mode):
-    x_idx = 0
-    y_idx = 1
-    if plot_mode == PlotMode.zx:
-        x_idx = 2
-        y_idx = 0
-    elif plot_mode == PlotMode.yz:
-        x_idx = 1
-        y_idx = 2
+    if plot_mode == PlotMode.xy or plot_mode == PlotMode.xyz:
+        x_idx = 0
+        y_idx = 1
     elif plot_mode == PlotMode.xz:
         x_idx = 0
         y_idx = 2
     elif plot_mode == PlotMode.yx:
         x_idx = 1
         y_idx = 0
+    elif plot_mode == PlotMode.yz:
+        x_idx = 1
+        y_idx = 2
+    elif plot_mode == PlotMode.zx:
+        x_idx = 2
+        y_idx = 0
+    elif plot_mode == PlotMode.zy:
+        x_idx = 2
+        y_idx = 1
     z_idx = 2 if plot_mode == PlotMode.xyz else None
     return x_idx, y_idx, z_idx
 

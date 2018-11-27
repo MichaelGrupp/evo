@@ -36,6 +36,7 @@ import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.art3d as art3d
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.collections import LineCollection
+from matplotlib import rc
 
 import numpy as np
 import seaborn as sns
@@ -45,15 +46,20 @@ from evo.core import trajectory
 
 # configure matplotlib and seaborn according to package settings
 sns.set(style=SETTINGS.plot_seaborn_style,
-        palette=SETTINGS.plot_seaborn_palette, font=SETTINGS.plot_fontfamily,
-        font_scale=SETTINGS.plot_fontscale)
-rc = {
+        palette=SETTINGS.plot_seaborn_palette,
+        font=SETTINGS.plot_fontfamily,
+        font_scale=SETTINGS.plot_fontscale
+)
+
+
+rc_params = {
     "lines.linewidth": SETTINGS.plot_linewidth,
     "text.usetex": SETTINGS.plot_usetex,
     "font.family": SETTINGS.plot_fontfamily,
+    "font.serif": ['Cardo'],
     "pgf.texsystem": SETTINGS.plot_texsystem
 }
-mpl.rcParams.update(rc)
+mpl.rcParams.update(rc_params)
 
 logger = logging.getLogger(__name__)
 
@@ -500,10 +506,9 @@ def trajectories(fig, trajectories, plot_mode=PlotMode.xy, title="",
             draw(t)
 
 
-def error_array(fig, err_array, x_array=None, statistics=None, threshold=None,
-                cumulative=False, color='grey', name="error", title="",
-                xlabel="index", ylabel=None, subplot_arg='111', linestyle="-",
-                marker=None):
+def error_array(fig, err_array, x_array=None, statistics=None, threshold=None, cumulative=False,
+                color='grey', name="error", title="", y_min=-1, y_max=-1,
+                xlabel="index", ylabel=None, subplot_arg='111', linestyle="-", marker=None):
     """
     high-level function for plotting raw error values of a metric
     :param fig: matplotlib figure
@@ -514,6 +519,7 @@ def error_array(fig, err_array, x_array=None, statistics=None, threshold=None,
     :param cumulative: set to True for cumulative plot
     :param name: optional name of the value array
     :param title: optional plot title
+    :param y_max: optional y_max limit, used to have same scale in different plots
     :param xlabel: optional x-axis label
     :param ylabel: optional y-axis label
     :param subplot_arg: optional matplotlib subplot ID if used as subplot
@@ -521,37 +527,65 @@ def error_array(fig, err_array, x_array=None, statistics=None, threshold=None,
     :param marker: optional matplotlib marker style for points
     :return: the matplotlib figure with the plot
     """
+    from matplotlib.ticker import FormatStrFormatter
     ax = fig.add_subplot(subplot_arg)
     if cumulative:
         if x_array:
-            ax.plot(x_array, np.cumsum(err_array), linestyle=linestyle,
-                    marker=marker, color=color, label=name)
+            ax.plot(x_array, np.cumsum(err_array),
+                    linestyle=linestyle, marker=marker, color=color, label=name)
         else:
-            ax.plot(
-                np.cumsum(err_array), linestyle=linestyle, marker=marker,
-                color=color, label=name)
+            ax.plot(np.cumsum(err_array),
+                    linestyle=linestyle, marker=marker, color=color, label=name)
     else:
+        ymax = max(err_array)
+        ymax_idx = np.argmax(err_array)
+        xmax = ymax_idx
         if x_array:
-            ax.plot(x_array, err_array, linestyle=linestyle, marker=marker,
-                    color=color, label=name)
+            ax.plot(x_array, err_array, linestyle=linestyle, marker=marker, color=color, label=name)
+            ax.set_xlim(min(x_array), max(x_array))
+            xmax = x_array[ymax_idx]
         else:
-            ax.plot(err_array, linestyle=linestyle, marker=marker, color=color,
-                    label=name)
+            ax.plot(err_array, linestyle=linestyle, marker=marker, color=color, label=name)
+            ax.set_xlim(0, len(err_array))
+            xmax = ymax_idx
+        #ax.plot(xmax, ymax, 'ro',markersize=10)
+        #ax.text(xmax*(1-0.1), ymax*(1+(1/(1+ymax)*0.05)), 'Max: {0:.5f}'.format(ymax))
+    # Set y axis limit if given:
+    if y_max is not -1:
+        ymin, _ = ax.get_ylim()
+        ax.set_ylim(ymin, y_max)
+    # Set y axis limit if given:
+    if y_min is not -1:
+        _, ymax = ax.get_ylim()
+        ax.set_ylim(y_min, ymax)
+
     if statistics is not None:
         for stat_name, value in statistics.items():
             color = next(ax._get_lines.prop_cycler)['color']
             if stat_name in {"mean", "median", "rmse"}:
-                ax.axhline(y=value, color=color, linewidth=2.0,
-                           label=stat_name)
+                ax.axhline(y=value, color=color, linewidth=2.0, label=stat_name+" ({0:.5f})".format(value))
             if stat_name == "std" and "mean" in statistics:
                 mean, std = statistics["mean"], statistics["std"]
-                ax.axhspan(mean - std / 2, mean + std / 2, color=color,
-                           alpha=0.5, label=stat_name)
+                ax.axhspan(mean - std,
+                           mean + std,
+                           color='cyan',
+                           alpha=0.1,
+                           edgecolor='green',
+                           facecolor='none',
+                           fill=False,
+                           hatch='//',
+                           linestyle='--',
+                           linewidth=0.5,
+                           zorder=0,
+                           label=stat_name+" (+/- {0:.5f})".format(std))
     if threshold is not None:
-        ax.axhline(y=threshold, color='red', linestyle='dashed', linewidth=2.0,
-                   label="threshold")
+        ax.axhline(y=threshold, color='red', linestyle='dashed', linewidth=2.0, label="threshold")
+    # Remove vertical grid lines, as they are confused with spikes in the data.
+    ax.xaxis.grid(which='both', visible=False)
+    ax.yaxis.grid(which='major', ls='--')
     plt.ylabel(ylabel if ylabel else name)
     plt.xlabel(xlabel)
-    plt.title(title)
+    if title != "":
+        plt.title(title)
     plt.legend(frameon=True)
     return fig

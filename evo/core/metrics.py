@@ -19,6 +19,8 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from __future__ import print_function  # Python 2.7 backwards compatibility
+
 import abc
 import logging
 import math
@@ -51,6 +53,8 @@ class StatisticsType(Enum):
     min = "min"
     max = "max"
     sse = "sse"
+    q1 = "q1"
+    q3 = "q3"
 
 
 class PoseRelation(Enum):
@@ -122,8 +126,6 @@ class PE(Metric):
             return np.sum(squared_errors)
         elif statistics_type == StatisticsType.mean:
             return np.mean(self.error)
-        elif statistics_type == StatisticsType.median:
-            return np.median(self.error)
         elif statistics_type == StatisticsType.max:
             return np.max(self.error)
         elif statistics_type == StatisticsType.min:
@@ -138,12 +140,20 @@ class PE(Metric):
         :return: a dictionary {StatisticsType.value : float}
         """
         statistics = {}
+        q1, median, q3 = np.percentile(self.error, [25, 50, 75])
         for s in StatisticsType:
-            try:
-                statistics[s.value] = self.get_statistic(s)
-            except MetricsException as e:
-                if "unsupported statistics_type" not in str(e):
-                    raise
+            if s == StatisticsType.median:
+                statistics[s.value] = median
+            elif s == StatisticsType.q1:
+                statistics[s.value] = q1
+            elif s == StatisticsType.q3:
+                statistics[s.value] = q3
+            else:
+                try:
+                    statistics[s.value] = self.get_statistic(s)
+                except MetricsException as e:
+                    if "unsupported statistics_type" not in str(e):  # ignore unsupported statistics
+                        raise
         return statistics
 
     def get_result(self, ref_name="reference", est_name="estimate"):

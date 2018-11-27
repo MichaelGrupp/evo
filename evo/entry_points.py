@@ -33,6 +33,11 @@ only do required imports in respective module when creating parser
 (no expensive global imports)
 """
 
+def evaluation():
+    from evo import main_evaluation
+    parser = main_evaluation.parser()
+    argcomplete.autocomplete(parser)
+    launch(main_evaluation, parser)
 
 def ape():
     from evo import main_ape

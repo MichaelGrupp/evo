@@ -136,6 +136,7 @@ setup(
     packages=["evo", "evo.core", "evo.tools"],
     package_data={"evo": ["version", "LICENSE"]},
     entry_points={"console_scripts": [
+        "evo_evaluation=evo.entry_points:evaluation",
         "evo_ape=evo.entry_points:ape",
         "evo_rpe=evo.entry_points:rpe",
         "evo_traj=evo.entry_points:traj",
@@ -159,7 +160,8 @@ setup(
         "natsort",
         "argcomplete",
         "colorama",
-        "pygments"
+        "pygments",
+        "pyyaml"
         #jupyter
     ] + (["enum34"] if python_below_34() else []),
     classifiers=[

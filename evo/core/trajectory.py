@@ -363,8 +363,8 @@ def se3_poses_to_xyz_quat_wxyz(poses):
     return xyz, quat_wxyz
 
 
-def align_trajectory(traj, traj_ref, correct_scale=False,
-                     correct_only_scale=False, n=-1, return_parameters=False):
+def align_trajectory(traj, traj_ref, correct_scale=False, correct_only_scale=False,
+                     discard_n_start_poses=0, discard_n_end_poses=0):
     """
     align a trajectory to a reference using Umeyama alignment
     :param traj: the trajectory to align
@@ -373,9 +373,12 @@ def align_trajectory(traj, traj_ref, correct_scale=False,
     :param correct_only_scale: set to True to correct the scale, but not the pose
     :param n: the number of poses to use, counted from the start (default: all)
     :param return_parameters: also return result parameters of Umeyama's method
+    :param discard_n_start_poses: the number of poses to skip from the start (default: none)
+    :param discard_n_end_poses: the number of poses to discard counted from the end (default: none)
     :return: the aligned trajectory
     If return_parameters is set, the rotation matrix, translation vector and
     scaling parameter of Umeyama's method are also returned.
+
     """
     # otherwise np arrays will be references and mess up stuff
     traj_aligned = copy.deepcopy(traj)
@@ -385,13 +388,12 @@ def align_trajectory(traj, traj_ref, correct_scale=False,
     else:
         logger.debug("Aligning using Umeyama's method..." +
                      (" (with scale correction)" if with_scale else ""))
-    if n == -1:
-        r_a, t_a, s = geometry.umeyama_alignment(
-            traj_aligned.positions_xyz.T, traj_ref.positions_xyz.T, with_scale)
-    else:
-        r_a, t_a, s = geometry.umeyama_alignment(
-            traj_aligned.positions_xyz[:n, :].T,
-            traj_ref.positions_xyz[:n, :].T, with_scale)
+        end_pose_idx = len(traj_aligned.positions_xyz) - discard_n_end_poses
+    r_a, t_a, s = geometry.umeyama_alignment(
+        traj_aligned.positions_xyz[discard_n_start_poses:end_pose_idx, :].T,
+        traj_ref.positions_xyz[discard_n_start_poses:end_pose_idx, :].T,
+        with_scale)
+
     if not correct_only_scale:
         logger.debug("Rotation of alignment:\n{}"
                      "\nTranslation of alignment:\n{}".format(r_a, t_a))

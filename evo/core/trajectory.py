@@ -364,6 +364,7 @@ def se3_poses_to_xyz_quat_wxyz(poses):
 
 
 def align_trajectory(traj, traj_ref, correct_scale=False, correct_only_scale=False,
+                     return_parameters=False,
                      discard_n_start_poses=0, discard_n_end_poses=0):
     """
     align a trajectory to a reference using Umeyama alignment

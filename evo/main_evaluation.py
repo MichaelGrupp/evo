@@ -1251,7 +1251,7 @@ def regression_test_simple(test_name, param_names, param_values, only_compile_re
         pipelines_to_run_list = ['S', 'SPR']
     if pipelines_to_run == 6:
         pipelines_to_run_list = ['SP', 'SPR']
-    REGRESSION_TESTS_DIR = "/home/tonirv/code/evo/regression_tests/" + test_name
+    REGRESSION_TESTS_DIR = "/home/tonirv/code/evo-1/regression_tests/" + test_name
     check_and_create_regression_test_structure(REGRESSION_TESTS_DIR, param_names, param_values,
                                                dataset_names, pipelines_to_run_list, extra_params_to_modify)
 
@@ -1336,11 +1336,9 @@ def run(args):
     RESULTS_DIR = '/home/tonirv/code/evo-1/results'
     DATASET_DIR = '/home/tonirv/datasets/EuRoC'
     BUILD_DIR = '/home/tonirv/code/spark_vio/build'
-    #PLOT_ONLY = 0 only do plotting of results, 1 run also pipeline.
-    #PIPELINE_TYPE = 0:All 1:S 2:SP 3:SPR
 
     # Comment out any experiment that you do not want to run
-    list_of_experiments_to_run = [\
+    LIST_OF_EXPERIMENTS_TO_RUN = [\
                                   # 'MH_01_easy',
                                   # 'MH_02_easy',
                                   # 'MH_03_medium',
@@ -1354,9 +1352,10 @@ def run(args):
                                   # 'v2_03_difficult' # Diff number of left/right imgs...
                                  ]
 
-    # Load trajectories.
-    print("Loading trajectories")
-    for dataset_name in list_of_experiments_to_run:
+    # Run experiments.
+    print("Run experiments")
+    for dataset_name in LIST_OF_EXPERIMENTS_TO_RUN:
+        print("Run dataset:%s", dataset_name)
         run_dataset(RESULTS_DIR, DATASET_DIR, dataset_name, BUILD_DIR,
                     args.run_pipeline, args.analyse_vio,
                     args.plot, args.save_results,

@@ -4,7 +4,8 @@
 
 | Linux / macOS | Windows |
 | :---: | :-----: |
-| [![Linux build Status](https://travis-ci.org/MichaelGrupp/evo.svg?branch=master)](https://travis-ci.org/MichaelGrupp/evo) | [![Windows build status](https://ci.appveyor.com/api/projects/status/usg1lqx59dqdqqal?svg=true)](https://ci.appveyor.com/project/MichaelGrupp/evo)
+| [![Build Status](https://travis-ci.org/ToniRV/evo-1.svg?branch=master)](https://travis-ci.org/ToniRV/evo-1)
+| [![Windows build status](https://ci.appveyor.com/api/projects/status/usg1lqx59dqdqqal?svg=true)](https://ci.appveyor.com/project/MichaelGrupp/evo)
 
 
 This packages provides executables and a small library for handling, evaluating and comparing the trajectory output of odometry and SLAM algorithms.

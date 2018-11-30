@@ -38,6 +38,8 @@ def umeyama_alignment(x, y, with_scale=False):
     """
     if x.shape != y.shape:
         raise GeometryException("data matrices must have the same shape")
+    if x.shape[1] == 0 or y.shape[1] == 0:
+        raise GeometryException("data matrices must be non-empty")
 
     # m = dimension, n = nr. of data points
     m, n = x.shape

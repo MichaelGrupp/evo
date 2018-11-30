@@ -1332,7 +1332,7 @@ def run(args):
         logger.debug("main_parser config:\n{}".format(parser_str))
         logger.debug(SEP)
 
-    RESULTS_DIR = '/home/tonirv/code/evo/results'
+    RESULTS_DIR = '/home/tonirv/code/evo-1/results'
     DATASET_DIR = '/home/tonirv/datasets/EuRoC'
     BUILD_DIR = '/home/tonirv/code/spark_vio/build'
     #PLOT_ONLY = 0 only do plotting of results, 1 run also pipeline.
@@ -1345,11 +1345,11 @@ def run(args):
                                   # 'MH_03_medium',
                                   # 'mh_04_difficult', # Diff number of left/right imgs...
                                   # 'MH_05_difficult',
-                                  # 'V1_01_easy',
+                                  'V1_01_easy',
                                   # 'V1_02_medium',
                                   # 'V1_03_difficult',
                                   # 'V2_01_easy',
-                                  'V2_02_medium',
+                                  # 'V2_02_medium',
                                   # 'v2_03_difficult' # Diff number of left/right imgs...
                                  ]
 

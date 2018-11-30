@@ -187,7 +187,7 @@ def read_swe_csv_trajectory(file_path):
     :return: trajectory.PoseTrajectory3D object
     """
     mat = np.array(csv_read_matrix(
-        file_path, delim=", ", comment_str="t")).astype(float)
+        file_path, delim=",", comment_str="t")).astype(float)
     if mat.shape[1] != 17:
         raise FileInterfaceException(
             "SWE trajectory files must have 8 entries per row")

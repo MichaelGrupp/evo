@@ -357,7 +357,7 @@ def draw_ape_boxplots(stats, output_dir):
     mpl.rcParams.update(rc_params)
 
 def aggregate_ape_results(list_of_datasets, list_of_pipelines):
-    RESULTS_DIR = '/home/tonirv/code/evo/results'
+    RESULTS_DIR = '/home/tonirv/code/evo-1/results'
     # Load results.
     print("Loading dataset results")
 

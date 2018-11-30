@@ -364,7 +364,7 @@ def se3_poses_to_xyz_quat_wxyz(poses):
 
 
 def align_trajectory(traj, traj_ref, correct_scale=False, correct_only_scale=False,
-                     return_parameters=False,
+                     return_parameters=False, n=-1,
                      discard_n_start_poses=0, discard_n_end_poses=0):
     """
     align a trajectory to a reference using Umeyama alignment
@@ -389,7 +389,22 @@ def align_trajectory(traj, traj_ref, correct_scale=False, correct_only_scale=Fal
     else:
         logger.debug("Aligning using Umeyama's method..." +
                      (" (with scale correction)" if with_scale else ""))
-        end_pose_idx = len(traj_aligned.positions_xyz) - discard_n_end_poses
+        end_pose_idx = len(traj_aligned.positions_xyz)
+        if n != -1:
+            if discard_n_start_poses != 0 or discard_n_end_poses != 0:
+                print("WARNING: you asked for %d poses, as well as discarding %d start poses and %d end poses.",
+                 n, discard_n_start_poses, discard_n_end_poses)
+                print("Selecting option given the smallest number of poses:")
+            if end_pose_idx - discard_n_end_poses < n + discard_n_start_poses:
+                print("We are requiring more poses n (%d) than available, using instead %d starting from pose %d", n,
+                 end_pose_idx - discard_n_end_poses - discard_n_start_poses, discard_n_start_poses)
+                end_pose_idx = end_pose_idx - discard_n_end_poses
+            else:
+                end_pose_idx = n + discard_n_start_poses
+        else:
+            end_pose_idx -= discard_n_end_poses
+    assert(discard_n_start_poses < end_pose_idx) # Otherwise there will be no poses to align.
+    assert(end_pose_idx <= len(traj_aligned.positions_xyz)) # Otherwise we will be requiring more poses than there are.
     r_a, t_a, s = geometry.umeyama_alignment(
         traj_aligned.positions_xyz[discard_n_start_poses:end_pose_idx, :].T,
         traj_ref.positions_xyz[discard_n_start_poses:end_pose_idx, :].T,

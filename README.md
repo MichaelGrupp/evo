@@ -115,7 +115,7 @@ There are some example trajectories in the source folder in `test/data`.
   Here, we plot two KITTI pose files and the ground truth using `evo_traj`:
   ```
   cd test/data
-  evo_traj kitti KITTI_00_ORB.txt KITTI_00_SPTAM.txt --ref=KITTI_00_gt.txt -p --plot_mode=xz
+  evo_traj kitti KITTI_00_ORB.txt KITTI_00_SPTAM.txt --ref=KITTI_00_gt.txt -p --plot_mode xz
   ```
 
   <center>

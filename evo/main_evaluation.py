@@ -1003,7 +1003,7 @@ def return_id_of_dataset(dataset_name):
 
 def run_dataset(results_dir, dataset_dir, dataset_name, build_dir,
                 run_pipeline, analyse_vio,
-                plot, save_results, save_plots, save_boxplots, switch,
+                plot, save_results, save_plots, save_boxplots, pipelines_to_run_list,
                 discard_n_start_poses = 0, discard_n_end_poses = 0):
     """ Evaluates pipeline using Structureless(S), Structureless(S) + Projection(P), \
             and Structureless(S) + Projection(P) + Regular(R) factors \
@@ -1017,66 +1017,36 @@ def run_dataset(results_dir, dataset_dir, dataset_name, build_dir,
     pipeline_output_dir = results_dir + "/tmp_output/output"
     output_file = pipeline_output_dir + "/output_posesVIO.csv"
     has_a_pipeline_failed = False
-    if switch == 1 or switch == 0 or switch == 4 or switch == 5:
-        if process_vio(build_dir, dataset_dir, dataset_name, results_dir, pipeline_output_dir,
-                   "S", SEGMENTS, save_results, plot, save_plots,
-                       output_file, run_pipeline, analyse_vio,
-                       discard_n_start_poses, discard_n_end_poses) == False:
-            has_a_pipeline_failed = True
-
-    if switch == 2 or switch == 0 or switch == 4 or switch == 6:
-        time.sleep(2)
-        if process_vio(build_dir, dataset_dir, dataset_name, results_dir, pipeline_output_dir,
-                    "SP", SEGMENTS, save_results, plot, save_plots,
-                       output_file, run_pipeline, analyse_vio,
-                       discard_n_start_poses, discard_n_end_poses) == False:
-            has_a_pipeline_failed = True
-
-    if switch == 3 or switch == 0 or switch == 5 or switch == 6:
-        time.sleep(2)
-        if process_vio(build_dir, dataset_dir, dataset_name, results_dir, pipeline_output_dir,
-                    "SPR", SEGMENTS, save_results, plot, save_plots,
-                       output_file, run_pipeline, analyse_vio,
-                       discard_n_start_poses, discard_n_end_poses) == False:
-            has_a_pipeline_failed = True
-
-    if switch == -1:
+    if len(pipelines_to_run_list) == 0:
         print("Not running pipeline...")
-
-    if switch != 0 and switch != 1 and switch != 2 and switch != 3 and switch != -1 and switch != 4 and switch != 5 and switch != 6 :
-        raise Exception("\033[91mUnrecognized pipeline to run: {} \033[99m".format(switch) )
+    for pipeline_type in pipelines_to_run_list:
+        if process_vio(build_dir, dataset_dir, dataset_name, results_dir, pipeline_output_dir,
+                       pipeline_type, SEGMENTS, save_results, plot, save_plots,
+                       output_file, run_pipeline, analyse_vio,
+                       discard_n_start_poses, discard_n_end_poses) == False:
+            has_a_pipeline_failed = True
 
     # Save boxplots
     if save_boxplots:
         if has_a_pipeline_failed == False:
             print("Saving boxplots.")
-            results_s = results_dir + "/" + dataset_name + "/S/results.yaml"
-            if not os.path.exists(results_s):
-                raise Exception("\033[91mCannot plot boxplots: missing results for S pipeline \
-                                and dataset: " + dataset_name + "\033[99m")
-            results_sp = results_dir + "/" + dataset_name + "/SP/results.yaml"
-            if not os.path.exists(results_sp):
-                raise Exception("\033[91mCannot plot boxplots: missing results for SP pipeline \
-                                and dataset: " + dataset_name + "\033[99m")
-            results_spr = results_dir + "/" + dataset_name + "/SPR/results.yaml"
-            if not os.path.exists(results_spr):
-                raise Exception("\033[91mCannot plot boxplots: missing results for SPR pipeline \
-                                and dataset: " + dataset_name + "\033[99m")
+
             stats = dict()
-            stats['S']  = yaml.load(open(results_s,'r'))
-            print("Check stats S " + results_s)
-            checkStats(stats['S'])
-            print("Check stats SP " + results_sp)
-            stats['SP'] = yaml.load(open(results_sp,'r'))
-            checkStats(stats['SP'])
-            print("Check stats SPR " + results_spr)
-            stats['SPR'] = yaml.load(open(results_spr,'r'))
-            checkStats(stats['SPR'])
+            for pipeline_type in pipelines_to_run_list:
+                results = results_dir + "/" + dataset_name + "/" + pipeline_type + "/results.yaml"
+                if not os.path.exists(results):
+                    raise Exception("\033[91mCannot plot boxplots: missing results for %s pipeline \
+                                    and dataset: %s"%(pipeline_type, dataset_name) + "\033[99m")
+
+                stats[pipeline_type]  = yaml.load(open(results,'r'))
+                print("Check stats %s "%(pipeline_type) + results)
+                checkStats(stats[pipeline_type])
+
             print("Drawing boxplots.")
-            draw_rpe_boxplots(results_dir + "/" + dataset_name,
-                          stats, len(SEGMENTS))
+            draw_rpe_boxplots(results_dir + "/" + dataset_name, stats, len(SEGMENTS))
         else:
             print("A pipeline run has failed... skipping boxplot drawing.")
+
     if not has_a_pipeline_failed:
         print ("All pipeline runs were successful.")
     else:
@@ -1215,27 +1185,7 @@ def check_and_create_regression_test_structure(regression_tests_path, param_name
         # Make/Check dataset dir for current param_names_dir, as the performance given the param depends on the dataset.
         ensure_dir("{}/{}/results/{}".format(regression_tests_path, param_names_dir, dataset_name))
 
-def regression_test_simple(test_name, param_names, param_values, only_compile_regression_test_results,
-                           run_pipelines, pipelines_to_run, extra_params_to_modify):
-    """ Runs the vio pipeline with different values for the given param
-    and draws graphs to decide best value for the param:
-        param_names: names of the parameters to fine-tune: e.g ["monoNoiseSigma", "stereoNoiseSigma"]
-        param_values: values that the parameter should take: e.g [[1.0, 1.3], [1.0, 1.2]]
-        only_compile_regression_test_results: just draw boxplots for regression test,
-            skip all per pipeline analysis and runs, assumes we have results.yaml for
-            each param value, dataset and pipeline.
-        run_pipelines: run pipelines, if set to false, it won't run pipelines and will assume we have a traj_est.csv already.
-        pipelines_to_run: which pipeline to run, useful when a parameter only affects a single pipeline."""
-    # Ensure input is correct.
-    if isinstance(param_names, list):
-        if len(param_names) > 1:
-            assert(len(param_names) == len(param_values[0]))
-            for i in range(2, len(param_names)):
-                # Ensure all rows have the same number of parameter changes
-                assert(len(param_values[i-2]) == len(param_values[i-1]))
-
-    # Check and create file structure
-    dataset_names = ["V1_01_easy"]
+def build_list_of_pipelines_to_run(pipelines_to_run):
     pipelines_to_run_list = []
     if pipelines_to_run == 0:
         pipelines_to_run_list = ['S', 'SP', 'SPR']
@@ -1251,10 +1201,33 @@ def regression_test_simple(test_name, param_names, param_values, only_compile_re
         pipelines_to_run_list = ['S', 'SPR']
     if pipelines_to_run == 6:
         pipelines_to_run_list = ['SP', 'SPR']
+    return pipelines_to_run_list
+
+def regression_test_simple(test_name, param_names, param_values, only_compile_regression_test_results,
+                           run_pipelines, pipelines_to_run, extra_params_to_modify):
+    """ Runs the vio pipeline with different values for the given param
+    and draws graphs to decide best value for the param:
+        - param_names: names of the parameters to fine-tune: e.g ["monoNoiseSigma", "stereoNoiseSigma"]
+        - param_values: values that the parameter should take: e.g [[1.0, 1.3], [1.0, 1.2]]
+        - only_compile_regression_test_results: just draw boxplots for regression test,
+            skip all per pipeline analysis and runs, assumes we have results.yaml for
+            each param value, dataset and pipeline.
+        - run_pipelines: run pipelines, if set to false, it won't run pipelines and will assume we have a traj_est.csv already.
+        - pipelines_to_run: which pipeline to run, useful when a parameter only affects a single pipeline."""
+    # Ensure input is correct.
+    if isinstance(param_names, list):
+        if len(param_names) > 1:
+            assert(len(param_names) == len(param_values[0]))
+            for i in range(2, len(param_names)):
+                # Ensure all rows have the same number of parameter changes
+                assert(len(param_values[i-2]) == len(param_values[i-1]))
+
+    # Check and create file structure
+    dataset_names = ["V1_01_easy"]
+    pipelines_to_run_list = build_list_of_pipelines_to_run(pipelines_to_run);
     REGRESSION_TESTS_DIR = "/home/tonirv/code/evo-1/regression_tests/" + test_name
     check_and_create_regression_test_structure(REGRESSION_TESTS_DIR, param_names, param_values,
                                                dataset_names, pipelines_to_run_list, extra_params_to_modify)
-
 
     param_names_dir = ""
     for i in param_names:
@@ -1262,7 +1235,6 @@ def regression_test_simple(test_name, param_names, param_values, only_compile_re
     param_names_dir = param_names_dir[:-1]
     DATASET_DIR = '/home/tonirv/datasets/EuRoC'
     BUILD_DIR = '/home/tonirv/code/spark_vio/build'
-    has_a_pipeline_failed = False
     if not only_compile_regression_test_results:
         for param_value in param_values:
             param_value_dir = ""
@@ -1274,17 +1246,15 @@ def regression_test_simple(test_name, param_names, param_values, only_compile_re
                 param_value_dir = param_value
             results_dir = "{}/{}/{}".format(REGRESSION_TESTS_DIR, param_names_dir, param_value_dir)
             pipeline_output_dir = results_dir + "/tmp_output/output"
-            output_file = pipeline_output_dir + "/output_posesVIO.csv"
             for dataset_name in dataset_names:
-                if run_dataset(results_dir, DATASET_DIR, dataset_name, BUILD_DIR,
+                run_dataset(results_dir, DATASET_DIR, dataset_name, BUILD_DIR,
                                run_pipelines, # Should we re-run pipelines?
                                True, # Should we run the analysis of per pipeline errors?
                                False, # Should we display plots?
                                True, # Should we save results?
                                True, # Should we save plots?
                                False, # Should we save boxplots?
-                               pipelines_to_run): # Should we run 0: all pipelines, 1: S, 2:SP 3:SPR
-                    has_a_pipeline_failed = True
+                               pipelines_to_run_list) # Should we run 0: all pipelines, 1: S, 2:SP 3:SPR
 
                 print("Finished analysis of pipelines for param_value: {} for parameter: {}".format(param_value_dir, param_names_dir))
                 print("Finished pipeline runs/analysis for regression test of param_name: {}".format(param_names_dir))
@@ -1356,10 +1326,11 @@ def run(args):
     print("Run experiments")
     for dataset_name in LIST_OF_EXPERIMENTS_TO_RUN:
         print("Run dataset:%s", dataset_name)
+        pipelines_to_run_list = build_list_of_pipelines_to_run(args.pipeline_type)
         run_dataset(RESULTS_DIR, DATASET_DIR, dataset_name, BUILD_DIR,
                     args.run_pipeline, args.analyse_vio,
                     args.plot, args.save_results,
-                    args.save_plots, args.save_boxplots, args.pipeline_type,
+                    args.save_plots, args.save_boxplots, pipelines_to_run_list,
                     args.discard_n_start_poses, args.discard_n_end_poses)
 
 def parser():

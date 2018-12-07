@@ -122,12 +122,12 @@ class UploadCommand(Command):
 
 # yapf: disable
 setup(
-    name="evo",
+    name="evo-1",
     version=open("evo/version").read(),
     description="Python package for the evaluation of odometry and SLAM",
-    author="Michael Grupp",
-    author_email="michael.grupp@tum.de",
-    url="https://github.com/MichaelGrupp/evo",
+    author="Antoni Rosinol, Michael Grupp",
+    author_email="arosinol@mit.edu,",
+    url="https://github.com/ToniRV/evo-1",
     license="GPLv3",
     keywords=[
         "SLAM", "odometry", "trajectory", "evaluation", "metric",

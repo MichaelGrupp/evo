@@ -47,3 +47,6 @@ script:
     else
       docker build . --file $EVO_DOCKERFILE --tag $EVO_DOCKER_IMAGE || exit 1
     fi
+
+notifications:
+    slack: spark-lab-mit:gTc6ivvZ6ZoNtbxcrk1YzRsc

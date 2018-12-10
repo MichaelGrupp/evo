@@ -183,14 +183,19 @@ def read_euroc_csv_trajectory(file_path):
 def read_bag_trajectory(bag_handle, topic):
     """
     :param bag_handle: opened bag handle, from rosbag.Bag(...)
-    :param topic: geometry_msgs/PoseStamped or nav_msgs/Odometry topic
+    :param topic:
+        geometry_msgs/PoseStamped, geometry_msgs/PoseWithCovarianceStamped
+        or nav_msgs/Odometry topic
     :return: trajectory.PoseTrajectory3D
     """
     if not bag_handle.get_message_count(topic) > 0:
         raise FileInterfaceException("no messages for topic '" + topic +
                                      "' in bag")
     msg_type = bag_handle.get_type_and_topic_info().topics[topic].msg_type
-    if msg_type not in {"geometry_msgs/PoseStamped", "nav_msgs/Odometry"}:
+    if msg_type not in {
+            "geometry_msgs/PoseStamped",
+            "geometry_msgs/PoseWithCovarianceStamped", "nav_msgs/Odometry"
+    }:
         raise FileInterfaceException(
             "unsupported message type: {}".format(msg_type))
     stamps, xyz, quat = [], [], []

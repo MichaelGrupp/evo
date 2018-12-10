@@ -73,7 +73,7 @@ def read_tum_trajectory_file(file_path):
     :return: trajectory.PoseTrajectory3D object
     """
     raw_mat = csv_read_matrix(file_path, delim=" ", comment_str="#")
-    error_msg = ("TUM trajectory files must have 8 entries per row ",
+    error_msg = ("TUM trajectory files must have 8 entries per row "
                  "and no trailing delimiter at the end of the rows (space)")
     if len(raw_mat) > 0 and len(raw_mat[0]) != 8:
         raise FileInterfaceException(error_msg)
@@ -121,7 +121,7 @@ def read_kitti_poses_file(file_path):
     :return: trajectory.PosePath3D
     """
     raw_mat = csv_read_matrix(file_path, delim=" ", comment_str="#")
-    error_msg = ("KITTI pose files must have 12 entries per row ",
+    error_msg = ("KITTI pose files must have 12 entries per row "
                  "and no trailing delimiter at the end of the rows (space)")
     if len(raw_mat) > 0 and len(raw_mat[0]) != 12:
         raise FileInterfaceException(error_msg)
@@ -164,7 +164,7 @@ def read_euroc_csv_trajectory(file_path):
     :return: trajectory.PoseTrajectory3D object
     """
     raw_mat = csv_read_matrix(file_path, delim=",", comment_str="#")
-    error_msg = ("EuRoC MAV state ground truth must have 17 entries per row ",
+    error_msg = ("EuRoC MAV state ground truth must have 17 entries per row "
                  "and no trailing delimiter at the end of the rows (comma)")
     if len(raw_mat) > 0 and len(raw_mat[0]) != 17:
         raise FileInterfaceException(error_msg)

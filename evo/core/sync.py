@@ -37,11 +37,11 @@ def matching_time_indices(stamps_1, stamps_2, max_diff=0.01, offset_2=0.0):
     """
     Searches for the best matching timestamps of two lists of timestamps
     and returns the list indices of the best matches.
-    :param stamps_1: first vector of timestamps
-    :param stamps_2: second vector of timestamps
+    :param stamps_1: first vector of timestamps (numpy array)
+    :param stamps_2: second vector of timestamps (numpy array)
     :param max_diff: max. allowed absolute time difference
-    :param offset_2: optional offset of second vector
-    :return: the indices of the matching stamps in stamps_1
+    :param offset_2: optional time offset to be applied to stamps_2
+    :return: list of indices of the matching timestamps in stamps_1
     """
     matching_indices = []
     stamps_2 = copy.deepcopy(stamps_2)

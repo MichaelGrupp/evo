@@ -199,7 +199,9 @@ def read_bag_trajectory(bag_handle, topic):
         raise FileInterfaceException(
             "unsupported message type: {}".format(msg_type))
     stamps, xyz, quat = [], [], []
-    for topic, msg, t in bag_handle.read_messages(topic):
+    for topic, msg, _ in bag_handle.read_messages(topic):
+        # Use the header timestamps (converted to seconds).
+        t = msg.header.stamp
         stamps.append(t.secs + (t.nsecs * 1e-9))
         # Make nav_msgs/Odometry behave like geometry_msgs/PoseStamped.
         while not hasattr(msg.pose, 'position') and not hasattr(

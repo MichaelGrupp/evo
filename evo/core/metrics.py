@@ -27,6 +27,7 @@ from enum import Enum  # requires enum34 in Python 2.7
 
 import numpy as np
 
+from evo import EvoException
 from evo.core import filters
 from evo.core.result import Result
 from evo.core import lie_algebra as lie
@@ -39,7 +40,7 @@ else:
 logger = logging.getLogger(__name__)
 
 
-class MetricsException(Exception):
+class MetricsException(EvoException):
     pass
 
 

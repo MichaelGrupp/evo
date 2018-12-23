@@ -33,6 +33,7 @@ import colorama
 from colorama import Fore, Style
 from pygments import highlight, lexers, formatters
 
+from evo import EvoException
 from evo.tools import log, user, settings
 from evo.tools.settings_template import DEFAULT_SETTINGS_DICT_DOC
 from evo.tools.settings_template import DEFAULT_SETTINGS_DICT
@@ -42,7 +43,7 @@ logger = logging.getLogger(__name__)
 SEP = "-" * 80
 
 
-class ConfigError(Exception):
+class ConfigError(EvoException):
     pass
 
 

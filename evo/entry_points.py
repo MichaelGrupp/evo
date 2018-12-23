@@ -85,10 +85,14 @@ def launch(main_module, parser):
         args = merge_config(args)
     import sys
     from evo.tools import settings
+    from evo import EvoException
     try:
         main_module.run(args)
     except SystemExit as e:
         sys.exit(e.code)
+    except EvoException as e:
+        logger.error(e.message)
+        sys.exit(1)
     except:
         logger.exception("Unhandled error in " + main_module.__name__)
         print("")

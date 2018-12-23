@@ -24,12 +24,13 @@ import logging
 
 import numpy as np
 
+from evo import EvoException
 from evo.core.trajectory import PoseTrajectory3D
 
 logger = logging.getLogger(__name__)
 
 
-class SyncException(Exception):
+class SyncException(EvoException):
     pass
 
 

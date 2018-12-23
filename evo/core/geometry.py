@@ -20,8 +20,10 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
+from evo import EvoException
 
-class GeometryException(Exception):
+
+class GeometryException(EvoException):
     pass
 
 

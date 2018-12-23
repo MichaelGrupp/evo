@@ -28,6 +28,7 @@ import zipfile
 
 import numpy as np
 
+from evo import EvoException
 import evo.core.lie_algebra as lie
 import evo.core.transformations as tr
 from evo.core import result
@@ -37,7 +38,7 @@ from evo.tools import user
 logger = logging.getLogger(__name__)
 
 
-class FileInterfaceException(Exception):
+class FileInterfaceException(EvoException):
     pass
 
 

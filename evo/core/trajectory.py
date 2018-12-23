@@ -24,6 +24,7 @@ import logging
 
 import numpy as np
 
+from evo import EvoException
 import evo.core.transformations as tr
 import evo.core.geometry as geometry
 from evo.core import lie_algebra as lie
@@ -31,7 +32,7 @@ from evo.core import lie_algebra as lie
 logger = logging.getLogger(__name__)
 
 
-class TrajectoryException(Exception):
+class TrajectoryException(EvoException):
     pass
 
 

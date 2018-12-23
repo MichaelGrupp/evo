@@ -22,10 +22,11 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 import scipy.linalg as sl
 
+from evo import EvoException
 from evo.core import transformations as tr
 
 
-class LieAlgebraException(Exception):
+class LieAlgebraException(EvoException):
     pass
 
 

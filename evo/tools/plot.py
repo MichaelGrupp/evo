@@ -40,6 +40,7 @@ from matplotlib.collections import LineCollection
 import numpy as np
 import seaborn as sns
 
+from evo import EvoException
 from evo.tools import user
 from evo.core import trajectory
 
@@ -58,7 +59,7 @@ mpl.rcParams.update(rc)
 logger = logging.getLogger(__name__)
 
 
-class PlotException(Exception):
+class PlotException(EvoException):
     pass
 
 

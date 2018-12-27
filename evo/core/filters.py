@@ -25,13 +25,14 @@ import logging
 
 import numpy as np
 
+from evo import EvoException
 from evo.core import geometry, trajectory
 from evo.core import lie_algebra as lie
 
 logger = logging.getLogger(__name__)
 
 
-class FilterException(Exception):
+class FilterException(EvoException):
     pass
 
 

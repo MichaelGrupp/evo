@@ -40,10 +40,6 @@ DEFAULT_SETTINGS_DICT_DOC = {
         get_default_plot_backend(),
         "matplotlib backend - default: 'Qt{4, 5}Agg' (if PyQt is installed) or 'TkAgg'."
     ),
-    "plot_hideref": (
-        False,
-        "Hide the reference trajectory in trajectory plots."
-    ),
     "plot_linewidth": (
         1.5,
         "Line width value supported by matplotlib."
@@ -102,6 +98,18 @@ DEFAULT_SETTINGS_DICT_DOC = {
     "plot_export_format": (
         "pdf",
         "File format supported by matplotlib for exporting plots."
+    ),
+    "plot_reference_alpha": (
+        0.5,
+        "Alpha value of the reference trajectories in plots."
+    ),
+    "plot_reference_color": (
+        "black",
+        "Color of the reference trajectories in plots."
+    ),
+    "plot_reference_linestyle": (
+        "--",
+        "matplotlib linestyle of reference trajectories in plots."
     ),
     "table_export_format": (
         "csv",

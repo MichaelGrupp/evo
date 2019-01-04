@@ -357,12 +357,19 @@ def run(args):
             short_traj_name = os.path.splitext(os.path.basename(args.ref))[0]
             if SETTINGS.plot_usetex:
                 short_traj_name = short_traj_name.replace("_", "\\_")
-            plot.traj(ax_traj, plot_mode, ref_traj, '--', 'grey',
-                      short_traj_name, alpha=0 if SETTINGS.plot_hideref else 1)
-            plot.traj_xyz(axarr_xyz, ref_traj, '--', 'grey', short_traj_name,
-                          alpha=0 if SETTINGS.plot_hideref else 1)
-            plot.traj_rpy(axarr_rpy, ref_traj, '--', 'grey', short_traj_name,
-                          alpha=0 if SETTINGS.plot_hideref else 1)
+            plot.traj(ax_traj, plot_mode, ref_traj,
+                      style=SETTINGS.plot_reference_linestyle,
+                      color=SETTINGS.plot_reference_color,
+                      label=short_traj_name,
+                      alpha=SETTINGS.plot_reference_alpha)
+            plot.traj_xyz(
+                axarr_xyz, ref_traj, style=SETTINGS.plot_reference_linestyle,
+                color=SETTINGS.plot_reference_color, label=short_traj_name,
+                alpha=SETTINGS.plot_reference_alpha)
+            plot.traj_rpy(
+                axarr_rpy, ref_traj, style=SETTINGS.plot_reference_linestyle,
+                color=SETTINGS.plot_reference_color, label=short_traj_name,
+                alpha=SETTINGS.plot_reference_alpha)
 
         cmap_colors = None
         if SETTINGS.plot_multi_cmap.lower() != "none":

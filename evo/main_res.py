@@ -244,7 +244,7 @@ def run(args):
         # handle NaNs from concat() above
         error_df.interpolate(method="index").plot(
             ax=fig_raw.gca(), colormap=colormap, style=linestyles,
-            title=first_title)
+            title=first_title, alpha=SETTINGS.plot_trajectory_alpha)
         plt.xlabel(index_label)
         plt.ylabel(metric_label)
         plt.legend(frameon=True)

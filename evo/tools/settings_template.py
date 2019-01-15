@@ -107,6 +107,10 @@ DEFAULT_SETTINGS_DICT_DOC = {
         "pdflatex",
         "'xelatex', 'lualatex' or 'pdflatex', see: https://matplotlib.org/users/pgf.html",
     ),
+    "plot_trajectory_alpha": (
+        0.75,
+        "Alpha value of non-reference trajectories in plots.",
+    ),
     "plot_trajectory_cmap": (
         "jet",
         "matplotlib color map used for mapping values on a trajectory.",

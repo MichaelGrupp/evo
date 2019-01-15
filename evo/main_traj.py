@@ -384,14 +384,17 @@ def run(args):
             short_traj_name = os.path.splitext(os.path.basename(name))[0]
             if SETTINGS.plot_usetex:
                 short_traj_name = short_traj_name.replace("_", "\\_")
-            plot.traj(ax_traj, plot_mode, traj, '-', color, short_traj_name)
+            plot.traj(ax_traj, plot_mode, traj, '-', color, short_traj_name,
+                      alpha=SETTINGS.plot_trajectory_alpha)
             if args.ref and isinstance(ref_traj, trajectory.PoseTrajectory3D):
                 start_time = ref_traj.timestamps[0]
             else:
                 start_time = None
             plot.traj_xyz(axarr_xyz, traj, '-', color, short_traj_name,
+                          alpha=SETTINGS.plot_trajectory_alpha,
                           start_timestamp=start_time)
             plot.traj_rpy(axarr_rpy, traj, '-', color, short_traj_name,
+                          alpha=SETTINGS.plot_trajectory_alpha,
                           start_timestamp=start_time)
 
         plot_collection.add_figure("trajectories", fig_traj)

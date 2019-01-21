@@ -32,9 +32,10 @@ def get_default_plot_backend():
 # default settings with documentation
 # yapf: disable
 DEFAULT_SETTINGS_DICT_DOC = {
-    "logfile_enabled": (
+    "global_logfile_enabled": (
         False,
-        "Whether to write a logfile to the home folder."
+        ("Whether to write a global logfile to the home folder.\n"
+         "Run 'evo pkg --logfile' to see the logfile location.")
     ),
     "logging_format": (
         "%(message)s",

@@ -26,7 +26,7 @@ import sys
 import colorama
 from colorama import Fore
 
-from evo.tools.settings import SETTINGS, DEFAULT_LOGFILE_PATH
+from evo.tools.settings import SETTINGS, GLOBAL_LOGFILE_PATH
 
 CONSOLE_ERROR_FMT = "{}[%(levelname)s]{} %(msg)s".format(
     Fore.LIGHTRED_EX, Fore.RESET)
@@ -72,17 +72,17 @@ def configure_logging(verbose=False, silent=False, debug=False,
     if len(logger.handlers) > 0:
         logger.removeHandler(logger.handlers[0])
 
-    if not SETTINGS.logfile_enabled:
-        logfile = os.devnull
-    elif file_path is None:
-        logfile = DEFAULT_LOGFILE_PATH
-    else:
-        logfile = file_path
+    logfiles = []
+    if SETTINGS.global_logfile_enabled:
+        logfiles.append(GLOBAL_LOGFILE_PATH)
+    if file_path is not None:
+        logfiles.append(file_path)
 
-    file_handler = logging.FileHandler(logfile)
-    file_handler.setLevel(logging.DEBUG)
-    file_handler.setFormatter(logging.Formatter(file_fmt))
-    logger.addHandler(file_handler)
+    for logfile in logfiles:
+        file_handler = logging.FileHandler(logfile)
+        file_handler.setLevel(logging.DEBUG)
+        file_handler.setFormatter(logging.Formatter(file_fmt))
+        logger.addHandler(file_handler)
 
     if debug or verbose:
         console_level = logging.DEBUG

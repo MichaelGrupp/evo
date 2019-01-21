@@ -84,7 +84,7 @@ def parser():
         "--plot_colormap_max_percentile", type=float,
         help="percentile of the error distribution to be used "
         "as the upper bound of the color map plot "
-        "(in %%, overrides --plot_colormap_min)")
+        "(in %%, overrides --plot_colormap_max)")
     output_opts.add_argument("--save_plot", default=None,
                              help="path to save plot")
     output_opts.add_argument("--serialize_plot", default=None,

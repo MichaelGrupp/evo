@@ -63,7 +63,7 @@ class ConsoleFormatter(logging.Formatter):
 # configures the package's root logger (see __init__.py)
 def configure_logging(verbose=False, silent=False, debug=False,
                       console_fmt=None, file_fmt=DEFAULT_LONG_FMT,
-                      file_path=None):
+                      local_logfile=None):
 
     logger = logging.getLogger("evo")
     logger.setLevel(logging.DEBUG)
@@ -75,8 +75,8 @@ def configure_logging(verbose=False, silent=False, debug=False,
     logfiles = []
     if SETTINGS.global_logfile_enabled:
         logfiles.append(GLOBAL_LOGFILE_PATH)
-    if file_path is not None:
-        logfiles.append(file_path)
+    if local_logfile is not None:
+        logfiles.append(local_logfile)
 
     for logfile in logfiles:
         file_handler = logging.FileHandler(logfile)

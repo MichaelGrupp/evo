@@ -96,6 +96,8 @@ def parser():
     output_opts.add_argument("--save_as_bag",
                              help="save trajectories in ROS bag as <date>.bag",
                              action="store_true")
+    output_opts.add_argument("--logfile", help="Local logfile path.",
+                             default=None)
     usability_opts.add_argument("--no_warnings",
                                 help="no warnings requiring user confirmation",
                                 action="store_true")
@@ -261,7 +263,7 @@ def run(args):
     from evo.tools.settings import SETTINGS
 
     log.configure_logging(verbose=args.verbose, silent=args.silent,
-                          debug=args.debug)
+                          debug=args.debug, local_logfile=args.logfile)
     if args.debug:
         import pprint
         logger.debug("main_parser config:\n" + pprint.pformat(

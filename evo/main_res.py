@@ -69,6 +69,8 @@ def parser():
     output_opts.add_argument(
         "--save_table", help="path to a file to save the results in a table",
         default=None)
+    output_opts.add_argument("--logfile", help="Local logfile path.",
+                             default=None)
     usability_opts.add_argument("--no_warnings",
                                 help="no warnings requiring user confirmation",
                                 action="store_true")
@@ -96,7 +98,8 @@ def run(args):
     pd.options.display.width = 80
     pd.options.display.max_colwidth = 20
 
-    log.configure_logging(args.verbose, args.silent, args.debug)
+    log.configure_logging(args.verbose, args.silent, args.debug,
+                          local_logfile=args.logfile)
     if args.debug:
         import pprint
         arg_dict = {arg: getattr(args, arg) for arg in vars(args)}

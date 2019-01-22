@@ -94,7 +94,7 @@ def configure_logging(verbose=False, silent=False, debug=False,
     if debug:
         console_fmt = DEFAULT_LONG_FMT
     elif console_fmt is None:
-        console_fmt = SETTINGS.logging_format
+        console_fmt = SETTINGS.console_logging_format
 
     console_handler = logging.StreamHandler(stream=sys.stdout)
     console_handler.setLevel(console_level)

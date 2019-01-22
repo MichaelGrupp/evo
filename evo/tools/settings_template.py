@@ -37,9 +37,9 @@ DEFAULT_SETTINGS_DICT_DOC = {
         ("Whether to write a global logfile to the home folder.\n"
          "Run 'evo pkg --logfile' to see the logfile location.")
     ),
-    "logging_format": (
+    "console_logging_format": (
         "%(message)s",
-        "Format string for the logging module (console only)."
+        "Format string for the logging module (affects only console output)."
     ),
     "plot_backend": (
         get_default_plot_backend(),

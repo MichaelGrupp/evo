@@ -37,6 +37,11 @@ from evo.tools import user
 
 logger = logging.getLogger(__name__)
 
+SUPPORTED_ROS_MSGS = {
+    "geometry_msgs/PoseStamped", "geometry_msgs/PoseWithCovarianceStamped",
+    "geometry_msgs/TransformStamped", "nav_msgs/Odometry"
+}
+
 
 class FileInterfaceException(EvoException):
     pass
@@ -181,40 +186,59 @@ def read_euroc_csv_trajectory(file_path):
     return PoseTrajectory3D(xyz, quat, stamps)
 
 
+def _get_xyz_quat_from_transform_stamped(msg):
+    xyz = [
+        msg.transform.translation.x, msg.transform.translation.y,
+        msg.transform.translation.z
+    ]
+    quat = [
+        msg.transform.rotation.w, msg.transform.rotation.x,
+        msg.transform.rotation.y, msg.transform.rotation.z
+    ]
+    return xyz, quat
+
+
+def _get_xyz_quat_from_pose_or_odometry_msg(msg):
+    # Make nav_msgs/Odometry behave like geometry_msgs/PoseStamped.
+    while not hasattr(msg.pose, 'position') and not hasattr(
+            msg.pose, 'orientation'):
+        msg = msg.pose
+    xyz = [msg.pose.position.x, msg.pose.position.y, msg.pose.position.z]
+    quat = [
+        msg.pose.orientation.w, msg.pose.orientation.x, msg.pose.orientation.y,
+        msg.pose.orientation.z
+    ]
+    return xyz, quat
+
+
 def read_bag_trajectory(bag_handle, topic):
     """
     :param bag_handle: opened bag handle, from rosbag.Bag(...)
-    :param topic:
-        geometry_msgs/PoseStamped, geometry_msgs/PoseWithCovarianceStamped
-        or nav_msgs/Odometry topic
+    :param topic: trajectory topic of supported message type
     :return: trajectory.PoseTrajectory3D
     """
     if not bag_handle.get_message_count(topic) > 0:
         raise FileInterfaceException("no messages for topic '" + topic +
                                      "' in bag")
     msg_type = bag_handle.get_type_and_topic_info().topics[topic].msg_type
-    if msg_type not in {
-            "geometry_msgs/PoseStamped",
-            "geometry_msgs/PoseWithCovarianceStamped", "nav_msgs/Odometry"
-    }:
+    if msg_type not in SUPPORTED_ROS_MSGS:
         raise FileInterfaceException(
             "unsupported message type: {}".format(msg_type))
+
+    # Choose appropriate message conversion.
+    if msg_type == "geometry_msgs/TransformStamped":
+        get_xyz_quat = _get_xyz_quat_from_transform_stamped
+    else:
+        get_xyz_quat = _get_xyz_quat_from_pose_or_odometry_msg
+
     stamps, xyz, quat = [], [], []
     for topic, msg, _ in bag_handle.read_messages(topic):
         # Use the header timestamps (converted to seconds).
         t = msg.header.stamp
         stamps.append(t.secs + (t.nsecs * 1e-9))
-        # Make nav_msgs/Odometry behave like geometry_msgs/PoseStamped.
-        while not hasattr(msg.pose, 'position') and not hasattr(
-                msg.pose, 'orientation'):
-            msg = msg.pose
-        xyz.append(
-            [msg.pose.position.x, msg.pose.position.y, msg.pose.position.z])
-        quat.append([
-            msg.pose.orientation.x, msg.pose.orientation.y,
-            msg.pose.orientation.z, msg.pose.orientation.w
-        ])
-    quat = np.roll(quat, 1, axis=1)  # shift 1 column -> w in front column
+        xyz_t, quat_t = get_xyz_quat(msg)
+        xyz.append(xyz_t)
+        quat.append(quat_t)
     logger.debug("Loaded {} {} messages of topic: {}".format(
         len(stamps), msg_type, topic))
     generator = bag_handle.read_messages(topic)

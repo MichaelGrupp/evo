@@ -80,7 +80,7 @@ def main():
     pkg_parser.add_argument("--clear_log", help="clear package logfile",
                             action="store_true")
     cat_parser = sub_parsers.add_parser(
-        "cat_log", description="pipe stdin to evo logfile"
+        "cat_log", description="pipe stdin to global evo logfile"
         " or print logfile to stdout (if no stdin)", parents=[shared_parser])
     cat_parser.add_argument("-l", "--loglevel", help="loglevel of the message",
                             default="info",

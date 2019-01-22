@@ -28,7 +28,6 @@ from colorama import Fore
 
 from evo import EvoException
 
-
 logger = logging.getLogger(__name__)
 
 PACKAGE_BASE_PATH = os.path.abspath(__file__ + "/../../")
@@ -36,7 +35,7 @@ PACKAGE_VERSION = open(os.path.join(PACKAGE_BASE_PATH, "version")).read()
 USER_ASSETS_PATH = os.path.join(os.path.expanduser('~'), ".evo")
 USER_ASSETS_VERSION_PATH = os.path.join(USER_ASSETS_PATH, "assets_version")
 DEFAULT_PATH = os.path.join(USER_ASSETS_PATH, "settings.json")
-DEFAULT_LOGFILE_PATH = os.path.join(USER_ASSETS_PATH, "evo.log")
+GLOBAL_LOGFILE_PATH = os.path.join(USER_ASSETS_PATH, "evo.log")
 
 
 class SettingsException(EvoException):

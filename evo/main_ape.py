@@ -78,6 +78,8 @@ def parser():
                              help="path to serialize plot (experimental)")
     output_opts.add_argument("--save_results",
                              help=".zip file path to store results")
+    output_opts.add_argument("--logfile", help="Local logfile path.",
+                             default=None)
     usability_opts.add_argument("--no_warnings", action="store_true",
                                 help="no warnings requiring user confirmation")
     usability_opts.add_argument("-v", "--verbose", action="store_true",
@@ -188,7 +190,8 @@ def run(args):
     from evo.tools import file_interface, log
     from evo.tools.settings import SETTINGS
 
-    log.configure_logging(args.verbose, args.silent, args.debug)
+    log.configure_logging(args.verbose, args.silent, args.debug,
+                          local_logfile=args.logfile)
     if args.debug:
         from pprint import pformat
         parser_str = pformat({arg: getattr(args, arg) for arg in vars(args)})

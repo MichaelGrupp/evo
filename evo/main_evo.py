@@ -80,7 +80,7 @@ def main():
     pkg_parser.add_argument("--clear_log", help="clear package logfile",
                             action="store_true")
     cat_parser = sub_parsers.add_parser(
-        "cat_log", description="pipe stdin to evo logfile"
+        "cat_log", description="pipe stdin to global evo logfile"
         " or print logfile to stdout (if no stdin)", parents=[shared_parser])
     cat_parser.add_argument("-l", "--loglevel", help="loglevel of the message",
                             default="info",
@@ -118,30 +118,30 @@ def main():
         if args.location:
             print(settings.PACKAGE_BASE_PATH, end=line_end)
         if args.logfile or args.open_log:
-            if not os.path.exists(settings.DEFAULT_LOGFILE_PATH):
-                print("no logfile found - run: evo_config set logfile_enabled",
-                      end=line_end)
+            print(settings.GLOBAL_LOGFILE_PATH, end=line_end)
+            if not os.path.exists(settings.GLOBAL_LOGFILE_PATH):
+                print("no logfile found - run: "
+                      "evo_config set global_logfile_enabled", end=line_end)
                 sys.exit(1)
-            print(settings.DEFAULT_LOGFILE_PATH, end=line_end)
             if args.open_log:
                 import webbrowser
-                webbrowser.open(settings.DEFAULT_LOGFILE_PATH)
+                webbrowser.open(settings.GLOBAL_LOGFILE_PATH)
         if args.clear_log:
             from evo.tools import user
             if user.confirm("clear logfile? (y/n)"):
-                open(settings.DEFAULT_LOGFILE_PATH, mode='w')
+                open(settings.GLOBAL_LOGFILE_PATH, mode='w')
 
     elif args.subcommand == "cat_log":
         if os.name == "nt":
             print("cat_log feature not available on Windows")
             sys.exit(1)
         if not args.message and sys.stdin.isatty():
-            if not os.path.exists(settings.DEFAULT_LOGFILE_PATH):
-                print("no logfile found - run: evo_config set logfile_enabled",
-                      end=line_end)
+            if not os.path.exists(settings.GLOBAL_LOGFILE_PATH):
+                print("no logfile found - run: "
+                      "evo_config set global_logfile_enabled", end=line_end)
             else:
-                print(open(settings.DEFAULT_LOGFILE_PATH).read(), end="")
-        elif not settings.SETTINGS.logfile_enabled:
+                print(open(settings.GLOBAL_LOGFILE_PATH).read(), end="")
+        elif not settings.SETTINGS.global_logfile_enabled:
             print("logfile disabled", end=line_end)
             sys.exit(1)
         else:
@@ -159,7 +159,7 @@ def main():
                 msg = args.message
             getattr(logger, args.loglevel)(msg)
         if args.clear_log:
-            open(settings.DEFAULT_LOGFILE_PATH, mode='w')
+            open(settings.GLOBAL_LOGFILE_PATH, mode='w')
 
 
 if __name__ == '__main__':

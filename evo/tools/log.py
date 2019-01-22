@@ -26,7 +26,7 @@ import sys
 import colorama
 from colorama import Fore
 
-from evo.tools.settings import SETTINGS, DEFAULT_LOGFILE_PATH
+from evo.tools.settings import SETTINGS, GLOBAL_LOGFILE_PATH
 
 CONSOLE_ERROR_FMT = "{}[%(levelname)s]{} %(msg)s".format(
     Fore.LIGHTRED_EX, Fore.RESET)
@@ -63,7 +63,7 @@ class ConsoleFormatter(logging.Formatter):
 # configures the package's root logger (see __init__.py)
 def configure_logging(verbose=False, silent=False, debug=False,
                       console_fmt=None, file_fmt=DEFAULT_LONG_FMT,
-                      file_path=None):
+                      local_logfile=None):
 
     logger = logging.getLogger("evo")
     logger.setLevel(logging.DEBUG)
@@ -72,17 +72,17 @@ def configure_logging(verbose=False, silent=False, debug=False,
     if len(logger.handlers) > 0:
         logger.removeHandler(logger.handlers[0])
 
-    if not SETTINGS.logfile_enabled:
-        logfile = os.devnull
-    elif file_path is None:
-        logfile = DEFAULT_LOGFILE_PATH
-    else:
-        logfile = file_path
+    logfiles = []
+    if SETTINGS.global_logfile_enabled:
+        logfiles.append(GLOBAL_LOGFILE_PATH)
+    if local_logfile is not None:
+        logfiles.append(local_logfile)
 
-    file_handler = logging.FileHandler(logfile)
-    file_handler.setLevel(logging.DEBUG)
-    file_handler.setFormatter(logging.Formatter(file_fmt))
-    logger.addHandler(file_handler)
+    for logfile in logfiles:
+        file_handler = logging.FileHandler(logfile)
+        file_handler.setLevel(logging.DEBUG)
+        file_handler.setFormatter(logging.Formatter(file_fmt))
+        logger.addHandler(file_handler)
 
     if debug or verbose:
         console_level = logging.DEBUG
@@ -94,7 +94,7 @@ def configure_logging(verbose=False, silent=False, debug=False,
     if debug:
         console_fmt = DEFAULT_LONG_FMT
     elif console_fmt is None:
-        console_fmt = SETTINGS.logging_format
+        console_fmt = SETTINGS.console_logging_format
 
     console_handler = logging.StreamHandler(stream=sys.stdout)
     console_handler.setLevel(console_level)

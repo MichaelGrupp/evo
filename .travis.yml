@@ -1,27 +1,25 @@
 os:
   - linux
 
+dist: xenial
 sudo: required
 services: docker
 
 language: python
 
 python:
-  - "2.7"
-  - "3.4"
   - "3.5"
   - "3.6"
+  - "3.7"
 
 # Python for Mac is not yet officially supported by Travis.
-# We test only 2.7 and 3.6 on macOS for now.
+# We test only Python 3.7 on macOS for now with a custom setup script.
+# Python 2.7 is required for ROS, so this is tested in the ROS Dockerfile.
 matrix:
   include:
     - os: osx
       language: generic
-      env: PYTHON=2.7.10
-    - os: osx
-      language: generic
-      env: PYTHON=3.6.0
+      env: PYTHON=3.7.0
     - os: linux
       language: python
       env: 

@@ -5,6 +5,10 @@ trigger:
 
 pr:
   autoCancel: true
+  # PRs into ...
+  branches:
+    include:
+    - master
 
 jobs:
 

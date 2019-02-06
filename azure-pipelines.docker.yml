@@ -1,0 +1,24 @@
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/languages/docker
+
+trigger:
+- master
+
+pr:
+  autoCancel: true
+  # PRs into ...
+  branches:
+    include:
+    - master
+
+pool:
+  vmImage: 'ubuntu-16.04'
+
+strategy:
+  matrix:
+    ROS-melodic:
+      dockerfile: 'Dockerfile.rosmelodic'
+
+steps:
+  # Currently only for testing, so no tagging needed.
+  - script: docker build . --file $(dockerfile) || exit 1
+    displayName: 'docker build'

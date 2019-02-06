@@ -1,4 +1,5 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/languages/docker
 
 trigger:
 - master
@@ -11,6 +12,20 @@ pr:
     - master
 
 jobs:
+
+- job: 'Docker'
+  strategy:
+    matrix:
+      ROS-melodic:
+        dockerfile: 'Dockerfile.rosmelodic'
+        imageName: 'ubuntu-16.04'
+  pool:
+    vmImage: $(imageName)
+  steps:
+    # Currently only for testing, so no tagging needed.
+    - script: docker build . --file $(dockerfile) || exit 1
+      displayName: 'docker build'
+
 
 - job: 'Test'
   strategy:
@@ -56,6 +71,7 @@ jobs:
       testResultsFiles: '**/test-results.xml'
       testRunTitle: 'Python $(python.version)'
     condition: succeededOrFailed()
+
 
 - job: 'Publish'
   dependsOn: 'Test'

@@ -21,12 +21,15 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
 import os
+import six
 import sys
 
 import colorama
 from colorama import Fore
 
 from evo.tools.settings import SETTINGS, GLOBAL_LOGFILE_PATH
+
+colorama.init()
 
 CONSOLE_ERROR_FMT = "{}[%(levelname)s]{} %(msg)s".format(
     Fore.LIGHTRED_EX, Fore.RESET)
@@ -37,8 +40,7 @@ DEFAULT_LONG_FMT = "[%(levelname)s][%(asctime)s][%(module)s.%(funcName)s():%(lin
 
 class ConsoleFormatter(logging.Formatter):
     def __init__(self, fmt="%(msg)s"):
-        logging.Formatter.__init__(self, fmt)
-        colorama.init()
+        super(ConsoleFormatter, self).__init__(fmt)
         self.critical_fmt = CONSOLE_ERROR_FMT
         self.error_fmt = CONSOLE_ERROR_FMT
         self.warning_fmt = CONSOLE_WARN_FMT
@@ -56,6 +58,8 @@ class ConsoleFormatter(logging.Formatter):
             self._fmt = self.info_fmt
         elif record.levelno == logging.DEBUG:
             self._fmt = self.debug_fmt
+        if six.PY3:
+            self._style._fmt = self._fmt
         result = logging.Formatter.format(self, record)
         return result
 

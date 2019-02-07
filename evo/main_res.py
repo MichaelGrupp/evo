@@ -57,6 +57,9 @@ def parser():
     main_parser.add_argument("--use_filenames",
                              help="use the filenames to label the data",
                              action="store_true")
+    main_parser.add_argument("--ignore_title",
+                             help="don't try to find a common metric title",
+                             action="store_true")
     output_opts.add_argument("-p", "--plot", help="show plot window",
                              action="store_true")
     output_opts.add_argument("--plot_markers", help="plot with circle markers",
@@ -158,9 +161,9 @@ def run(args):
             error_df = pd.concat([error_df, new_error_df], axis=1)
 
     # check titles
-    first_title = df.loc["info", "title"][0]
+    first_title = df.loc["info", "title"][0] if not args.ignore_title else ""
     first_file = args.result_files[0]
-    if not args.no_warnings:
+    if not args.no_warnings and not args.ignore_title:
         checks = df.loc["info", "title"] != first_title
         for i, differs in enumerate(checks):
             if not differs:
@@ -174,6 +177,7 @@ def run(args):
                                              mismatching_title,
                                              mismatching_file))
                 if not user.confirm(
+                        "You can use --ignore_title to just aggregate data.\n"
                         "Go on anyway? - enter 'y' or any other key to exit"):
                     sys.exit()
 
@@ -183,8 +187,9 @@ def run(args):
 
     # show a statistics overview
     logger.debug(SEP)
-    logger.info("\n{}\n\n{}\n".format(
-        first_title, df.loc["stats"].T.to_string(line_width=80)))
+    if not args.ignore_title:
+        logger.info("\n" + first_title + "\n\n")
+    logger.info(df.loc["stats"].T.to_string(line_width=80) + "\n")
 
     if args.save_table:
         logger.debug(SEP)
@@ -233,7 +238,6 @@ def run(args):
                       ] if args.plot_markers else None
 
         # labels according to first dataset
-        title = first_title
         if "xlabel" in df.loc["info"].index and not df.loc[
                 "info", "xlabel"].isnull().values.any():
             index_label = df.loc["info", "xlabel"][0]
@@ -241,7 +245,7 @@ def run(args):
             index_label = "$t$ (s)" if common_index else "index"
         metric_label = df.loc["info", "label"][0]
 
-        plot_collection = plot.PlotCollection(title)
+        plot_collection = plot.PlotCollection(first_title)
         # raw value plot
         fig_raw = plt.figure(figsize=figsize)
         # handle NaNs from concat() above

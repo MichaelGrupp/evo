@@ -88,6 +88,8 @@ def launch(main_module, parser):
     from evo import EvoException
     try:
         main_module.run(args)
+    except KeyboardInterrupt:
+        sys.exit(1)
     except SystemExit as e:
         sys.exit(e.code)
     except EvoException as e:

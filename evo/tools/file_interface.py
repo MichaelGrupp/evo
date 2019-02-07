@@ -242,7 +242,7 @@ def read_bag_trajectory(bag_handle, topic):
     logger.debug("Loaded {} {} messages of topic: {}".format(
         len(stamps), msg_type, topic))
     generator = bag_handle.read_messages(topic)
-    _, first_msg, _ = generator.next()
+    _, first_msg, _ = next(generator)
     frame_id = first_msg.header.frame_id
     return PoseTrajectory3D(xyz, quat, stamps, meta={"frame_id": frame_id})
 

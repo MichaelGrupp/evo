@@ -90,5 +90,5 @@ def accumulated_distances(x):
     :param x: nxm array of points, m=dimension
     :return: the accumulated distances along the point sequence
     """
-    return np.concatenate((np.array([0]), 
-                          np.cumsum(np.linalg.norm(x[:-1] - x[1:], axis=1))))
+    return np.concatenate((np.array([0]),
+                           np.cumsum(np.linalg.norm(x[:-1] - x[1:], axis=1))))

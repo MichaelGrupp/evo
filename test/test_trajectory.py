@@ -82,7 +82,7 @@ class TestPosePath3D(unittest.TestCase):
         # direct connection from 0 to 2 in initial should be reduced path length
         len_initial_segment = np.linalg.norm(path.positions_xyz[2] -
                                              path.positions_xyz[0])
-        len_reduced = path_reduced.path_length()
+        len_reduced = path_reduced.path_length
         self.assertEqual(len_initial_segment, len_reduced)
 
     def test_transform(self):
@@ -91,16 +91,16 @@ class TestPosePath3D(unittest.TestCase):
         t = lie.random_se3()
         path_transformed.transform(t)
         # traj_transformed.transform(lie.se3_inverse(t))
-        self.assertAlmostEqual(path_transformed.path_length(),
-                               path.path_length())
+        self.assertAlmostEqual(path_transformed.path_length,
+                               path.path_length)
 
     def test_scale(self):
         path = helpers.fake_path(10)
         path_scaled = copy.deepcopy(path)
         s = 5.234
         path_scaled.scale(s)
-        len_initial = path.path_length()
-        len_scaled = path_scaled.path_length()
+        len_initial = path.path_length
+        len_scaled = path_scaled.path_length
         self.assertAlmostEqual(len_initial * s, len_scaled)
 
     def test_check(self):
@@ -120,7 +120,7 @@ class TestPosePath3D(unittest.TestCase):
         path = helpers.fake_path(10)
         self.assertEqual(path.distances[0], 0.0)
         self.assertEqual(path.distances.size, path.num_poses)
-        self.assertAlmostEqual(path.distances[-1], path.path_length())
+        self.assertAlmostEqual(path.distances[-1], path.path_length)
 
 
 class TestPoseTrajectory3D(unittest.TestCase):

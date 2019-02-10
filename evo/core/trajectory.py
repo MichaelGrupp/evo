@@ -64,7 +64,7 @@ class PosePath3D(object):
 
     def __str__(self):
         return "{} poses, {:.3f}m path length".format(self.num_poses,
-                                                      self.path_length())
+                                                      self.path_length)
 
     def __eq__(self, other):
         if type(other) != type(self):
@@ -136,19 +136,13 @@ class PosePath3D(object):
         else:
             return self.positions_xyz.shape[0]
 
-    def path_length(self, ids=None):
+    @property
+    def path_length(self):
         """
         calculates the path length (arc-length)
-        :param ids: optional start and end index as tuple (start, end)
         :return: path length in meters
         """
-        if ids is not None:
-            if len(ids) != 2 or not all(type(i) is int for i in ids):
-                raise TrajectoryException(
-                    "ids must be a tuple of positive integers")
-            return float(geometry.arc_len(self.positions_xyz[ids[0]:ids[1]]))
-        else:
-            return float(geometry.arc_len(self.positions_xyz))
+        return float(geometry.arc_len(self.positions_xyz))
 
     def transform(self, t, right_mul=False):
         """
@@ -218,7 +212,7 @@ class PosePath3D(object):
         """
         return {
             "nr. of poses": self.num_poses,
-            "path length (m)": self.path_length(),
+            "path length (m)": self.path_length,
             "pos_start (m)": self.positions_xyz[0],
             "pos_end (m)": self.positions_xyz[-1]
         }

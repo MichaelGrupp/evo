@@ -92,6 +92,10 @@ class PosePath3D(object):
         return self._positions_xyz
 
     @property
+    def distances(self):
+        return geometry.accumulated_distances(self.positions_xyz)
+
+    @property
     def orientations_quat_wxyz(self):
         if not hasattr(self, "_orientations_quat_wxyz"):
             assert hasattr(self, "_poses_se3")

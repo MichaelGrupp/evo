@@ -36,47 +36,6 @@ class FilterException(EvoException):
     pass
 
 
-def bounded_binary_search(generator, length, target, lower_bound, upper_bound):
-    """
-    efficient binary search for a <target> value within bounds
-    [<lower_bound>, <upper_bound>]
-    - converges to a locally optimal result within the bounds
-    - instead of indexing an iterable, lazy evaluate a functor for performance
-    :param generator: a generator or functor that yields a value of the search
-                      area given an index
-    :param length: full length of the search area
-    :param target: the value to search
-    :param lower_bound: the lower bound up to which results are accepted
-    :param upper_bound: the upper bound up to which results are accepted
-    :return: success: (True, the index of the target) - fail: (False, -1)
-    """
-    start, mid = 0, -1
-    end = length - 1
-    residual = 0.0
-    found = False
-    num_iter = 0
-    while start <= end and not found:
-        num_iter += 1
-        mid = (start + end) // 2
-        val = generator(mid)
-        if lower_bound <= val <= upper_bound:
-            residual = abs(val - target)
-            if abs(generator(mid - 1) - target) <= residual:
-                end = mid - 1
-                continue  # refinement possible in left direction
-            elif abs(generator(mid + 1) - target) < residual:
-                start = mid + 1
-                continue  # refinement possible in right direction
-            else:
-                found = True  # converged
-        if not found:
-            if target < val:
-                end = mid - 1
-            else:
-                start = mid + 1
-    return found, mid, residual, num_iter
-
-
 def filter_pairs_by_index(poses, delta, all_pairs=False):
     """
     filters pairs in a list of SE(3) poses by their index distance
@@ -146,38 +105,17 @@ def filter_pairs_by_path(poses, delta, tol=0.0, all_pairs=False):
     :param all_pairs: use all pairs instead of consecutive pairs
     :return: list of index tuples of the filtered pairs
     """
+    id_pairs = []
     if all_pairs:
-        upper_bound = delta + tol
-        lower_bound = delta - tol
-        id_pairs = []
-        ids = range(len(poses))
         positions = np.array([pose[:3, 3] for pose in poses])
-        res_avg = 0.0
-        n_iter_avg = 0.0
-        print_progress = logger.isEnabledFor(logging.DEBUG)
-        num_pairs = 0
-        for i in ids:
-            found, j, res, n = bounded_binary_search(
-                lambda x: geometry.arc_len(positions[i:x + 1]), len(positions),
-                delta, lower_bound, upper_bound)
-            n_iter_avg += n
-            if found:
-                num_pairs += 1
-                res_avg += res
-                id_pairs.append((i, j))
-            if print_progress:
-                print("\rSearching", delta, "m path sub-sequences - found",
-                      num_pairs, end="\r")
-                sys.stdout.flush()
-        if print_progress:
-            print("")
-        if num_pairs != 0:
-            logger.debug("avg. target residual: " +
-                         "{0:.6f}".format(res_avg / num_pairs) + "m" +
-                         " | avg. num. iterations: " +
-                         "{0:.6f}".format(n_iter_avg / num_pairs))
-        else:
-            logger.debug("Found no pairs for delta '" + str(delta) + "m'.")
+        distances = geometry.accumulated_distances(positions)
+        for i in range(distances.size - 1):
+            offset = i + 1
+            distances_from_here = distances[offset:] - distances[i]
+            candidate_index = np.argmin(np.abs(distances_from_here - delta))
+            if (np.abs(distances_from_here[candidate_index] - delta) > tol):
+                continue
+            id_pairs.append((i, candidate_index + offset))
     else:
         ids = []
         previous_pose = poses[0]

@@ -91,8 +91,7 @@ class TestPosePath3D(unittest.TestCase):
         t = lie.random_se3()
         path_transformed.transform(t)
         # traj_transformed.transform(lie.se3_inverse(t))
-        self.assertAlmostEqual(path_transformed.path_length,
-                               path.path_length)
+        self.assertAlmostEqual(path_transformed.path_length, path.path_length)
 
     def test_scale(self):
         path = helpers.fake_path(10)

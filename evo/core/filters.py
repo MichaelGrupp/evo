@@ -18,9 +18,6 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from __future__ import print_function
-
-import sys
 import logging
 
 import numpy as np
@@ -49,46 +46,6 @@ def filter_pairs_by_index(poses, delta, all_pairs=False):
         id_pairs = [(i, i + delta) for i in ids if i + delta < len(poses)]
     else:
         ids = np.arange(0, len(poses), delta)
-        id_pairs = [(i, j) for i, j in zip(ids, ids[1:])]
-    return id_pairs
-
-
-def filter_pairs_by_distance(poses, delta, tol=0.0, all_pairs=False):
-    """
-    filters pairs in a list of SE(3) poses by their direct distance in meters
-     - only the direct distance between the two pair points is considered
-    :param poses: list of SE(3) poses
-    :param delta: the distance in meters used for filtering
-    :param tol: absolute distance tolerance to accept or reject pairs
-                in all_pairs mode
-    :param all_pairs: use all pairs instead of consecutive pairs
-    :return: list of index tuples of the filtered pairs
-    """
-    if all_pairs:
-        upper_bound = delta + tol
-        lower_bound = delta - tol
-        id_pairs = []
-        ids = range(len(poses))
-        positions = [pose[:3, 3] for pose in poses]
-        for i in ids:
-            for j in ids[i + 1:]:
-                current_dist = abs(np.linalg.norm(positions[i] - positions[j]))
-                if lower_bound <= current_dist <= upper_bound:
-                    id_pairs.append((i, j))
-    else:
-        ids = []
-        i = 0
-        while i < len(poses):
-            current_pose = poses[i]
-            for j, next_pose in enumerate(poses[i:]):
-                j += i
-                current_dist = np.linalg.norm(current_pose[:3, 3] -
-                                              next_pose[:3, 3])
-                if current_dist >= delta:
-                    ids.append(i)
-                    i = j
-                    break
-            i += 1
         id_pairs = [(i, j) for i, j in zip(ids, ids[1:])]
     return id_pairs
 
@@ -177,49 +134,6 @@ def filter_pairs_by_angle(poses, delta, tol=0.0, degrees=False,
                 ids.append(i)
                 current_delta = 0.0
         id_pairs = [(i, j) for i, j in zip(ids, ids[1:])]
-    return id_pairs
-
-
-def filter_pairs_by_speed(poses, timestamps, speed, tol):
-    """
-    filters pairs in a list of SE(3) poses by the linear speed of the motion
-    in between them
-    :param poses: list of SE(3) poses
-    :param timestamps: list of timestamps corresponding to the poses
-    :param speed: in m/s
-    :param tol: tolerance to accept or reject velocities, in m/s
-    :return: list of index tuples of the filtered pairs
-    """
-    positions = [pose[:3, 3] for pose in poses]
-    speeds = [
-        trajectory.calc_speed(positions[i], positions[i + 1], timestamps[i],
-                              timestamps[i + 1])
-        for i in range(len(positions) - 1)
-    ]
-    id_pairs = [(i, i + 1) for i, v in enumerate(speeds)
-                if speed - tol <= v <= speed + tol]
-    return id_pairs
-
-
-def filter_pairs_by_angular_speed(poses, timestamps, speed, tol,
-                                  degrees=False):
-    """
-    filters pairs in a list of SE(3) poses by the angular speed of the motion
-    in between them
-    :param poses: list of SE(3) poses
-    :param timestamps: list of timestamps corresponding to the poses
-    :param speed: in rad/s
-    :param tol: tolerance to accept or reject velocities, in rad/s
-    :param degrees: set to True to use deg/s
-    :return: list of index tuples of the filtered pairs
-    """
-    speeds = [
-        trajectory.calc_angular_speed(poses[i], poses[i + 1], timestamps[i],
-                                      timestamps[i + 1], degrees)
-        for i in range(len(poses) - 1)
-    ]
-    id_pairs = [(i, i + 1) for i, v in enumerate(speeds)
-                if speed - tol <= v <= speed + tol]
     return id_pairs
 
 

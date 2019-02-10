@@ -29,7 +29,7 @@ import numpy as np
 
 import context
 import helpers
-from evo.core import trajectory, geometry
+from evo.core import trajectory
 from evo.core import lie_algebra as lie
 
 
@@ -109,7 +109,7 @@ class TestPosePath3D(unittest.TestCase):
     def test_check(self):
         self.assertTrue(helpers.fake_path(10).check()[0])
         path_wrong = helpers.fake_path(10)
-        path_wrong.orientations_quat_wxyz
+        _ = path_wrong.orientations_quat_wxyz
         path_wrong._orientations_quat_wxyz[1][1] = 666
         self.assertFalse(path_wrong.check()[0])
 
@@ -118,6 +118,10 @@ class TestPosePath3D(unittest.TestCase):
 
     def test_get_statistics(self):
         helpers.fake_path(10).get_statistics()
+
+    def test_distances(self):
+        path = helpers.fake_path(10)
+        self.assertAlmostEqual(path.distances[-1], path.path_length())
 
 
 class TestPoseTrajectory3D(unittest.TestCase):

@@ -118,6 +118,8 @@ class TestPosePath3D(unittest.TestCase):
 
     def test_distances(self):
         path = helpers.fake_path(10)
+        self.assertEqual(path.distances[0], 0.0)
+        self.assertEqual(path.distances.size, path.num_poses)
         self.assertAlmostEqual(path.distances[-1], path.path_length())
 
 

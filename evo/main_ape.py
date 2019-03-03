@@ -33,7 +33,7 @@ SEP = "-" * 80  # separator line
 def parser():
     import argparse
     basic_desc = "Absolute pose error (APE) metric app"
-    lic = "(c) michael.grupp@tum.de"
+    lic = "(c) evo authors"
 
     shared_parser = argparse.ArgumentParser(add_help=False)
     algo_opts = shared_parser.add_argument_group("algorithm options")

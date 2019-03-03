@@ -189,7 +189,7 @@ To save the configuration, specify -o / --output.
 def main():
     import argcomplete
     basic_desc = "crappy configuration tool"
-    lic = "(c) michael.grupp@tum.de"
+    lic = "(c) evo authors"
     shared_parser = argparse.ArgumentParser(add_help=False)
     shared_parser.add_argument("--no_color", help="don't color output",
                                action="store_true")

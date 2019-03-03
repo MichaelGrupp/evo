@@ -33,7 +33,7 @@ SEP = "-" * 80
 def parser():
     import argparse
     basic_desc = "trajectory analysis and manipulation tool"
-    lic = "(c) michael.grupp@tum.de"
+    lic = "(c) evo authors"
     shared_parser = argparse.ArgumentParser(add_help=False)
     algo_opts = shared_parser.add_argument_group("algorithm options")
     output_opts = shared_parser.add_argument_group("output options")

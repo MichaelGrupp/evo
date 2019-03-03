@@ -33,7 +33,7 @@ def main():
     import argparse
     import argcomplete
     basic_desc = "experimental tool for opening a serialized PlotCollection"
-    lic = "(c) michael.grupp@tum.de"
+    lic = "(c) evo authors"
     main_parser = argparse.ArgumentParser(
         description="%s %s" % (basic_desc, lic))
     main_parser.add_argument("in_file",

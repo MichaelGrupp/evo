@@ -44,7 +44,7 @@ Only the first one will be used as the title!"""
 def parser():
     import argparse
     basic_desc = "tool for processing one or multiple result files"
-    lic = "(c) michael.grupp@tum.de"
+    lic = "(c) evo authors"
     main_parser = argparse.ArgumentParser(
         description="%s %s" % (basic_desc, lic))
     output_opts = main_parser.add_argument_group("output options")

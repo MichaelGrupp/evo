@@ -27,8 +27,10 @@ import os
 from evo.tools import settings
 
 DESC = '''
+(c) evo authors - license: run 'evo pkg --license'
+More docs are available at: github.com/MichaelGrupp/evo/wiki
+
 Python package for the evaluation of odometry and SLAM
-(c) michael.grupp@tum.de - license: run 'evo pkg --license'
 
 Supported trajectory formats:
 * TUM trajectory files

@@ -35,7 +35,7 @@ from evo.tools.compat import which
 
 DESC = '''
 Launches an IPython shell with pre-loaded evo modules
-(c) michael.grupp@tum.de
+(c) evo authors
 
 Unknown command line arguments are forwarded to the ipython executable
 '''

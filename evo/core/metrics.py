@@ -105,7 +105,7 @@ class PE(Metric):
     """
 
     def __init__(self):
-        self.unit = unit.none
+        self.unit = Unit.none
         self.error = []
 
     def __str__(self):

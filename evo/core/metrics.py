@@ -103,6 +103,7 @@ class PE(Metric):
     """
     Abstract base class of pose error metrics.
     """
+
     def __init__(self):
         self.unit = unit.none
         self.error = []
@@ -164,7 +165,8 @@ class PE(Metric):
             "title": str(self),
             "ref_name": ref_name,
             "est_name": est_name,
-            "label": "{} {}".format(metric_name, "({})".format(self.unit.value))
+            "label": "{} {}".format(metric_name,
+                                    "({})".format(self.unit.value))
         })
         result.add_stats(self.get_all_statistics())
         if hasattr(self, "error"):

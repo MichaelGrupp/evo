@@ -81,7 +81,7 @@ def get_pose_relation(args):
 
 def get_delta_unit(args):
     from evo.core.metrics import Unit
-    delta_unit = None
+    delta_unit = Unit.none
     if args.delta_unit == "f":
         delta_unit = Unit.frames
     elif args.delta_unit == "d":

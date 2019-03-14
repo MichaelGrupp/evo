@@ -144,17 +144,29 @@ class PosePath3D(object):
         """
         return float(geometry.arc_len(self.positions_xyz))
 
-    def transform(self, t, right_mul=False):
+    def transform(self, t, right_mul=False, propagate=False):
         """
         apply a left or right multiplicative SE(3) transformation to the whole path
         :param t: a valid SE(3) matrix
         :param right_mul: whether to apply it right-multiplicative or not
+        :param propagate: whether to propagate drift with RHS transformations
         """
         if not lie.is_se3(t):
             raise TrajectoryException(
                 "transformation is not a valid SE(3) matrix")
-        if right_mul:
+        if right_mul and not propagate:
+            # Transform each pose individually.
             self._poses_se3 = [np.dot(p, t) for p in self.poses_se3]
+        elif right_mul and propagate:
+            # Transform each pose and propagate resulting drift to the next.
+            ids = np.arange(0, self.num_poses, 1)
+            rel_poses = [
+                lie.relative_se3(self.poses_se3[i], self.poses_se3[j]).dot(t)
+                for i, j in zip(ids, ids[1:])
+            ]
+            self._poses_se3 = [self.poses_se3[0]]
+            for i, j in zip(ids[:-1], ids):
+                self._poses_se3.append(self._poses_se3[j].dot(rel_poses[i]))
         else:
             self._poses_se3 = [np.dot(t, p) for p in self.poses_se3]
         self._positions_xyz, self._orientations_quat_wxyz \

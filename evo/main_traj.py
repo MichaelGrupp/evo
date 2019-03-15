@@ -61,6 +61,9 @@ def parser():
     algo_opts.add_argument(
         "--transform_right", help="path to a .json file with a transformation"
         " to apply to the trajectories (right_multiplicative)")
+    algo_opts.add_argument(
+        "--propagate_transform", help="with --transform_right: transform each "
+        "pose and propagate resulting drift to the next.", action="store_true")
     algo_opts.add_argument("--invert_transform",
                            help="invert the transformation of the .json file",
                            action="store_true")
@@ -295,7 +298,8 @@ def run(args):
         logger.debug("Applying a {}-multiplicative transformation:\n{}".format(
             tf_type, transform))
         for traj in trajectories.values():
-            traj.transform(transform, right_mul=args.transform_right)
+            traj.transform(transform, right_mul=args.transform_right,
+                           propagate=args.propagate_transform)
 
     if args.t_offset:
         logger.debug(SEP)

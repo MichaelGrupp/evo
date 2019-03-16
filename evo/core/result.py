@@ -109,7 +109,7 @@ def merge_results(results):
 
     merged_result = copy.deepcopy(results[0])
     logger.warning("Using info dict of first result.")
-    for i, result in enumerate(results[1:]):
+    for result in results[1:]:
         merged_result.stats = {
             key: ((merged_result.stats[key] + result.stats[key]) / 2)
             for key in merged_result.stats

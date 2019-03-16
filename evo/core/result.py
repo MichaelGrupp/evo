@@ -19,7 +19,18 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import copy
+import logging
+
 import numpy as np
+
+from evo import EvoException
+
+logger = logging.getLogger(__name__)
+
+
+class ResultException(EvoException):
+    pass
 
 
 class Result(object):
@@ -73,3 +84,42 @@ class Result(object):
 
     def add_trajectory(self, name, traj):
         self.trajectories[name] = traj
+
+
+def merge_results(results):
+    if not results or not all(isinstance(r, Result) for r in results):
+        raise ValueError("no results to merge")
+    if len(results) == 1:
+        return results[0]
+
+    # Check if all results share keys for "stats" and "np_arrays" dicts.
+    dict_lists = [[r.np_arrays for r in results], [r.stats for r in results]]
+    for dicts in dict_lists:
+        if not all(a.keys() == b.keys() for a, b in zip(dicts, dicts[1:])):
+            raise ResultException("can't merge results with non-matching keys")
+
+    # Determine merge strategy:
+    strategy = "average"
+    length_lists = [[a.size for a in r.np_arrays.values()] for r in results]
+    if not all(a == b for a, b in zip(length_lists, length_lists[1:])):
+        logger.warning("Appending raw value arrays due to different lengths.")
+        strategy = "append"
+    else:
+        logger.info("Averaging raw values of input results in merged result.")
+
+    merged_result = copy.deepcopy(results[0])
+    logger.warning("Using info dict of first result.")
+    for result in results[1:]:
+        merged_result.stats = {
+            key: ((merged_result.stats[key] + result.stats[key]) / 2)
+            for key in merged_result.stats
+        }
+        for key, array in merged_result.np_arrays.items():
+            if strategy == "average":
+                merged_result.np_arrays[key] = np.mean(
+                    (array, result.np_arrays[key]), axis=0)
+            elif strategy == "append":
+                merged_result.np_arrays[key] = np.append(
+                    array, result.np_arrays[key])
+
+    return merged_result

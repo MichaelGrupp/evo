@@ -54,12 +54,6 @@ def load_trajectories(args):
     else:
         raise KeyError("unknown sub-command: {}".format(args.subcommand))
 
-    if args.subcommand != "kitti":
-        logger.debug("Synchronizing trajectories...")
-        traj_ref, traj_est = sync.associate_trajectories(
-            traj_ref, traj_est, args.t_max_diff, args.t_offset,
-            first_name=ref_name, snd_name=est_name)
-
     return traj_ref, traj_est, ref_name, est_name
 
 

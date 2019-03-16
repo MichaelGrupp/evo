@@ -114,19 +114,12 @@ def merge_results(results):
             key: ((merged_result.stats[key] + result.stats[key]) / 2)
             for key in merged_result.stats
         }
-        if strategy == "average":
-            merged_result.np_arrays = {
-                key: np.mean(
-                    np.array(
-                        [merged_result.np_arrays[key], result.np_arrays[key]]),
-                    axis=0)
-                for key in result.np_arrays
-            }
-        elif strategy == "append":
-            merged_result.np_arrays = {
-                key: np.append(merged_result.np_arrays[key],
-                               result.np_arrays[key])
-                for key in result.np_arrays
-            }
+        for key, array in merged_result.np_arrays.items():
+            if strategy == "average":
+                merged_result.np_arrays[key] = np.mean(
+                    (array, result.np_arrays[key]), axis=0)
+            elif strategy == "append":
+                merged_result.np_arrays[key] = np.append(
+                    array, result.np_arrays[key])
 
     return merged_result

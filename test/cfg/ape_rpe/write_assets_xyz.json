@@ -17,5 +17,6 @@
     "silent": false, 
     "t_max_diff": 0.01, 
     "t_offset": 0.0, 
-    "verbose": false
+    "verbose": false,
+    "plot_full_ref": true
 }

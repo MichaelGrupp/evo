@@ -72,6 +72,11 @@ def parser():
         help="percentile of the error distribution to be used "
         "as the upper bound of the color map plot "
         "(in %%, overrides --plot_colormap_max)")
+    output_opts.add_argument(
+        "--plot_full_ref",
+        action="store_true",
+        help="plot the full, unsynchronized reference trajectory",
+    )
     output_opts.add_argument("--save_plot", default=None,
                              help="path to save plot")
     output_opts.add_argument("--serialize_plot", default=None,
@@ -187,6 +192,7 @@ def ape(traj_ref, traj_est, pose_relation, align=False, correct_scale=False,
 
 def run(args):
     import evo.common_ape_rpe as common
+    from evo.core import sync
     from evo.tools import file_interface, log
     from evo.tools.settings import SETTINGS
 
@@ -199,6 +205,18 @@ def run(args):
     logger.debug(SEP)
 
     traj_ref, traj_est, ref_name, est_name = common.load_trajectories(args)
+
+    traj_ref_full = None
+    if args.plot_full_ref:
+        import copy
+        traj_ref_full = copy.deepcopy(traj_ref)
+
+    if args.subcommand != "kitti":
+        logger.debug("Synchronizing trajectories...")
+        traj_ref, traj_est = sync.associate_trajectories(
+            traj_ref, traj_est, args.t_max_diff, args.t_offset,
+            first_name=ref_name, snd_name=est_name)
+
     pose_relation = common.get_pose_relation(args)
 
     result = ape(
@@ -212,7 +230,8 @@ def run(args):
     )
 
     if args.plot or args.save_plot or args.serialize_plot:
-        common.plot(args, result, result.trajectories[ref_name],
+        common.plot(args, result,
+                    traj_ref_full if args.plot_full_ref else traj_ref,
                     result.trajectories[est_name])
 
     if args.save_results:

@@ -51,6 +51,9 @@ def parser():
     usability_opts = main_parser.add_argument_group("usability options")
     main_parser.add_argument("result_files",
                              help="one or multiple result files", nargs='+')
+    main_parser.add_argument("--merge",
+                             help="merge the results into a single one",
+                             action="store_true")
     main_parser.add_argument("--use_rel_time",
                              help="use relative timestamps if available",
                              action="store_true")
@@ -90,12 +93,31 @@ def parser():
     return main_parser
 
 
+def load_results_as_dataframe(result_files, use_filenames=False, merge=False):
+    import pandas as pd
+    from evo.tools import pandas_bridge
+    from evo.tools import file_interface
+
+    if merge:
+        from evo.core.result import merge_results
+        results = [file_interface.load_res_file(f) for f in result_files]
+        return pandas_bridge.result_to_df(merge_results(results))
+
+    df = pd.DataFrame()
+    for result_file in result_files:
+        result = file_interface.load_res_file(result_file)
+        name = result_file if use_filenames else None
+        df = pd.concat([df, pandas_bridge.result_to_df(result, name)],
+                       axis="columns")
+    return df
+
+
 def run(args):
     import sys
 
     import pandas as pd
 
-    from evo.tools import file_interface, log, user, settings, pandas_bridge
+    from evo.tools import log, user, settings
     from evo.tools.settings import SETTINGS
 
     pd.options.display.width = 80
@@ -109,12 +131,8 @@ def run(args):
         logger.debug("main_parser config:\n{}\n".format(
             pprint.pformat(arg_dict)))
 
-    df = pd.DataFrame()
-    for result_file in args.result_files:
-        result = file_interface.load_res_file(result_file)
-        name = result_file if args.use_filenames else None
-        df = pd.concat([df, pandas_bridge.result_to_df(result, name)],
-                       axis="columns")
+    df = load_results_as_dataframe(args.result_files, args.use_filenames,
+                                   args.merge)
 
     keys = df.columns.values.tolist()
     if SETTINGS.plot_usetex:

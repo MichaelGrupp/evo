@@ -155,7 +155,7 @@ setup(
         "matplotlib",
         "scipy",
         "pandas",
-        "seaborn",
+        "seaborn>=0.9",
         "natsort",
         "argcomplete",
         "colorama>=0.3",

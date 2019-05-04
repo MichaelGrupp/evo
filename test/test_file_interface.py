@@ -167,5 +167,19 @@ class TestBagFile(MockFileTestCase):
         self.assertEquals(traj_in.meta["frame_id"], "map")
 
 
+class TestHasUtf8Bom(unittest.TestCase):
+    def test_no_bom(self):
+        tmp_file = tempfile.NamedTemporaryFile(delete=False)
+        with open(tmp_file.name, 'w') as f:
+            f.write("foo")
+        self.assertFalse(file_interface.has_utf8_bom(tmp_file.name))
+
+    def test_with_bom(self):
+        tmp_file = tempfile.NamedTemporaryFile(delete=False)
+        with open(tmp_file.name, 'wb') as f:
+            f.write("\xef\xbb\xbf")
+        self.assertTrue(file_interface.has_utf8_bom(tmp_file.name))
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

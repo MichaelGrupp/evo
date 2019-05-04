@@ -59,6 +59,7 @@ def has_utf8_bom(file_path):
     with open(file_path, 'rb') as f:
         return not int(binascii.hexlify(f.read(3)), 16) ^ 0xEFBBBF
 
+
 def csv_read_matrix(file_path, delim=',', comment_str="#"):
     """
     directly parse a csv-like file into a matrix

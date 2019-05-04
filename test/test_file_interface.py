@@ -177,7 +177,7 @@ class TestHasUtf8Bom(unittest.TestCase):
     def test_with_bom(self):
         tmp_file = tempfile.NamedTemporaryFile(delete=False)
         with open(tmp_file.name, 'wb') as f:
-            f.write("\xef\xbb\xbf")
+            f.write(b"\xef\xbb\xbf")
         self.assertTrue(file_interface.has_utf8_bom(tmp_file.name))
 
 

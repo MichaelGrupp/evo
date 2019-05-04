@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import binascii
 import csv
 import io
 import json
@@ -47,6 +48,18 @@ class FileInterfaceException(EvoException):
     pass
 
 
+def has_utf8_bom(file_path):
+    """
+    Checks if the given file starts with a UTF8 BOM
+    wikipedia.org/wiki/Byte_order_mark
+    """
+    size_bytes = os.path.getsize(file_path)
+    if size_bytes < 3:
+        return False
+    with open(file_path, 'rb') as f:
+        return not int(binascii.hexlify(f.read(3)), 16) ^ 0xEFBBBF
+
+
 def csv_read_matrix(file_path, delim=',', comment_str="#"):
     """
     directly parse a csv-like file into a matrix
@@ -64,7 +77,10 @@ def csv_read_matrix(file_path, delim=',', comment_str="#"):
         if not os.path.isfile(file_path):
             raise FileInterfaceException("csv file " + str(file_path) +
                                          " does not exist")
+        skip_3_bytes = has_utf8_bom(file_path)
         with open(file_path) as f:
+            if skip_3_bytes:
+                f.seek(3)
             generator = (line for line in f
                          if not line.startswith(comment_str))
             reader = csv.reader(generator, delimiter=delim)

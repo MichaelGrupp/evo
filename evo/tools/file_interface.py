@@ -55,7 +55,7 @@ def has_utf8_bom(file_path):
     size_bytes = os.path.getsize(file_path)
     if size_bytes < 3:
         return False
-    with open(file_path, 'rb') as f:
+    with open(file_path, 'r') as f:
         return not int(f.read(3).encode("hex"), 16) ^ 0xEFBBBF
 
 

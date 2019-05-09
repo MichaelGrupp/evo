@@ -45,9 +45,11 @@ from evo.tools import user
 from evo.core import trajectory
 
 # configure matplotlib and seaborn according to package settings
-sns.set(style=SETTINGS.plot_seaborn_style,
-        palette=SETTINGS.plot_seaborn_palette, font=SETTINGS.plot_fontfamily,
-        font_scale=SETTINGS.plot_fontscale)
+# TODO: 'color_codes=False' to work around this bug:
+# https://github.com/mwaskom/seaborn/issues/1546
+sns.set(style=SETTINGS.plot_seaborn_style, font=SETTINGS.plot_fontfamily,
+        font_scale=SETTINGS.plot_fontscale, color_codes=False,
+        palette=SETTINGS.plot_seaborn_palette)
 rc = {
     "lines.linewidth": SETTINGS.plot_linewidth,
     "text.usetex": SETTINGS.plot_usetex,

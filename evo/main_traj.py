@@ -222,7 +222,8 @@ def load_trajectories(args):
 
 
 # TODO refactor
-def print_traj_info(name, traj, verbose=False, full_check=False, compact_name=True):
+def print_traj_info(name, traj, verbose=False, full_check=False,
+                    compact_name=True):
     import os
     from evo.core import trajectory
 
@@ -347,9 +348,11 @@ def run(args):
 
     print_compact_name = not args.subcommand == "bag"
     for name, traj in trajectories.items():
-        print_traj_info(name, traj, args.verbose, args.full_check, print_compact_name)
+        print_traj_info(name, traj, args.verbose, args.full_check,
+                        print_compact_name)
     if args.ref:
-        print_traj_info(args.ref, ref_traj, args.verbose, args.full_check, print_compact_name)
+        print_traj_info(args.ref, ref_traj, args.verbose, args.full_check,
+                        print_compact_name)
 
     if args.plot or args.save_plot or args.serialize_plot:
         from evo.tools.plot import PlotMode

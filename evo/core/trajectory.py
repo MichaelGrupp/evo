@@ -422,6 +422,22 @@ def align_trajectory(traj, traj_ref, correct_scale=False,
         return traj_aligned
 
 
+def align_trajectory_origin(traj, traj_ref):
+    """
+    align a trajectory's origin to the origin of a reference trajectory
+    :param traj: the trajectory to align
+    :param traj_ref: reference trajectory
+    :return: the aligned trajectory
+    """
+    if traj.num_poses == 0 or traj_ref.num_poses == 0:
+        raise TrajectoryException("can't align an empty trajectory...")
+    traj_aligned = copy.deepcopy(traj)
+    to_ref_origin = lie.relative_se3(traj.poses_se3[0], traj_ref.poses_se3[0])
+    logger.debug("Origin alignment transformation:\n{}".format(to_ref_origin))
+    traj_aligned.transform(to_ref_origin)
+    return traj_aligned
+
+
 def merge(trajectories):
     """
     Merges multiple trajectories into a single, timestamp-sorted one.

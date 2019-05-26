@@ -49,6 +49,10 @@ def parser():
                            action="store_true")
     algo_opts.add_argument("-s", "--correct_scale", action="store_true",
                            help="correct scale with Umeyama's method")
+    algo_opts.add_argument(
+        "--align_origin",
+        help="align the trajectory origin to the origin of the reference "
+        "trajectory", action="store_true")
     algo_opts.add_argument("-d", "--delta", type=float, default=1,
                            help="delta between relative poses")
     algo_opts.add_argument("-t", "--delta_tol", type=float, default=0.1,
@@ -159,7 +163,8 @@ def parser():
 
 def rpe(traj_ref, traj_est, pose_relation, delta, delta_unit,
         rel_delta_tol=0.1, all_pairs=False, align=False, correct_scale=False,
-        ref_name="reference", est_name="estimate", support_loop=False):
+        align_origin=False, ref_name="reference", est_name="estimate",
+        support_loop=False):
 
     from evo.core import metrics
     from evo.core import trajectory
@@ -170,6 +175,9 @@ def rpe(traj_ref, traj_est, pose_relation, delta, delta_unit,
         logger.debug(SEP)
         traj_est = trajectory.align_trajectory(traj_est, traj_ref,
                                                correct_scale, only_scale)
+    elif align_origin:
+        logger.debug(SEP)
+        traj_est = trajectory.align_trajectory_origin(traj_est, traj_ref)
 
     # Calculate RPE.
     logger.debug(SEP)
@@ -185,6 +193,8 @@ def rpe(traj_ref, traj_est, pose_relation, delta, delta_unit,
         title += "\n(with Sim(3) Umeyama alignment)"
     elif only_scale:
         title += "\n(scale corrected)"
+    elif align_origin:
+        title += "\n(with origin alignment)"
     else:
         title += "\n(not aligned)"
 
@@ -257,6 +267,7 @@ def run(args):
         all_pairs=args.all_pairs,
         align=args.align,
         correct_scale=args.correct_scale,
+        align_origin=args.align_origin,
         ref_name=ref_name,
         est_name=est_name,
     )

@@ -52,6 +52,10 @@ def parser():
         help="the number of poses to use for Umeyama alignment, "
         "counted from the start (default: all)", default=-1, type=int)
     algo_opts.add_argument(
+        "--align_origin",
+        help="align the trajectory origin to the origin of the reference "
+        "trajectory", action="store_true")
+    algo_opts.add_argument(
         "--sync",
         help="associate trajectories via matching timestamps - requires --ref",
         action="store_true")
@@ -311,7 +315,7 @@ def run(args):
                 name, args.t_offset))
             traj.timestamps += args.t_offset
 
-    if args.sync or args.align or args.correct_scale:
+    if args.sync or args.align or args.correct_scale or args.align_origin:
         from evo.core import sync
         if not args.ref:
             logger.debug(SEP)
@@ -332,6 +336,11 @@ def run(args):
                     correct_scale=args.correct_scale,
                     correct_only_scale=args.correct_scale and not args.align,
                     n=args.n_to_align)
+            elif args.align_origin:
+                logger.debug(SEP)
+                logger.debug("Aligning {}'s origin to reference.".format(name))
+                trajectories[name] = trajectory.align_trajectory_origin(
+                    trajectories[name], ref_traj_tmp)
 
     for name, traj in trajectories.items():
         print_traj_info(name, traj, args.verbose, args.full_check)

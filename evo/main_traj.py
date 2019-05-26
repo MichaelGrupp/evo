@@ -222,12 +222,16 @@ def load_trajectories(args):
 
 
 # TODO refactor
-def print_traj_info(name, traj, verbose=False, full_check=False):
+def print_traj_info(name, traj, verbose=False, full_check=False,
+                    compact_name=True):
     import os
     from evo.core import trajectory
 
     logger.info(SEP)
-    logger.info("name:\t" + os.path.splitext(os.path.basename(name))[0])
+    if compact_name:
+        # /some/super/long/path/that/nobody/cares/about/traj.txt  ->  traj
+        name = os.path.splitext(os.path.basename(name))[0]
+    logger.info("name:\t" + name)
 
     if verbose or full_check:
         infos = traj.get_infos()
@@ -342,10 +346,13 @@ def run(args):
                 trajectories[name] = trajectory.align_trajectory_origin(
                     trajectories[name], ref_traj_tmp)
 
+    print_compact_name = not args.subcommand == "bag"
     for name, traj in trajectories.items():
-        print_traj_info(name, traj, args.verbose, args.full_check)
+        print_traj_info(name, traj, args.verbose, args.full_check,
+                        print_compact_name)
     if args.ref:
-        print_traj_info(args.ref, ref_traj, args.verbose, args.full_check)
+        print_traj_info(args.ref, ref_traj, args.verbose, args.full_check,
+                        print_compact_name)
 
     if args.plot or args.save_plot or args.serialize_plot:
         from evo.tools.plot import PlotMode
@@ -392,7 +399,10 @@ def run(args):
                 color = next(ax_traj._get_lines.prop_cycler)['color']
             else:
                 color = next(cmap_colors)
-            short_traj_name = os.path.splitext(os.path.basename(name))[0]
+            if print_compact_name:
+                short_traj_name = os.path.splitext(os.path.basename(name))[0]
+            else:
+                short_traj_name = name
             if SETTINGS.plot_usetex:
                 short_traj_name = short_traj_name.replace("_", "\\_")
             plot.traj(ax_traj, plot_mode, traj, '-', color, short_traj_name,

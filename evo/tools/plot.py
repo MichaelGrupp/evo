@@ -262,7 +262,7 @@ def prepare_axis(fig, plot_mode=PlotMode.xy, subplot_arg="111"):
     :return: the matplotlib axis
     """
     if plot_mode == PlotMode.xyz:
-        ax = fig.add_subplot(subplot_arg, projection="3d", aspect="equal")
+        ax = fig.add_subplot(subplot_arg, projection="3d")
     else:
         ax = fig.add_subplot(subplot_arg, aspect="equal")
     plt.axis("equal")

@@ -212,3 +212,13 @@ Patches are welcome, preferably as pull requests.
 [GPL-3.0 or later](https://www.gnu.org/licenses/gpl-3.0.html)
 
 If you use this package for your research, a footnote with the link to this repository is appreciated: `github.com/MichaelGrupp/evo`.
+
+...or, for citation with BibTeX:
+```
+@misc{grupp2017evo,
+  title={evo: Python package for the evaluation of odometry and SLAM.},
+  author={Grupp, Michael},
+  howpublished={\url{https://github.com/MichaelGrupp/evo}}",
+  year={2017}
+}
+```

@@ -201,7 +201,8 @@ def load_trajectories(args):
         try:
             if args.all_topics:
                 topics = file_interface.get_supported_topics(bag)
-                topics.remove(args.ref)
+                if args.ref in topics:
+                    topics.remove(args.ref)
                 if len(topics) == 0:
                     die("No topics of supported types: {}".format(" ".join(
                         file_interface.SUPPORTED_ROS_MSGS)))

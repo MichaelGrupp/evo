@@ -87,7 +87,7 @@ def parser():
     output_opts.add_argument("-p", "--plot", help="show plot window",
                              action="store_true")
     output_opts.add_argument(
-        "--plot_mode", help="the axes for  plot projection", default=None,
+        "--plot_mode", help="the axes for  plot projection", default="xyz",
         choices=["xy", "xz", "yx", "yz", "zx", "zy", "xyz"])
     output_opts.add_argument("--save_plot", help="path to save plot",
                              default=None)
@@ -200,18 +200,17 @@ def load_trajectories(args):
         bag = rosbag.Bag(args.bag)
         try:
             if args.all_topics:
-                topic_info = bag.get_type_and_topic_info()
-                topics = sorted([
-                    t for t in topic_info[1].keys()
-                    if topic_info[1][t][0] in file_interface.SUPPORTED_ROS_MSGS
-                    and t != args.ref
-                ])
+                topics = file_interface.get_supported_topics(bag)
+                if args.ref in topics:
+                    topics.remove(args.ref)
                 if len(topics) == 0:
                     die("No topics of supported types: {}".format(" ".join(
                         file_interface.SUPPORTED_ROS_MSGS)))
             else:
                 topics = args.topics
             for topic in topics:
+                if topic == args.ref:
+                    continue
                 trajectories[topic] = file_interface.read_bag_trajectory(
                     bag, topic)
             if args.ref:
@@ -355,9 +354,6 @@ def run(args):
                         print_compact_name)
 
     if args.plot or args.save_plot or args.serialize_plot:
-        from evo.tools.plot import PlotMode
-        plot_mode = PlotMode.xyz if not args.plot_mode else PlotMode[args.
-                                                                     plot_mode]
         import numpy as np
         from evo.tools import plot
         import matplotlib.pyplot as plt
@@ -369,6 +365,8 @@ def run(args):
         fig_rpy, axarr_rpy = plt.subplots(3, sharex="col",
                                           figsize=tuple(SETTINGS.plot_figsize))
         fig_traj = plt.figure(figsize=tuple(SETTINGS.plot_figsize))
+
+        plot_mode = plot.PlotMode[args.plot_mode]
         ax_traj = plot.prepare_axis(fig_traj, plot_mode)
 
         if args.ref:

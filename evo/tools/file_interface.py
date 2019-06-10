@@ -227,6 +227,18 @@ def _get_xyz_quat_from_pose_or_odometry_msg(msg):
     return xyz, quat
 
 
+def get_supported_topics(bag_handle):
+    """
+    :param bag_handle: opened bag handle, from rosbag.Bag(...)
+    :return: list of ROS topics that are supported by this module
+    """
+    topic_info = bag_handle.get_type_and_topic_info()
+    return sorted([
+        t for t in topic_info[1].keys()
+        if topic_info[1][t][0] in SUPPORTED_ROS_MSGS
+    ])
+
+
 def read_bag_trajectory(bag_handle, topic):
     """
     :param bag_handle: opened bag handle, from rosbag.Bag(...)

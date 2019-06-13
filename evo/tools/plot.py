@@ -265,6 +265,7 @@ def prepare_axis(fig, plot_mode=PlotMode.xy, subplot_arg="111"):
         ax = fig.add_subplot(subplot_arg, projection="3d")
     else:
         ax = fig.add_subplot(subplot_arg, aspect="equal")
+    ax.axis("equal")
     if plot_mode in {PlotMode.xy, PlotMode.xz, PlotMode.xyz}:
         xlabel = "$x$ (m)"
     elif plot_mode in {PlotMode.yz, PlotMode.yx}:

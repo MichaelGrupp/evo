@@ -218,7 +218,7 @@ If you use this package for your research, a footnote with the link to this repo
 @misc{grupp2017evo,
   title={evo: Python package for the evaluation of odometry and SLAM.},
   author={Grupp, Michael},
-  howpublished={\url{https://github.com/MichaelGrupp/evo}}",
+  howpublished={\url{https://github.com/MichaelGrupp/evo}},
   year={2017}
 }
 ```

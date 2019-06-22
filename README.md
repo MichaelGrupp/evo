@@ -60,7 +60,7 @@ This will download the package and its dependencies from PyPi and install or upg
 ### From Source
 Run this in the repository's base folder:
 ```bash
-pip install . --upgrade --no-binary evo
+pip install --editable . --upgrade --no-binary evo
 ```
 
 ### Dependencies

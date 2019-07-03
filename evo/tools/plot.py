@@ -449,7 +449,7 @@ def traj_rpy(axarr, traj, style='-', color='black', label="", alpha=1.0,
     if len(axarr) != 3:
         raise PlotException("expected an axis array with 3 subplots - got " +
                             str(len(axarr)))
-    angles = traj.get_orientations_euler(SETTINGS.euler_axes_interpretation)
+    angles = traj.get_orientations_euler(SETTINGS.euler_angle_sequence)
     if isinstance(traj, trajectory.PoseTrajectory3D):
         x = traj.timestamps - (traj.timestamps[0]
                                if start_timestamp is None else start_timestamp)

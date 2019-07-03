@@ -41,10 +41,11 @@ DEFAULT_SETTINGS_DICT_DOC = {
         "%(message)s",
         "Format string for the logging module (affects only console output)."
     ),
-    "euler_axes_interpretation": (
+    "euler_angle_sequence": (
         "sxyz",
-        ("Euler angle axes interpretation. Only used in evo_traj's RPY plot.\n"
-         "E.g. 'sxyz' or 'ryxy', see transformations.py for more information.")
+        ("Only used in evo_traj's RPY plot: Euler rotation axis sequence.\n"
+         "E.g. 'sxyz' or 'ryxy', where s=static or r=rotating frame.\n"
+         "See evo/core/transformations.py for more information.")
     ),
     "plot_backend": (
         get_default_plot_backend(),

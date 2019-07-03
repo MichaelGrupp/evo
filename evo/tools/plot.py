@@ -449,17 +449,18 @@ def traj_rpy(axarr, traj, style='-', color='black', label="", alpha=1.0,
     if len(axarr) != 3:
         raise PlotException("expected an axis array with 3 subplots - got " +
                             str(len(axarr)))
+    angles = traj.get_orientations_euler(SETTINGS.euler_axes_interpretation)
     if isinstance(traj, trajectory.PoseTrajectory3D):
         x = traj.timestamps - (traj.timestamps[0]
                                if start_timestamp is None else start_timestamp)
         xlabel = "$t$ (s)"
     else:
-        x = range(0, len(traj.orientations_euler))
+        x = range(0, len(angles))
         xlabel = "index"
     ylabels = ["$roll$ (deg)", "$pitch$ (deg)", "$yaw$ (deg)"]
     for i in range(0, 3):
-        axarr[i].plot(x, np.rad2deg(traj.orientations_euler[:, i]), style,
-                      color=color, label=label, alpha=alpha)
+        axarr[i].plot(x, np.rad2deg(angles[:, i]), style, color=color,
+                      label=label, alpha=alpha)
         axarr[i].set_ylabel(ylabels[i])
     axarr[2].set_xlabel(xlabel)
     if label:

@@ -105,19 +105,15 @@ class PosePath3D(object):
                      for p in self._poses_se3])
         return self._orientations_quat_wxyz
 
-    @property
-    def orientations_euler(self):
-        if not hasattr(self, "_orientations_euler"):
-            if hasattr(self, "_poses_se3"):
-                self._orientations_euler \
-                    = np.array(
-                        [tr.euler_from_matrix(p, axes="sxyz")
-                         for p in self._poses_se3])
-            elif hasattr(self, "_orientations_quat_wxyz"):
-                self._orientations_euler \
-                    = np.array([tr.euler_from_quaternion(q, axes="sxyz")
-                                for q in self._orientations_quat_wxyz])
-        return self._orientations_euler
+    def get_orientations_euler(self, axes="sxyz"):
+        if hasattr(self, "_poses_se3"):
+            return np.array(
+                [tr.euler_from_matrix(p, axes=axes) for p in self._poses_se3])
+        elif hasattr(self, "_orientations_quat_wxyz"):
+            return np.array([
+                tr.euler_from_quaternion(q, axes=axes)
+                for q in self._orientations_quat_wxyz
+            ])
 
     @property
     def poses_se3(self):

@@ -41,6 +41,11 @@ DEFAULT_SETTINGS_DICT_DOC = {
         "%(message)s",
         "Format string for the logging module (affects only console output)."
     ),
+    "euler_axes_interpretation": (
+        "sxyz",
+        ("Euler angle axes interpretation. Only used in evo_traj's RPY plot.\n"
+         "E.g. 'sxyz' or 'ryxy', see transformations.py for more information.")
+    ),
     "plot_backend": (
         get_default_plot_backend(),
         "matplotlib backend - default: 'Qt{4, 5}Agg' (if PyQt is installed) or 'TkAgg'."

@@ -41,6 +41,12 @@ DEFAULT_SETTINGS_DICT_DOC = {
         "%(message)s",
         "Format string for the logging module (affects only console output)."
     ),
+    "euler_angle_sequence": (
+        "sxyz",
+        ("Only used in evo_traj's RPY plot: Euler rotation axis sequence.\n"
+         "E.g. 'sxyz' or 'ryxy', where s=static or r=rotating frame.\n"
+         "See evo/core/transformations.py for more information.")
+    ),
     "plot_backend": (
         get_default_plot_backend(),
         "matplotlib backend - default: 'Qt{4, 5}Agg' (if PyQt is installed) or 'TkAgg'."

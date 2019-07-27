@@ -20,7 +20,6 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
-import scipy.linalg as sl
 
 from evo import EvoException
 from evo.core import transformations as tr
@@ -50,15 +49,16 @@ def vee(m):
     return np.array([-m[1, 2], m[0, 2], -m[0, 1]])
 
 
-def so3_exp(axis, angle):
-    """
-    Computes an SO(3) matrix from an axis/angle representation.
-    Code source: http://stackoverflow.com/a/25709323
-    :param axis: 3x1 rotation axis (unit vector!)
-    :param angle: radians
-    :return: SO(3) rotation matrix (matrix exponential of so(3))
-    """
-    return sl.expm(np.cross(np.eye(3), axis / np.linalg.norm(axis) * angle))
+# def so3_exp(axis, angle):
+#     """
+#     Computes an SO(3) matrix from an axis/angle representation.
+#     Code source: http://stackoverflow.com/a/25709323
+#     :param axis: 3x1 rotation axis (unit vector!)
+#     :param angle: radians
+#     :return: SO(3) rotation matrix (matrix exponential of so(3))
+#     """
+#     import scipy.linalg as sl
+#     return sl.expm(np.cross(np.eye(3), axis / np.linalg.norm(axis) * angle))
 
 
 def so3_log(r, return_angle_only=True, return_skew=False):

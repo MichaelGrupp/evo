@@ -153,7 +153,6 @@ setup(
     install_requires=[
         "numpy",
         "matplotlib",
-        "scipy",
         "pandas",
         "seaborn>=0.9",
         "natsort",

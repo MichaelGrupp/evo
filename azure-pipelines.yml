@@ -12,11 +12,12 @@ pr:
     - master
 
 schedules:
-  - cron: 0 0 * * *
-    displayName: 'daily build'
-    branches:
-      include:
-        - master
+- cron: "0 0 * * *"
+  displayName: 'daily build'
+  branches:
+    include:
+      - master
+  always: true
 
 
 jobs:

@@ -318,7 +318,7 @@ def run(args):
                 name, args.t_offset))
             traj.timestamps += args.t_offset
 
-    if args.n_to_align and not (args.align or args.correct_scale):
+    if args.n_to_align != -1 and not (args.align or args.correct_scale):
         die("--n_to_align is useless without --align or/and --correct_scale")
 
     if args.sync or args.align or args.correct_scale or args.align_origin:

@@ -182,8 +182,7 @@ class TestTrajectoryAlignment(unittest.TestCase):
     def test_origin_alignment(self):
         traj_1 = helpers.fake_trajectory(1000, 1)
         traj_2 = helpers.fake_trajectory(1000, 1)
-        self.assertNotEqual(
-            np.allclose(traj_1.poses_se3[0], traj_2.poses_se3[0]))
+        self.assertFalse(np.allclose(traj_1.poses_se3[0], traj_2.poses_se3[0]))
         traj_2 = trajectory.align_trajectory_origin(traj_2, traj_1)
         self.assertTrue(np.allclose(traj_1.poses_se3[0], traj_2.poses_se3[0]))
 

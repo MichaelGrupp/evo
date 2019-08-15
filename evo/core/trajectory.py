@@ -428,7 +428,9 @@ def align_trajectory_origin(traj, traj_ref):
     if traj.num_poses == 0 or traj_ref.num_poses == 0:
         raise TrajectoryException("can't align an empty trajectory...")
     traj_aligned = copy.deepcopy(traj)
-    to_ref_origin = lie.relative_se3(traj.poses_se3[0], traj_ref.poses_se3[0])
+    traj_origin = traj.poses_se3[0]
+    traj_ref_origin = traj_ref.poses_se3[0]
+    to_ref_origin = traj_ref_origin.dot(lie.se3_inverse(traj_origin))
     logger.debug("Origin alignment transformation:\n{}".format(to_ref_origin))
     traj_aligned.transform(to_ref_origin)
     return traj_aligned

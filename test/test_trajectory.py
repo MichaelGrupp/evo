@@ -151,5 +151,42 @@ class TestPoseTrajectory3D(unittest.TestCase):
         helpers.fake_trajectory(10, 1).get_statistics()
 
 
+class TestTrajectoryAlignment(unittest.TestCase):
+    def test_se3_alignment(self):
+        traj = helpers.fake_trajectory(1000, 1)
+        traj_transformed = copy.deepcopy(traj)
+        traj_transformed.transform(lie.random_se3())
+        self.assertNotEqual(traj, traj_transformed)
+        traj_aligned = trajectory.align_trajectory(traj_transformed, traj)
+        self.assertEqual(traj_aligned, traj)
+
+    def test_sim3_alignment(self):
+        traj = helpers.fake_trajectory(1000, 1)
+        traj_transformed = copy.deepcopy(traj)
+        traj_transformed.transform(lie.random_se3())
+        traj_transformed.scale(1.234)
+        self.assertNotEqual(traj, traj_transformed)
+        traj_aligned = trajectory.align_trajectory(traj_transformed, traj,
+                                                   correct_scale=True)
+        self.assertEqual(traj_aligned, traj)
+
+    def test_scale_correction(self):
+        traj = helpers.fake_trajectory(1000, 1)
+        traj_transformed = copy.deepcopy(traj)
+        traj_transformed.scale(1.234)
+        self.assertNotEqual(traj, traj_transformed)
+        traj_aligned = trajectory.align_trajectory(traj_transformed, traj,
+                                                   correct_only_scale=True)
+        self.assertEqual(traj_aligned, traj)
+
+    def test_origin_alignment(self):
+        traj_1 = helpers.fake_trajectory(1000, 1)
+        traj_2 = helpers.fake_trajectory(1000, 1)
+        self.assertNotEqual(
+            np.allclose(traj_1.poses_se3[0], traj_2.poses_se3[0]))
+        traj_2 = trajectory.align_trajectory_origin(traj_2, traj_1)
+        self.assertTrue(np.allclose(traj_1.poses_se3[0], traj_2.poses_se3[0]))
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

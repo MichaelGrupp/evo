@@ -544,13 +544,13 @@ def error_array(fig, err_array, x_array=None, statistics=None, threshold=None,
     if statistics is not None:
         for stat_name, value in statistics.items():
             color = next(ax._get_lines.prop_cycler)['color']
-            if stat_name in {"mean", "median", "rmse"}:
-                ax.axhline(y=value, color=color, linewidth=2.0,
-                           label=stat_name)
             if stat_name == "std" and "mean" in statistics:
                 mean, std = statistics["mean"], statistics["std"]
                 ax.axhspan(mean - std / 2, mean + std / 2, color=color,
                            alpha=0.5, label=stat_name)
+            else:
+                ax.axhline(y=value, color=color, linewidth=2.0,
+                           label=stat_name)
     if threshold is not None:
         ax.axhline(y=threshold, color='red', linestyle='dashed', linewidth=2.0,
                    label="threshold")

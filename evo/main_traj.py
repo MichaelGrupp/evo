@@ -164,8 +164,9 @@ def die(msg):
 
 
 def load_trajectories(args):
+    from collections import OrderedDict
     from evo.tools import file_interface
-    trajectories = {}
+    trajectories = OrderedDict()
     ref_traj = None
     if args.subcommand == "tum":
         for traj_file in args.traj_files:
@@ -318,6 +319,9 @@ def run(args):
                 name, args.t_offset))
             traj.timestamps += args.t_offset
 
+    if args.n_to_align != -1 and not (args.align or args.correct_scale):
+        die("--n_to_align is useless without --align or/and --correct_scale")
+
     if args.sync or args.align or args.correct_scale or args.align_origin:
         from evo.core import sync
         if not args.ref:
@@ -339,7 +343,7 @@ def run(args):
                     correct_scale=args.correct_scale,
                     correct_only_scale=args.correct_scale and not args.align,
                     n=args.n_to_align)
-            elif args.align_origin:
+            if args.align_origin:
                 logger.debug(SEP)
                 logger.debug("Aligning {}'s origin to reference.".format(name))
                 trajectories[name] = trajectory.align_trajectory_origin(

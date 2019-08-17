@@ -164,8 +164,9 @@ def die(msg):
 
 
 def load_trajectories(args):
+    from collections import OrderedDict
     from evo.tools import file_interface
-    trajectories = {}
+    trajectories = OrderedDict()
     ref_traj = None
     if args.subcommand == "tum":
         for traj_file in args.traj_files:

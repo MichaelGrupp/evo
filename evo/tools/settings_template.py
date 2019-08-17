@@ -51,6 +51,11 @@ DEFAULT_SETTINGS_DICT_DOC = {
         get_default_plot_backend(),
         "matplotlib backend - default: 'Qt{4, 5}Agg' (if PyQt is installed) or 'TkAgg'."
     ),
+    "plot_statistics": (
+        ["rmse", "median", "mean", "std", "min", "max"],
+        ("Statistics that are included in plots of evo_{ape, rpe, res}.\n"
+         "Can also be set to 'none'.")
+    ),
     "plot_export_format": (
         "pdf",
         "File format supported by matplotlib for exporting plots."

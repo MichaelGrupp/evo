@@ -276,13 +276,14 @@ def run(args):
         plot_collection.add_figure("raw", fig_raw)
 
         # statistics plot
-        fig_stats = plt.figure(figsize=figsize)
-        exclude = df.loc["stats"].index.isin(["sse"])  # don't plot sse
-        df.loc["stats"][~exclude].plot(kind="barh", ax=fig_stats.gca(),
-                                       colormap=colormap, stacked=False)
-        plt.xlabel(metric_label)
-        plt.legend(frameon=True)
-        plot_collection.add_figure("stats", fig_stats)
+        if SETTINGS.plot_statistics:
+            fig_stats = plt.figure(figsize=figsize)
+            include = df.loc["stats"].index.isin(SETTINGS.plot_statistics)
+            df.loc["stats"][include].plot(kind="barh", ax=fig_stats.gca(),
+                                          colormap=colormap, stacked=False)
+            plt.xlabel(metric_label)
+            plt.legend(frameon=True)
+            plot_collection.add_figure("stats", fig_stats)
 
         # grid of distribution plots
         raw_tidy = pd.melt(error_df, value_vars=list(error_df.columns.values),

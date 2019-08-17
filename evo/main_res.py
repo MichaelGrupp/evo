@@ -279,7 +279,7 @@ def run(args):
         if SETTINGS.plot_statistics:
             fig_stats = plt.figure(figsize=figsize)
             include = df.loc["stats"].index.isin(SETTINGS.plot_statistics)
-            if include:
+            if any(include):
                 df.loc["stats"][include].plot(kind="barh", ax=fig_stats.gca(),
                                               colormap=colormap, stacked=False)
                 plt.xlabel(metric_label)

@@ -164,7 +164,7 @@ def id_pairs_from_delta(poses, delta, delta_unit, rel_tol=0.1,
 
     if len(id_pairs) == 0:
         raise FilterException(
-            "delta = {} ({}) produced an empty index list - try lower values"
+            "delta = {} ({}) produced an empty index list - try lower values "
             "or a less strict tolerance".format(delta, delta_unit.value))
 
     logger.debug(

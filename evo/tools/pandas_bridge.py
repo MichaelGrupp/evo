@@ -46,6 +46,16 @@ def trajectory_to_df(traj):
     return pd.DataFrame(data=poses_dict, index=index)
 
 
+def df_to_trajectory(df):
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError("pandas.DataFrame or derived required")
+    positions_xyz = df.loc[:,['x','y','z']].to_numpy()
+    quaternions_wxyz = df.loc[:,['qw','qx','qy','qz']].to_numpy()
+    # NOTE: df must have timestamps as index
+    stamps = np.divide(df.index, 1e9)  # n x 1 - nanoseconds to seconds
+    return trajectory.PoseTrajectory3D(positions_xyz, quaternions_wxyz, stamps)
+
+
 def result_to_df(result_obj, label=None):
     if not isinstance(result_obj, result.Result):
         raise TypeError("result.Result or derived required")

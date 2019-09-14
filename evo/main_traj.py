@@ -164,6 +164,7 @@ def die(msg):
 
 
 def load_trajectories(args):
+    import os
     from collections import OrderedDict
     from evo.tools import file_interface
     trajectories = OrderedDict()
@@ -197,6 +198,9 @@ def load_trajectories(args):
     elif args.subcommand == "bag":
         if not (args.topics or args.all_topics):
             die("No topics used - specify topics or set --all_topics.")
+        if not os.path.exists(args.bag):
+            raise file_interface.FileInterfaceException(
+                "File doesn't exist: {}".format(args.bag))
         import rosbag
         bag = rosbag.Bag(args.bag)
         try:

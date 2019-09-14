@@ -42,8 +42,12 @@ def load_trajectories(args):
         traj_est = file_interface.read_tum_trajectory_file(args.est_file)
         ref_name, est_name = args.state_gt_csv, args.est_file
     elif args.subcommand == "bag":
-        import rosbag
+        import os
         logger.debug("Opening bag file " + args.bag)
+        if not os.path.exists(args.bag):
+            raise file_interface.FileInterfaceException(
+                "File doesn't exist: {}".format(args.bag))
+        import rosbag
         bag = rosbag.Bag(args.bag, 'r')
         try:
             traj_ref = file_interface.read_bag_trajectory(bag, args.ref_topic)

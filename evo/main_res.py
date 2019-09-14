@@ -267,7 +267,7 @@ def run(args):
         # raw value plot
         fig_raw = plt.figure(figsize=figsize)
         # handle NaNs from concat() above
-        error_df.interpolate(method="index").plot(
+        error_df.interpolate(method="index", limit_area="inside").plot(
             ax=fig_raw.gca(), colormap=colormap, style=linestyles,
             title=first_title, alpha=SETTINGS.plot_trajectory_alpha)
         plt.xlabel(index_label)

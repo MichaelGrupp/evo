@@ -41,12 +41,12 @@ def parser():
     shared_parser.add_argument("-f", "--full_check",
                                help="run all checks and print all stats",
                                action="store_true")
-    algo_opts.add_argument(
-        "-a", "--align", help="alignment with Umeyama's method (no scale)"
-        " - requires --ref", action="store_true")
-    algo_opts.add_argument(
-        "-s", "--correct_scale", help="scale correction with Umeyama's method"
-        " - requires --ref", action="store_true")
+    algo_opts.add_argument("-a", "--align",
+                           help="alignment with Umeyama's method (no scale)"
+                           " - requires --ref", action="store_true")
+    algo_opts.add_argument("-s", "--correct_scale",
+                           help="scale correction with Umeyama's method"
+                           " - requires --ref", action="store_true")
     algo_opts.add_argument(
         "--n_to_align",
         help="the number of poses to use for Umeyama alignment, "
@@ -119,28 +119,25 @@ def parser():
         "-c", "--config",
         help=".json file with parameters (priority over command line args)")
 
-    main_parser = argparse.ArgumentParser(
-        description="%s %s" % (basic_desc, lic))
+    main_parser = argparse.ArgumentParser(description="%s %s" % (basic_desc,
+                                                                 lic))
     sub_parsers = main_parser.add_subparsers(dest="subcommand")
     sub_parsers.required = True
     kitti_parser = sub_parsers.add_parser(
-        "kitti",
-        description="%s for KITTI pose files - %s" % (basic_desc, lic),
-        parents=[shared_parser])
+        "kitti", description="%s for KITTI pose files - %s" %
+        (basic_desc, lic), parents=[shared_parser])
     kitti_parser.add_argument("pose_files", help="one or multiple pose files",
                               nargs='+')
 
     tum_parser = sub_parsers.add_parser(
-        "tum",
-        description="%s for TUM trajectory files - %s" % (basic_desc, lic),
-        parents=[shared_parser])
+        "tum", description="%s for TUM trajectory files - %s" %
+        (basic_desc, lic), parents=[shared_parser])
     tum_parser.add_argument("traj_files",
                             help="one or multiple trajectory files", nargs='+')
 
     euroc_parser = sub_parsers.add_parser(
-        "euroc",
-        description="%s for EuRoC MAV .csv's - %s" % (basic_desc, lic),
-        parents=[shared_parser])
+        "euroc", description="%s for EuRoC MAV .csv's - %s" %
+        (basic_desc, lic), parents=[shared_parser])
     euroc_parser.add_argument(
         "state_gt_csv",
         help="<sequence>/mav0/state_groundtruth_estimate0/data.csv", nargs='+')
@@ -209,8 +206,8 @@ def load_trajectories(args):
                 if args.ref in topics:
                     topics.remove(args.ref)
                 if len(topics) == 0:
-                    die("No topics of supported types: {}".format(" ".join(
-                        file_interface.SUPPORTED_ROS_MSGS)))
+                    die("No topics of supported types: {}".format(
+                        " ".join(file_interface.SUPPORTED_ROS_MSGS)))
             else:
                 topics = args.topics
             for topic in topics:
@@ -368,10 +365,10 @@ def run(args):
         import matplotlib.cm as cm
 
         plot_collection = plot.PlotCollection("evo_traj - trajectory plot")
-        fig_xyz, axarr_xyz = plt.subplots(3, sharex="col",
-                                          figsize=tuple(SETTINGS.plot_figsize))
-        fig_rpy, axarr_rpy = plt.subplots(3, sharex="col",
-                                          figsize=tuple(SETTINGS.plot_figsize))
+        fig_xyz, axarr_xyz = plt.subplots(3, sharex="col", figsize=tuple(
+            SETTINGS.plot_figsize))
+        fig_rpy, axarr_rpy = plt.subplots(3, sharex="col", figsize=tuple(
+            SETTINGS.plot_figsize))
         fig_traj = plt.figure(figsize=tuple(SETTINGS.plot_figsize))
 
         plot_mode = plot.PlotMode[args.plot_mode]
@@ -411,21 +408,23 @@ def run(args):
                 short_traj_name = name
             if SETTINGS.plot_usetex:
                 short_traj_name = short_traj_name.replace("_", "\\_")
-            plot.traj(ax_traj, plot_mode, traj, '-', color, short_traj_name,
-                      alpha=SETTINGS.plot_trajectory_alpha)
+            plot.traj(ax_traj, plot_mode, traj,
+                      SETTINGS.plot_trajectory_linestyle, color,
+                      short_traj_name, alpha=SETTINGS.plot_trajectory_alpha)
             if args.ref and isinstance(ref_traj, trajectory.PoseTrajectory3D):
                 start_time = ref_traj.timestamps[0]
             else:
                 start_time = None
-            plot.traj_xyz(axarr_xyz, traj, '-', color, short_traj_name,
+            plot.traj_xyz(axarr_xyz, traj, SETTINGS.plot_trajectory_linestyle,
+                          color, short_traj_name,
                           alpha=SETTINGS.plot_trajectory_alpha,
                           start_timestamp=start_time)
-            plot.traj_rpy(axarr_rpy, traj, '-', color, short_traj_name,
+            plot.traj_rpy(axarr_rpy, traj, SETTINGS.plot_trajectory_linestyle,
+                          color, short_traj_name,
                           alpha=SETTINGS.plot_trajectory_alpha,
                           start_timestamp=start_time)
-            fig_rpy.text(
-                0., 0.005, "euler_angle_sequence: {}".format(
-                    SETTINGS.euler_angle_sequence), fontsize=6)
+            fig_rpy.text(0., 0.005, "euler_angle_sequence: {}".format(
+                SETTINGS.euler_angle_sequence), fontsize=6)
 
         plot_collection.add_figure("trajectories", fig_traj)
         plot_collection.add_figure("xyz_view", fig_xyz)

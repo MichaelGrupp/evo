@@ -128,6 +128,10 @@ DEFAULT_SETTINGS_DICT_DOC = {
         "jet",
         "matplotlib color map used for mapping values on a trajectory.",
     ),
+    "plot_trajectory_linestyle": (
+        "-",
+        "matplotlib linestyle of non-reference trajectories in plots.",
+    ),
     "plot_usetex": (
         False,
         "Use the LaTeX renderer configured in plot_texsystem for plots.",

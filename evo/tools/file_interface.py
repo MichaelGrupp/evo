@@ -187,7 +187,7 @@ def read_pose_csv_trajectory(file_path):
     :return: trajectory.PoseTrajectory3D object
     """
     mat = np.array(csv_read_matrix(
-        file_path, delim=",", comment_str="t")).astype(float)
+        file_path, delim=",", comment_str="#")).astype(float)
     if mat.shape[1] != 8:
         raise FileInterfaceException(
             "Pose trajectory files must have 8 entries per row")

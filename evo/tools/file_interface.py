@@ -180,21 +180,20 @@ def read_euroc_csv_trajectory(file_path):
     return PoseTrajectory3D(xyz, quat, stamps)
 
 
-def read_swe_csv_trajectory(file_path):
+def read_pose_csv_trajectory(file_path):
     """
-    parses trajectory file in SWE format (timestamp[ns], x, y, z, qx, qy, qz, qw, vx, vy, vz, bgx, bgy, bgz, bax, bay, baz)
+    parses trajectory file in pose format (timestamp[ns], x, y, z, qw, qx, qy, qz)
     :param file_path: the trajectory file path (or file handle)
     :return: trajectory.PoseTrajectory3D object
     """
     mat = np.array(csv_read_matrix(
-        file_path, delim=",", comment_str="t")).astype(float)
-    if mat.shape[1] != 17:
+        file_path, delim=",", comment_str="#")).astype(float)
+    if mat.shape[1] != 8:
         raise FileInterfaceException(
-            "SWE trajectory files must have 8 entries per row")
+            "Pose trajectory files must have 8 entries per row")
     stamps = np.divide(mat[:, 0], 1e9)  # n x 1  -  nanoseconds to seconds
     xyz = mat[:, 1:4]  # n x 3
     quat = mat[:, 4:8]  # n x 4
-    quat = np.roll(quat, 1, axis=1)  # shift 1 column -> w in front column
     if not hasattr(file_path, 'read'):  # if not file handle
         logger.debug("Loaded {} stamps and poses from: {}".format(
             len(stamps), file_path))

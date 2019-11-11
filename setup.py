@@ -129,6 +129,8 @@ setup(
     author_email="michael.grupp@tum.de",
     url="https://github.com/MichaelGrupp/evo",
     license="GPLv3",
+    long_description=open(os.path.join(HERE, "README.md")).read(),
+    long_description_content_type="text/markdown",
     keywords=[
         "SLAM", "odometry", "trajectory", "evaluation", "metric",
         "vision", "laser", "visual", "robotics"

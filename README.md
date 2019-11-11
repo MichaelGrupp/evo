@@ -17,14 +17,15 @@ Supported trajectory formats:
 
 See [here](https://github.com/MichaelGrupp/evo/wiki/Formats) for more infos about the formats.
 
-<!---
-<img src="doc/assets/traj_demo.png" alt="evo" height="180" border="10" />
--->
-<center>
-<a href="doc/assets/ape_demo_ORB_map.png" target="_blank"><img src="doc/assets/ape_demo_ORB_map.png" alt="evo" height="200" border="5" /></a>
-<a href="doc/assets/res_violin.png" target="_blank"><img src="doc/assets/res_violin.png" alt="evo" height="200" border="5" /></a>
-<a href="doc/assets/res_stats.png" target="_blank"><img src="doc/assets/res_stats.png" alt="evo" height="200" border="5" /></a>
-</center>
+<a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_demo_ORB_map.png" target="_blank">
+  <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_demo_ORB_map.png" alt="evo" height="200" border="5" />
+</a>
+<a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/res_violin.png" target="_blank">
+  <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/res_violin.png" alt="evo" height="200" border="5" />
+</a>
+<a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/res_stats.png" target="_blank">
+  <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/res_stats.png" alt="evo" height="200" border="5" />
+</a>
 
 ---
 
@@ -37,7 +38,7 @@ evo has several advantages over other public benchmarking tools:
 * flexible options for output, [plotting](https://github.com/MichaelGrupp/evo/wiki/Plotting) or export (e.g. LaTeX plots or Excel tables)
 * a powerful, configurable CLI that can cover many use cases
 * modular `core` and `tools` libraries for custom extensions
-* faster than other established Python-based tools ([see here](doc/performance.md))
+* faster than other established Python-based tools ([see here](https://github.com/MichaelGrupp/evo/blob/master/doc/performance.md))
 
 **What it's not:** a 1-to-1 re-implementation of a particular evaluation protocol tailored to a specific dataset. 
 
@@ -48,14 +49,14 @@ evo has several advantages over other public benchmarking tools:
 Installation is easy-peasy if you're familiar with this: https://xkcd.com/1987/#
 
 **Python 3.4+** and **Python 2.7** are both supported. If you want to use the ROS bagfile interface, first check which Python version is used by your ROS installation and install accordingly.
-You might also want to use a [virtual environment](doc/install_in_virtualenv.md).
+You might also want to use a [virtual environment](https://github.com/MichaelGrupp/evo/blob/master/doc/install_in_virtualenv.md).
 
 ### From PyPi
 If you just want to use the executables of the latest release version, the easiest way is to run:
 ```bash
 pip install evo --upgrade --no-binary evo
 ```
-This will download the package and its dependencies from PyPi and install or upgrade them. Depending on your OS, you might be able to use `pip2` or `pip3` to specify the Python version you want. Tab completion for Bash terminals is supported via the [argcomplete](https://github.com/kislyuk/argcomplete/) package on most UNIX systems - open a new shell after the installation to use it (without `--no-binary evo` the tab completion might not be installed properly). If you want, you can subscribe to new releases via https://libraries.io/pypi/evo.
+This will download the package and its dependencies from [PyPI](https://pypi.org/project/evo/) and install or upgrade them. Depending on your OS, you might be able to use `pip2` or `pip3` to specify the Python version you want. Tab completion for Bash terminals is supported via the [argcomplete](https://github.com/kislyuk/argcomplete/) package on most UNIX systems - open a new shell after the installation to use it (without `--no-binary evo` the tab completion might not be installed properly). If you want, you can subscribe to new releases via https://libraries.io/pypi/evo.
 
 ### From Source
 Run this in the repository's base folder:
@@ -109,7 +110,7 @@ Check out the [Wiki on GitHub](https://github.com/MichaelGrupp/evo/wiki).
 There are some example trajectories in the source folder in `test/data`.
 
 
-1. ***Plot multiple trajectories***
+### 1.) Plot multiple trajectories
 
   Here, we plot two KITTI pose files and the ground truth using `evo_traj`:
   ```
@@ -117,12 +118,14 @@ There are some example trajectories in the source folder in `test/data`.
   evo_traj kitti KITTI_00_ORB.txt KITTI_00_SPTAM.txt --ref=KITTI_00_gt.txt -p --plot_mode=xz
   ```
 
-  <center>
-  <a href="doc/assets/traj_demo.png" target="_blank"><img src="doc/assets/traj_demo.png" alt="evo" height="200" border="5" /></a>
-  <a href="doc/assets/traj_demo_xyz.png" target="_blank"><img src="doc/assets/traj_demo_xyz.png" alt="evo" height="200" border="5" /></a>
-  </center>
+  <a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/traj_demo.png" target="_blank">
+    <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/traj_demo.png" alt="evo" height="200" border="5" />
+  </a>
+  <a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/traj_demo_xyz.png" target="_blank">
+    <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/traj_demo_xyz.png" alt="evo" height="200" border="5" />
+  </a>
 
-2. ***Run a metric on trajectories***
+### 2.) Run a metric on trajectories
 
   For example, here we calculate the absolute pose error for two trajectories from ORB-SLAM and S-PTAM using `evo_ape` (`KITTI_00_gt.txt` is the reference (ground truth)) and plot and save the individual results to .zip files for `evo_res`:
 
@@ -133,10 +136,12 @@ There are some example trajectories in the source folder in `test/data`.
   evo_ape kitti KITTI_00_gt.txt KITTI_00_ORB.txt -va --plot --plot_mode xz --save_results results/ORB.zip
   ```
 
-  <center>
-  <a href="doc/assets/ape_demo_ORB_raw.png" target="_blank"><img src="doc/assets/ape_demo_ORB_raw.png" alt="evo" height="200" border="5" /></a>
-  <a href="doc/assets/ape_demo_ORB_map.png" target="_blank"><img src="doc/assets/ape_demo_ORB_map.png" alt="evo" height="200" border="5" /></a>
-  </center>
+  <a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_demo_ORB_raw.png" target="_blank">
+    <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_demo_ORB_raw.png" alt="evo" height="200" border="5" />
+  </a>
+  <a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_demo_ORB_map.png" target="_blank">
+    <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_demo_ORB_map.png" alt="evo" height="200" border="5" />
+  </a>
 
   *Second trajectory (S-PTAM):*
   
@@ -144,13 +149,15 @@ There are some example trajectories in the source folder in `test/data`.
   evo_ape kitti KITTI_00_gt.txt KITTI_00_SPTAM.txt -va --plot --plot_mode xz --save_results results/SPTAM.zip
   ```
 
-  <center>
-  <a href="doc/assets/ape_demo_S-PTAM_raw.png" target="_blank"><img src="doc/assets/ape_demo_S-PTAM_raw.png" alt="evo" height="200" border="5" /></a>
-  <a href="doc/assets/ape_demo_S-PTAM_map.png" target="_blank"><img src="doc/assets/ape_demo_S-PTAM_map.png" alt="evo" height="200" border="5" /></a>
-  </center>
+  <a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_demo_S-PTAM_raw.png" target="_blank">
+    <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_demo_S-PTAM_raw.png" alt="evo" height="200" border="5" />
+  </a>
+  <a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_demo_S-PTAM_map.png" target="_blank">
+    <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_demo_S-PTAM_map.png" alt="evo" height="200" border="5" />
+  </a>
 
 
-3. ***Process multiple results from a metric***
+### 3.) Process multiple results from a metric
 
   `evo_res` can be used to compare multiple result files from the metrics, i.e.:
   * print infos and statistics (default)
@@ -162,19 +169,27 @@ There are some example trajectories in the source folder in `test/data`.
   evo_res results/*.zip -p --save_table results/table.csv
   ```
 
-  <center>
-  <a href="doc/assets/res_raw.png" target="_blank"><img src="doc/assets/res_raw.png" alt="evo" height="200" border="5" /></a>
-  <a href="doc/assets/res_dist.png" target="_blank"><img src="doc/assets/res_dist.png" alt="evo" height="200" border="5" /> </a>
-  <a href="doc/assets/res_stats.png" target="_blank"><img src="doc/assets/res_stats.png" alt="evo" height="200" border="5" /></a>
-  <a href="doc/assets/res_box.png" target="_blank"><img src="doc/assets/res_box.png" alt="evo" height="200" border="5" /></a>
-  <a href="doc/assets/res_violin.png" target="_blank"><img src="doc/assets/res_violin.png" alt="evo" height="200" border="5" /></a>
-  </center>
+  <a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/res_raw.png" target="_blank">
+    <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/res_raw.png" alt="evo" height="200" border="5" />
+  </a>
+  <a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/res_dist.png" target="_blank">
+    <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/res_dist.png" alt="evo" height="200" border="5" />
+  </a>
+  <a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/res_stats.png" target="_blank">
+    <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/res_stats.png" alt="evo" height="200" border="5" />
+  </a>
+  <a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/res_box.png" target="_blank">
+    <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/res_box.png" alt="evo" height="200" border="5" />
+  </a>
+  <a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/res_violin.png" target="_blank">
+    <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/res_violin.png" alt="evo" height="200" border="5" />
+  </a>
 
 ---
 
 ## IPython / Jupyter Resources
 
-For an interactive source code documentation, open the [Jupyter notebook](http://jupyter.readthedocs.io/en/latest/install.html) `metrics_tutorial.ipynb` in the `notebooks` folder of the repository. More infos on Jupyter notebooks: see [here](doc/jupyter_notebook.md)
+For an interactive source code documentation, open the [Jupyter notebook](http://jupyter.readthedocs.io/en/latest/install.html) `metrics_tutorial.ipynb` in the `notebooks` folder of the repository. More infos on Jupyter notebooks: see [here](https://github.com/MichaelGrupp/evo/blob/master/doc/jupyter_notebook.md)
 
 If you have IPython installed, you can launch an IPython shell with a custom evo profile with the command `evo_ipython`.
 

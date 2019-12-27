@@ -435,8 +435,8 @@ def draw_coordinate_axes(ax, traj, plot_mode, marker_scale=0.1, x_color="r",
     # Concatenate all colors per line segment in order x, y, z.
     colors = np.array(n * [x_color] + n * [y_color] + n * [z_color])
 
-    rgb_axes = colored_line_collection(vertices, colors, plot_mode, step=2)
-    ax.add_collection(rgb_axes)
+    markers = colored_line_collection(vertices, colors, plot_mode, step=2)
+    ax.add_collection(markers)
 
 
 def traj_xyz(axarr, traj, style='-', color='black', label="", alpha=1.0,

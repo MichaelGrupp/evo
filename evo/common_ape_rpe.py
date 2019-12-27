@@ -123,6 +123,8 @@ def plot(args, result, traj_ref, traj_est):
     plot.traj(ax, plot_mode, traj_ref, style=SETTINGS.plot_reference_linestyle,
               color=SETTINGS.plot_reference_color, label='reference',
               alpha=SETTINGS.plot_reference_alpha)
+    plot.draw_coordinate_axes(ax, traj_ref, plot_mode,
+                              SETTINGS.plot_axis_marker_scale)
 
     if args.plot_colormap_min is None:
         args.plot_colormap_min = result.stats["min"]
@@ -136,6 +138,8 @@ def plot(args, result, traj_ref, traj_est):
                        plot_mode, min_map=args.plot_colormap_min,
                        max_map=args.plot_colormap_max,
                        title="Error mapped onto trajectory")
+    plot.draw_coordinate_axes(ax, traj_est, plot_mode,
+                              SETTINGS.plot_axis_marker_scale)
     fig2.axes.append(ax)
 
     plot_collection = plot.PlotCollection(result.info["title"])

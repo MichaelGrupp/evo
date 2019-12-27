@@ -383,6 +383,8 @@ def run(args):
                       color=SETTINGS.plot_reference_color,
                       label=short_traj_name,
                       alpha=SETTINGS.plot_reference_alpha)
+            plot.draw_coordinate_axes(ax_traj, ref_traj, plot_mode,
+                                      SETTINGS.plot_axis_marker_scale)
             plot.traj_xyz(
                 axarr_xyz, ref_traj, style=SETTINGS.plot_reference_linestyle,
                 color=SETTINGS.plot_reference_color, label=short_traj_name,
@@ -411,6 +413,7 @@ def run(args):
             plot.traj(ax_traj, plot_mode, traj,
                       SETTINGS.plot_trajectory_linestyle, color,
                       short_traj_name, alpha=SETTINGS.plot_trajectory_alpha)
+            plot.draw_coordinate_axes(ax_traj, traj, plot_mode, SETTINGS.plot_axis_marker_scale)
             if args.ref and isinstance(ref_traj, trajectory.PoseTrajectory3D):
                 start_time = ref_traj.timestamps[0]
             else:

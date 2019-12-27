@@ -336,7 +336,8 @@ def save_res_file(zip_path, result_obj, confirm_overwrite=False):
                 raise FileInterfaceException(
                     "unknown format of trajectory {}".format(name))
             buffer.seek(0)
-            archive.writestr("{}{}".format(name, fmt_suffix), buffer.read())
+            archive.writestr("{}{}".format(name, fmt_suffix),
+                             buffer.read().encode("utf-8"))
             buffer.close()
 
 

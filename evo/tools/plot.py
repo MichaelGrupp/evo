@@ -410,8 +410,8 @@ def draw_coordinate_axes(ax, traj, plot_mode, marker_scale=0.1, x_color="r",
     :param plot_mode: PlotMode value
     :param marker_scale: affects the size of the marker (1. * marker_scale)
     :param x_color: color of the x-axis
-    :param x_color: color of the y-axis
-    :param x_color: color of the z-axis
+    :param y_color: color of the y-axis
+    :param z_color: color of the z-axis
     """
     if marker_scale <= 0:
         return

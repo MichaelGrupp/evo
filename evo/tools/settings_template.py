@@ -47,6 +47,10 @@ DEFAULT_SETTINGS_DICT_DOC = {
          "E.g. 'sxyz' or 'ryxy', where s=static or r=rotating frame.\n"
          "See evo/core/transformations.py for more information.")
     ),
+    "plot_axis_marker_scale": (
+        0.,
+        "Scaling parameter of pose coordinate frame markers. 0 will draw nothing."
+    ),
     "plot_backend": (
         get_default_plot_backend(),
         "matplotlib backend - default: 'Qt{4, 5}Agg' (if PyQt is installed) or 'TkAgg'."

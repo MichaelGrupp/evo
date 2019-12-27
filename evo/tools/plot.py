@@ -338,16 +338,19 @@ def traj(ax, plot_mode, traj, style='-', color='black', label="", alpha=1.0):
 
 
 def colored_line_collection(xyz, colors, plot_mode=PlotMode.xy,
-                            linestyles="solid"):
-    if len(xyz) != len(colors):
+                            linestyles="solid", step=1):
+    if len(xyz) / step != len(colors):
         raise PlotException(
-            "color values must have same length as xyz data: %d vs. %d" %
-            (len(xyz), len(colors)))
+            "color values don't have correct length: %d vs. %d" %
+            (len(xyz) / step, len(colors)))
     x_idx, y_idx, z_idx = plot_mode_to_idx(plot_mode)
-    xs = [[x_1, x_2] for x_1, x_2 in zip(xyz[:-1, x_idx], xyz[1:, x_idx])]
-    ys = [[x_1, x_2] for x_1, x_2 in zip(xyz[:-1, y_idx], xyz[1:, y_idx])]
+    xs = [[x_1, x_2]
+          for x_1, x_2 in zip(xyz[:-1:step, x_idx], xyz[1::step, x_idx])]
+    ys = [[x_1, x_2]
+          for x_1, x_2 in zip(xyz[:-1:step, y_idx], xyz[1::step, y_idx])]
     if plot_mode == PlotMode.xyz:
-        zs = [[x_1, x_2] for x_1, x_2 in zip(xyz[:-1, z_idx], xyz[1:, z_idx])]
+        zs = [[x_1, x_2]
+              for x_1, x_2 in zip(xyz[:-1:step, z_idx], xyz[1::step, z_idx])]
         segs = [list(zip(x, y, z)) for x, y, z in zip(xs, ys, zs)]
         line_collection = art3d.Line3DCollection(segs, colors=colors,
                                                  linestyles=linestyles)
@@ -396,6 +399,44 @@ def traj_colormap(ax, traj, array, plot_mode, min_map, max_map, title=""):
     if title:
         ax.legend(frameon=True)
         plt.title(title)
+
+
+def draw_coordinate_axes(ax, traj, plot_mode, marker_scale=0.1, x_color="r",
+                         y_color="g", z_color="b"):
+    """
+    Draws a coordinate frame axis for each pose of a trajectory.
+    :param ax: plot axis
+    :param traj: trajectory.PosePath3D or trajectory.PoseTrajectory3D object
+    :param plot_mode: PlotMode value
+    :param marker_scale: affects the size of the marker (1. * marker_scale)
+    :param x_color: color of the x-axis
+    :param x_color: color of the y-axis
+    :param x_color: color of the z-axis
+    """
+    if marker_scale <= 0:
+        return
+
+    unit_x = np.array([1 * marker_scale, 0, 0, 1])
+    unit_y = np.array([0, 1 * marker_scale, 0, 1])
+    unit_z = np.array([0, 0, 1 * marker_scale, 1])
+
+    # Transform start/end vertices of each axis to global frame.
+    x_vertices = np.array([[p[:3, 3], p.dot(unit_x)[:3]]
+                           for p in traj.poses_se3])
+    y_vertices = np.array([[p[:3, 3], p.dot(unit_y)[:3]]
+                           for p in traj.poses_se3])
+    z_vertices = np.array([[p[:3, 3], p.dot(unit_z)[:3]]
+                           for p in traj.poses_se3])
+
+    n = traj.num_poses
+    # Concatenate all line segment vertices in order x, y, z.
+    vertices = np.concatenate((x_vertices, y_vertices, z_vertices)).reshape(
+        (n * 2 * 3, 3))
+    # Concatenate all colors per line segment in order x, y, z.
+    colors = np.array(n * [x_color] + n * [y_color] + n * [z_color])
+
+    markers = colored_line_collection(vertices, colors, plot_mode, step=2)
+    ax.add_collection(markers)
 
 
 def traj_xyz(axarr, traj, style='-', color='black', label="", alpha=1.0,
@@ -531,9 +572,8 @@ def error_array(fig, err_array, x_array=None, statistics=None, threshold=None,
             ax.plot(x_array, np.cumsum(err_array), linestyle=linestyle,
                     marker=marker, color=color, label=name)
         else:
-            ax.plot(
-                np.cumsum(err_array), linestyle=linestyle, marker=marker,
-                color=color, label=name)
+            ax.plot(np.cumsum(err_array), linestyle=linestyle, marker=marker,
+                    color=color, label=name)
     else:
         if x_array:
             ax.plot(x_array, err_array, linestyle=linestyle, marker=marker,

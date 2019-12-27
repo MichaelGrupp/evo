@@ -306,13 +306,14 @@ def write_bag_trajectory(bag_handle, traj, topic_name, frame_id=""):
 def save_res_file(zip_path, result_obj, confirm_overwrite=False):
     """
     save results of a pose error metric (pe_metric) to a zip file
-    :param zip_path: path to zip file
+    :param zip_path: path to zip file (or file handle)
     :param result_obj: evo.core.result.Result instance
     :param confirm_overwrite: whether to require user interaction
            to overwrite existing files
     """
     from tempfile import TemporaryFile
-    logger.debug("Saving results to " + zip_path + "...")
+    if isinstance(zip_path, str):
+        logger.debug("Saving results to " + zip_path + "...")
     if confirm_overwrite and not user.check_and_confirm_overwrite(zip_path):
         return
     with zipfile.ZipFile(zip_path, 'w') as archive:

@@ -24,8 +24,11 @@ import six
 import tempfile
 import unittest
 
+import numpy as np
+
 import context
 import helpers
+from evo.core.result import Result
 from evo.core.trajectory import PosePath3D, PoseTrajectory3D
 from evo.tools import file_interface
 
@@ -165,6 +168,22 @@ class TestBagFile(MockFileTestCase):
         self.assertTrue(traj_in.check())
         self.assertTrue(traj_out == traj_in)
         self.assertEquals(traj_in.meta["frame_id"], "map")
+
+
+class TestResultFile(MockFileTestCase):
+    def __init__(self, *args, **kwargs):
+        super(TestResultFile, self).__init__(io.BytesIO(), *args, **kwargs)
+
+    @MockFileTestCase.run_and_clear
+    def test_write_read_integrity(self):
+        result_out = Result()
+        result_out.add_np_array("test-array", np.ones(1000))
+        result_out.add_info({"name": "test", "number": 666})
+        result_out.add_trajectory("traj", helpers.fake_trajectory(1000, 0.1))
+        file_interface.save_res_file(self.mock_file, result_out)
+        result_in = file_interface.load_res_file(self.mock_file,
+                                                 load_trajectories=True)
+        self.assertEqual(result_in, result_out)
 
 
 class TestHasUtf8Bom(unittest.TestCase):

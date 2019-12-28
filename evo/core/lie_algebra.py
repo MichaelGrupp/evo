@@ -21,6 +21,7 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 import scipy.linalg as sl
+import scipy.spatial.transform as sst
 
 from evo import EvoException
 from evo.core import transformations as tr
@@ -72,8 +73,10 @@ def so3_log(r, return_angle_only=True, return_skew=False):
     """
     if not is_so3(r):
         raise LieAlgebraException("matrix is not a valid SO(3) group element")
+    rotation = sst.Rotation.from_matrix(r)
+    rotation_vector = rotation.as_rotvec()
     if return_angle_only and not return_skew:
-        return np.arccos(min(1, max(-1, (np.trace(r) - 1) / 2)))
+        return np.linalg.norm(rotation_vector)
     angle, axis, _ = tr.rotation_from_matrix(se3(r, [0, 0, 0]))
     if return_skew:
         return hat(axis * angle)

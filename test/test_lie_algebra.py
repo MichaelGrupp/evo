@@ -94,22 +94,17 @@ class TestSO3(unittest.TestCase):
     def test_so3_log_exp(self):
         r = lie.random_so3()
         self.assertTrue(lie.is_so3(r))
-        axis, angle = lie.so3_log(r, return_angle_only=False)
-        self.assertTrue(np.allclose(r, lie.so3_exp(axis, angle), atol=1e-6))
+        rotvec = lie.so3_log(r, return_angle_only=False)
+        self.assertTrue(np.allclose(r, lie.so3_exp(rotvec), atol=1e-6))
         angle = lie.so3_log(r)
-        # we ignore signs here, therefore check also transpose
-        self.assertTrue(
-            np.allclose(r,
-                        lie.so3_exp(axis, angle).T)
-            or np.allclose(r, lie.so3_exp(axis, angle)))
+        self.assertAlmostEqual(np.linalg.norm(rotvec), angle)
 
     def test_so3_log_exp_skew(self):
         r = lie.random_so3()
         log = lie.so3_log(r, return_skew=True)  # skew-symmetric tangent space
         # here, axis is a rotation vector with norm = angle
-        axis = lie.vee(log)
-        angle = np.linalg.norm(axis)
-        self.assertTrue(np.allclose(r, lie.so3_exp(axis, angle)))
+        rotvec = lie.vee(log)
+        self.assertTrue(np.allclose(r, lie.so3_exp(rotvec)))
 
 
 class TestSim3(unittest.TestCase):
@@ -160,9 +155,9 @@ if __name__ == '__main__':
                         number=1000))
     setup = "from evo.core import lie_algebra as lie; " \
             "import numpy as np; so3 = lie.random_so3(); " \
-            "axis, angle = lie.so3_log(so3, False)"
-    print("time for 1000*lie.so3_exp(axis, angle): ",
-          timeit.timeit("lie.so3_exp(axis, angle)", setup=setup, number=1000))
+            "rotvec = lie.so3_log(so3, False)"
+    print("time for 1000*lie.so3_exp(rotvec): ",
+          timeit.timeit("lie.so3_exp(rotvec)", setup=setup, number=1000))
     """
     unit test
     """

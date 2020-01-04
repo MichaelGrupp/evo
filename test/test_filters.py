@@ -93,17 +93,17 @@ class TestFilterPairsByPath(unittest.TestCase):
 
 axis = np.array([1, 0, 0])
 poses_5 = [
-    lie.se3(lie.so3_exp(axis, 0.0), np.array([0, 0, 0])),
-    lie.se3(lie.so3_exp(axis, math.pi), np.array([0, 0, 0])),
-    lie.se3(lie.so3_exp(axis, 0.0), np.array([0, 0, 0])),
-    lie.se3(lie.so3_exp(axis, math.pi / 3), np.array([0, 0, 0])),
-    lie.se3(lie.so3_exp(axis, math.pi), np.array([0, 0, 0]))
+    lie.se3(lie.so3_exp(axis * 0.0), np.array([0, 0, 0])),
+    lie.se3(lie.so3_exp(axis * math.pi), np.array([0, 0, 0])),
+    lie.se3(lie.so3_exp(axis * 0.0), np.array([0, 0, 0])),
+    lie.se3(lie.so3_exp(axis * math.pi / 3), np.array([0, 0, 0])),
+    lie.se3(lie.so3_exp(axis * math.pi), np.array([0, 0, 0]))
 ]
 stamps_5 = np.array([0, 1, 2, 3, 4])
 
 axis = np.array([1, 0, 0])
-p0 = lie.se3(lie.so3_exp(axis, 0.0), np.array([0, 0, 0]))
-pd = lie.se3(lie.so3_exp(axis, math.pi / 3), np.array([1, 2, 3]))
+p0 = lie.se3(lie.so3_exp(axis * 0.0), np.array([0, 0, 0]))
+pd = lie.se3(lie.so3_exp(axis * (math.pi / 3.)), np.array([1, 2, 3]))
 p1 = np.dot(p0, pd)
 p2 = np.dot(p1, pd)
 p3 = np.dot(p2, pd)
@@ -113,8 +113,8 @@ stamps_6 = np.array([0, 1, 2, 3, 4])
 
 class TestFilterPairsByAngle(unittest.TestCase):
     def test_poses5(self):
-        target_angle = math.pi
         tol = 0.001
+        target_angle = math.pi - tol
         id_pairs = filters.filter_pairs_by_angle(poses_5, target_angle, tol,
                                                  all_pairs=False)
         self.assertEqual(id_pairs, [(0, 1), (1, 2), (2, 4)])
@@ -127,8 +127,8 @@ class TestFilterPairsByAngle(unittest.TestCase):
         self.assertEqual(id_pairs, [(0, 1), (0, 4), (1, 2), (2, 4)])
 
     def test_poses6(self):
-        target_angle = math.pi
         tol = 0.001
+        target_angle = math.pi - tol
         id_pairs = filters.filter_pairs_by_angle(poses_6, target_angle, tol,
                                                  all_pairs=False)
         self.assertEqual(id_pairs, [(0, 3)])

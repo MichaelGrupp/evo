@@ -20,10 +20,18 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
-import scipy.linalg as sl
+import scipy.spatial.transform as sst
+from distutils.version import LooseVersion
+from scipy import __version__ as scipy_version
 
 from evo import EvoException
 from evo.core import transformations as tr
+
+# scipy.spatial.transform.Rotation.*_matrix() was introduced in 1.4,
+# which is not available for Python 2.7.
+# Use the legacy direct cosine matrix naming (*_dcm()) if needed.
+# TODO: remove this junk once Python 2.7 is finally dead in ROS.
+_USE_DCM_NAME = LooseVersion(scipy_version) < LooseVersion("1.4")
 
 
 class LieAlgebraException(EvoException):
@@ -50,35 +58,41 @@ def vee(m):
     return np.array([-m[1, 2], m[0, 2], -m[0, 1]])
 
 
-def so3_exp(axis, angle):
+def so3_exp(rotation_vector):
     """
-    Computes an SO(3) matrix from an axis/angle representation.
-    Code source: http://stackoverflow.com/a/25709323
-    :param axis: 3x1 rotation axis (unit vector!)
-    :param angle: radians
+    Computes an SO(3) matrix from a rotation vector representation.
+    :param axis: 3x1 rotation vector (axis * angle)
     :return: SO(3) rotation matrix (matrix exponential of so(3))
     """
-    return sl.expm(np.cross(np.eye(3), axis / np.linalg.norm(axis) * angle))
-
+    if _USE_DCM_NAME:
+        return sst.Rotation.from_rotvec(rotation_vector).as_dcm()
+    else:
+        return sst.Rotation.from_rotvec(rotation_vector).as_matrix()
 
 def so3_log(r, return_angle_only=True, return_skew=False):
     """
     :param r: SO(3) rotation matrix
     :param return_angle_only: return only the angle (default)
     :param return_skew: return skew symmetric Lie algebra element
-    :return: axis/angle
-        or if skew:
+    :return:
+        if return_angle_only is False:
+            rotation vector (axis * angle)
+        or if return_skew is True:
              3x3 skew symmetric logarithmic map in so(3) (Ma, Soatto eq. 2.8)
     """
     if not is_so3(r):
         raise LieAlgebraException("matrix is not a valid SO(3) group element")
-    if return_angle_only and not return_skew:
-        return np.arccos(min(1, max(-1, (np.trace(r) - 1) / 2)))
-    angle, axis, _ = tr.rotation_from_matrix(se3(r, [0, 0, 0]))
-    if return_skew:
-        return hat(axis * angle)
+    if _USE_DCM_NAME:
+        rotation_vector = sst.Rotation.from_dcm(r).as_rotvec()
     else:
-        return axis, angle
+        rotation_vector = sst.Rotation.from_matrix(r).as_rotvec()
+    angle = np.linalg.norm(rotation_vector)
+    if return_angle_only and not return_skew:
+        return angle
+    if return_skew:
+        return hat(rotation_vector)
+    else:
+        return rotation_vector
 
 
 def se3(r=np.eye(3), t=np.array([0, 0, 0])):

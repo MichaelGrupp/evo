@@ -51,7 +51,7 @@ evo has several advantages over other public benchmarking tools:
 
 Installation is easy-peasy if you're familiar with this: https://xkcd.com/1987/#
 
-**Python 3.4+** and **Python 2.7** are both supported. If you want to use the ROS bagfile interface, first check which Python version is used by your ROS installation and install accordingly.
+**Python 3.5+** and **Python 2.7** are both supported. If you want to use the ROS bagfile interface, first check which Python version is used by your ROS installation and install accordingly.
 You might also want to use a [virtual environment](https://github.com/MichaelGrupp/evo/blob/master/doc/install_in_virtualenv.md).
 
 ### From PyPi

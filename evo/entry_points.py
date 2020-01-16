@@ -20,6 +20,8 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from __future__ import print_function
+
 import argparse
 import logging
 
@@ -85,7 +87,7 @@ def launch(main_module, parser):
         args = merge_config(args)
     import sys
     from evo.tools import settings
-    from evo import EvoException
+    from evo import EvoException, NullHandler
     try:
         main_module.run(args)
     except KeyboardInterrupt:
@@ -95,7 +97,14 @@ def launch(main_module, parser):
     except EvoException as e:
         logger.error(e.message)
         sys.exit(1)
-    except:
+    except Exception:
+        base_logger = logging.getLogger("evo")
+        if len(base_logger.handlers) == 0 or isinstance(
+                base_logger.handlers[0], NullHandler):
+            # In case logging couldn't be configured, print & exit directly.
+            import traceback
+            traceback.print_exc()
+            sys.exit(1)
         logger.exception("Unhandled error in " + main_module.__name__)
         print("")
         err_msg = "evo module " + main_module.__name__ + " crashed"

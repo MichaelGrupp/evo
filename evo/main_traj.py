@@ -89,6 +89,9 @@ def parser():
     output_opts.add_argument(
         "--plot_mode", help="the axes for  plot projection", default="xyz",
         choices=["xy", "xz", "yx", "yz", "zx", "zy", "xyz"])
+    output_opts.add_argument(
+        "--ros_map_yaml", help="yaml file of an ROS 2D map image (.pgm/.png)"
+        " that will be drawn into the plot", default=None)
     output_opts.add_argument("--save_plot", help="path to save plot",
                              default=None)
     output_opts.add_argument("--serialize_plot",
@@ -394,6 +397,9 @@ def run(args):
                 color=SETTINGS.plot_reference_color, label=short_traj_name,
                 alpha=SETTINGS.plot_reference_alpha)
 
+        if args.ros_map_yaml:
+            plot.ros_map(ax_traj, args.ros_map_yaml)
+
         cmap_colors = None
         if SETTINGS.plot_multi_cmap.lower() != "none":
             cmap = getattr(cm, SETTINGS.plot_multi_cmap)
@@ -413,7 +419,8 @@ def run(args):
             plot.traj(ax_traj, plot_mode, traj,
                       SETTINGS.plot_trajectory_linestyle, color,
                       short_traj_name, alpha=SETTINGS.plot_trajectory_alpha)
-            plot.draw_coordinate_axes(ax_traj, traj, plot_mode, SETTINGS.plot_axis_marker_scale)
+            plot.draw_coordinate_axes(ax_traj, traj, plot_mode,
+                                      SETTINGS.plot_axis_marker_scale)
             if args.ref and isinstance(ref_traj, trajectory.PoseTrajectory3D):
                 start_time = ref_traj.timestamps[0]
             else:

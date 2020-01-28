@@ -36,6 +36,7 @@ import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.art3d as art3d
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.collections import LineCollection
+from matplotlib.transforms import Affine2D
 
 import numpy as np
 import seaborn as sns
@@ -599,3 +600,45 @@ def error_array(fig, err_array, x_array=None, statistics=None, threshold=None,
     plt.title(title)
     plt.legend(frameon=True)
     return fig
+
+
+def ros_map(ax, yaml_path, cmap="Greys_r",
+            mask_unknown_value=SETTINGS.ros_map_unknown_cell_value):
+    """
+    Inserts an image of an 2D ROS map into the plot axis.
+    See: http://wiki.ros.org/map_server#Map_format
+    :param ax: 2D matplotlib axes
+    :param yaml_path: yaml file that contains the metadata of the map image
+    :param cmap: color map used to map scalar data to colors
+    :param mask_unknown_value: uint8 value that represents unknown cells.
+                               If specified, these cells will be masked out.
+                               If set to None or False, nothing will be masked.
+    """
+    import yaml
+
+    if isinstance(ax, Axes3D):
+        raise PlotException("ros_map can't be drawn into a 3D axis")
+    with open(yaml_path) as f:
+        metadata = yaml.safe_load(f)
+
+    # Load map image, mask unknown cells if desired.
+    image_path = metadata["image"]
+    if not os.path.isabs(image_path):
+        image_path = os.path.join(os.path.dirname(yaml_path), image_path)
+    image = plt.imread(image_path)
+    if mask_unknown_value:
+        mask_unknown_value = np.uint8(mask_unknown_value)
+        image = np.ma.masked_where(image == mask_unknown_value, image)
+
+    # Squeeze extent to reflect metric coordinates.
+    resolution = metadata["resolution"]
+    n_rows, n_cols = image.shape[0], image.shape[1]
+    extent = [0, n_cols * resolution, 0, n_rows * resolution]
+    ax_image = ax.imshow(image, origin="upper", cmap=cmap, extent=extent,
+                         zorder=1)
+
+    # Transform map frame to plot axis origin.
+    map_to_pixel_origin = Affine2D()
+    map_to_pixel_origin.translate(metadata["origin"][0], metadata["origin"][1])
+    map_to_pixel_origin.rotate(metadata["origin"][2])
+    ax_image.set_transform(map_to_pixel_origin + ax.transData)

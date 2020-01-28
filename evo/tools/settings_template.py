@@ -144,6 +144,13 @@ DEFAULT_SETTINGS_DICT_DOC = {
         True,
         "Equal axes ratio in 'xyz' plot mode for realistic trajectory plots."
     ),
+    "ros_map_unknown_cell_value": (
+        205,
+        "uint8 value that represents unknown cells in a ROS map image.\n"
+        "Used to remove unknown cell pixels when a ROS map is added to a plot."
+        "map_saver uses 205, other tools might not.\n"
+        "(for example, Cartographer uses 128 for images of probability grids)"
+    ),
     "save_traj_in_zip": (
         False,
         "Store backup trajectories in result zip files (increases size)."

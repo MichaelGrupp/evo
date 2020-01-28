@@ -71,9 +71,8 @@ pip install --editable . --upgrade --no-binary evo
 
 **Python packages**
 
-evo has the following dependencies that are ***automatically resolved*** during installation:
-
-*numpy, matplotlib, scipy, pandas, seaborn, natsort, argcomplete, colorama, pygments, enum34 (only Python 2.7)*
+evo has some required dependencies that are ***automatically resolved*** during installation with pip.
+They are specified in the `install_requires` part of the `setup.py` file.
 
 **PyQt5 / PyQt4 (optional)**
 

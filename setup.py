@@ -105,7 +105,9 @@ setup(
         "natsort",
         "argcomplete",
         "colorama>=0.3",
-        "pygments"
+        "pygments",
+        "pyyaml",
+        "pillow",
         #jupyter
     ] + (["enum34"] if python_below_34() else []),
     classifiers=[

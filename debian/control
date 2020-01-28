@@ -1,0 +1,13 @@
+Source: evo
+Maintainer: Michael Grupp <michael.grupp@tum.de>
+Section: python
+Priority: optional
+Build-Depends: dh-python, python3-setuptools, python3-all, debhelper (>= 9)
+Standards-Version: 3.9.6
+Homepage: https://github.com/MichaelGrupp/evo
+
+Package: python3-evo
+Architecture: all
+Depends: ${misc:Depends}, ${python3:Depends}
+Recommends: python3-pyqt5, python3-rosbag
+Description: Python package for the evaluation of odometry and SLAM

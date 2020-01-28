@@ -1,0 +1,3 @@
+#!/bin/bash
+
+activate-global-python-argcomplete3

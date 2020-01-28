@@ -619,7 +619,7 @@ def ros_map(ax, yaml_path, cmap="Greys_r",
     if isinstance(ax, Axes3D):
         raise PlotException("ros_map can't be drawn into a 3D axis")
     with open(yaml_path) as f:
-        metadata = yaml.load(f)
+        metadata = yaml.safe_load(f)
 
     # Load map image, mask unknown cells if desired.
     image_path = metadata["image"]

@@ -120,6 +120,9 @@ def plot(args, result, traj_ref, traj_est):
     # Plot the values color-mapped onto the trajectory.
     fig2 = plt.figure(figsize=SETTINGS.plot_figsize)
     ax = plot.prepare_axis(fig2, plot_mode)
+    if args.ros_map_yaml:
+        plot.ros_map(ax, args.ros_map_yaml)
+
     plot.traj(ax, plot_mode, traj_ref, style=SETTINGS.plot_reference_linestyle,
               color=SETTINGS.plot_reference_color, label='reference',
               alpha=SETTINGS.plot_reference_alpha)

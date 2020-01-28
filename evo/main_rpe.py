@@ -94,6 +94,9 @@ def parser():
         action="store_true",
         help="plot the full, unsynchronized reference trajectory",
     )
+    output_opts.add_argument(
+        "--ros_map_yaml", help="yaml file of an ROS 2D map image (.pgm/.png)"
+        " that will be drawn into the plot", default=None)
     output_opts.add_argument("--save_plot", default=None,
                              help="path to save plot")
     output_opts.add_argument("--serialize_plot", default=None,

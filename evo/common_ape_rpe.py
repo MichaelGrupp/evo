@@ -121,7 +121,7 @@ def plot(args, result, traj_ref, traj_est):
     fig2 = plt.figure(figsize=SETTINGS.plot_figsize)
     ax = plot.prepare_axis(fig2, plot_mode)
     if args.ros_map_yaml:
-        plot.ros_map(ax, args.ros_map_yaml)
+        plot.ros_map(ax, args.ros_map_yaml, plot_mode)
 
     plot.traj(ax, plot_mode, traj_ref, style=SETTINGS.plot_reference_linestyle,
               color=SETTINGS.plot_reference_color, label='reference',

@@ -398,7 +398,7 @@ def run(args):
                 alpha=SETTINGS.plot_reference_alpha)
 
         if args.ros_map_yaml:
-            plot.ros_map(ax_traj, args.ros_map_yaml)
+            plot.ros_map(ax_traj, args.ros_map_yaml, plot_mode)
 
         cmap_colors = None
         if SETTINGS.plot_multi_cmap.lower() != "none":

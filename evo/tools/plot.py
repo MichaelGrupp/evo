@@ -623,7 +623,7 @@ def ros_map(ax, yaml_path, plot_mode, cmap="Greys_r",
         # Image lies in xy / yx plane, nothing to see here.
         return
     x_idx, y_idx, _ = plot_mode_to_idx(plot_mode)
-    
+
     with open(yaml_path) as f:
         metadata = yaml.safe_load(f)
 

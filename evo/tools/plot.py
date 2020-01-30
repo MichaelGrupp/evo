@@ -602,12 +602,13 @@ def error_array(fig, err_array, x_array=None, statistics=None, threshold=None,
     return fig
 
 
-def ros_map(ax, yaml_path, cmap="Greys_r",
+def ros_map(ax, yaml_path, plot_mode, cmap="Greys_r",
             mask_unknown_value=SETTINGS.ros_map_unknown_cell_value):
     """
     Inserts an image of an 2D ROS map into the plot axis.
     See: http://wiki.ros.org/map_server#Map_format
     :param ax: 2D matplotlib axes
+    :param plot_mode: a 2D PlotMode
     :param yaml_path: yaml file that contains the metadata of the map image
     :param cmap: color map used to map scalar data to colors
     :param mask_unknown_value: uint8 value that represents unknown cells.
@@ -618,6 +619,11 @@ def ros_map(ax, yaml_path, cmap="Greys_r",
 
     if isinstance(ax, Axes3D):
         raise PlotException("ros_map can't be drawn into a 3D axis")
+    if plot_mode in {PlotMode.xz, PlotMode.yz, PlotMode.zx, PlotMode.zy}:
+        # Image lies in xy / yx plane, nothing to see here.
+        return
+    x_idx, y_idx, _ = plot_mode_to_idx(plot_mode)
+
     with open(yaml_path) as f:
         metadata = yaml.safe_load(f)
 
@@ -632,13 +638,21 @@ def ros_map(ax, yaml_path, cmap="Greys_r",
 
     # Squeeze extent to reflect metric coordinates.
     resolution = metadata["resolution"]
-    n_rows, n_cols = image.shape[0], image.shape[1]
+    n_rows, n_cols = image.shape[x_idx], image.shape[y_idx]
     extent = [0, n_cols * resolution, 0, n_rows * resolution]
+    if plot_mode == PlotMode.yx:
+        image = np.rot90(image)
+        image = np.fliplr(image)
     ax_image = ax.imshow(image, origin="upper", cmap=cmap, extent=extent,
                          zorder=1)
 
     # Transform map frame to plot axis origin.
     map_to_pixel_origin = Affine2D()
-    map_to_pixel_origin.translate(metadata["origin"][0], metadata["origin"][1])
-    map_to_pixel_origin.rotate(metadata["origin"][2])
+    map_to_pixel_origin.translate(metadata["origin"][x_idx],
+                                  metadata["origin"][y_idx])
+    angle = metadata["origin"][2]
+    if plot_mode == PlotMode.yx:
+        # Rotation axis (z) points downwards.
+        angle *= -1
+    map_to_pixel_origin.rotate(angle)
     ax_image.set_transform(map_to_pixel_origin + ax.transData)

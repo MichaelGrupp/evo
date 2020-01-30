@@ -433,8 +433,9 @@ def run(args):
                           color, short_traj_name,
                           alpha=SETTINGS.plot_trajectory_alpha,
                           start_timestamp=start_time)
-            fig_rpy.text(0., 0.005, "euler_angle_sequence: {}".format(
-                SETTINGS.euler_angle_sequence), fontsize=6)
+            if not SETTINGS.plot_usetex:
+                fig_rpy.text(0., 0.005, "euler_angle_sequence: {}".format(
+                    SETTINGS.euler_angle_sequence), fontsize=6)
 
         plot_collection.add_figure("trajectories", fig_traj)
         plot_collection.add_figure("xyz_view", fig_xyz)

@@ -17,10 +17,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 
 import numpy as np
 
 from evo import EvoException
+
+logger = logging.getLogger(__name__)
 
 
 class GeometryException(EvoException):
@@ -51,6 +54,12 @@ def umeyama_alignment(x, y, with_scale=False):
     # variance, eq. 36
     # "transpose" for column subtraction
     sigma_x = 1.0 / n * (np.linalg.norm(x - mean_x[:, np.newaxis])**2)
+    sigma_y = 1.0 / n * (np.linalg.norm(y - mean_y[:, np.newaxis])**2)
+
+    # trajectories collapse to almost a single point
+    if sigma_x < 1e-8 or sigma_y < 1e-8:
+        logger.debug("Either of trajectories collapse to one point.")
+        return None, None, 0.0
 
     # covariance matrix, eq. 38
     outer_sum = np.zeros((m, m))

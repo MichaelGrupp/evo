@@ -54,12 +54,6 @@ def umeyama_alignment(x, y, with_scale=False):
     # variance, eq. 36
     # "transpose" for column subtraction
     sigma_x = 1.0 / n * (np.linalg.norm(x - mean_x[:, np.newaxis])**2)
-    sigma_y = 1.0 / n * (np.linalg.norm(y - mean_y[:, np.newaxis])**2)
-
-    # trajectories collapse to almost a single point
-    if sigma_x < 1e-8 or sigma_y < 1e-8:
-        logger.debug("Either of trajectories collapse to one point.")
-        return None, None, 0.0
 
     # covariance matrix, eq. 38
     outer_sum = np.zeros((m, m))
@@ -69,6 +63,9 @@ def umeyama_alignment(x, y, with_scale=False):
 
     # SVD (text betw. eq. 38 and 39)
     u, d, v = np.linalg.svd(cov_xy)
+    if np.count_nonzero(d > np.finfo(d.dtype).eps) < m - 1:
+        raise GeometryException("Degenerate covariance rank, "
+                                "Umeyama alignment is not possible")
 
     # S matrix, eq. 43
     s = np.eye(m)

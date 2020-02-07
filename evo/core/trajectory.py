@@ -393,12 +393,14 @@ def align_trajectory(traj, traj_ref, correct_scale=False,
         logger.debug("Aligning using Umeyama's method..." +
                      (" (with scale correction)" if with_scale else ""))
     if n == -1:
-        r_a, t_a, s = geometry.umeyama_alignment(
-            traj_aligned.positions_xyz.T, traj_ref.positions_xyz.T, with_scale)
+        r_a, t_a, s = geometry.umeyama_alignment(traj_aligned.positions_xyz.T,
+                                                 traj_ref.positions_xyz.T,
+                                                 with_scale)
     else:
         r_a, t_a, s = geometry.umeyama_alignment(
             traj_aligned.positions_xyz[:n, :].T,
             traj_ref.positions_xyz[:n, :].T, with_scale)
+
     if not correct_only_scale:
         logger.debug("Rotation of alignment:\n{}"
                      "\nTranslation of alignment:\n{}".format(r_a, t_a))

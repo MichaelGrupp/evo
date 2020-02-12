@@ -95,6 +95,14 @@ class TestPosePath3D(unittest.TestCase):
         # traj_transformed.transform(lie.se3_inverse(t))
         self.assertAlmostEqual(path_transformed.path_length, path.path_length)
 
+    def test_transform_sim3(self):
+        path = helpers.fake_path(10)
+        path_transformed = copy.deepcopy(path)
+        t = lie.sim3(r=lie.random_so3(), t=np.ones(3), s=1.234)
+        path_transformed.transform(t)
+        self.assertAlmostEqual(path_transformed.path_length,
+                               path.path_length * 1.234)
+
     def test_scale(self):
         path = helpers.fake_path(10)
         path_scaled = copy.deepcopy(path)
@@ -204,6 +212,7 @@ class TestTrajectoryAlignment(unittest.TestCase):
 
         with self.assertRaises(GeometryException):
             trajectory.align_trajectory(traj_1, traj_2, correct_scale=True)
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

@@ -19,6 +19,8 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from __future__ import division
+
 import numpy as np
 import scipy.spatial.transform as sst
 from distutils.version import LooseVersion
@@ -136,6 +138,21 @@ def se3_inverse(p):
     r_inv = p[:3, :3].transpose()
     t_inv = -r_inv.dot(p[:3, 3])
     return se3(r_inv, t_inv)
+
+
+def sim3_inverse(a):
+    """
+    :param a: Sim(3) matrix in form:
+              s*R  t
+               0   1
+    :return: inverse Sim(3) matrix
+    """
+    # det(s*R) = s^3 * det(R)   | det(R) = 1
+    # s = det(s*R) ^ 1/3
+    s = np.power(np.linalg.det(a[:3, :3]), 1/3)
+    r = (1/s * a[:3, :3]).T
+    t = -r.dot(1/s * a[:3, 3])
+    return sim3(r, t, 1/s)
 
 
 def is_so3(r):

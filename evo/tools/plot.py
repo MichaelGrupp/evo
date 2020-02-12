@@ -480,8 +480,6 @@ def traj_rpy(axarr, traj, style='-', color='black', label="", alpha=1.0):
     :param color: matplotlib color
     :param label: label (for legend)
     :param alpha: alpha value for transparency
-    :param start_timestamp: optional start time of the reference
-                            (for x-axis alignment)
     """
     if len(axarr) != 3:
         raise PlotException("expected an axis array with 3 subplots - got " +

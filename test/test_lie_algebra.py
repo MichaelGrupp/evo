@@ -127,6 +127,15 @@ class TestSim3(unittest.TestCase):
             np.equal(x,
                      lie.se3(r).dot(np.array([s, 0, 0, 1]))).all())
 
+    def test_sim3_inverse(self):
+        r = lie.random_so3()
+        t = np.array([1, 2, 3])
+        s = random.random() * 10        
+        p = lie.sim3(r, t, s)
+        self.assertTrue(lie.is_sim3(p, s))     
+        p_inv = lie.sim3_inverse(p)
+        self.assertTrue(np.allclose(p_inv.dot(p), np.eye(4)))
+
 
 if __name__ == '__main__':
     """

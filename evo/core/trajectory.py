@@ -142,14 +142,11 @@ class PosePath3D(object):
 
     def transform(self, t, right_mul=False, propagate=False):
         """
-        apply a left or right multiplicative SE(3) transformation to the whole path
-        :param t: a valid SE(3) matrix
+        apply a left or right multiplicative transformation to the whole path
+        :param t: a 4x4 transformation matrix (e.g. SE(3) or Sim(3))
         :param right_mul: whether to apply it right-multiplicative or not
         :param propagate: whether to propagate drift with RHS transformations
         """
-        if not lie.is_se3(t):
-            raise TrajectoryException(
-                "transformation is not a valid SE(3) matrix")
         if right_mul and not propagate:
             # Transform each pose individually.
             self._poses_se3 = [np.dot(p, t) for p in self.poses_se3]

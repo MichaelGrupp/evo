@@ -98,7 +98,7 @@ class TestPosePath3D(unittest.TestCase):
     def test_transform_sim3(self):
         path = helpers.fake_path(10)
         path_transformed = copy.deepcopy(path)
-        t = lie.sim3(r=lie.random_so3(), t=np.ones(), s=1.234)
+        t = lie.sim3(r=lie.random_so3(), t=np.ones(3), s=1.234)
         path_transformed.transform(t)
         self.assertAlmostEqual(path_transformed.path_length,
                                path.path_length * 1.234)

@@ -421,18 +421,12 @@ def run(args):
                       short_traj_name, alpha=SETTINGS.plot_trajectory_alpha)
             plot.draw_coordinate_axes(ax_traj, traj, plot_mode,
                                       SETTINGS.plot_axis_marker_scale)
-            if args.ref and isinstance(ref_traj, trajectory.PoseTrajectory3D):
-                start_time = ref_traj.timestamps[0]
-            else:
-                start_time = None
             plot.traj_xyz(axarr_xyz, traj, SETTINGS.plot_trajectory_linestyle,
                           color, short_traj_name,
-                          alpha=SETTINGS.plot_trajectory_alpha,
-                          start_timestamp=start_time)
+                          alpha=SETTINGS.plot_trajectory_alpha)
             plot.traj_rpy(axarr_rpy, traj, SETTINGS.plot_trajectory_linestyle,
                           color, short_traj_name,
-                          alpha=SETTINGS.plot_trajectory_alpha,
-                          start_timestamp=start_time)
+                          alpha=SETTINGS.plot_trajectory_alpha)
             if not SETTINGS.plot_usetex:
                 fig_rpy.text(0., 0.005, "euler_angle_sequence: {}".format(
                     SETTINGS.euler_angle_sequence), fontsize=6)

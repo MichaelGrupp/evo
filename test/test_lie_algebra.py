@@ -130,9 +130,9 @@ class TestSim3(unittest.TestCase):
     def test_sim3_inverse(self):
         r = lie.random_so3()
         t = np.array([1, 2, 3])
-        s = random.random() * 10        
+        s = random.random() * 10
         p = lie.sim3(r, t, s)
-        self.assertTrue(lie.is_sim3(p, s))     
+        self.assertTrue(lie.is_sim3(p, s))
         p_inv = lie.sim3_inverse(p)
         self.assertTrue(np.allclose(p_inv.dot(p), np.eye(4)))
 

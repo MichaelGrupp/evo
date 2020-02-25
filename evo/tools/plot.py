@@ -383,6 +383,7 @@ def traj_colormap(ax, traj, array, plot_mode, min_map, max_map, title=""):
     colors = [mapper.to_rgba(a) for a in array]
     line_collection = colored_line_collection(pos, colors, plot_mode)
     ax.add_collection(line_collection)
+    ax.autoscale_view(True, True, True)
     if plot_mode == PlotMode.xyz:
         ax.set_zlim(
             np.amin(traj.positions_xyz[:, 2]),

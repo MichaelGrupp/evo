@@ -595,7 +595,7 @@ def error_array(fig, err_array, x_array=None, statistics=None, threshold=None,
 
 
 def ros_map(ax, yaml_path, plot_mode, cmap="Greys_r",
-            mask_unknown_value=SETTINGS.ros_map_unknown_cell_value):
+            mask_unknown_value=SETTINGS.ros_map_unknown_cell_value, alpha=1.0):
     """
     Inserts an image of an 2D ROS map into the plot axis.
     See: http://wiki.ros.org/map_server#Map_format
@@ -636,7 +636,7 @@ def ros_map(ax, yaml_path, plot_mode, cmap="Greys_r",
         image = np.rot90(image)
         image = np.fliplr(image)
     ax_image = ax.imshow(image, origin="upper", cmap=cmap, extent=extent,
-                         zorder=1)
+                         zorder=1, alpha=alpha)
 
     # Transform map frame to plot axis origin.
     map_to_pixel_origin = Affine2D()

@@ -143,6 +143,12 @@ def plot(args, result, traj_ref, traj_est):
                        title="Error mapped onto trajectory")
     plot.draw_coordinate_axes(ax, traj_est, plot_mode,
                               SETTINGS.plot_axis_marker_scale)
+    if SETTINGS.plot_pose_correspondences:
+        plot.draw_correspondence_edges(
+            ax, traj_est, traj_ref, plot_mode,
+            style=SETTINGS.plot_pose_correspondences_linestyle,
+            color=SETTINGS.plot_reference_color,
+            alpha=SETTINGS.plot_reference_alpha)
     fig2.axes.append(ax)
 
     plot_collection = plot.PlotCollection(result.info["title"])

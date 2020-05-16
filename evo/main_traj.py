@@ -326,7 +326,12 @@ def run(args):
     if args.n_to_align != -1 and not (args.align or args.correct_scale):
         die("--n_to_align is useless without --align or/and --correct_scale")
 
-    if args.sync or args.align or args.correct_scale or args.align_origin:
+    # TODO: this is fugly, but is a quick solution for remembering each synced
+    # reference when plotting pose correspondences later...
+    synced = (args.subcommand == "kitti" and ref_traj) or any(
+        (args.sync, args.align, args.correct_scale, args.align_origin))
+    synced_refs = {}
+    if synced:
         from evo.core import sync
         if not args.ref:
             logger.debug(SEP)
@@ -352,6 +357,8 @@ def run(args):
                 logger.debug("Aligning {}'s origin to reference.".format(name))
                 trajectories[name] = trajectory.align_trajectory_origin(
                     trajectories[name], ref_traj_tmp)
+            if SETTINGS.plot_pose_correspondences:
+                synced_refs[name] = ref_traj_tmp
 
     print_compact_name = not args.subcommand == "bag"
     for name, traj in trajectories.items():
@@ -421,6 +428,11 @@ def run(args):
                       short_traj_name, alpha=SETTINGS.plot_trajectory_alpha)
             plot.draw_coordinate_axes(ax_traj, traj, plot_mode,
                                       SETTINGS.plot_axis_marker_scale)
+            if ref_traj and synced and SETTINGS.plot_pose_correspondences:
+                plot.draw_correspondence_edges(
+                    ax_traj, traj, synced_refs[name], plot_mode, color=color,
+                    style=SETTINGS.plot_pose_correspondences_linestyle,
+                    alpha=SETTINGS.plot_trajectory_alpha)
             plot.traj_xyz(axarr_xyz, traj, SETTINGS.plot_trajectory_linestyle,
                           color, short_traj_name,
                           alpha=SETTINGS.plot_trajectory_alpha)

@@ -55,6 +55,16 @@ DEFAULT_SETTINGS_DICT_DOC = {
         get_default_plot_backend(),
         "matplotlib backend - default: 'Qt{4, 5}Agg' (if PyQt is installed) or 'TkAgg'."
     ),
+    "plot_pose_correspondences": (
+        False,
+        "If enabled, lines will be plotted that connect corresponding poses"
+        " between the reference and synced trajectories."
+    ),
+    "plot_pose_correspondences_linestyle": (
+        "dotted",
+        "Style of pose correspondence markers: "
+        "'solid', 'dashed', 'dashdot' or 'dotted'"
+    ),
     "plot_statistics": (
         ["rmse", "median", "mean", "std", "min", "max"],
         ("Statistics that are included in plots of evo_{ape, rpe, res}.\n"

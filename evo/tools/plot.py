@@ -339,7 +339,7 @@ def traj(ax, plot_mode, traj, style='-', color='black', label="", alpha=1.0):
 
 
 def colored_line_collection(xyz, colors, plot_mode=PlotMode.xy,
-                            linestyles="solid", step=1):
+                            linestyles="solid", step=1, alpha=1.):
     if len(xyz) / step != len(colors):
         raise PlotException(
             "color values don't have correct length: %d vs. %d" %
@@ -354,10 +354,11 @@ def colored_line_collection(xyz, colors, plot_mode=PlotMode.xy,
               for x_1, x_2 in zip(xyz[:-1:step, z_idx], xyz[1::step, z_idx])]
         segs = [list(zip(x, y, z)) for x, y, z in zip(xs, ys, zs)]
         line_collection = art3d.Line3DCollection(segs, colors=colors,
+                                                 alpha=alpha,
                                                  linestyles=linestyles)
     else:
         segs = [list(zip(x, y)) for x, y in zip(xs, ys)]
-        line_collection = LineCollection(segs, colors=colors,
+        line_collection = LineCollection(segs, colors=colors, alpha=alpha,
                                          linestyle=linestyles)
     return line_collection
 
@@ -442,7 +443,7 @@ def draw_coordinate_axes(ax, traj, plot_mode, marker_scale=0.1, x_color="r",
 
 
 def draw_correspondence_edges(ax, traj_1, traj_2, plot_mode, style='-',
-                              color="black"):
+                              color="black", alpha=1.):
     """
     Draw edges between corresponding poses of two trajectories.
     Trajectories must be synced, i.e. having the same number of poses.
@@ -451,6 +452,7 @@ def draw_correspondence_edges(ax, traj_1, traj_2, plot_mode, style='-',
     :param plot_mode: PlotMode value
     :param style: matplotlib line style
     :param color: matplotlib color
+    :param alpha: alpha value for transparency
     """
     if not traj_1.num_poses == traj_2.num_poses:
         raise PlotException(
@@ -462,7 +464,8 @@ def draw_correspondence_edges(ax, traj_1, traj_2, plot_mode, style='-',
     interweaved_positions[1::2, :] = traj_2.positions_xyz
     colors = np.array(n * [color])
     markers = colored_line_collection(
-        interweaved_positions, colors, plot_mode, step=2)
+        interweaved_positions, colors, plot_mode, step=2, alpha=alpha,
+        linestyles=style)
     ax.add_collection(markers)
 
 

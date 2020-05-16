@@ -27,7 +27,7 @@ jobs:
     matrix:
       ROS-melodic:
         dockerfile: 'Dockerfile.rosmelodic'
-        imageName: 'ubuntu-16.04'
+        imageName: 'ubuntu-latest'
   pool:
     vmImage: $(imageName)
   steps:
@@ -41,19 +41,19 @@ jobs:
     matrix:
       Python35-ubuntu:
         python.version: '3.5'
-        imageName: 'ubuntu-16.04'
+        imageName: 'ubuntu-latest'
       Python36-ubuntu:
         python.version: '3.6'
-        imageName: 'ubuntu-16.04'
+        imageName: 'ubuntu-latest'
       Python37-ubuntu:
         python.version: '3.7'
-        imageName: 'ubuntu-16.04'
+        imageName: 'ubuntu-latest'
       Python37-mac:
         python.version: '3.7'
-        imageName: 'macos-10.13'
+        imageName: 'macOS-latest'
       Python37-windows:
         python.version: '3.7'
-        imageName: 'vs2017-win2016'
+        imageName: 'windows-latest'
     maxParallel: 10
   pool:
     vmImage: $(imageName)
@@ -85,7 +85,7 @@ jobs:
 - job: 'Publish'
   dependsOn: 'Test'
   pool:
-    vmImage: 'Ubuntu-16.04'
+    vmImage: 'ubuntu-latest'
 
   steps:
   - task: UsePythonVersion@0

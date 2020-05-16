@@ -441,6 +441,31 @@ def draw_coordinate_axes(ax, traj, plot_mode, marker_scale=0.1, x_color="r",
     ax.add_collection(markers)
 
 
+def draw_correspondence_edges(ax, traj_1, traj_2, plot_mode, style='-',
+                              color="black"):
+    """
+    Draw edges between corresponding poses of two trajectories.
+    Trajectories must be synced, i.e. having the same number of poses.
+    :param ax: plot axis
+    :param traj_{1,2}: trajectory.PosePath3D or trajectory.PoseTrajectory3D
+    :param plot_mode: PlotMode value
+    :param style: matplotlib line style
+    :param color: matplotlib color
+    """
+    if not traj_1.num_poses == traj_2.num_poses:
+        raise PlotException(
+            "trajectories must have same length to draw pose correspondences"
+            " - try to synchronize them first")
+    n = traj_1.num_poses
+    interweaved_positions = np.empty((n * 2, 3))
+    interweaved_positions[0::2, :] = traj_1.positions_xyz
+    interweaved_positions[1::2, :] = traj_2.positions_xyz
+    colors = np.array(n * [color])
+    markers = colored_line_collection(
+        interweaved_positions, colors, plot_mode, step=2)
+    ax.add_collection(markers)
+
+
 def traj_xyz(axarr, traj, style='-', color='black', label="", alpha=1.0):
     """
     plot a path/trajectory based on xyz coordinates into an axis

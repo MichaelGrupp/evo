@@ -469,7 +469,8 @@ def draw_correspondence_edges(ax, traj_1, traj_2, plot_mode, style='-',
     ax.add_collection(markers)
 
 
-def traj_xyz(axarr, traj, style='-', color='black', label="", alpha=1.0):
+def traj_xyz(axarr, traj, style='-', color='black', label="", alpha=1.0,
+             start_timestamp=None):
     """
     plot a path/trajectory based on xyz coordinates into an axis
     :param axarr: an axis array (for x, y & z)
@@ -479,12 +480,17 @@ def traj_xyz(axarr, traj, style='-', color='black', label="", alpha=1.0):
     :param color: matplotlib color
     :param label: label (for legend)
     :param alpha: alpha value for transparency
+    :param start_timestamp: optional start time of the reference
+                            (for x-axis alignment)
     """
     if len(axarr) != 3:
         raise PlotException("expected an axis array with 3 subplots - got " +
                             str(len(axarr)))
     if isinstance(traj, trajectory.PoseTrajectory3D):
-        x = traj.timestamps
+        if start_timestamp:
+            x = traj.timestamps - start_timestamp
+        else:
+            x = traj.timestamps
         xlabel = "$t$ (s)"
     else:
         x = range(0, len(traj.positions_xyz))
@@ -499,7 +505,8 @@ def traj_xyz(axarr, traj, style='-', color='black', label="", alpha=1.0):
         axarr[0].legend(frameon=True)
 
 
-def traj_rpy(axarr, traj, style='-', color='black', label="", alpha=1.0):
+def traj_rpy(axarr, traj, style='-', color='black', label="", alpha=1.0,
+             start_timestamp=None):
     """
     plot a path/trajectory's Euler RPY angles into an axis
     :param axarr: an axis array (for R, P & Y)
@@ -509,13 +516,18 @@ def traj_rpy(axarr, traj, style='-', color='black', label="", alpha=1.0):
     :param color: matplotlib color
     :param label: label (for legend)
     :param alpha: alpha value for transparency
+    :param start_timestamp: optional start time of the reference
+                            (for x-axis alignment)
     """
     if len(axarr) != 3:
         raise PlotException("expected an axis array with 3 subplots - got " +
                             str(len(axarr)))
     angles = traj.get_orientations_euler(SETTINGS.euler_angle_sequence)
     if isinstance(traj, trajectory.PoseTrajectory3D):
-        x = traj.timestamps
+        if start_timestamp:
+            x = traj.timestamps - start_timestamp
+        else:
+            x = traj.timestamps
         xlabel = "$t$ (s)"
     else:
         x = range(0, len(angles))

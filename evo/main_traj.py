@@ -87,6 +87,9 @@ def parser():
     output_opts.add_argument("-p", "--plot", help="show plot window",
                              action="store_true")
     output_opts.add_argument(
+        "--plot_relative_time", action="store_true",
+        help="show timestamps relative to the start of the reference")
+    output_opts.add_argument(
         "--plot_mode", help="the axes for  plot projection", default="xyz",
         choices=["xy", "xz", "yx", "yz", "zx", "zy", "xyz"])
     output_opts.add_argument(
@@ -384,7 +387,14 @@ def run(args):
         plot_mode = plot.PlotMode[args.plot_mode]
         ax_traj = plot.prepare_axis(fig_traj, plot_mode)
 
+        # for x-axis alignment starting from 0 with --plot_relative_time
+        start_time = None
+
         if args.ref:
+            if isinstance(ref_traj, trajectory.PoseTrajectory3D) \
+                    and args.plot_relative_time:
+                start_time = ref_traj.timestamps[0]
+
             short_traj_name = os.path.splitext(os.path.basename(args.ref))[0]
             if SETTINGS.plot_usetex:
                 short_traj_name = short_traj_name.replace("_", "\\_")
@@ -398,11 +408,13 @@ def run(args):
             plot.traj_xyz(
                 axarr_xyz, ref_traj, style=SETTINGS.plot_reference_linestyle,
                 color=SETTINGS.plot_reference_color, label=short_traj_name,
-                alpha=SETTINGS.plot_reference_alpha)
+                alpha=SETTINGS.plot_reference_alpha,
+                start_timestamp=start_time)
             plot.traj_rpy(
                 axarr_rpy, ref_traj, style=SETTINGS.plot_reference_linestyle,
                 color=SETTINGS.plot_reference_color, label=short_traj_name,
-                alpha=SETTINGS.plot_reference_alpha)
+                alpha=SETTINGS.plot_reference_alpha,
+                start_timestamp=start_time)
 
         if args.ros_map_yaml:
             plot.ros_map(ax_traj, args.ros_map_yaml, plot_mode)
@@ -435,10 +447,12 @@ def run(args):
                     alpha=SETTINGS.plot_trajectory_alpha)
             plot.traj_xyz(axarr_xyz, traj, SETTINGS.plot_trajectory_linestyle,
                           color, short_traj_name,
-                          alpha=SETTINGS.plot_trajectory_alpha)
+                          alpha=SETTINGS.plot_trajectory_alpha,
+                          start_timestamp=start_time)
             plot.traj_rpy(axarr_rpy, traj, SETTINGS.plot_trajectory_linestyle,
                           color, short_traj_name,
-                          alpha=SETTINGS.plot_trajectory_alpha)
+                          alpha=SETTINGS.plot_trajectory_alpha,
+                          start_timestamp=start_time)
             if not SETTINGS.plot_usetex:
                 fig_rpy.text(0., 0.005, "euler_angle_sequence: {}".format(
                     SETTINGS.euler_angle_sequence), fontsize=6)

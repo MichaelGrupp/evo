@@ -690,3 +690,9 @@ def ros_map(ax, yaml_path, plot_mode, cmap="Greys_r",
         angle *= -1
     map_to_pixel_origin.rotate(angle)
     ax_image.set_transform(map_to_pixel_origin + ax.transData)
+
+    # Initially flipped axes are lost for mysterious reasons...
+    if SETTINGS.plot_invert_xaxis:
+        ax.invert_xaxis()
+    if SETTINGS.plot_invert_yaxis:
+        ax.invert_yaxis()

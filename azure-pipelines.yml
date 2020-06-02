@@ -28,6 +28,9 @@ jobs:
       ROS-melodic:
         dockerfile: 'Dockerfile.rosmelodic'
         imageName: 'ubuntu-latest'
+      ROS-noetic:
+        dockerfile: 'Dockerfile.rosnoetic'
+        imageName: 'ubuntu-latest'
   pool:
     vmImage: $(imageName)
   steps:

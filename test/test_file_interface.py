@@ -167,7 +167,7 @@ class TestBagFile(MockFileTestCase):
         self.assertIsInstance(traj_in, PoseTrajectory3D)
         self.assertTrue(traj_in.check())
         self.assertTrue(traj_out == traj_in)
-        self.assertEquals(traj_in.meta["frame_id"], "map")
+        self.assertEqual(traj_in.meta["frame_id"], "map")
 
 
 class TestResultFile(MockFileTestCase):

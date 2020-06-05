@@ -22,6 +22,9 @@ COPY . container-local/
 # In here, for 'docker build', we have to do it manually.
 ENTRYPOINT ["container-local/.ci/ros_entrypoint.sh"]
 
+# Install tf2
+RUN apt-get update && apt-get -y install ros-noetic-tf2-ros
+
 # Use Python 3.x for ROS Noetic.
 RUN container-local/.ci/debian_install_pip3.sh
 

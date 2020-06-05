@@ -242,9 +242,16 @@ def get_supported_topics(bag_handle):
 def read_bag_trajectory(bag_handle, topic):
     """
     :param bag_handle: opened bag handle, from rosbag.Bag(...)
-    :param topic: trajectory topic of supported message type
+    :param topic: trajectory topic of supported message type,
+                  or a TF trajectory ID (e.g.: '/tf:map.base_link' )
     :return: trajectory.PoseTrajectory3D
     """
+    from evo.tools import tf_cache
+
+    # Use TfCache instead if it's a TF transform ID.
+    if tf_cache.instance().check_id(topic):
+        return tf_cache.instance().get_trajectory(bag_handle, identifier=topic)
+
     if not bag_handle.get_message_count(topic) > 0:
         raise FileInterfaceException("no messages for topic '" + topic +
                                      "' in bag")

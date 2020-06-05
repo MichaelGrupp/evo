@@ -208,7 +208,7 @@ def load_trajectories(args):
         bag = rosbag.Bag(args.bag)
         try:
             if args.all_topics:
-                topics = file_interface.get_supported_topics(bag)
+                topics = args.topics + file_interface.get_supported_topics(bag)
                 if args.ref in topics:
                     topics.remove(args.ref)
                 if len(topics) == 0:

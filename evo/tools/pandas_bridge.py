@@ -58,7 +58,7 @@ def result_to_df(result_obj, label=None):
     for name, array in result_obj.np_arrays.items():
         data["np_arrays"][name] = array
     if label is None and "est_name" in data["info"]:
-        label = os.path.splitext(os.path.basename(data["info"]["est_name"]))[0]
+        label = os.path.basename(data["info"]["est_name"])
     elif label is None:
         label = "unnamed_result"
     return pd.DataFrame(data=data).T.stack().to_frame(name=label)

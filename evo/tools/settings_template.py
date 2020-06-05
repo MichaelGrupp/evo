@@ -181,6 +181,15 @@ DEFAULT_SETTINGS_DICT_DOC = {
         True,
         "Transpose tables for export."
     ),
+    "tf_cache_lookup_frequency": (
+        10,
+        "Frequency for looking up transformations when loading trajectories \n"
+        "from a TF topic, in Hz."
+    ),
+    "tf_cache_max_time": (
+        1e4,
+        "TF transform cache time in seconds."
+    ),
 }
 # yapf: enable
 

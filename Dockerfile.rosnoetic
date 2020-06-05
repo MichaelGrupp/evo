@@ -23,7 +23,7 @@ COPY . container-local/
 ENTRYPOINT ["container-local/.ci/ros_entrypoint.sh"]
 
 # Install tf2
-apt-get -y install ros-noetic-tf2-ros
+RUN apt-get update && apt-get -y install ros-noetic-tf2-ros
 
 # Use Python 3.x for ROS Noetic.
 RUN container-local/.ci/debian_install_pip3.sh

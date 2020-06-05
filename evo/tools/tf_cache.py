@@ -25,8 +25,6 @@ import warnings
 
 import rospy
 import tf2_py
-from geometry_msgs.msg import TransformStamped
-from tf2_msgs.msg import TFMessage
 
 import numpy as np
 from evo import EvoException
@@ -104,17 +102,17 @@ class TfCache(object):
         self.bags.append(bag_handle.filename)
 
     @staticmethod
-    def split_id(id):
-        match = ROS_NAME_REGEX.findall(id)
+    def split_id(identifier):
+        match = ROS_NAME_REGEX.findall(identifier)
         if not len(match) == 3:
             raise TfCacheException(
                 "ID string malformed, it should look similar to this: "
                 "/tf:map.base_footprint")
         return tuple(match)
 
-    def check_id(self, id):
+    def check_id(self, identifier):
         try:
-            self.split_id(id)
+            self.split_id(identifier)
         except TfCacheException:
             return False
         return True
@@ -153,14 +151,14 @@ class TfCache(object):
         }
         return trajectory
 
-    def get_trajectory(self, bag_handle, id):
+    def get_trajectory(self, bag_handle, identifier):
         """
         Get a TF trajectory from a bag file. Updates or uses the cache.
         :param bag_handle: opened bag handle, from rosbag.Bag(...)
-        :param id: trajectory identifier <topic>:<parent_frame>.<child_frame>
-                   Example: /tf:map.base_link
+        :param identifier: trajectory ID <topic>:<parent_frame>.<child_frame>
+                           Example: /tf:map.base_link
         """
-        topic, parent, child = self.split_id(id)
+        topic, parent, child = self.split_id(identifier)
         logger.debug("Loading trajectory of transform '{} to {}' "
                      "from topic {}".format(parent, child, topic))
         with warnings.catch_warnings():

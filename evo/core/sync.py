@@ -75,7 +75,7 @@ def associate_trajectories(traj_1, traj_2, max_diff=0.01, offset_2=0.0,
     snd_longer = len(traj_2.timestamps) > len(traj_1.timestamps)
     traj_long = copy.deepcopy(traj_2) if snd_longer else copy.deepcopy(traj_1)
     traj_short = copy.deepcopy(traj_1) if snd_longer else copy.deepcopy(traj_2)
-    max_pairs = len(traj_long.timestamps)
+    max_pairs = len(traj_short.timestamps)
 
     # First, match the timestamps of the shorter trajectory to the longer one.
     matching_indices = matching_time_indices(

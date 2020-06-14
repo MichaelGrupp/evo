@@ -91,7 +91,7 @@ def get_delta_unit(args):
     return delta_unit
 
 
-def plot(args, result, traj_ref, traj_est):
+def plot(args, result, traj_ref, traj_est, traj_ref_full=None):
     from evo.tools import plot
     from evo.tools.settings import SETTINGS
 
@@ -123,7 +123,8 @@ def plot(args, result, traj_ref, traj_est):
     if args.ros_map_yaml:
         plot.ros_map(ax, args.ros_map_yaml, plot_mode)
 
-    plot.traj(ax, plot_mode, traj_ref, style=SETTINGS.plot_reference_linestyle,
+    plot.traj(ax, plot_mode, traj_ref_full if traj_ref_full else traj_ref,
+              style=SETTINGS.plot_reference_linestyle,
               color=SETTINGS.plot_reference_color, label='reference',
               alpha=SETTINGS.plot_reference_alpha)
     plot.draw_coordinate_axes(ax, traj_ref, plot_mode,

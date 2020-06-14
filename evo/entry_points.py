@@ -94,8 +94,8 @@ def launch(main_module, parser):
         sys.exit(1)
     except SystemExit as e:
         sys.exit(e.code)
-    except EvoException as e:
-        logger.error(e.message)
+    except (EvoException, FileNotFoundError) as e:
+        logger.error(str(e))
         sys.exit(1)
     except Exception:
         base_logger = logging.getLogger("evo")

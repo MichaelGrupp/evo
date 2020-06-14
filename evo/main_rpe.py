@@ -277,9 +277,8 @@ def run(args):
     )
 
     if args.plot or args.save_plot or args.serialize_plot:
-        common.plot(args, result,
-                    traj_ref_full if args.plot_full_ref else traj_ref,
-                    result.trajectories[est_name])
+        common.plot(args, result, traj_ref, result.trajectories[est_name],
+                    traj_ref_full=traj_ref_full)
 
     if args.save_results:
         logger.debug(SEP)

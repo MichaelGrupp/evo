@@ -205,6 +205,7 @@ def load_trajectories(args):
             raise file_interface.FileInterfaceException(
                 "File doesn't exist: {}".format(args.bag))
         import rosbag
+        logger.debug("Opening bag file " + args.bag)
         bag = rosbag.Bag(args.bag)
         try:
             if args.all_topics:

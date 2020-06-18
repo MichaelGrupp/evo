@@ -117,7 +117,7 @@ def run(args):
 
     import pandas as pd
 
-    from evo.tools import log, user, settings
+    from evo.tools import log, user, settings, pandas_bridge
     from evo.tools.settings import SETTINGS
 
     pd.options.display.width = 80
@@ -211,29 +211,16 @@ def run(args):
 
     if args.save_table:
         logger.debug(SEP)
-        if args.no_warnings or user.check_and_confirm_overwrite(
-                args.save_table):
-            if SETTINGS.table_export_data.lower() == "error_array":
-                data = error_df
-            elif SETTINGS.table_export_data.lower() in ("info", "stats"):
-                data = df.loc[SETTINGS.table_export_data.lower()]
-            else:
-                raise ValueError(
-                    "unsupported export data specifier: {}".format(
-                        SETTINGS.table_export_data))
-            if SETTINGS.table_export_transpose:
-                data = data.T
-
-            if SETTINGS.table_export_format == "excel":
-                writer = pd.ExcelWriter(args.save_table)
-                data.to_excel(writer)
-                writer.save()
-                writer.close()
-            else:
-                getattr(data,
-                        "to_" + SETTINGS.table_export_format)(args.save_table)
-            logger.debug("{} table saved to: {}".format(
-                SETTINGS.table_export_format, args.save_table))
+        if SETTINGS.table_export_data.lower() == "error_array":
+            data = error_df
+        elif SETTINGS.table_export_data.lower() in ("info", "stats"):
+            data = df.loc[SETTINGS.table_export_data.lower()]
+        else:
+            raise ValueError(
+                "unsupported export data specifier: {}".format(
+                    SETTINGS.table_export_data))
+        pandas_bridge.save_df_as_table(data, args.save_table,
+                                       confirm_overwrite=not args.no_warnings)
 
     if args.plot or args.save_plot or args.serialize_plot:
         # check if data has NaN "holes" due to different indices

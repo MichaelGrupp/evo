@@ -57,7 +57,7 @@ def trajectory_stats_to_df(traj, name=None):
         raise TypeError("trajectory.PosePath3D or derived required")
     data_dict = {k: v for k, v in traj.get_infos().items() if np.isscalar(v)}
     data_dict.update(traj.get_statistics())
-    index = [name] if name else [0] 
+    index = [name] if name else [0]
     return pd.DataFrame(data=data_dict, index=index)
 
 

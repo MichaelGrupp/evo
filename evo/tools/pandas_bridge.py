@@ -95,10 +95,9 @@ def save_df_as_table(df, path,
     if transpose:
         df = df.T
     if format_str == "excel":
-        writer = pd.ExcelWriter(path)
-        df.to_excel(writer)
-        writer.save()
-        writer.close()
+        # requires xlwt and/or openpyxl to be installed
+        with pd.ExcelWriter(path) as writer:
+            df.to_excel(writer)
     else:
         getattr(df, "to_" + format_str)(path)
     logger.debug("{} table saved to: {}".format(

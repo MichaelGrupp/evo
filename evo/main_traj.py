@@ -97,6 +97,8 @@ def parser():
         " that will be drawn into the plot", default=None)
     output_opts.add_argument("--save_plot", help="path to save plot",
                              default=None)
+    output_opts.add_argument("--save_table", help="path to save table with statistics",
+                             default=None)
     output_opts.add_argument("--serialize_plot",
                              help="path to serialize plot (experimental)",
                              default=None)
@@ -515,6 +517,13 @@ def run(args):
                                                     frame_id)
         finally:
             bag.close()
+
+    if args.save_table:
+        from evo.tools import pandas_bridge
+        logger.debug(SEP)
+        df = pandas_bridge.trajectories_stats_to_df(trajectories)
+        pandas_bridge.save_df_as_table(df, args.save_table,
+                                       confirm_overwrite=not args.no_warnings)
 
 
 if __name__ == '__main__':

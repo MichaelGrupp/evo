@@ -85,7 +85,7 @@ class TestPosePath3D(unittest.TestCase):
         len_initial_segment = np.linalg.norm(path.positions_xyz[2] -
                                              path.positions_xyz[0])
         len_reduced = path_reduced.path_length
-        self.assertEqual(len_initial_segment, len_reduced)
+        self.assertAlmostEqual(len_initial_segment, len_reduced)
 
     def test_transform(self):
         path = helpers.fake_path(10)

@@ -23,7 +23,6 @@ import copy
 import logging
 
 import numpy as np
-
 from evo import EvoException
 
 logger = logging.getLogger(__name__)
@@ -64,7 +63,8 @@ class Result(object):
 
     def pretty_str(self, title=True, stats=True, info=False):
         p_str = ""
-        p_str += "{}\n\n".format(self.info["title"]) if title else ""
+        if title and "title" in self.info:
+            p_str += "{}\n\n".format(self.info["title"])
         if stats:
             for name, val in sorted(self.stats.items()):
                 p_str += "{:>10}\t{:.6f}\n".format(name, val)

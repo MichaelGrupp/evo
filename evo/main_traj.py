@@ -25,6 +25,8 @@ from __future__ import print_function
 
 import logging
 
+from evo.tools.settings import SETTINGS
+
 logger = logging.getLogger(__name__)
 
 SEP = "-" * 80
@@ -90,7 +92,8 @@ def parser():
         "--plot_relative_time", action="store_true",
         help="show timestamps relative to the start of the reference")
     output_opts.add_argument(
-        "--plot_mode", help="the axes for  plot projection", default="xyz",
+        "--plot_mode", help="the axes for  plot projection",
+        default=SETTINGS.plot_mode_default,
         choices=["xy", "xz", "yx", "yz", "zx", "zy", "xyz"])
     output_opts.add_argument(
         "--ros_map_yaml", help="yaml file of an ROS 2D map image (.pgm/.png)"
@@ -281,7 +284,6 @@ def run(args):
     from evo.core import trajectory
     from evo.core.trajectory import PoseTrajectory3D
     from evo.tools import file_interface, log
-    from evo.tools.settings import SETTINGS
 
     log.configure_logging(verbose=args.verbose, silent=args.silent,
                           debug=args.debug, local_logfile=args.logfile)

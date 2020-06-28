@@ -98,6 +98,10 @@ DEFAULT_SETTINGS_DICT_DOC = {
         1.5,
         "Line width value supported by matplotlib."
     ),
+    "plot_mode_default": (
+        "xyz",
+        "Default value for --plot_mode used in evo_{traj, ape, rpe}."
+    ),
     "plot_multi_cmap": (
         "none",
         "Color map for coloring plots from multiple data sources.\n"

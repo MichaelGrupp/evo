@@ -25,6 +25,8 @@ from __future__ import print_function
 
 import logging
 
+from evo.tools.settings import SETTINGS
+
 logger = logging.getLogger(__name__)
 
 SEP = "-" * 80  # separator line
@@ -32,6 +34,7 @@ SEP = "-" * 80  # separator line
 
 def parser():
     import argparse
+
     basic_desc = "Absolute pose error (APE) metric app"
     lic = "(c) evo authors"
 
@@ -61,7 +64,8 @@ def parser():
         help="show plot window",
     )
     output_opts.add_argument(
-        "--plot_mode", default="xyz", help="the axes for plot projection",
+        "--plot_mode", default=SETTINGS.plot_mode_default,
+        help="the axes for plot projection",
         choices=["xy", "xz", "yx", "yz", "zx", "zy", "xyz"])
     output_opts.add_argument(
         "--plot_colormap_max", type=float,
@@ -206,7 +210,6 @@ def run(args):
     import evo.common_ape_rpe as common
     from evo.core import sync
     from evo.tools import file_interface, log
-    from evo.tools.settings import SETTINGS
 
     log.configure_logging(args.verbose, args.silent, args.debug,
                           local_logfile=args.logfile)

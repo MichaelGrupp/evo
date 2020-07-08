@@ -233,7 +233,6 @@ def rpe(traj_ref, traj_est, pose_relation, delta, delta_unit,
 
 def run(args):
     import evo.common_ape_rpe as common
-    from evo import EvoException
     from evo.core import sync
     from evo.tools import file_interface, log
 

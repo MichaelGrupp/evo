@@ -245,10 +245,6 @@ def run(args):
         logger.debug("main_parser config:\n{}".format(parser_str))
     logger.debug(SEP)
 
-    if (args.plot or args.save_plot or args.serialize_plot) and args.all_pairs:
-        raise EvoException(
-            "all_pairs mode cannot be used with plotting functions")
-
     traj_ref, traj_est, ref_name, est_name = common.load_trajectories(args)
     pose_relation = common.get_pose_relation(args)
     delta_unit = common.get_delta_unit(args)

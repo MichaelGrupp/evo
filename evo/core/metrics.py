@@ -262,9 +262,8 @@ class RPE(PE):
             traj_est.poses_se3, self.delta, self.delta_unit,
             self.rel_delta_tol, all_pairs=self.all_pairs)
 
-        if not self.all_pairs:
-            # Store flat id list e.g. for plotting.
-            self.delta_ids = [j for i, j in id_pairs]
+        # Store flat id list e.g. for plotting.
+        self.delta_ids = [j for i, j in id_pairs]
 
         self.E = [
             self.rpe_base(traj_ref.poses_se3[i], traj_ref.poses_se3[j],

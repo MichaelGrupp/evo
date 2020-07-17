@@ -110,11 +110,11 @@ def set_config(config_path, arg_list):
                     if values[0].lower() in ("none", "", "[]"):
                         values = []
                 config[arg] = not config[arg] if isinstance(config[arg],
-                                                        bool) else values
+                                                            bool) else values
         else:
             # toggle boolean parameter
             config[arg] = not config[arg] if isinstance(config[arg],
-                                                    bool) else config[arg]
+                                                        bool) else config[arg]
     with open(config_path, 'w') as config_file:
         config_file.write(json.dumps(config, indent=4, sort_keys=True))
 
@@ -197,8 +197,8 @@ def main():
     shared_parser = argparse.ArgumentParser(add_help=False)
     shared_parser.add_argument("--no_color", help="don't color output",
                                action="store_true")
-    main_parser = argparse.ArgumentParser(
-        description="%s %s" % (basic_desc, lic))
+    main_parser = argparse.ArgumentParser(description="%s %s" %
+                                          (basic_desc, lic))
     sub_parsers = main_parser.add_subparsers(dest="subcommand")
     sub_parsers.required = True
 
@@ -215,9 +215,9 @@ def main():
     set_parser = sub_parsers.add_parser(
         "set", description=SET_HELP, parents=[shared_parser],
         formatter_class=argparse.RawTextHelpFormatter)
-    set_parser.add_argument("params", choices=list(
-        DEFAULT_SETTINGS_DICT.keys()), nargs=argparse.REMAINDER,
-                            help="parameters to set")
+    set_parser.add_argument("params",
+                            choices=list(DEFAULT_SETTINGS_DICT.keys()),
+                            nargs=argparse.REMAINDER, help="parameters to set")
     set_parser.add_argument(
         "-c", "--config",
         help="optional config file (default: package settings)", default=None)

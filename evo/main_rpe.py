@@ -233,7 +233,6 @@ def rpe(traj_ref, traj_est, pose_relation, delta, delta_unit,
 
 def run(args):
     import evo.common_ape_rpe as common
-    from evo import EvoException
     from evo.core import sync
     from evo.tools import file_interface, log
 
@@ -244,10 +243,6 @@ def run(args):
         parser_str = pformat({arg: getattr(args, arg) for arg in vars(args)})
         logger.debug("main_parser config:\n{}".format(parser_str))
     logger.debug(SEP)
-
-    if (args.plot or args.save_plot or args.serialize_plot) and args.all_pairs:
-        raise EvoException(
-            "all_pairs mode cannot be used with plotting functions")
 
     traj_ref, traj_est, ref_name, est_name = common.load_trajectories(args)
     pose_relation = common.get_pose_relation(args)

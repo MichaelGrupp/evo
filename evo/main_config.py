@@ -55,20 +55,20 @@ def log_info_dict_json(data_str, colored=True):
     logger.info(data_str)
 
 
-def show(cfg_path, colored=True):
-    with open(cfg_path) as cfg_file:
-        log_info_dict_json(json.load(cfg_file), colored)
+def show(config_path, colored=True):
+    with open(config_path) as config_file:
+        log_info_dict_json(json.load(config_file), colored)
 
 
 def merge_json_union(first, second, soft=False):
     with open(first, 'r+') as f_1:
-        cfg_1 = json.loads(f_1.read())
+        config_1 = json.loads(f_1.read())
         with open(second) as f_2:
-            cfg_2 = json.loads(f_2.read())
-            cfg_1 = settings.merge_dicts(cfg_1, cfg_2, soft)
+            config_2 = json.loads(f_2.read())
+            config_1 = settings.merge_dicts(config_1, config_2, soft)
         f_1.truncate(0)
         f_1.seek(0)
-        f_1.write(json.dumps(cfg_1, indent=4, sort_keys=True))
+        f_1.write(json.dumps(config_1, indent=4, sort_keys=True))
 
 
 def is_number(token):
@@ -79,9 +79,9 @@ def is_number(token):
         return False
 
 
-def set_cfg(cfg_path, arg_list):
-    with open(cfg_path) as cfg_file:
-        config = json.load(cfg_file)
+def set_config(config_path, arg_list):
+    with open(config_path) as config_file:
+        config = json.load(config_file)
     max_idx = len(arg_list) - 1
     for i, arg in enumerate(arg_list):
         if arg not in config.keys():
@@ -115,8 +115,8 @@ def set_cfg(cfg_path, arg_list):
             # toggle boolean parameter
             config[arg] = not config[arg] if isinstance(config[arg],
                                                     bool) else config[arg]
-    with open(cfg_path, 'w') as cfg_file:
-        cfg_file.write(json.dumps(config, indent=4, sort_keys=True))
+    with open(config_path, 'w') as config_file:
+        config_file.write(json.dumps(config, indent=4, sort_keys=True))
 
 
 def generate(arg_list):
@@ -273,7 +273,7 @@ def main():
             logger.info("{0}\nOld configuration:\n{0}".format(SEP))
             show(config, colored=not args.no_color)
             try:
-                set_cfg(config, other_args)
+                set_config(config, other_args)
             except ConfigError as e:
                 logger.error(e)
                 sys.exit(1)

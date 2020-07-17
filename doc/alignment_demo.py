@@ -54,25 +54,25 @@ traj_est_aligned_only_scaled = trajectory.align_trajectory(
 fig = plt.figure(figsize=(8, 8))
 plot_mode = plot.PlotMode.xz
 
-ax = plot.prepare_axis(fig, plot_mode, subplot_arg='221')
+ax = plot.prepare_axis(fig, plot_mode, subplot_arg=221)
 plot.traj(ax, plot_mode, traj_ref, '--', 'gray')
 plot.traj(ax, plot_mode, traj_est, '-', 'blue')
 fig.axes.append(ax)
 plt.title('not aligned')
 
-ax = plot.prepare_axis(fig, plot_mode, subplot_arg='222')
+ax = plot.prepare_axis(fig, plot_mode, subplot_arg=222)
 plot.traj(ax, plot_mode, traj_ref, '--', 'gray')
 plot.traj(ax, plot_mode, traj_est_aligned, '-', 'blue')
 fig.axes.append(ax)
 plt.title('$\mathrm{SE}(3)$ alignment')
 
-ax = plot.prepare_axis(fig, plot_mode, subplot_arg='223')
+ax = plot.prepare_axis(fig, plot_mode, subplot_arg=223)
 plot.traj(ax, plot_mode, traj_ref, '--', 'gray')
 plot.traj(ax, plot_mode, traj_est_aligned_scaled, '-', 'blue')
 fig.axes.append(ax)
 plt.title('$\mathrm{Sim}(3)$ alignment')
 
-ax = plot.prepare_axis(fig, plot_mode, subplot_arg='224')
+ax = plot.prepare_axis(fig, plot_mode, subplot_arg=224)
 plot.traj(ax, plot_mode, traj_ref, '--', 'gray')
 plot.traj(ax, plot_mode, traj_est_aligned_only_scaled, '-', 'blue')
 fig.axes.append(ax)

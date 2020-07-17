@@ -55,20 +55,20 @@ def log_info_dict_json(data_str, colored=True):
     logger.info(data_str)
 
 
-def show(cfg_path, colored=True):
-    with open(cfg_path) as cfg_file:
-        log_info_dict_json(json.load(cfg_file), colored)
+def show(config_path, colored=True):
+    with open(config_path) as config_file:
+        log_info_dict_json(json.load(config_file), colored)
 
 
 def merge_json_union(first, second, soft=False):
     with open(first, 'r+') as f_1:
-        cfg_1 = json.loads(f_1.read())
+        config_1 = json.loads(f_1.read())
         with open(second) as f_2:
-            cfg_2 = json.loads(f_2.read())
-            cfg_1 = settings.merge_dicts(cfg_1, cfg_2, soft)
+            config_2 = json.loads(f_2.read())
+            config_1 = settings.merge_dicts(config_1, config_2, soft)
         f_1.truncate(0)
         f_1.seek(0)
-        f_1.write(json.dumps(cfg_1, indent=4, sort_keys=True))
+        f_1.write(json.dumps(config_1, indent=4, sort_keys=True))
 
 
 def is_number(token):
@@ -79,43 +79,44 @@ def is_number(token):
         return False
 
 
-def set_cfg(cfg_path, arg_list):
-    with open(cfg_path) as cfg_file:
-        data = json.load(cfg_file)
+def set_config(config_path, arg_list):
+    with open(config_path) as config_file:
+        config = json.load(config_file)
     max_idx = len(arg_list) - 1
     for i, arg in enumerate(arg_list):
-        if arg in data:
-            if i + 1 <= max_idx:
-                if arg_list[i + 1].lower() == "true":
-                    data[arg] = True
-                elif arg_list[i + 1].lower() == "false":
-                    data[arg] = False
-                else:
-                    values = []
-                    for j in range(i + 1, max_idx + 1):
-                        value = arg_list[j]
-                        if value in data:
-                            break
-                        if is_number(value):
-                            if int(float(value)) - float(value) != 0:
-                                values.append(float(value))
-                            else:
-                                values.append(int(float(value)))
+        if arg not in config.keys():
+            continue
+        if i + 1 <= max_idx and arg_list[i + 1] not in config.keys():
+            if arg_list[i + 1].lower() == "true":
+                config[arg] = True
+            elif arg_list[i + 1].lower() == "false":
+                config[arg] = False
+            else:
+                values = []
+                for j in range(i + 1, max_idx + 1):
+                    value = arg_list[j]
+                    if value in config.keys():
+                        break
+                    if is_number(value):
+                        if int(float(value)) - float(value) != 0:
+                            values.append(float(value))
                         else:
-                            values.append(value)
-                    if not isinstance(data[arg], list):
-                        values = values[0]
-                    elif len(values) == 1:
-                        if values[0].lower() in ("none", "", "[]"):
-                            values = []
-                    data[arg] = not data[arg] if isinstance(data[arg],
+                            values.append(int(float(value)))
+                    else:
+                        values.append(value)
+                if not isinstance(config[arg], list):
+                    values = values[0]
+                elif len(values) == 1:
+                    if values[0].lower() in ("none", "", "[]"):
+                        values = []
+                config[arg] = not config[arg] if isinstance(config[arg],
                                                             bool) else values
-            elif i + 1 > max_idx or arg_list[i + 1] in data:
-                # toggle boolean parameter
-                data[arg] = not data[arg] if isinstance(data[arg],
-                                                        bool) else data[arg]
-    with open(cfg_path, 'w') as cfg_file:
-        cfg_file.write(json.dumps(data, indent=4, sort_keys=True))
+        else:
+            # toggle boolean parameter
+            config[arg] = not config[arg] if isinstance(config[arg],
+                                                        bool) else config[arg]
+    with open(config_path, 'w') as config_file:
+        config_file.write(json.dumps(config, indent=4, sort_keys=True))
 
 
 def generate(arg_list):
@@ -196,8 +197,8 @@ def main():
     shared_parser = argparse.ArgumentParser(add_help=False)
     shared_parser.add_argument("--no_color", help="don't color output",
                                action="store_true")
-    main_parser = argparse.ArgumentParser(
-        description="%s %s" % (basic_desc, lic))
+    main_parser = argparse.ArgumentParser(description="%s %s" %
+                                          (basic_desc, lic))
     sub_parsers = main_parser.add_subparsers(dest="subcommand")
     sub_parsers.required = True
 
@@ -214,9 +215,9 @@ def main():
     set_parser = sub_parsers.add_parser(
         "set", description=SET_HELP, parents=[shared_parser],
         formatter_class=argparse.RawTextHelpFormatter)
-    set_parser.add_argument("params", choices=list(
-        DEFAULT_SETTINGS_DICT.keys()), nargs=argparse.REMAINDER,
-                            help="parameters to set")
+    set_parser.add_argument("params",
+                            choices=list(DEFAULT_SETTINGS_DICT.keys()),
+                            nargs=argparse.REMAINDER, help="parameters to set")
     set_parser.add_argument(
         "-c", "--config",
         help="optional config file (default: package settings)", default=None)
@@ -272,7 +273,7 @@ def main():
             logger.info("{0}\nOld configuration:\n{0}".format(SEP))
             show(config, colored=not args.no_color)
             try:
-                set_cfg(config, other_args)
+                set_config(config, other_args)
             except ConfigError as e:
                 logger.error(e)
                 sys.exit(1)

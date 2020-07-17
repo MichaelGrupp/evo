@@ -254,7 +254,7 @@ def set_aspect_equal_3d(ax):
     ax.set_zlim3d([zmean - plot_radius, zmean + plot_radius])
 
 
-def prepare_axis(fig, plot_mode=PlotMode.xy, subplot_arg="111"):
+def prepare_axis(fig, plot_mode=PlotMode.xy, subplot_arg=111):
     """
     prepares an axis according to the plot mode (for trajectory plotting)
     :param fig: matplotlib figure object

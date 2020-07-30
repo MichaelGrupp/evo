@@ -32,29 +32,51 @@ def get_default_plot_backend():
 # default settings with documentation
 # yapf: disable
 DEFAULT_SETTINGS_DICT_DOC = {
-    "plot_xyz_realistic": (
-        True,
-        "Equal axes ratio in 'xyz' plot mode for realistic trajectory plots."
+    "global_logfile_enabled": (
+        False,
+        ("Whether to write a global logfile to the home folder.\n"
+         "Run 'evo pkg --logfile' to see the logfile location.")
+    ),
+    "console_logging_format": (
+        "%(message)s",
+        "Format string for the logging module (affects only console output)."
+    ),
+    "euler_angle_sequence": (
+        "sxyz",
+        ("Only used in evo_traj's RPY plot: Euler rotation axis sequence.\n"
+         "E.g. 'sxyz' or 'ryxy', where s=static or r=rotating frame.\n"
+         "See evo/core/transformations.py for more information.")
+    ),
+    "plot_axis_marker_scale": (
+        0.,
+        "Scaling parameter of pose coordinate frame markers. 0 will draw nothing."
     ),
     "plot_backend": (
         get_default_plot_backend(),
         "matplotlib backend - default: 'Qt{4, 5}Agg' (if PyQt is installed) or 'TkAgg'."
     ),
-    "plot_hideref": (
+    "plot_pose_correspondences": (
         False,
-        "Hide the reference trajectory in trajectory plots."
+        "If enabled, lines will be plotted that connect corresponding poses"
+        " between the reference and synced trajectories."
     ),
-    "plot_linewidth": (
-        1.5,
-        "Line width value supported by matplotlib."
+    "plot_pose_correspondences_linestyle": (
+        "dotted",
+        "Style of pose correspondence markers: "
+        "'solid', 'dashed', 'dashdot' or 'dotted'"
     ),
-    "plot_usetex": (
-        False,
-        "Use the LaTeX renderer configured in plot_texsystem for plots.",
+    "plot_statistics": (
+        ["rmse", "median", "mean", "std", "min", "max"],
+        ("Statistics that are included in plots of evo_{ape, rpe, res}.\n"
+         "Can also be set to 'none'.")
     ),
-    "plot_texsystem": (
-        "pdflatex",
-        "'xelatex', 'lualatex' or 'pdflatex', see: https://matplotlib.org/users/pgf.html",
+    "plot_export_format": (
+        "pdf",
+        "File format supported by matplotlib for exporting plots."
+    ),
+    "plot_figsize": (
+        [6, 6],
+        "The default size of one (sub)plot figure (width, height)."
     ),
     "plot_fontfamily": (
         "sans-serif",
@@ -64,23 +86,6 @@ DEFAULT_SETTINGS_DICT_DOC = {
         1.0,
         "Font scale value, see: https://seaborn.pydata.org/generated/seaborn.set.html"
     ),
-    "plot_split": (
-        False,
-        "Show / save each figure separately instead of a collection."
-    ),
-    "plot_figsize": (
-        [6, 6],
-        "The default size of one (sub)plot figure (width, height)."
-    ),
-    "plot_trajectory_cmap": (
-        "jet",
-        "matplotlib color map used for mapping values on a trajectory.",
-    ),
-    "plot_multi_cmap": (
-        "none",
-        "Color map for coloring plots from multiple data sources.\n"
-        + "'none' will use the default color palette, see plot_seaborn_palette."
-    ),
     "plot_invert_xaxis": (
         False,
         "Invert the x-axis of plots."
@@ -89,44 +94,106 @@ DEFAULT_SETTINGS_DICT_DOC = {
         False,
         "Invert the y-axis of plots."
     ),
+    "plot_linewidth": (
+        1.5,
+        "Line width value supported by matplotlib."
+    ),
+    "plot_mode_default": (
+        "xyz",
+        "Default value for --plot_mode used in evo_{traj, ape, rpe}."
+    ),
+    "plot_multi_cmap": (
+        "none",
+        "Color map for coloring plots from multiple data sources.\n"
+        + "'none' will use the default color palette, see plot_seaborn_palette."
+    ),
+    "plot_reference_alpha": (
+        0.5,
+        "Alpha value of the reference trajectories in plots."
+    ),
+    "plot_reference_color": (
+        "black",
+        "Color of the reference trajectories in plots."
+    ),
+    "plot_reference_linestyle": (
+        "--",
+        "matplotlib linestyle of reference trajectories in plots."
+    ),
+    "plot_seaborn_palette": (
+        "deep6",
+        "Default color cycle, taken from a palette of the seaborn package.\n"
+        "Can also be a list of colors.\n"
+        "See: https://seaborn.pydata.org/generated/seaborn.color_palette.html"
+    ),
     "plot_seaborn_style": (
         "darkgrid",
         "Defines the plot background/grid.\n"
         + "Options: 'whitegrid', 'darkgrid', 'white' or 'dark'."
     ),
-    "plot_seaborn_palette": (
-        "deep6",
-        "Default color palette of seaborn. Can also be a list of colors.\n"
-        + "See: https://seaborn.pydata.org/generated/seaborn.color_palette.html"
+    "plot_split": (
+        False,
+        "Show / save each figure separately instead of a collection."
     ),
-    "plot_export_format": (
-        "pdf",
-        "File format supported by matplotlib for exporting plots."
+    "plot_texsystem": (
+        "pdflatex",
+        "'xelatex', 'lualatex' or 'pdflatex', see: https://matplotlib.org/users/pgf.html",
     ),
-    "table_export_format": (
-        "csv",
-        "Format for exporting tables, e.g. 'csv', 'excel', 'latex', 'json'...",
+    "plot_trajectory_alpha": (
+        0.75,
+        "Alpha value of non-reference trajectories in plots.",
     ),
-    "table_export_data": (
-        "stats",
-        "Which data to export: 'info', 'stats' or 'error_array'.",
+    "plot_trajectory_cmap": (
+        "jet",
+        "matplotlib color map used for mapping values on a trajectory.",
     ),
-    "table_export_transpose": (
+    "plot_trajectory_linestyle": (
+        "-",
+        "matplotlib linestyle of non-reference trajectories in plots.",
+    ),
+    "plot_usetex": (
+        False,
+        "Use the LaTeX renderer configured in plot_texsystem for plots.",
+    ),
+    "plot_xyz_realistic": (
         True,
-        "Transpose tables for export."
+        "Equal axes ratio in 'xyz' plot mode for realistic trajectory plots."
+    ),
+    "ros_map_alpha_value": (
+        1.0,
+        "Alpha value for blending ROS map image slices."
+    ),
+    "ros_map_unknown_cell_value": (
+        205,
+        "uint8 value that represents unknown cells in a ROS map image.\n"
+        "Used to remove unknown cell pixels when a ROS map is added to a plot."
+        "\nmap_saver uses 205, other tools might not.\n"
+        "(for example, Cartographer uses 128 for images of probability grids)"
     ),
     "save_traj_in_zip": (
         False,
         "Store backup trajectories in result zip files (increases size)."
     ),
-    "logging_format": (
-        "%(message)s",
-        "Format string for the logging module (console only)."
+    "table_export_data": (
+        "stats",
+        "Which data to export: 'info', 'stats' or 'error_array'.",
     ),
-    "logfile_enabled": (
-        False,
-        "Whether to write a logfile to the home folder."
-    )
+    "table_export_format": (
+        "csv",
+        "Format for exporting tables, e.g. 'csv', 'excel', 'latex', 'json'...",
+    ),
+    "table_export_transpose": (
+        True,
+        "Transpose tables for export."
+    ),
+    "tf_cache_lookup_frequency": (
+        10,
+        "Frequency for looking up transformations when loading trajectories \n"
+        "from a TF topic, in Hz."
+    ),
+    "tf_cache_max_time": (
+        1e4,
+        "TF transform cache time in seconds."
+    ),
 }
 # yapf: enable
 

@@ -38,16 +38,16 @@ def load_trajectories(args):
         traj_est = file_interface.read_kitti_poses_file(args.est_file)
         ref_name, est_name = args.ref_file, args.est_file
     elif args.subcommand == "euroc":
-        args.align = True
-        logger.info("Forcing trajectory alignment implicitly "
-                    "(EuRoC ground truth is in IMU frame).")
-        logger.debug(SEP)
         traj_ref = file_interface.read_euroc_csv_trajectory(args.state_gt_csv)
         traj_est = file_interface.read_euroc_csv_trajectory(args.est_file)
         ref_name, est_name = args.state_gt_csv, args.est_file
     elif args.subcommand == "bag":
-        import rosbag
+        import os
         logger.debug("Opening bag file " + args.bag)
+        if not os.path.exists(args.bag):
+            raise file_interface.FileInterfaceException(
+                "File doesn't exist: {}".format(args.bag))
+        import rosbag
         bag = rosbag.Bag(args.bag, 'r')
         try:
             traj_ref = file_interface.read_bag_trajectory(bag, args.ref_topic)
@@ -57,12 +57,6 @@ def load_trajectories(args):
             bag.close()
     else:
         raise KeyError("unknown sub-command: {}".format(args.subcommand))
-
-    if args.subcommand != "kitti":
-        logger.debug("Synchronizing trajectories...")
-        traj_ref, traj_est = sync.associate_trajectories(
-            traj_ref, traj_est, args.t_max_diff, args.t_offset,
-            first_name=ref_name, snd_name=est_name)
 
     return traj_ref, traj_est, ref_name, est_name
 
@@ -85,7 +79,7 @@ def get_pose_relation(args):
 
 def get_delta_unit(args):
     from evo.core.metrics import Unit
-    delta_unit = None
+    delta_unit = Unit.none
     if args.delta_unit == "f":
         delta_unit = Unit.frames
     elif args.delta_unit == "d":
@@ -97,7 +91,7 @@ def get_delta_unit(args):
     return delta_unit
 
 
-def plot(args, result, traj_ref, traj_est):
+def plot(args, result, traj_ref, traj_est, traj_ref_full=None):
     from evo.tools import plot
     from evo.tools.settings import SETTINGS
 
@@ -115,16 +109,26 @@ def plot(args, result, traj_ref, traj_est):
     else:
         seconds_from_start = None
 
-    plot.error_array(fig1, result.np_arrays["error_array"],
-                     x_array=seconds_from_start, statistics=result.stats,
-                     name=result.info["label"], title=result.info["title"],
-                     xlabel="$t$ (s)" if seconds_from_start else "index")
+    plot.error_array(
+        fig1, result.np_arrays["error_array"], x_array=seconds_from_start,
+        statistics={
+            s: result.stats[s]
+            for s in SETTINGS.plot_statistics if s not in ("min", "max")
+        }, name=result.info["label"], title=result.info["title"],
+        xlabel="$t$ (s)" if seconds_from_start else "index")
 
     # Plot the values color-mapped onto the trajectory.
     fig2 = plt.figure(figsize=SETTINGS.plot_figsize)
     ax = plot.prepare_axis(fig2, plot_mode)
-    plot.traj(ax, plot_mode, traj_ref, '--', 'black', 'reference',
-              alpha=0.0 if SETTINGS.plot_hideref else 0.5)
+    if args.ros_map_yaml:
+        plot.ros_map(ax, args.ros_map_yaml, plot_mode)
+
+    plot.traj(ax, plot_mode, traj_ref_full if traj_ref_full else traj_ref,
+              style=SETTINGS.plot_reference_linestyle,
+              color=SETTINGS.plot_reference_color, label='reference',
+              alpha=SETTINGS.plot_reference_alpha)
+    plot.draw_coordinate_axes(ax, traj_ref, plot_mode,
+                              SETTINGS.plot_axis_marker_scale)
 
     if args.plot_colormap_min is None:
         args.plot_colormap_min = result.stats["min"]
@@ -138,6 +142,14 @@ def plot(args, result, traj_ref, traj_est):
                        plot_mode, min_map=args.plot_colormap_min,
                        max_map=args.plot_colormap_max,
                        title="Error mapped onto trajectory")
+    plot.draw_coordinate_axes(ax, traj_est, plot_mode,
+                              SETTINGS.plot_axis_marker_scale)
+    if SETTINGS.plot_pose_correspondences:
+        plot.draw_correspondence_edges(
+            ax, traj_est, traj_ref, plot_mode,
+            style=SETTINGS.plot_pose_correspondences_linestyle,
+            color=SETTINGS.plot_reference_color,
+            alpha=SETTINGS.plot_reference_alpha)
     fig2.axes.append(ax)
 
     plot_collection = plot.PlotCollection(result.info["title"])

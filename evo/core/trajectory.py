@@ -24,6 +24,7 @@ import logging
 
 import numpy as np
 
+from evo import EvoException
 import evo.core.transformations as tr
 import evo.core.geometry as geometry
 from evo.core import lie_algebra as lie
@@ -31,7 +32,7 @@ from evo.core import lie_algebra as lie
 logger = logging.getLogger(__name__)
 
 
-class TrajectoryException(Exception):
+class TrajectoryException(EvoException):
     pass
 
 
@@ -63,7 +64,7 @@ class PosePath3D(object):
 
     def __str__(self):
         return "{} poses, {:.3f}m path length".format(self.num_poses,
-                                                      self.path_length())
+                                                      self.path_length)
 
     def __eq__(self, other):
         if type(other) != type(self):
@@ -91,6 +92,10 @@ class PosePath3D(object):
         return self._positions_xyz
 
     @property
+    def distances(self):
+        return geometry.accumulated_distances(self.positions_xyz)
+
+    @property
     def orientations_quat_wxyz(self):
         if not hasattr(self, "_orientations_quat_wxyz"):
             assert hasattr(self, "_poses_se3")
@@ -100,19 +105,15 @@ class PosePath3D(object):
                      for p in self._poses_se3])
         return self._orientations_quat_wxyz
 
-    @property
-    def orientations_euler(self):
-        if not hasattr(self, "_orientations_euler"):
-            if hasattr(self, "_poses_se3"):
-                self._orientations_euler \
-                    = np.array(
-                        [tr.euler_from_matrix(p, axes="sxyz")
-                         for p in self._poses_se3])
-            elif hasattr(self, "_orientations_quat_wxyz"):
-                self._orientations_euler \
-                    = np.array([tr.euler_from_quaternion(q, axes="sxyz")
-                                for q in self._orientations_quat_wxyz])
-        return self._orientations_euler
+    def get_orientations_euler(self, axes="sxyz"):
+        if hasattr(self, "_poses_se3"):
+            return np.array(
+                [tr.euler_from_matrix(p, axes=axes) for p in self._poses_se3])
+        elif hasattr(self, "_orientations_quat_wxyz"):
+            return np.array([
+                tr.euler_from_quaternion(q, axes=axes)
+                for q in self._orientations_quat_wxyz
+            ])
 
     @property
     def poses_se3(self):
@@ -131,31 +132,34 @@ class PosePath3D(object):
         else:
             return self.positions_xyz.shape[0]
 
-    def path_length(self, ids=None):
+    @property
+    def path_length(self):
         """
         calculates the path length (arc-length)
-        :param ids: optional start and end index as tuple (start, end)
         :return: path length in meters
         """
-        if ids is not None:
-            if len(ids) != 2 or not all(type(i) is int for i in ids):
-                raise TrajectoryException(
-                    "ids must be a tuple of positive integers")
-            return float(geometry.arc_len(self.positions_xyz[ids[0]:ids[1]]))
-        else:
-            return float(geometry.arc_len(self.positions_xyz))
+        return float(geometry.arc_len(self.positions_xyz))
 
-    def transform(self, t, right_mul=False):
+    def transform(self, t, right_mul=False, propagate=False):
         """
-        apply a left or right multiplicative SE(3) transformation to the whole path
-        :param t: a valid SE(3) matrix
+        apply a left or right multiplicative transformation to the whole path
+        :param t: a 4x4 transformation matrix (e.g. SE(3) or Sim(3))
         :param right_mul: whether to apply it right-multiplicative or not
+        :param propagate: whether to propagate drift with RHS transformations
         """
-        if not lie.is_se3(t):
-            raise TrajectoryException(
-                "transformation is not a valid SE(3) matrix")
-        if right_mul:
+        if right_mul and not propagate:
+            # Transform each pose individually.
             self._poses_se3 = [np.dot(p, t) for p in self.poses_se3]
+        elif right_mul and propagate:
+            # Transform each pose and propagate resulting drift to the next.
+            ids = np.arange(0, self.num_poses, 1)
+            rel_poses = [
+                lie.relative_se3(self.poses_se3[i], self.poses_se3[j]).dot(t)
+                for i, j in zip(ids, ids[1:])
+            ]
+            self._poses_se3 = [self.poses_se3[0]]
+            for i, j in zip(ids[:-1], ids):
+                self._poses_se3.append(self._poses_se3[j].dot(rel_poses[i]))
         else:
             self._poses_se3 = [np.dot(t, p) for p in self.poses_se3]
         self._positions_xyz, self._orientations_quat_wxyz \
@@ -213,7 +217,7 @@ class PosePath3D(object):
         """
         return {
             "nr. of poses": self.num_poses,
-            "path length (m)": self.path_length(),
+            "path length (m)": self.path_length,
             "pos_start (m)": self.positions_xyz[0],
             "pos_end (m)": self.positions_xyz[-1]
         }
@@ -389,26 +393,14 @@ def align_trajectory(traj, traj_ref, correct_scale=False, correct_only_scale=Fal
     else:
         logger.debug("Aligning using Umeyama's method..." +
                      (" (with scale correction)" if with_scale else ""))
-        end_pose_idx = len(traj_aligned.positions_xyz)
-        if n != -1:
-            if discard_n_start_poses != 0 or discard_n_end_poses != 0:
-                print("WARNING: you asked for %d poses, as well as discarding %d start poses and %d end poses.",
-                 n, discard_n_start_poses, discard_n_end_poses)
-                print("Selecting option given the smallest number of poses:")
-            if end_pose_idx - discard_n_end_poses < n + discard_n_start_poses:
-                print("We are requiring more poses n (%d) than available, using instead %d starting from pose %d", n,
-                 end_pose_idx - discard_n_end_poses - discard_n_start_poses, discard_n_start_poses)
-                end_pose_idx = end_pose_idx - discard_n_end_poses
-            else:
-                end_pose_idx = n + discard_n_start_poses
-        else:
-            end_pose_idx -= discard_n_end_poses
-    assert(discard_n_start_poses < end_pose_idx) # Otherwise there will be no poses to align.
-    assert(end_pose_idx <= len(traj_aligned.positions_xyz)) # Otherwise we will be requiring more poses than there are.
-    r_a, t_a, s = geometry.umeyama_alignment(
-        traj_aligned.positions_xyz[discard_n_start_poses:end_pose_idx, :].T,
-        traj_ref.positions_xyz[discard_n_start_poses:end_pose_idx, :].T,
-        with_scale)
+    if n == -1:
+        r_a, t_a, s = geometry.umeyama_alignment(traj_aligned.positions_xyz.T,
+                                                 traj_ref.positions_xyz.T,
+                                                 with_scale)
+    else:
+        r_a, t_a, s = geometry.umeyama_alignment(
+            traj_aligned.positions_xyz[:n, :].T,
+            traj_ref.positions_xyz[:n, :].T, with_scale)
 
     if not correct_only_scale:
         logger.debug("Rotation of alignment:\n{}"
@@ -427,6 +419,24 @@ def align_trajectory(traj, traj_ref, correct_scale=False, correct_only_scale=Fal
         return traj_aligned, r_a, t_a, s
     else:
         return traj_aligned
+
+
+def align_trajectory_origin(traj, traj_ref):
+    """
+    align a trajectory's origin to the origin of a reference trajectory
+    :param traj: the trajectory to align
+    :param traj_ref: reference trajectory
+    :return: the aligned trajectory
+    """
+    if traj.num_poses == 0 or traj_ref.num_poses == 0:
+        raise TrajectoryException("can't align an empty trajectory...")
+    traj_aligned = copy.deepcopy(traj)
+    traj_origin = traj.poses_se3[0]
+    traj_ref_origin = traj_ref.poses_se3[0]
+    to_ref_origin = traj_ref_origin.dot(lie.se3_inverse(traj_origin))
+    logger.debug("Origin alignment transformation:\n{}".format(to_ref_origin))
+    traj_aligned.transform(to_ref_origin)
+    return traj_aligned
 
 
 def merge(trajectories):

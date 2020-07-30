@@ -37,10 +37,12 @@ import mpl_toolkits.mplot3d.art3d as art3d
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.collections import LineCollection
 from matplotlib import rc
+from matplotlib.transforms import Affine2D
 
 import numpy as np
 import seaborn as sns
 
+from evo import EvoException
 from evo.tools import user
 from evo.core import trajectory
 
@@ -64,7 +66,7 @@ mpl.rcParams.update(rc_params)
 logger = logging.getLogger(__name__)
 
 
-class PlotException(Exception):
+class PlotException(EvoException):
     pass
 
 
@@ -256,7 +258,7 @@ def set_aspect_equal_3d(ax):
     ax.set_zlim3d([zmean - plot_radius, zmean + plot_radius])
 
 
-def prepare_axis(fig, plot_mode=PlotMode.xy, subplot_arg="111"):
+def prepare_axis(fig, plot_mode=PlotMode.xy, subplot_arg=111):
     """
     prepares an axis according to the plot mode (for trajectory plotting)
     :param fig: matplotlib figure object
@@ -265,10 +267,10 @@ def prepare_axis(fig, plot_mode=PlotMode.xy, subplot_arg="111"):
     :return: the matplotlib axis
     """
     if plot_mode == PlotMode.xyz:
-        ax = fig.add_subplot(subplot_arg, projection="3d", aspect="equal")
+        ax = fig.add_subplot(subplot_arg, projection="3d")
     else:
-        ax = fig.add_subplot(subplot_arg, aspect="equal")
-    plt.axis("equal")
+        ax = fig.add_subplot(subplot_arg)
+        ax.axis("equal")
     if plot_mode in {PlotMode.xy, PlotMode.xz, PlotMode.xyz}:
         xlabel = "$x$ (m)"
     elif plot_mode in {PlotMode.yz, PlotMode.yx}:
@@ -341,22 +343,26 @@ def traj(ax, plot_mode, traj, style='-', color='black', label="", alpha=1.0):
 
 
 def colored_line_collection(xyz, colors, plot_mode=PlotMode.xy,
-                            linestyles="solid"):
-    if len(xyz) != len(colors):
+                            linestyles="solid", step=1, alpha=1.):
+    if len(xyz) / step != len(colors):
         raise PlotException(
-            "color values must have same length as xyz data: %d vs. %d" %
-            (len(xyz), len(colors)))
+            "color values don't have correct length: %d vs. %d" %
+            (len(xyz) / step, len(colors)))
     x_idx, y_idx, z_idx = plot_mode_to_idx(plot_mode)
-    xs = [[x_1, x_2] for x_1, x_2 in zip(xyz[:-1, x_idx], xyz[1:, x_idx])]
-    ys = [[x_1, x_2] for x_1, x_2 in zip(xyz[:-1, y_idx], xyz[1:, y_idx])]
+    xs = [[x_1, x_2]
+          for x_1, x_2 in zip(xyz[:-1:step, x_idx], xyz[1::step, x_idx])]
+    ys = [[x_1, x_2]
+          for x_1, x_2 in zip(xyz[:-1:step, y_idx], xyz[1::step, y_idx])]
     if plot_mode == PlotMode.xyz:
-        zs = [[x_1, x_2] for x_1, x_2 in zip(xyz[:-1, z_idx], xyz[1:, z_idx])]
+        zs = [[x_1, x_2]
+              for x_1, x_2 in zip(xyz[:-1:step, z_idx], xyz[1::step, z_idx])]
         segs = [list(zip(x, y, z)) for x, y, z in zip(xs, ys, zs)]
         line_collection = art3d.Line3DCollection(segs, colors=colors,
+                                                 alpha=alpha,
                                                  linestyles=linestyles)
     else:
         segs = [list(zip(x, y)) for x, y in zip(xs, ys)]
-        line_collection = LineCollection(segs, colors=colors,
+        line_collection = LineCollection(segs, colors=colors, alpha=alpha,
                                          linestyle=linestyles)
     return line_collection
 
@@ -382,6 +388,7 @@ def traj_colormap(ax, traj, array, plot_mode, min_map, max_map, title=""):
     colors = [mapper.to_rgba(a) for a in array]
     line_collection = colored_line_collection(pos, colors, plot_mode)
     ax.add_collection(line_collection)
+    ax.autoscale_view(True, True, True)
     if plot_mode == PlotMode.xyz:
         ax.set_zlim(
             np.amin(traj.positions_xyz[:, 2]),
@@ -399,6 +406,71 @@ def traj_colormap(ax, traj, array, plot_mode, min_map, max_map, title=""):
     if title:
         ax.legend(frameon=True)
         plt.title(title)
+
+
+def draw_coordinate_axes(ax, traj, plot_mode, marker_scale=0.1, x_color="r",
+                         y_color="g", z_color="b"):
+    """
+    Draws a coordinate frame axis for each pose of a trajectory.
+    :param ax: plot axis
+    :param traj: trajectory.PosePath3D or trajectory.PoseTrajectory3D object
+    :param plot_mode: PlotMode value
+    :param marker_scale: affects the size of the marker (1. * marker_scale)
+    :param x_color: color of the x-axis
+    :param y_color: color of the y-axis
+    :param z_color: color of the z-axis
+    """
+    if marker_scale <= 0:
+        return
+
+    unit_x = np.array([1 * marker_scale, 0, 0, 1])
+    unit_y = np.array([0, 1 * marker_scale, 0, 1])
+    unit_z = np.array([0, 0, 1 * marker_scale, 1])
+
+    # Transform start/end vertices of each axis to global frame.
+    x_vertices = np.array([[p[:3, 3], p.dot(unit_x)[:3]]
+                           for p in traj.poses_se3])
+    y_vertices = np.array([[p[:3, 3], p.dot(unit_y)[:3]]
+                           for p in traj.poses_se3])
+    z_vertices = np.array([[p[:3, 3], p.dot(unit_z)[:3]]
+                           for p in traj.poses_se3])
+
+    n = traj.num_poses
+    # Concatenate all line segment vertices in order x, y, z.
+    vertices = np.concatenate((x_vertices, y_vertices, z_vertices)).reshape(
+        (n * 2 * 3, 3))
+    # Concatenate all colors per line segment in order x, y, z.
+    colors = np.array(n * [x_color] + n * [y_color] + n * [z_color])
+
+    markers = colored_line_collection(vertices, colors, plot_mode, step=2)
+    ax.add_collection(markers)
+
+
+def draw_correspondence_edges(ax, traj_1, traj_2, plot_mode, style='-',
+                              color="black", alpha=1.):
+    """
+    Draw edges between corresponding poses of two trajectories.
+    Trajectories must be synced, i.e. having the same number of poses.
+    :param ax: plot axis
+    :param traj_{1,2}: trajectory.PosePath3D or trajectory.PoseTrajectory3D
+    :param plot_mode: PlotMode value
+    :param style: matplotlib line style
+    :param color: matplotlib color
+    :param alpha: alpha value for transparency
+    """
+    if not traj_1.num_poses == traj_2.num_poses:
+        raise PlotException(
+            "trajectories must have same length to draw pose correspondences"
+            " - try to synchronize them first")
+    n = traj_1.num_poses
+    interweaved_positions = np.empty((n * 2, 3))
+    interweaved_positions[0::2, :] = traj_1.positions_xyz
+    interweaved_positions[1::2, :] = traj_2.positions_xyz
+    colors = np.array(n * [color])
+    markers = colored_line_collection(
+        interweaved_positions, colors, plot_mode, step=2, alpha=alpha,
+        linestyles=style)
+    ax.add_collection(markers)
 
 
 def traj_xyz(axarr, traj, style='-', color='black', label="", alpha=1.0,
@@ -419,8 +491,10 @@ def traj_xyz(axarr, traj, style='-', color='black', label="", alpha=1.0,
         raise PlotException("expected an axis array with 3 subplots - got " +
                             str(len(axarr)))
     if isinstance(traj, trajectory.PoseTrajectory3D):
-        x = traj.timestamps - (traj.timestamps[0]
-                               if start_timestamp is None else start_timestamp)
+        if start_timestamp:
+            x = traj.timestamps - start_timestamp
+        else:
+            x = traj.timestamps
         xlabel = "$t$ (s)"
     else:
         x = range(0, len(traj.positions_xyz))
@@ -452,17 +526,20 @@ def traj_rpy(axarr, traj, style='-', color='black', label="", alpha=1.0,
     if len(axarr) != 3:
         raise PlotException("expected an axis array with 3 subplots - got " +
                             str(len(axarr)))
+    angles = traj.get_orientations_euler(SETTINGS.euler_angle_sequence)
     if isinstance(traj, trajectory.PoseTrajectory3D):
-        x = traj.timestamps - (traj.timestamps[0]
-                               if start_timestamp is None else start_timestamp)
+        if start_timestamp:
+            x = traj.timestamps - start_timestamp
+        else:
+            x = traj.timestamps
         xlabel = "$t$ (s)"
     else:
-        x = range(0, len(traj.orientations_euler))
+        x = range(0, len(angles))
         xlabel = "index"
     ylabels = ["$roll$ (deg)", "$pitch$ (deg)", "$yaw$ (deg)"]
     for i in range(0, 3):
-        axarr[i].plot(x, np.rad2deg(traj.orientations_euler[:, i]), style,
-                      color=color, label=label, alpha=alpha)
+        axarr[i].plot(x, np.rad2deg(angles[:, i]), style, color=color,
+                      label=label, alpha=alpha)
         axarr[i].set_ylabel(ylabels[i])
     axarr[2].set_xlabel(xlabel)
     if label:
@@ -534,8 +611,8 @@ def error_array(fig, err_array, x_array=None, statistics=None, threshold=None, c
             ax.plot(x_array, np.cumsum(err_array),
                     linestyle=linestyle, marker=marker, color=color, label=name)
         else:
-            ax.plot(np.cumsum(err_array),
-                    linestyle=linestyle, marker=marker, color=color, label=name)
+            ax.plot(np.cumsum(err_array), linestyle=linestyle, marker=marker,
+                    color=color, label=name)
     else:
         ymax = max(err_array)
         ymax_idx = np.argmax(err_array)
@@ -578,6 +655,9 @@ def error_array(fig, err_array, x_array=None, statistics=None, threshold=None, c
                            linewidth=0.5,
                            zorder=0,
                            label=stat_name+" (+/- {0:.5f})".format(std))
+            else:
+                ax.axhline(y=value, color=color, linewidth=2.0,
+                           label=stat_name)
     if threshold is not None:
         ax.axhline(y=threshold, color='red', linestyle='dashed', linewidth=2.0, label="threshold")
     # Remove vertical grid lines, as they are confused with spikes in the data.
@@ -589,3 +669,66 @@ def error_array(fig, err_array, x_array=None, statistics=None, threshold=None, c
         plt.title(title)
     plt.legend(frameon=True)
     return fig
+
+
+def ros_map(ax, yaml_path, plot_mode, cmap="Greys_r",
+            mask_unknown_value=SETTINGS.ros_map_unknown_cell_value,
+            alpha=SETTINGS.ros_map_alpha_value):
+    """
+    Inserts an image of an 2D ROS map into the plot axis.
+    See: http://wiki.ros.org/map_server#Map_format
+    :param ax: 2D matplotlib axes
+    :param plot_mode: a 2D PlotMode
+    :param yaml_path: yaml file that contains the metadata of the map image
+    :param cmap: color map used to map scalar data to colors
+    :param mask_unknown_value: uint8 value that represents unknown cells.
+                               If specified, these cells will be masked out.
+                               If set to None or False, nothing will be masked.
+    """
+    import yaml
+
+    if isinstance(ax, Axes3D):
+        raise PlotException("ros_map can't be drawn into a 3D axis")
+    if plot_mode in {PlotMode.xz, PlotMode.yz, PlotMode.zx, PlotMode.zy}:
+        # Image lies in xy / yx plane, nothing to see here.
+        return
+    x_idx, y_idx, _ = plot_mode_to_idx(plot_mode)
+
+    with open(yaml_path) as f:
+        metadata = yaml.safe_load(f)
+
+    # Load map image, mask unknown cells if desired.
+    image_path = metadata["image"]
+    if not os.path.isabs(image_path):
+        image_path = os.path.join(os.path.dirname(yaml_path), image_path)
+    image = plt.imread(image_path)
+    if mask_unknown_value:
+        mask_unknown_value = np.uint8(mask_unknown_value)
+        image = np.ma.masked_where(image == mask_unknown_value, image)
+
+    # Squeeze extent to reflect metric coordinates.
+    resolution = metadata["resolution"]
+    n_rows, n_cols = image.shape[x_idx], image.shape[y_idx]
+    extent = [0, n_cols * resolution, 0, n_rows * resolution]
+    if plot_mode == PlotMode.yx:
+        image = np.rot90(image)
+        image = np.fliplr(image)
+    ax_image = ax.imshow(image, origin="upper", cmap=cmap, extent=extent,
+                         zorder=1, alpha=alpha)
+
+    # Transform map frame to plot axis origin.
+    map_to_pixel_origin = Affine2D()
+    map_to_pixel_origin.translate(metadata["origin"][x_idx],
+                                  metadata["origin"][y_idx])
+    angle = metadata["origin"][2]
+    if plot_mode == PlotMode.yx:
+        # Rotation axis (z) points downwards.
+        angle *= -1
+    map_to_pixel_origin.rotate(angle)
+    ax_image.set_transform(map_to_pixel_origin + ax.transData)
+
+    # Initially flipped axes are lost for mysterious reasons...
+    if SETTINGS.plot_invert_xaxis:
+        ax.invert_xaxis()
+    if SETTINGS.plot_invert_yaxis:
+        ax.invert_yaxis()

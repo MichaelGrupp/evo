@@ -20,8 +20,10 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
+from evo import EvoException
 
-class GeometryException(Exception):
+
+class GeometryException(EvoException):
     pass
 
 
@@ -60,6 +62,9 @@ def umeyama_alignment(x, y, with_scale=False):
 
     # SVD (text betw. eq. 38 and 39)
     u, d, v = np.linalg.svd(cov_xy)
+    if np.count_nonzero(d > np.finfo(d.dtype).eps) < m - 1:
+        raise GeometryException("Degenerate covariance rank, "
+                                "Umeyama alignment is not possible")
 
     # S matrix, eq. 43
     s = np.eye(m)
@@ -83,3 +88,12 @@ def arc_len(x):
     :return: the (discrete approximated) arc-length of the point sequence
     """
     return np.sum(np.linalg.norm(x[:-1] - x[1:], axis=1))
+
+
+def accumulated_distances(x):
+    """
+    :param x: nxm array of points, m=dimension
+    :return: the accumulated distances along the point sequence
+    """
+    return np.concatenate((np.array([0]),
+                           np.cumsum(np.linalg.norm(x[:-1] - x[1:], axis=1))))

@@ -1,0 +1,102 @@
+# https://docs.microsoft.com/azure/devops/pipelines/languages/python
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/languages/docker
+
+trigger:
+- master
+
+pr:
+  autoCancel: true
+  # PRs into ...
+  branches:
+    include:
+    - master
+
+schedules:
+- cron: "0 0 * * *"
+  displayName: 'daily build'
+  branches:
+    include:
+      - master
+  always: true
+
+
+jobs:
+
+- job: 'Docker'
+  strategy:
+    matrix:
+      ROS-melodic:
+        dockerfile: 'Dockerfile.rosmelodic'
+        imageName: 'ubuntu-latest'
+      ROS-noetic:
+        dockerfile: 'Dockerfile.rosnoetic'
+        imageName: 'ubuntu-latest'
+  pool:
+    vmImage: $(imageName)
+  steps:
+    # Currently only for testing, so no tagging needed.
+    - script: docker build . --file $(dockerfile) || exit 1
+      displayName: 'docker build'
+
+
+- job: 'Test'
+  strategy:
+    matrix:
+      Python35-ubuntu:
+        python.version: '3.5'
+        imageName: 'ubuntu-latest'
+      Python36-ubuntu:
+        python.version: '3.6'
+        imageName: 'ubuntu-latest'
+      Python37-ubuntu:
+        python.version: '3.7'
+        imageName: 'ubuntu-latest'
+      Python37-mac:
+        python.version: '3.7'
+        imageName: 'macOS-latest'
+      Python37-windows:
+        python.version: '3.7'
+        imageName: 'windows-latest'
+    maxParallel: 10
+  pool:
+    vmImage: $(imageName)
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+
+  - script: |
+      python -m pip install --upgrade pip
+      pip install . --no-binary evo
+      evo_config set plot_backend Agg
+    displayName: 'Install and configure package and dependencies'
+
+  - script: |
+      pip install pytest
+      pytest -sv --junitxml=junit/test-results.xml
+    displayName: 'pytest'
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFiles: '**/test-results.xml'
+      testRunTitle: 'Python $(python.version)'
+    condition: succeededOrFailed()
+
+
+- job: 'Publish'
+  dependsOn: 'Test'
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.x'
+      architecture: 'x64'
+
+  - script: python setup.py sdist
+    displayName: 'Build sdist'
+
+# Currently, that's it. No actual deployment.

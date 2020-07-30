@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import binascii
 import csv
 import io
 import json
@@ -28,6 +29,7 @@ import zipfile
 
 import numpy as np
 
+from evo import EvoException
 import evo.core.lie_algebra as lie
 import evo.core.transformations as tr
 from evo.core import result
@@ -36,9 +38,26 @@ from evo.tools import user
 
 logger = logging.getLogger(__name__)
 
+SUPPORTED_ROS_MSGS = {
+    "geometry_msgs/PoseStamped", "geometry_msgs/PoseWithCovarianceStamped",
+    "geometry_msgs/TransformStamped", "nav_msgs/Odometry"
+}
 
-class FileInterfaceException(Exception):
+
+class FileInterfaceException(EvoException):
     pass
+
+
+def has_utf8_bom(file_path):
+    """
+    Checks if the given file starts with a UTF8 BOM
+    wikipedia.org/wiki/Byte_order_mark
+    """
+    size_bytes = os.path.getsize(file_path)
+    if size_bytes < 3:
+        return False
+    with open(file_path, 'rb') as f:
+        return not int(binascii.hexlify(f.read(3)), 16) ^ 0xEFBBBF
 
 
 def csv_read_matrix(file_path, delim=',', comment_str="#"):
@@ -58,7 +77,10 @@ def csv_read_matrix(file_path, delim=',', comment_str="#"):
         if not os.path.isfile(file_path):
             raise FileInterfaceException("csv file " + str(file_path) +
                                          " does not exist")
+        skip_3_bytes = has_utf8_bom(file_path)
         with open(file_path) as f:
+            if skip_3_bytes:
+                f.seek(3)
             generator = (line for line in f
                          if not line.startswith(comment_str))
             reader = csv.reader(generator, delimiter=delim)
@@ -73,7 +95,7 @@ def read_tum_trajectory_file(file_path):
     :return: trajectory.PoseTrajectory3D object
     """
     raw_mat = csv_read_matrix(file_path, delim=" ", comment_str="#")
-    error_msg = ("TUM trajectory files must have 8 entries per row ",
+    error_msg = ("TUM trajectory files must have 8 entries per row "
                  "and no trailing delimiter at the end of the rows (space)")
     if len(raw_mat) > 0 and len(raw_mat[0]) != 8:
         raise FileInterfaceException(error_msg)
@@ -121,7 +143,7 @@ def read_kitti_poses_file(file_path):
     :return: trajectory.PosePath3D
     """
     raw_mat = csv_read_matrix(file_path, delim=" ", comment_str="#")
-    error_msg = ("KITTI pose files must have 12 entries per row ",
+    error_msg = ("KITTI pose files must have 12 entries per row "
                  "and no trailing delimiter at the end of the rows (space)")
     if len(raw_mat) > 0 and len(raw_mat[0]) != 12:
         raise FileInterfaceException(error_msg)
@@ -164,7 +186,7 @@ def read_euroc_csv_trajectory(file_path):
     :return: trajectory.PoseTrajectory3D object
     """
     raw_mat = csv_read_matrix(file_path, delim=",", comment_str="#")
-    error_msg = ("EuRoC MAV state ground truth must have 17 entries per row ",
+    error_msg = ("EuRoC MAV state ground truth must have 17 entries per row "
                  "and no trailing delimiter at the end of the rows (comma)")
     if len(raw_mat) > 0 and len(raw_mat[0]) != 17:
         raise FileInterfaceException(error_msg)
@@ -200,37 +222,82 @@ def read_pose_csv_trajectory(file_path):
     return PoseTrajectory3D(xyz, quat, stamps)
 
 
+def _get_xyz_quat_from_transform_stamped(msg):
+    xyz = [
+        msg.transform.translation.x, msg.transform.translation.y,
+        msg.transform.translation.z
+    ]
+    quat = [
+        msg.transform.rotation.w, msg.transform.rotation.x,
+        msg.transform.rotation.y, msg.transform.rotation.z
+    ]
+    return xyz, quat
+
+
+def _get_xyz_quat_from_pose_or_odometry_msg(msg):
+    # Make nav_msgs/Odometry behave like geometry_msgs/PoseStamped.
+    while not hasattr(msg.pose, 'position') and not hasattr(
+            msg.pose, 'orientation'):
+        msg = msg.pose
+    xyz = [msg.pose.position.x, msg.pose.position.y, msg.pose.position.z]
+    quat = [
+        msg.pose.orientation.w, msg.pose.orientation.x, msg.pose.orientation.y,
+        msg.pose.orientation.z
+    ]
+    return xyz, quat
+
+
+def get_supported_topics(bag_handle):
+    """
+    :param bag_handle: opened bag handle, from rosbag.Bag(...)
+    :return: list of ROS topics that are supported by this module
+    """
+    topic_info = bag_handle.get_type_and_topic_info()
+    return sorted([
+        t for t in topic_info[1].keys()
+        if topic_info[1][t][0] in SUPPORTED_ROS_MSGS
+    ])
+
+
 def read_bag_trajectory(bag_handle, topic):
     """
     :param bag_handle: opened bag handle, from rosbag.Bag(...)
-    :param topic: geometry_msgs/PoseStamped or nav_msgs/Odometry topic
+    :param topic: trajectory topic of supported message type,
+                  or a TF trajectory ID (e.g.: '/tf:map.base_link' )
     :return: trajectory.PoseTrajectory3D
     """
+    from evo.tools import tf_cache
+
+    # Use TfCache instead if it's a TF transform ID.
+    if tf_cache.instance().check_id(topic):
+        return tf_cache.instance().get_trajectory(bag_handle, identifier=topic)
+
     if not bag_handle.get_message_count(topic) > 0:
         raise FileInterfaceException("no messages for topic '" + topic +
                                      "' in bag")
     msg_type = bag_handle.get_type_and_topic_info().topics[topic].msg_type
-    if msg_type not in {"geometry_msgs/PoseStamped", "nav_msgs/Odometry"}:
+    if msg_type not in SUPPORTED_ROS_MSGS:
         raise FileInterfaceException(
             "unsupported message type: {}".format(msg_type))
+
+    # Choose appropriate message conversion.
+    if msg_type == "geometry_msgs/TransformStamped":
+        get_xyz_quat = _get_xyz_quat_from_transform_stamped
+    else:
+        get_xyz_quat = _get_xyz_quat_from_pose_or_odometry_msg
+
     stamps, xyz, quat = [], [], []
-    for topic, msg, t in bag_handle.read_messages(topic):
+    for topic, msg, _ in bag_handle.read_messages(topic):
+        # Use the header timestamps (converted to seconds).
+        t = msg.header.stamp
         stamps.append(t.secs + (t.nsecs * 1e-9))
-        # Make nav_msgs/Odometry behave like geometry_msgs/PoseStamped.
-        while not hasattr(msg.pose, 'position') and not hasattr(
-                msg.pose, 'orientation'):
-            msg = msg.pose
-        xyz.append(
-            [msg.pose.position.x, msg.pose.position.y, msg.pose.position.z])
-        quat.append([
-            msg.pose.orientation.x, msg.pose.orientation.y,
-            msg.pose.orientation.z, msg.pose.orientation.w
-        ])
-    quat = np.roll(quat, 1, axis=1)  # shift 1 column -> w in front column
+        xyz_t, quat_t = get_xyz_quat(msg)
+        xyz.append(xyz_t)
+        quat.append(quat_t)
     logger.debug("Loaded {} {} messages of topic: {}".format(
         len(stamps), msg_type, topic))
     generator = bag_handle.read_messages(topic)
-    _, first_msg, _ = generator.next()
+    _, first_msg, _ = next(generator)
     frame_id = first_msg.header.frame_id
     return PoseTrajectory3D(xyz, quat, stamps, meta={"frame_id": frame_id})
 
@@ -265,39 +332,40 @@ def write_bag_trajectory(bag_handle, traj, topic_name, frame_id=""):
 
 def save_res_file(zip_path, result_obj, confirm_overwrite=False):
     """
-    save results of a pose error metric (pe_metric) to a zip file
-    :param zip_path: path to zip file
+    save results to a zip file that can be deserialized with load_res_file()
+    :param zip_path: path to zip file (or file handle)
     :param result_obj: evo.core.result.Result instance
     :param confirm_overwrite: whether to require user interaction
            to overwrite existing files
     """
-    from tempfile import TemporaryFile
-    logger.debug("Saving results to " + zip_path + "...")
+    if isinstance(zip_path, str):
+        logger.debug("Saving results to " + zip_path + "...")
     if confirm_overwrite and not user.check_and_confirm_overwrite(zip_path):
         return
     with zipfile.ZipFile(zip_path, 'w') as archive:
         archive.writestr("info.json", json.dumps(result_obj.info))
         archive.writestr("stats.json", json.dumps(result_obj.stats))
         for name, array in result_obj.np_arrays.items():
-            tmp_file = TemporaryFile()
-            np.save(tmp_file, array)
-            tmp_file.seek(0)
-            archive.writestr("{}.npz".format(name), tmp_file.read())
-            tmp_file.close()
+            buffer = io.BytesIO()
+            np.save(buffer, array)
+            buffer.seek(0)
+            archive.writestr("{}.npz".format(name), buffer.read())
+            buffer.close()
         for name, traj in result_obj.trajectories.items():
-            tmp_file = TemporaryFile()
+            buffer = io.StringIO()
             if type(traj) is PosePath3D:
                 fmt_suffix = ".kitti"
-                write_kitti_poses_file(tmp_file, traj)
+                write_kitti_poses_file(buffer, traj)
             elif type(traj) is PoseTrajectory3D:
                 fmt_suffix = ".tum"
-                write_tum_trajectory_file(tmp_file, traj)
+                write_tum_trajectory_file(buffer, traj)
             else:
                 raise FileInterfaceException(
                     "unknown format of trajectory {}".format(name))
-            tmp_file.seek(0)
-            archive.writestr("{}{}".format(name, fmt_suffix), tmp_file.read())
-            tmp_file.close()
+            buffer.seek(0)
+            archive.writestr("{}{}".format(name, fmt_suffix),
+                             buffer.read().encode("utf-8"))
+            buffer.close()
 
 
 def load_res_file(zip_path, load_trajectories=False):

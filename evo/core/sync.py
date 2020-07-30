@@ -24,12 +24,13 @@ import logging
 
 import numpy as np
 
+from evo import EvoException
 from evo.core.trajectory import PoseTrajectory3D
 
 logger = logging.getLogger(__name__)
 
 
-class SyncException(Exception):
+class SyncException(EvoException):
     pass
 
 
@@ -37,11 +38,11 @@ def matching_time_indices(stamps_1, stamps_2, max_diff=0.01, offset_2=0.0):
     """
     Searches for the best matching timestamps of two lists of timestamps
     and returns the list indices of the best matches.
-    :param stamps_1: first vector of timestamps
-    :param stamps_2: second vector of timestamps
+    :param stamps_1: first vector of timestamps (numpy array)
+    :param stamps_2: second vector of timestamps (numpy array)
     :param max_diff: max. allowed absolute time difference
-    :param offset_2: optional offset of second vector
-    :return: the indices of the matching stamps in stamps_1
+    :param offset_2: optional time offset to be applied to stamps_2
+    :return: list of indices of the matching timestamps in stamps_1
     """
     matching_indices = []
     stamps_2 = copy.deepcopy(stamps_2)
@@ -74,7 +75,7 @@ def associate_trajectories(traj_1, traj_2, max_diff=0.01, offset_2=0.0,
     snd_longer = len(traj_2.timestamps) > len(traj_1.timestamps)
     traj_long = copy.deepcopy(traj_2) if snd_longer else copy.deepcopy(traj_1)
     traj_short = copy.deepcopy(traj_1) if snd_longer else copy.deepcopy(traj_2)
-    max_pairs = len(traj_long.timestamps)
+    max_pairs = len(traj_short.timestamps)
 
     # First, match the timestamps of the shorter trajectory to the longer one.
     matching_indices = matching_time_indices(

@@ -29,6 +29,7 @@ from enum import Enum  # requires enum34 in Python 2.7
 
 import numpy as np
 
+from evo import EvoException
 from evo.core import filters
 from evo.core.result import Result
 from evo.core import lie_algebra as lie
@@ -41,7 +42,7 @@ else:
 logger = logging.getLogger(__name__)
 
 
-class MetricsException(Exception):
+class MetricsException(EvoException):
     pass
 
 
@@ -66,6 +67,7 @@ class PoseRelation(Enum):
 
 
 class Unit(Enum):
+    none = "unit-less"
     meters = "m"
     seconds = "s"
     degrees = "deg"
@@ -105,6 +107,10 @@ class PE(Metric):
     """
     Abstract base class of pose error metrics.
     """
+
+    def __init__(self):
+        self.unit = Unit.none
+        self.error = []
 
     def __str__(self):
         return "PE metric base class"
@@ -165,13 +171,12 @@ class PE(Metric):
         """
         result = Result()
         metric_name = self.__class__.__name__
-        unit_name = self.unit.value if self.unit is not None else ""
         result.add_info({
             "title": str(self),
             "ref_name": ref_name,
             "est_name": est_name,
-            "label": "{} {}".format(
-                metric_name, "({})".format(unit_name) if unit_name else "")
+            "label": "{} {}".format(metric_name,
+                                    "({})".format(self.unit.value))
         })
         result.add_stats(self.get_all_statistics())
         if hasattr(self, "error"):
@@ -209,7 +214,7 @@ class RPE(PE):
             self.unit = Unit.radians
         else:
             # dimension-less
-            self.unit = None
+            self.unit = Unit.none
 
     def __str__(self):
         title = "RPE w.r.t. {} ({})\nfor delta = {} ({})".format(
@@ -267,9 +272,8 @@ class RPE(PE):
             traj_est.poses_se3, self.delta, self.delta_unit,
             self.rel_delta_tol, all_pairs=self.all_pairs)
 
-        if not self.all_pairs:
-            # Store flat id list e.g. for plotting.
-            self.delta_ids = [j for i, j in id_pairs]
+        # Store flat id list e.g. for plotting.
+        self.delta_ids = [j for i, j in id_pairs]
 
         self.E = [
             self.rpe_base(traj_ref.poses_se3[i], traj_ref.poses_se3[j],
@@ -327,7 +331,7 @@ class APE(PE):
         elif pose_relation == PoseRelation.rotation_angle_rad:
             self.unit = Unit.radians
         else:
-            self.unit = None  # dimension-less
+            self.unit = Unit.none  # dimension-less
 
     def __str__(self):
         title = "APE w.r.t. "

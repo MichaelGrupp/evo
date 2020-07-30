@@ -1,4 +1,5 @@
 {
+    "merge": true,
     "no_warnings": false,
     "plot_markers": false,
     "save_plot": "tmp/plot.pdf",

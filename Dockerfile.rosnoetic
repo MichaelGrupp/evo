@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
-FROM ros:melodic
+FROM ros:noetic
 
 # Copy the whole tree into the container.
 COPY . container-local/
@@ -23,15 +23,15 @@ COPY . container-local/
 ENTRYPOINT ["container-local/.ci/ros_entrypoint.sh"]
 
 # Install tf2
-RUN apt-get update && apt-get -y install ros-melodic-tf2-ros
+RUN apt-get update && apt-get -y install ros-noetic-tf2-ros
 
-# Use Python 2.x for ROS.
-RUN container-local/.ci/debian_install_pip2.sh
+# Use Python 3.x for ROS Noetic.
+RUN container-local/.ci/debian_install_pip3.sh
 
 # Build and install.
-RUN pip2 install /container-local --upgrade --no-binary evo
+RUN pip3 install /container-local --upgrade --no-binary evo
 RUN evo_config set plot_backend Agg
 
 # Run tests.
-RUN pip2 install pytest --upgrade
+RUN pip3 install pytest --upgrade
 RUN /container-local/.ci/ros_run_tests.sh /container-local

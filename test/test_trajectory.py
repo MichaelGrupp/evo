@@ -19,9 +19,6 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from __future__ import print_function  # Python 2.7 backwards compatibility
-
-import os
 import unittest
 import copy
 
@@ -29,135 +26,192 @@ import numpy as np
 
 import context
 import helpers
-from evo.core import trajectory, geometry
+from evo.core import trajectory
 from evo.core import lie_algebra as lie
-from evo.tools import file_interface
-
-# use absolute paths!
-here = os.path.dirname(os.path.abspath(__file__))
-tum_traj_file = os.path.join(here, "data/fr2_desk_ORB.txt")
-kitti_traj_file = os.path.join(here, "data/KITTI_00_gt.txt")
-
-ex_tum_traj = file_interface.read_tum_trajectory_file(tum_traj_file)
-ex_kitti_traj = file_interface.read_kitti_poses_file(kitti_traj_file)
-ex_kitti_traj_wrong = copy.deepcopy(ex_kitti_traj)
-ex_kitti_traj_wrong._poses_se3 = [
-    np.zeros((4, 4)) for i in range(ex_kitti_traj.num_poses)
-]
-
-ex_tum_traj_wrong_quat = copy.deepcopy(ex_tum_traj)
-ex_tum_traj_wrong_quat._orientations_quat_wxyz[3] = [5000, 0, 0, 0]
-
-ex_tum_traj_wrong_stamps = copy.deepcopy(ex_tum_traj)
-# unsorted timestamps
-ex_tum_traj_wrong_stamps.timestamps = np.roll(
-    helpers.fake_timestamps(ex_tum_traj.num_poses, 0.1), 1)
+from evo.core.trajectory import PoseTrajectory3D
+from evo.core.geometry import GeometryException
 
 
 class TestPosePath3D(unittest.TestCase):
     def test_init_wrong_args(self):
+        path = helpers.fake_path(10)
         # no args
         with self.assertRaises(trajectory.TrajectoryException):
             trajectory.PosePath3D()
         # only quaternion
         with self.assertRaises(trajectory.TrajectoryException):
             trajectory.PosePath3D(
-                orientations_quat_wxyz=ex_tum_traj.orientations_quat_wxyz)
+                orientations_quat_wxyz=path.orientations_quat_wxyz)
         # only xyz
         with self.assertRaises(trajectory.TrajectoryException):
-            trajectory.PosePath3D(positions_xyz=ex_tum_traj.positions_xyz)
+            trajectory.PosePath3D(positions_xyz=path.positions_xyz)
 
     def test_init_correct(self):
         # only poses_se3
+        path = helpers.fake_path(10)
         try:
-            trajectory.PosePath3D(poses_se3=ex_tum_traj.poses_se3)
+            trajectory.PosePath3D(poses_se3=path.poses_se3)
         except trajectory.TrajectoryException:
             self.fail("unexpected init failure with only poses_se3")
         # xyz + quaternion
         try:
-            trajectory.PosePath3D(ex_tum_traj.positions_xyz,
-                                  ex_tum_traj.orientations_quat_wxyz)
+            trajectory.PosePath3D(path.positions_xyz,
+                                  path.orientations_quat_wxyz)
         except trajectory.TrajectoryException:
             self.fail("unexpected init failure with xyz + quaternion")
         # all
         try:
-            trajectory.PosePath3D(ex_tum_traj.positions_xyz,
-                                  ex_tum_traj.orientations_quat_wxyz,
-                                  ex_tum_traj.poses_se3)
+            trajectory.PosePath3D(path.positions_xyz,
+                                  path.orientations_quat_wxyz, path.poses_se3)
         except trajectory.TrajectoryException:
             self.fail(
                 "unexpected init failure with xyz + quaternion + poses_se3")
 
     def test_equals(self):
-        ex_kitti_traj_copy = copy.deepcopy(ex_kitti_traj)
-        self.assertTrue(ex_kitti_traj == ex_kitti_traj_copy)
-        self.assertFalse(ex_kitti_traj == ex_kitti_traj_wrong)
-        self.assertTrue(ex_kitti_traj != ex_kitti_traj_wrong)
-        self.assertFalse(ex_kitti_traj != ex_kitti_traj_copy)
+        path_1 = helpers.fake_path(10)
+        path_1_copy = copy.deepcopy(path_1)
+        path_2 = helpers.fake_path(15)
+        self.assertTrue(path_1 == path_1_copy)
+        self.assertFalse(path_1 == path_2)
+        self.assertTrue(path_1 != path_2)
+        self.assertFalse(path_1 != path_1_copy)
 
     def test_reduce_to_ids(self):
-        traj_reduced = copy.deepcopy(ex_kitti_traj)
-        traj_reduced.reduce_to_ids([0, 2])
-        self.assertEqual(traj_reduced.num_poses, 2)
+        path = helpers.fake_path(10)
+        path_reduced = copy.deepcopy(path)
+        path_reduced.reduce_to_ids([0, 2])
+        self.assertEqual(path_reduced.num_poses, 2)
         # direct connection from 0 to 2 in initial should be reduced path length
-        len_initial_segment = np.linalg.norm(ex_kitti_traj.positions_xyz[2] -
-                                             ex_kitti_traj.positions_xyz[0])
-        len_reduced = traj_reduced.path_length()
-        self.assertEqual(len_initial_segment, len_reduced)
+        len_initial_segment = np.linalg.norm(path.positions_xyz[2] -
+                                             path.positions_xyz[0])
+        len_reduced = path_reduced.path_length
+        self.assertAlmostEqual(len_initial_segment, len_reduced)
 
     def test_transform(self):
-        traj_transformed = copy.deepcopy(ex_kitti_traj)
+        path = helpers.fake_path(10)
+        path_transformed = copy.deepcopy(path)
         t = lie.random_se3()
-        traj_transformed.transform(t)
+        path_transformed.transform(t)
         # traj_transformed.transform(lie.se3_inverse(t))
-        self.assertAlmostEqual(traj_transformed.path_length(),
-                               ex_kitti_traj.path_length())
+        self.assertAlmostEqual(path_transformed.path_length, path.path_length)
+
+    def test_transform_sim3(self):
+        path = helpers.fake_path(10)
+        path_transformed = copy.deepcopy(path)
+        t = lie.sim3(r=lie.random_so3(), t=np.ones(3), s=1.234)
+        path_transformed.transform(t)
+        self.assertAlmostEqual(path_transformed.path_length,
+                               path.path_length * 1.234)
 
     def test_scale(self):
-        traj_scaled = copy.deepcopy(ex_kitti_traj)
+        path = helpers.fake_path(10)
+        path_scaled = copy.deepcopy(path)
         s = 5.234
-        traj_scaled.scale(s)
-        len_initial = ex_kitti_traj.path_length()
-        len_scaled = traj_scaled.path_length()
+        path_scaled.scale(s)
+        len_initial = path.path_length
+        len_scaled = path_scaled.path_length
         self.assertAlmostEqual(len_initial * s, len_scaled)
 
     def test_check(self):
-        self.assertTrue(ex_kitti_traj.check()[0])
-        self.assertFalse(ex_kitti_traj_wrong.check()[0])
+        self.assertTrue(helpers.fake_path(10).check()[0])
+        path_wrong = helpers.fake_path(10)
+        _ = path_wrong.orientations_quat_wxyz
+        path_wrong._orientations_quat_wxyz[1][1] = 666
+        self.assertFalse(path_wrong.check()[0])
 
     def test_get_infos(self):
-        ex_kitti_traj.get_infos()
+        helpers.fake_path(10).get_infos()
 
     def test_get_statistics(self):
-        ex_kitti_traj.get_statistics()
+        helpers.fake_path(10).get_statistics()
+
+    def test_distances(self):
+        path = helpers.fake_path(10)
+        self.assertEqual(path.distances[0], 0.0)
+        self.assertEqual(path.distances.size, path.num_poses)
+        self.assertAlmostEqual(path.distances[-1], path.path_length)
 
 
 class TestPoseTrajectory3D(unittest.TestCase):
     def test_equals(self):
-        ex_tum_traj_copy = copy.deepcopy(ex_tum_traj)
-        self.assertTrue(ex_tum_traj == ex_tum_traj_copy)
-        self.assertFalse(ex_tum_traj == ex_tum_traj_wrong_stamps)
-        self.assertFalse(ex_tum_traj == ex_tum_traj_wrong_quat)
-        self.assertTrue(ex_tum_traj != ex_tum_traj_wrong_stamps)
-        self.assertTrue(ex_tum_traj != ex_tum_traj_wrong_quat)
-        self.assertFalse(ex_tum_traj != ex_tum_traj_copy)
+        traj_1 = helpers.fake_trajectory(10, 1)
+        traj_1_copy = copy.deepcopy(traj_1)
+        traj_2 = helpers.fake_trajectory(15, 1)
+        self.assertTrue(traj_1 == traj_1_copy)
+        self.assertFalse(traj_1 == traj_2)
+        self.assertTrue(traj_1 != traj_2)
+        self.assertFalse(traj_1 != traj_1_copy)
 
     def test_reduce_to_ids(self):
-        traj_reduced = copy.deepcopy(ex_tum_traj)
-        traj_reduced.reduce_to_ids([0, 2])
-        self.assertEqual(traj_reduced.num_poses, 2)
-        self.assertEqual(len(traj_reduced.timestamps), 2)
+        traj = helpers.fake_trajectory(10, 1)
+        traj.reduce_to_ids([0, 2])
+        self.assertEqual(traj.num_poses, 2)
+        self.assertEqual(len(traj.timestamps), 2)
 
     def test_check(self):
-        self.assertTrue(ex_tum_traj.check()[0])
-        self.assertFalse(ex_tum_traj_wrong_quat.check()[0])
-        self.assertFalse(ex_tum_traj_wrong_stamps.check()[0])
+        self.assertTrue(helpers.fake_trajectory(10, 1).check()[0])
+        wrong_traj = helpers.fake_trajectory(10, 1)
+        wrong_traj.timestamps[0] = 666
+        self.assertFalse(wrong_traj.check()[0])
 
     def test_get_infos(self):
-        ex_tum_traj.get_infos()
+        helpers.fake_trajectory(10, 1).get_infos()
 
     def test_get_statistics(self):
-        ex_tum_traj.get_statistics()
+        helpers.fake_trajectory(10, 1).get_statistics()
+
+
+class TestTrajectoryAlignment(unittest.TestCase):
+    def test_se3_alignment(self):
+        traj = helpers.fake_trajectory(1000, 1)
+        traj_transformed = copy.deepcopy(traj)
+        traj_transformed.transform(lie.random_se3())
+        self.assertNotEqual(traj, traj_transformed)
+        traj_aligned = trajectory.align_trajectory(traj_transformed, traj)
+        self.assertEqual(traj_aligned, traj)
+
+    def test_sim3_alignment(self):
+        traj = helpers.fake_trajectory(1000, 1)
+        traj_transformed = copy.deepcopy(traj)
+        traj_transformed.transform(lie.random_se3())
+        traj_transformed.scale(1.234)
+        self.assertNotEqual(traj, traj_transformed)
+        traj_aligned = trajectory.align_trajectory(traj_transformed, traj,
+                                                   correct_scale=True)
+        self.assertEqual(traj_aligned, traj)
+
+    def test_scale_correction(self):
+        traj = helpers.fake_trajectory(1000, 1)
+        traj_transformed = copy.deepcopy(traj)
+        traj_transformed.scale(1.234)
+        self.assertNotEqual(traj, traj_transformed)
+        traj_aligned = trajectory.align_trajectory(traj_transformed, traj,
+                                                   correct_only_scale=True)
+        self.assertEqual(traj_aligned, traj)
+
+    def test_origin_alignment(self):
+        traj_1 = helpers.fake_trajectory(1000, 1)
+        traj_2 = helpers.fake_trajectory(1000, 1)
+        self.assertFalse(np.allclose(traj_1.poses_se3[0], traj_2.poses_se3[0]))
+        traj_2 = trajectory.align_trajectory_origin(traj_2, traj_1)
+        self.assertTrue(np.allclose(traj_1.poses_se3[0], traj_2.poses_se3[0]))
+
+    def test_alignment_degenerate_case(self):
+        length = 100
+        poses = [lie.random_se3()] * length
+        traj_1 = PoseTrajectory3D(
+            poses_se3=poses,
+            timestamps=helpers.fake_timestamps(length, 1, 0.0))
+        traj_2 = copy.deepcopy(traj_1)
+        traj_2.transform(lie.random_se3())
+        traj_2.scale(1.234)
+        self.assertNotEqual(traj_1, traj_2)
+
+        with self.assertRaises(GeometryException):
+            trajectory.align_trajectory(traj_1, traj_2)
+
+        with self.assertRaises(GeometryException):
+            trajectory.align_trajectory(traj_1, traj_2, correct_scale=True)
 
 
 if __name__ == '__main__':

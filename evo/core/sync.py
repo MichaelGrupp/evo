@@ -82,13 +82,15 @@ def associate_trajectories(traj_1, traj_2, max_diff=0.01, offset_2=0.0,
     matching_indices_short, matching_indices_long = matching_time_indices(
         traj_short.timestamps, traj_long.timestamps, max_diff,
         offset_2 if snd_longer else -offset_2)
+    assert len(matching_indices_short) == len(matching_indices_long)
+    num_matches = len(matching_indices_long)
     traj_short.reduce_to_ids(matching_indices_short)
     traj_long.reduce_to_ids(matching_indices_long)
 
     traj_1 = traj_short if snd_longer else traj_long
     traj_2 = traj_long if snd_longer else traj_short
 
-    if len(matching_indices_long) == 0:
+    if num_matches == 0:
         raise SyncException(
             "found no matching timestamps between {} and {} with max. time "
             "diff {} (s) and time offset {} (s)".format(
@@ -97,8 +99,7 @@ def associate_trajectories(traj_1, traj_2, max_diff=0.01, offset_2=0.0,
     logger.debug(
         "Found {} of max. {} possible matching timestamps between...\n"
         "\t{}\nand:\t{}\n..with max. time diff.: {} (s) "
-        "and time offset: {} (s).".format(len(matching_indices_long),
-                                          max_pairs, first_name, snd_name,
-                                          max_diff, offset_2))
+        "and time offset: {} (s).".format(num_matches, max_pairs, first_name,
+                                          snd_name, max_diff, offset_2))
 
     return traj_1, traj_2

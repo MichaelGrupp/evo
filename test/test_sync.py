@@ -31,28 +31,33 @@ class TestMatchingTimeIndices(unittest.TestCase):
         stamps_1 = helpers.fake_timestamps(10, 0.1, start_time=0.)
         stamps_2 = helpers.fake_timestamps(10, 0.1, start_time=0.5)
         matches = sync.matching_time_indices(stamps_1, stamps_2, offset_2=-0.5)
-        self.assertEqual(len(matches), 10)
+        self.assertEqual(len(matches[0]), 10)
+        self.assertEqual(len(matches[1]), 10)
 
     def test_correct_negative_offset(self):
         stamps_1 = helpers.fake_timestamps(10, 0.1, start_time=0.)
         stamps_2 = helpers.fake_timestamps(10, 0.1, start_time=-0.5)
         matches = sync.matching_time_indices(stamps_1, stamps_2, offset_2=0.5)
-        self.assertEqual(len(matches), 10)
+        self.assertEqual(len(matches[0]), 10)
+        self.assertEqual(len(matches[1]), 10)
 
     def test_no_matches_due_to_offset(self):
         stamps_1 = helpers.fake_timestamps(10, 0.1, start_time=0.)
         stamps_2 = helpers.fake_timestamps(10, 0.1, start_time=2.)
         matches = sync.matching_time_indices(stamps_1, stamps_2)
-        self.assertEqual(len(matches), 0)
+        self.assertEqual(len(matches[0]), 0)
+        self.assertEqual(len(matches[1]), 0)
 
     def test_max_diff(self):
         stamps_1 = helpers.fake_timestamps(10, 0.1, start_time=0.01)
         stamps_2 = helpers.fake_timestamps(500, 2e-3)
         # default max_diff: 0.01
         matches = sync.matching_time_indices(stamps_1, stamps_2)
-        self.assertEqual(len(matches), 10)
+        self.assertEqual(len(matches[0]), 10)
+        self.assertEqual(len(matches[1]), 10)
         matches = sync.matching_time_indices(stamps_2, stamps_1, max_diff=1e-3)
-        self.assertEqual(len(matches), 10)
+        self.assertEqual(len(matches[0]), 10)
+        self.assertEqual(len(matches[1]), 10)
 
 
 class TestAssociateTrajectories(unittest.TestCase):

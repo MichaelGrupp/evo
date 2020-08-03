@@ -543,7 +543,7 @@ def traj_rpy(axarr, traj, style='-', color='black', label="", alpha=1.0,
 
 
 def trajectories(fig, trajectories, plot_mode=PlotMode.xy, title="",
-                 subplot_arg="111"):
+                 subplot_arg=111):
     """
     high-level function for plotting multiple trajectories
     :param fig: matplotlib figure
@@ -553,7 +553,7 @@ def trajectories(fig, trajectories, plot_mode=PlotMode.xy, title="",
     :param title: optional plot title
     :param subplot_arg: optional matplotlib subplot ID if used as subplot
     """
-    ax = prepare_axis(fig, plot_mode)
+    ax = prepare_axis(fig, plot_mode, subplot_arg)
     cmap_colors = None
     if SETTINGS.plot_multi_cmap.lower() != "none":
         cmap = getattr(cm, SETTINGS.plot_multi_cmap)
@@ -581,7 +581,7 @@ def trajectories(fig, trajectories, plot_mode=PlotMode.xy, title="",
 
 def error_array(fig, err_array, x_array=None, statistics=None, threshold=None,
                 cumulative=False, color='grey', name="error", title="",
-                xlabel="index", ylabel=None, subplot_arg='111', linestyle="-",
+                xlabel="index", ylabel=None, subplot_arg=111, linestyle="-",
                 marker=None):
     """
     high-level function for plotting raw error values of a metric

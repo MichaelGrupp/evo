@@ -82,7 +82,9 @@ def associate_trajectories(traj_1, traj_2, max_diff=0.01, offset_2=0.0,
     matching_indices_short, matching_indices_long = matching_time_indices(
         traj_short.timestamps, traj_long.timestamps, max_diff,
         offset_2 if snd_longer else -offset_2)
-    assert len(matching_indices_short) == len(matching_indices_long)
+    if len(matching_indices_short) != len(matching_indices_long):
+        raise SyncException(
+            "matching_time_indices returned unequal number of indices")
     num_matches = len(matching_indices_long)
     traj_short.reduce_to_ids(matching_indices_short)
     traj_long.reduce_to_ids(matching_indices_long)

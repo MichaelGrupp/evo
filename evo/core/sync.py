@@ -42,7 +42,7 @@ def matching_time_indices(stamps_1, stamps_2, max_diff=0.01, offset_2=0.0):
     :param stamps_2: second vector of timestamps (numpy array)
     :param max_diff: max. allowed absolute time difference
     :param offset_2: optional time offset to be applied to stamps_2
-    :return: 2 lists of the matching timestamps (stamps_1, stamps_2)
+    :return: 2 lists of the matching timestamp indices (stamps_1, stamps_2)
     """
     matching_indices_1 = []
     matching_indices_2 = []

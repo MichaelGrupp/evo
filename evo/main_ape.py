@@ -53,6 +53,10 @@ def parser():
     algo_opts.add_argument("-s", "--correct_scale", action="store_true",
                            help="correct scale with Umeyama's method")
     algo_opts.add_argument(
+        "--n_to_align",
+        help="the number of poses to use for Umeyama alignment, "
+        "counted from the start (default: all)", default=-1, type=int)
+    algo_opts.add_argument(
         "--align_origin",
         help="align the trajectory origin to the origin of the reference "
         "trajectory", action="store_true")
@@ -156,7 +160,8 @@ def parser():
 
 
 def ape(traj_ref, traj_est, pose_relation, align=False, correct_scale=False,
-        align_origin=False, ref_name="reference", est_name="estimate"):
+        n_to_align=-1, align_origin=False, ref_name="reference",
+        est_name="estimate"):
     from evo.core import metrics
     from evo.core import trajectory
 
@@ -165,7 +170,8 @@ def ape(traj_ref, traj_est, pose_relation, align=False, correct_scale=False,
     if align or correct_scale:
         logger.debug(SEP)
         traj_est = trajectory.align_trajectory(traj_est, traj_ref,
-                                               correct_scale, only_scale)
+                                               correct_scale, only_scale,
+                                               n=n_to_align)
     elif align_origin:
         logger.debug(SEP)
         traj_est = trajectory.align_trajectory_origin(traj_est, traj_ref)
@@ -187,6 +193,8 @@ def ape(traj_ref, traj_est, pose_relation, align=False, correct_scale=False,
         title += "\n(with origin alignment)"
     else:
         title += "\n(not aligned)"
+    if (align or correct_scale) and n_to_align != -1:
+        title += " (aligned poses: {})".format(n_to_align)
 
     ape_result = ape_metric.get_result(ref_name, est_name)
     ape_result.info["title"] = title
@@ -240,6 +248,7 @@ def run(args):
         pose_relation=pose_relation,
         align=args.align,
         correct_scale=args.correct_scale,
+        n_to_align=args.n_to_align,
         align_origin=args.align_origin,
         ref_name=ref_name,
         est_name=est_name,

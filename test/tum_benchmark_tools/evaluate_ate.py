@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Software License Agreement (BSD License)
 #
 # Copyright (c) 2013, Juergen Sturm, TUM
@@ -140,26 +140,26 @@ if __name__=="__main__":
     
     second_xyz_aligned = rot * second_xyz + trans
 
-    first_stamps = first_list.keys()
+    first_stamps = list(first_list.keys())
     first_stamps.sort()
     first_xyz_full = numpy.matrix([[float(value) for value in first_list[b][0:3]] for b in first_stamps]).transpose()
     
-    second_stamps = second_list.keys()
+    second_stamps = list(second_list.keys())
     second_stamps.sort()
     second_xyz_full = numpy.matrix([[float(value)*float(args.scale) for value in second_list[b][0:3]] for b in second_stamps]).transpose()
     second_xyz_full_aligned = rot * second_xyz_full + trans
     
     if args.verbose:
-        print "compared_pose_pairs %d pairs"%(len(trans_error))
+        print ("compared_pose_pairs %d pairs"%(len(trans_error)))
 
-        print "absolute_translational_error.rmse %f m"%numpy.sqrt(numpy.dot(trans_error,trans_error) / len(trans_error))
-        print "absolute_translational_error.mean %f m"%numpy.mean(trans_error)
-        print "absolute_translational_error.median %f m"%numpy.median(trans_error)
-        print "absolute_translational_error.std %f m"%numpy.std(trans_error)
-        print "absolute_translational_error.min %f m"%numpy.min(trans_error)
-        print "absolute_translational_error.max %f m"%numpy.max(trans_error)
+        print ("absolute_translational_error.rmse %f m"%numpy.sqrt(numpy.dot(trans_error,trans_error) / len(trans_error)))
+        print ("absolute_translational_error.mean %f m"%numpy.mean(trans_error))
+        print ("absolute_translational_error.median %f m"%numpy.median(trans_error))
+        print ("absolute_translational_error.std %f m"%numpy.std(trans_error))
+        print ("absolute_translational_error.min %f m"%numpy.min(trans_error))
+        print ("absolute_translational_error.max %f m"%numpy.max(trans_error))
     else:
-        print "%f"%numpy.sqrt(numpy.dot(trans_error,trans_error) / len(trans_error))
+        print ("%f"%numpy.sqrt(numpy.dot(trans_error,trans_error) / len(trans_error)))
         
     if args.save_associations:
         file = open(args.save_associations,"w")

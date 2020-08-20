@@ -117,7 +117,7 @@ def run(args):
 
     import pandas as pd
 
-    from evo.tools import log, user, settings, pandas_bridge
+    from evo.tools import log, user, pandas_bridge
     from evo.tools.settings import SETTINGS
 
     pd.options.display.width = 80

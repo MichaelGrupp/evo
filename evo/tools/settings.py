@@ -26,12 +26,10 @@ import logging
 
 from colorama import Fore
 
-from evo import EvoException
+from evo import EvoException, __version__
 
 logger = logging.getLogger(__name__)
 
-PACKAGE_BASE_PATH = os.path.abspath(__file__ + "/../../")
-PACKAGE_VERSION = open(os.path.join(PACKAGE_BASE_PATH, "version")).read()
 USER_ASSETS_PATH = os.path.join(os.path.expanduser('~'), ".evo")
 USER_ASSETS_VERSION_PATH = os.path.join(USER_ASSETS_PATH, "assets_version")
 DEFAULT_PATH = os.path.join(USER_ASSETS_PATH, "settings.json")
@@ -101,7 +99,7 @@ def initialize_if_needed():
         os.makedirs(USER_ASSETS_PATH)
 
     if not os.path.exists(USER_ASSETS_VERSION_PATH):
-        open(USER_ASSETS_VERSION_PATH, 'w').write(PACKAGE_VERSION)
+        open(USER_ASSETS_VERSION_PATH, 'w').write(__version__)
 
     if not os.path.exists(DEFAULT_PATH):
         try:
@@ -118,14 +116,14 @@ def update_if_outdated():
     """
     Update user settings to a new version if needed.
     """
-    if open(USER_ASSETS_VERSION_PATH).read() == PACKAGE_VERSION:
+    if open(USER_ASSETS_VERSION_PATH).read() == __version__:
         return
     from evo.tools.settings_template import DEFAULT_SETTINGS_DICT
     old_settings = json.loads(open(DEFAULT_PATH).read())
     updated_settings = merge_dicts(old_settings, DEFAULT_SETTINGS_DICT,
                                    soft=True)
     write_to_json_file(DEFAULT_PATH, updated_settings)
-    open(USER_ASSETS_VERSION_PATH, 'w').write(PACKAGE_VERSION)
+    open(USER_ASSETS_VERSION_PATH, 'w').write(__version__)
     print("{}Updated outdated {}{}".format(Fore.LIGHTYELLOW_EX, DEFAULT_PATH,
                                            Fore.RESET))
 

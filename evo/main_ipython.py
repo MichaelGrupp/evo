@@ -30,7 +30,7 @@ import shutil
 import argparse
 import subprocess as sp
 
-from evo.tools.settings import PACKAGE_BASE_PATH
+from evo import PACKAGE_BASE_PATH
 from evo.tools.compat import which
 
 DESC = '''

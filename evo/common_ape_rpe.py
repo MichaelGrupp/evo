@@ -26,7 +26,6 @@ SEP = "-" * 80  # separator line
 
 
 def load_trajectories(args):
-    from evo.core import sync
     from evo.tools import file_interface
 
     if args.subcommand == "tum":

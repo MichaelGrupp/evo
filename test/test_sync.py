@@ -21,7 +21,6 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
 
-import context
 import helpers
 from evo.core import sync
 

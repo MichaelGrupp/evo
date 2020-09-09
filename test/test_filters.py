@@ -24,7 +24,6 @@ import unittest
 
 import numpy as np
 
-import context
 from evo.core import filters
 from evo.core import lie_algebra as lie
 

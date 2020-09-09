@@ -25,7 +25,6 @@ import unittest
 
 import numpy as np
 
-import context
 import helpers
 from evo.core.result import Result
 from evo.core.trajectory import PosePath3D, PoseTrajectory3D

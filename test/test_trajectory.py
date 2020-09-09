@@ -24,7 +24,6 @@ import copy
 
 import numpy as np
 
-import context
 import helpers
 from evo.core import trajectory
 from evo.core import lie_algebra as lie

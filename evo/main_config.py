@@ -30,7 +30,7 @@ import argparse
 import logging
 
 import colorama
-from colorama import Fore, Style
+from colorama import Style
 from pygments import highlight, lexers, formatters
 
 from evo import EvoException

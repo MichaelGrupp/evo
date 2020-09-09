@@ -20,7 +20,6 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import logging
-import os
 import six
 import sys
 

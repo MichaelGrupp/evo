@@ -238,6 +238,9 @@ def main():
         parents=[shared_parser])
     reset_parser.add_argument("-y", help="acknowledge automatically",
                               action="store_true")
+    reset_parser.add_argument(
+        "params", choices=list(DEFAULT_SETTINGS_DICT.keys()),
+        nargs=argparse.REMAINDER, help="parameters to reset")
 
     argcomplete.autocomplete(main_parser)
     if len(sys.argv) > 1 and sys.argv[1] == "set":
@@ -305,11 +308,13 @@ def main():
         if not os.access(config, os.W_OK):
             logger.error("No permission to modify" + config)
             sys.exit()
-        if args.y or user.confirm(
+        if args.params:
+            settings.reset(settings.DEFAULT_PATH, parameter_subset=args.params)
+        elif args.y or user.confirm(
                 "Reset the package settings to the default settings? (y/n)"):
             settings.reset()
-            logger.info("{0}\nPackage settings after reset:\n{0}".format(SEP))
-            show(settings.DEFAULT_PATH, colored=not args.no_color)
+        logger.info("{0}\nPackage settings after reset:\n{0}".format(SEP))
+        show(settings.DEFAULT_PATH, colored=not args.no_color)
 
 
 if __name__ == '__main__':

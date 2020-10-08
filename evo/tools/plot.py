@@ -95,32 +95,6 @@ class PlotCollection:
         fig.tight_layout()
         self.figures[name] = fig
 
-    def tabbed_qt4_window(self):
-        from PyQt4 import QtGui
-        from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg, NavigationToolbar2QT
-        # mpl backend can already create instance
-        # https://stackoverflow.com/a/40031190
-        app = QtGui.QApplication.instance()
-        if app is None:
-            app = QtGui.QApplication([self.title])
-        self.root_window = QtGui.QTabWidget()
-        self.root_window.setWindowTitle(self.title)
-        for name, fig in self.figures.items():
-            tab = QtGui.QWidget(self.root_window)
-            tab.canvas = FigureCanvasQTAgg(fig)
-            vbox = QtGui.QVBoxLayout(tab)
-            vbox.addWidget(tab.canvas)
-            toolbar = NavigationToolbar2QT(tab.canvas, tab)
-            vbox.addWidget(toolbar)
-            tab.setLayout(vbox)
-            for axes in fig.get_axes():
-                if isinstance(axes, Axes3D):
-                    # must explicitly allow mouse dragging for 3D plots
-                    axes.mouse_init()
-            self.root_window.addTab(tab, name)
-        self.root_window.show()
-        app.exec_()
-
     def tabbed_qt5_window(self):
         from PyQt5 import QtGui, QtWidgets
         from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT
@@ -186,9 +160,7 @@ class PlotCollection:
         if len(self.figures.keys()) == 0:
             return
         if not SETTINGS.plot_split:
-            if SETTINGS.plot_backend.lower() == "qt4agg":
-                self.tabbed_qt4_window()
-            elif SETTINGS.plot_backend.lower() == "qt5agg":
+            if SETTINGS.plot_backend.lower() == "qt5agg":
                 self.tabbed_qt5_window()
             elif SETTINGS.plot_backend.lower() == "tkagg":
                 self.tabbed_tk_window()

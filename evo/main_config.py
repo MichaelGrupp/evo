@@ -307,12 +307,14 @@ def main():
     elif args.subcommand == "reset":
         if not os.access(config, os.W_OK):
             logger.error("No permission to modify" + config)
-            sys.exit()
+            sys.exit(1)
         if args.params:
             settings.reset(settings.DEFAULT_PATH, parameter_subset=args.params)
         elif args.y or user.confirm(
-                "Reset the package settings to the default settings? (y/n)"):
+                "Reset all package settings to the default settings? (y/n)"):
             settings.reset()
+        else:
+            sys.exit()
         logger.info("{0}\nPackage settings after reset:\n{0}".format(SEP))
         show(settings.DEFAULT_PATH, colored=not args.no_color)
 

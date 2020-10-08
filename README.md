@@ -74,9 +74,9 @@ pip install --editable . --upgrade --no-binary evo
 evo has some required dependencies that are ***automatically resolved*** during installation with pip.
 They are specified in the `install_requires` part of the `setup.py` file.
 
-**PyQt5 / PyQt4 (optional)**
+**PyQt5 (optional)**
 
-PyQt5 will give you the enhanced GUI for plot figures from the "*Qt5Agg*" matplotlib backend (otherwise: "*TkAgg*"). If PyQt5 is already installed when installing this package, it will be used as a default (see `evo_config show`). To change the plot backend afterwards, run `evo_config set plot_backend Qt5Agg`. PyQt4 can be set equivalently.
+PyQt5 will give you the enhanced GUI for plot figures from the "*Qt5Agg*" matplotlib backend (otherwise: "*TkAgg*"). If PyQt5 is already installed when installing this package, it will be used as a default (see `evo_config show`). To change the plot backend afterwards, run `evo_config set plot_backend Qt5Agg`.
 
 **ROS (optional)**
 

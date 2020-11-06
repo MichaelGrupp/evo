@@ -80,10 +80,6 @@ class VelUnit(Enum):
 
 class Metric(ABC):
     @abc.abstractmethod
-    def reset_parameters(self, parameters):
-        return
-
-    @abc.abstractmethod
     def process_data(self, data):
         return
 

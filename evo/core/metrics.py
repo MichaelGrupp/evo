@@ -24,7 +24,7 @@ import logging
 import math
 import sys
 import typing
-from enum import Enum  # requires enum34 in Python 2.7
+from enum import Enum
 
 import numpy as np
 

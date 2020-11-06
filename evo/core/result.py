@@ -21,9 +21,11 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
 import copy
 import logging
+import typing
 
 import numpy as np
 from evo import EvoException
+from evo.core.trajectory import PosePath3D
 
 logger = logging.getLogger(__name__)
 
@@ -39,10 +41,10 @@ class Result(object):
         self.np_arrays = {}
         self.trajectories = {}
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.pretty_str(stats=True)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, Result):
             return False
         equal = (self.info == other.info)
@@ -58,10 +60,10 @@ class Result(object):
                 [np.array_equal(self.np_arrays[k], other.np_arrays[k])])
         return equal
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         return not self == other
 
-    def pretty_str(self, title=True, stats=True, info=False):
+    def pretty_str(self, title=True, stats=True, info=False) -> str:
         p_str = ""
         if title and "title" in self.info:
             p_str += "{}\n\n".format(self.info["title"])
@@ -73,20 +75,20 @@ class Result(object):
                 p_str += "{:>10}\t{}\n".format(name, val)
         return p_str
 
-    def add_np_array(self, name, array):
+    def add_np_array(self, name: str, array: np.ndarray) -> None:
         self.np_arrays[name] = array
 
-    def add_info(self, info_dict):
+    def add_info(self, info_dict: dict) -> None:
         self.info.update(info_dict)
 
-    def add_stats(self, stats_dict):
+    def add_stats(self, stats_dict: dict) -> None:
         self.stats.update(stats_dict)
 
-    def add_trajectory(self, name, traj):
+    def add_trajectory(self, name: str, traj: PosePath3D) -> None:
         self.trajectories[name] = traj
 
 
-def merge_results(results):
+def merge_results(results: typing.Sequence[Result]) -> Result:
     if not results or not all(isinstance(r, Result) for r in results):
         raise ValueError("no results to merge")
     if len(results) == 1:

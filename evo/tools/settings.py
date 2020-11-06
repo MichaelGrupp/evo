@@ -47,7 +47,7 @@ class SettingsContainer(dict):
         setattr(self, "__locked__", lock)
 
     @classmethod
-    def from_json_file(cls, settings_path: str) -> SettingsContainer:
+    def from_json_file(cls, settings_path: str) -> 'SettingsContainer':
         with open(settings_path) as settings_file:
             data = json.load(settings_file)
         return SettingsContainer(data)

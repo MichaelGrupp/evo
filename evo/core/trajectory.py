@@ -19,7 +19,6 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import copy
 import logging
 import typing
 
@@ -185,12 +184,12 @@ class PosePath3D(object):
               correct_only_scale: bool = False,
               n: int = -1) -> geometry.UmeyamaResult:
         """
-        align to a reference using Umeyama alignment
+        align to a reference trajectory using Umeyama alignment
         :param traj_ref: reference trajectory
         :param correct_scale: set to True to adjust also the scale
         :param correct_only_scale: set to True to correct the scale, but not the pose
         :param n: the number of poses to use, counted from the start (default: all)
-        :return: the result parameters of Umeyama algorithm
+        :return: the result parameters of the Umeyama algorithm
         """
         with_scale = correct_scale or correct_only_scale
         if correct_only_scale:

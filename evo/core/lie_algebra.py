@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from __future__ import division
+import typing
 
 import numpy as np
 import scipy.spatial.transform as sst
@@ -40,7 +40,7 @@ class LieAlgebraException(EvoException):
     pass
 
 
-def hat(v):
+def hat(v: np.ndarray) -> np.ndarray:
     """
     :param v: 3x1 vector
     :return: 3x3 skew symmetric matrix
@@ -52,7 +52,7 @@ def hat(v):
     # yapf: enable
 
 
-def vee(m):
+def vee(m: np.ndarray) -> np.ndarray:
     """
     :param m: 3x3 skew symmetric matrix
     :return: 3x1 vector
@@ -60,7 +60,7 @@ def vee(m):
     return np.array([-m[1, 2], m[0, 2], -m[0, 1]])
 
 
-def so3_exp(rotation_vector):
+def so3_exp(rotation_vector: np.ndarray):
     """
     Computes an SO(3) matrix from a rotation vector representation.
     :param axis: 3x1 rotation vector (axis * angle)
@@ -71,7 +71,9 @@ def so3_exp(rotation_vector):
     else:
         return sst.Rotation.from_rotvec(rotation_vector).as_matrix()
 
-def so3_log(r, return_angle_only=True, return_skew=False):
+
+def so3_log(r: np.ndarray, return_angle_only: bool = True,
+            return_skew: bool = False) -> typing.Union[float, np.ndarray]:
     """
     :param r: SO(3) rotation matrix
     :param return_angle_only: return only the angle (default)
@@ -97,7 +99,8 @@ def so3_log(r, return_angle_only=True, return_skew=False):
         return rotation_vector
 
 
-def se3(r=np.eye(3), t=np.array([0, 0, 0])):
+def se3(r: np.ndarray = np.eye(3),
+        t: np.ndarray = np.array([0, 0, 0])) -> np.ndarray:
     """
     :param r: SO(3) rotation matrix
     :param t: 3x1 translation vector
@@ -109,7 +112,7 @@ def se3(r=np.eye(3), t=np.array([0, 0, 0])):
     return se3
 
 
-def sim3(r, t, s):
+def sim3(r: np.ndarray, t: np.ndarray, s: float) -> np.ndarray:
     """
     :param r: SO(3) rotation matrix
     :param t: 3x1 translation vector
@@ -122,7 +125,7 @@ def sim3(r, t, s):
     return sim3
 
 
-def so3_from_se3(p):
+def so3_from_se3(p: np.ndarray) -> np.ndarray:
     """
     :param p: absolute SE(3) pose
     :return: the SO(3) rotation matrix in p
@@ -130,7 +133,7 @@ def so3_from_se3(p):
     return p[:3, :3]
 
 
-def se3_inverse(p):
+def se3_inverse(p: np.ndarray) -> np.ndarray:
     """
     :param p: absolute SE(3) pose
     :return: the inverted pose
@@ -140,7 +143,7 @@ def se3_inverse(p):
     return se3(r_inv, t_inv)
 
 
-def sim3_inverse(a):
+def sim3_inverse(a: np.ndarray) -> np.ndarray:
     """
     :param a: Sim(3) matrix in form:
               s*R  t
@@ -149,13 +152,13 @@ def sim3_inverse(a):
     """
     # det(s*R) = s^3 * det(R)   | det(R) = 1
     # s = det(s*R) ^ 1/3
-    s = np.power(np.linalg.det(a[:3, :3]), 1/3)
-    r = (1/s * a[:3, :3]).T
-    t = -r.dot(1/s * a[:3, 3])
-    return sim3(r, t, 1/s)
+    s = np.power(np.linalg.det(a[:3, :3]), 1 / 3)
+    r = (1 / s * a[:3, :3]).T
+    t = -r.dot(1 / s * a[:3, 3])
+    return sim3(r, t, 1 / s)
 
 
-def is_so3(r):
+def is_so3(r: np.ndarray) -> bool:
     """
     :param r: a 3x3 matrix
     :return: True if r is in the SO(3) group
@@ -167,7 +170,7 @@ def is_so3(r):
     return det_valid and inv_valid
 
 
-def is_se3(p):
+def is_se3(p: np.ndarray) -> bool:
     """
     :param p: a 4x4 matrix
     :return: True if p is in the SE(3) group
@@ -177,7 +180,7 @@ def is_se3(p):
     return rot_valid and lower_valid
 
 
-def is_sim3(p, s):
+def is_sim3(p: np.ndarray, s: float) -> bool:
     """
     :param p: a 4x4 matrix
     :param s: expected scale factor
@@ -190,7 +193,7 @@ def is_sim3(p, s):
     return rot_valid and lower_valid
 
 
-def relative_so3(r1, r2):
+def relative_so3(r1: np.ndarray, r2: np.ndarray) -> np.ndarray:
     """
     :param r1, r2: SO(3) matrices
     :return: the relative rotation r1^{⁻1} * r2
@@ -198,7 +201,7 @@ def relative_so3(r1, r2):
     return np.dot(r1.transpose(), r2)
 
 
-def relative_se3(p1, p2):
+def relative_se3(p1: np.ndarray, p2: np.ndarray) -> np.ndarray:
     """
     :param p1, p2: SE(3) matrices
     :return: the relative transformation p1^{⁻1} * p2
@@ -206,14 +209,14 @@ def relative_se3(p1, p2):
     return np.dot(se3_inverse(p1), p2)
 
 
-def random_so3():
+def random_so3() -> np.ndarray:
     """
     :return: a random SO(3) matrix (for debugging)
     """
     return tr.random_rotation_matrix()[:3, :3]
 
 
-def random_se3():
+def random_se3() -> np.ndarray:
     """
     :return: a random SE(3) matrix (for debugging)
     """

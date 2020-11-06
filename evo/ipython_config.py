@@ -1,7 +1,7 @@
 from colorama import Fore, Style
 
 # Configuration file for ipython.
-c = get_config()
+c = get_config()   # type: ignore
 
 #------------------------------------------------------------------------------
 # InteractiveShellApp(Configurable) configuration

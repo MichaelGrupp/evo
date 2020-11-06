@@ -71,6 +71,10 @@ jobs:
     displayName: 'Install and configure package and dependencies'
 
   - script: |
+      pip install mypy
+      mypy --ignore-missing-imports evo/
+
+  - script: |
       pip install pytest
       pytest -sv --junitxml=junit/test-results.xml
     displayName: 'pytest'

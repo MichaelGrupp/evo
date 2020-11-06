@@ -238,6 +238,9 @@ def main():
         parents=[shared_parser])
     reset_parser.add_argument("-y", help="acknowledge automatically",
                               action="store_true")
+    reset_parser.add_argument(
+        "params", choices=list(DEFAULT_SETTINGS_DICT.keys()),
+        nargs=argparse.REMAINDER, help="parameters to reset")
 
     argcomplete.autocomplete(main_parser)
     if len(sys.argv) > 1 and sys.argv[1] == "set":
@@ -268,7 +271,7 @@ def main():
     elif args.subcommand == "set":
         if not os.access(config, os.W_OK):
             logger.error("No permission to modify " + config)
-            sys.exit()
+            sys.exit(1)
         if other_args or args.merge:
             logger.info("{0}\nOld configuration:\n{0}".format(SEP))
             show(config, colored=not args.no_color)
@@ -304,12 +307,16 @@ def main():
     elif args.subcommand == "reset":
         if not os.access(config, os.W_OK):
             logger.error("No permission to modify" + config)
-            sys.exit()
-        if args.y or user.confirm(
-                "Reset the package settings to the default settings? (y/n)"):
+            sys.exit(1)
+        if args.params:
+            settings.reset(settings.DEFAULT_PATH, parameter_subset=args.params)
+        elif args.y or user.confirm(
+                "Reset all package settings to the default settings? (y/n)"):
             settings.reset()
-            logger.info("{0}\nPackage settings after reset:\n{0}".format(SEP))
-            show(settings.DEFAULT_PATH, colored=not args.no_color)
+        else:
+            sys.exit()
+        logger.info("{0}\nPackage settings after reset:\n{0}".format(SEP))
+        show(settings.DEFAULT_PATH, colored=not args.no_color)
 
 
 if __name__ == '__main__':

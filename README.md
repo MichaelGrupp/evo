@@ -51,7 +51,7 @@ evo has several advantages over other public benchmarking tools:
 
 Installation is easy-peasy if you're familiar with this: https://xkcd.com/1987/#
 
-**Python 3.5+** and **Python 2.7** are both supported. If you want to use the ROS bagfile interface, first check which Python version is used by your ROS installation and install accordingly.
+evo supports **Python 3.5+**. The last evo version that supports **Python 2.7** is `1.12.0`. If you want to use the ROS bagfile interface, first check which Python version is used by your ROS installation and install accordingly.
 You might also want to use a [virtual environment](https://github.com/MichaelGrupp/evo/blob/master/doc/install_in_virtualenv.md).
 
 ### From PyPi
@@ -74,13 +74,13 @@ pip install --editable . --upgrade --no-binary evo
 evo has some required dependencies that are ***automatically resolved*** during installation with pip.
 They are specified in the `install_requires` part of the `setup.py` file.
 
-**PyQt5 / PyQt4 (optional)**
+**PyQt5 (optional)**
 
-PyQt5 will give you the enhanced GUI for plot figures from the "*Qt5Agg*" matplotlib backend (otherwise: "*TkAgg*"). If PyQt5 is already installed when installing this package, it will be used as a default (see `evo_config show`). To change the plot backend afterwards, run `evo_config set plot_backend Qt5Agg`. PyQt4 can be set equivalently.
+PyQt5 will give you the enhanced GUI for plot figures from the "*Qt5Agg*" matplotlib backend (otherwise: "*TkAgg*"). If PyQt5 is already installed when installing this package, it will be used as a default (see `evo_config show`). To change the plot backend afterwards, run `evo_config set plot_backend Qt5Agg`.
 
 **ROS (optional)**
 
-All ROS-related features like reading bagfiles require a ROS installation, see [here](http://www.ros.org/). We tested this package with ROS Noetic, Melodic, Kinetic and Indigo.
+All ROS-related features like reading bagfiles require a ROS installation, see [here](http://www.ros.org/). We are testing this package with ROS Noetic. Previous versions (`<= 1.12.0`) work with Melodic, Kinetic and Indigo.
 
 ---
 
@@ -211,12 +211,6 @@ A few "inoffical" scripts for special use-cases are collected  in the `contrib/`
 * check the [Wiki](https://github.com/MichaelGrupp/evo/wiki)
 * check the [previous issues](https://github.com/MichaelGrupp/evo/issues?q=is%3Aissue+is%3Aclosed)
 * open a [new issue](https://github.com/MichaelGrupp/evo/issues)
-
-**Jupyter notebook errors**
-
-`No module named 'evo'`
-
-This can be caused if the Kernel version of Jupyter does not match the Python version of the evo installation.
 
 ---
 

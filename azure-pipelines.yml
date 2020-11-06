@@ -25,9 +25,6 @@ jobs:
 - job: 'Docker'
   strategy:
     matrix:
-      ROS-melodic:
-        dockerfile: 'Dockerfile.rosmelodic'
-        imageName: 'ubuntu-latest'
       ROS-noetic:
         dockerfile: 'Dockerfile.rosnoetic'
         imageName: 'ubuntu-latest'
@@ -72,6 +69,11 @@ jobs:
       pip install . --no-binary evo
       evo_config set plot_backend Agg
     displayName: 'Install and configure package and dependencies'
+
+  - script: |
+      pip install mypy
+      mypy --ignore-missing-imports evo/
+    displayName: 'mypy'
 
   - script: |
       pip install pytest

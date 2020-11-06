@@ -85,9 +85,17 @@ def write_to_json_file(json_path, dictionary):
         json_file.write(json.dumps(dictionary, indent=4, sort_keys=True))
 
 
-def reset(dest=DEFAULT_PATH):
+def reset(destination=DEFAULT_PATH, parameter_subset=None):
     from evo.tools.settings_template import DEFAULT_SETTINGS_DICT
-    write_to_json_file(dest, DEFAULT_SETTINGS_DICT)
+    if not os.path.exists(destination) or parameter_subset is None:
+        write_to_json_file(destination, DEFAULT_SETTINGS_DICT)
+    elif parameter_subset:
+        reset_settings = json.load(open(destination))
+        for parameter in parameter_subset:
+            if parameter not in DEFAULT_SETTINGS_DICT:
+                continue
+            reset_settings[parameter] = DEFAULT_SETTINGS_DICT[parameter]
+        write_to_json_file(destination, reset_settings)
 
 
 def initialize_if_needed():
@@ -103,7 +111,7 @@ def initialize_if_needed():
 
     if not os.path.exists(DEFAULT_PATH):
         try:
-            reset(dest=DEFAULT_PATH)
+            reset(destination=DEFAULT_PATH)
             print("{}Initialized new {}{}".format(Fore.LIGHTYELLOW_EX,
                                                   DEFAULT_PATH, Fore.RESET))
         except:

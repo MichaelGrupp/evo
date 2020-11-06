@@ -228,7 +228,7 @@ def rpe(traj_ref, traj_est, pose_relation, delta, delta_unit,
     rpe_result.add_trajectory(ref_name, traj_ref)
     rpe_result.add_trajectory(est_name, traj_est)
 
-    if isinstance(traj_est, trajectory.PoseTrajectory3D) and not all_pairs:
+    if isinstance(traj_est, trajectory.PoseTrajectory3D):
         seconds_from_start = [
             t - traj_est.timestamps[0] for t in traj_est.timestamps
         ]

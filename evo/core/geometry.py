@@ -18,6 +18,8 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import typing
+
 import numpy as np
 
 from evo import EvoException
@@ -27,7 +29,11 @@ class GeometryException(EvoException):
     pass
 
 
-def umeyama_alignment(x, y, with_scale=False):
+UmeyamaResult = typing.Tuple[np.ndarray, np.ndarray, float]
+
+
+def umeyama_alignment(x: np.ndarray, y: np.ndarray,
+                      with_scale: bool = False) -> UmeyamaResult:
     """
     Computes the least squares solution parameters of an Sim(m) matrix
     that minimizes the distance between a set of registered points.
@@ -80,7 +86,7 @@ def umeyama_alignment(x, y, with_scale=False):
     return r, t, c
 
 
-def arc_len(x):
+def arc_len(x: np.ndarray) -> float:
     """
     :param x: nxm array of points, m=dimension
     :return: the (discrete approximated) arc-length of the point sequence
@@ -88,10 +94,10 @@ def arc_len(x):
     return np.sum(np.linalg.norm(x[:-1] - x[1:], axis=1))
 
 
-def accumulated_distances(x):
+def accumulated_distances(x: np.ndarray) -> np.ndarray:
     """
     :param x: nxm array of points, m=dimension
     :return: the accumulated distances along the point sequence
     """
-    return np.concatenate((np.array([0]),
-                           np.cumsum(np.linalg.norm(x[:-1] - x[1:], axis=1))))
+    return np.concatenate(
+        (np.array([0]), np.cumsum(np.linalg.norm(x[:-1] - x[1:], axis=1))))

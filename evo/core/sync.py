@@ -21,6 +21,7 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
 import copy
 import logging
+import typing
 
 import numpy as np
 
@@ -34,7 +35,13 @@ class SyncException(EvoException):
     pass
 
 
-def matching_time_indices(stamps_1, stamps_2, max_diff=0.01, offset_2=0.0):
+MatchingIndices = typing.Tuple[typing.List[int], typing.List[int]]
+TrajectoryPair = typing.Tuple[PoseTrajectory3D, PoseTrajectory3D]
+
+
+def matching_time_indices(stamps_1: np.ndarray, stamps_2: np.ndarray,
+                          max_diff: float = 0.01,
+                          offset_2: float = 0.0) -> MatchingIndices:
     """
     Searches for the best matching timestamps of two lists of timestamps
     and returns the list indices of the best matches.
@@ -57,9 +64,11 @@ def matching_time_indices(stamps_1, stamps_2, max_diff=0.01, offset_2=0.0):
     return matching_indices_1, matching_indices_2
 
 
-def associate_trajectories(traj_1, traj_2, max_diff=0.01, offset_2=0.0,
-                           first_name="first trajectory",
-                           snd_name="second trajectory"):
+def associate_trajectories(
+        traj_1: PoseTrajectory3D, traj_2: PoseTrajectory3D,
+        max_diff: float = 0.01, offset_2: float = 0.0,
+        first_name: str = "first trajectory",
+        snd_name: str = "second trajectory") -> TrajectoryPair:
     """
     Synchronizes two trajectories by matching their timestamps.
     :param traj_1: trajectory.PoseTrajectory3D object of first trajectory

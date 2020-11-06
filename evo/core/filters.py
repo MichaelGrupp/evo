@@ -19,6 +19,7 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import logging
+import typing
 
 import numpy as np
 
@@ -33,7 +34,11 @@ class FilterException(EvoException):
     pass
 
 
-def filter_pairs_by_index(poses, delta, all_pairs=False):
+IdPairs = typing.List[typing.Tuple[int, int]]
+
+
+def filter_pairs_by_index(poses: np.ndarray, delta: int,
+                          all_pairs: bool = False) -> IdPairs:
     """
     filters pairs in a list of SE(3) poses by their index distance
     :param poses: list of SE(3) poses
@@ -50,7 +55,8 @@ def filter_pairs_by_index(poses, delta, all_pairs=False):
     return id_pairs
 
 
-def filter_pairs_by_path(poses, delta, tol=0.0, all_pairs=False):
+def filter_pairs_by_path(poses: np.ndarray, delta: float, tol: float = 0.0,
+                         all_pairs: bool = False) -> IdPairs:
     """
     filters pairs in a list of SE(3) poses by their path distance in meters
      - the accumulated, traveled path distance between the two pair points
@@ -88,8 +94,9 @@ def filter_pairs_by_path(poses, delta, tol=0.0, all_pairs=False):
     return id_pairs
 
 
-def filter_pairs_by_angle(poses, delta, tol=0.0, degrees=False,
-                          all_pairs=False):
+def filter_pairs_by_angle(poses: np.ndarray, delta: float, tol: float = 0.0,
+                          degrees: bool = False,
+                          all_pairs: bool = False) -> IdPairs:
     """
     filters pairs in a list of SE(3) poses by their absolute relative angle
      - by default, the angle accumulated on the path between the two pair poses
@@ -108,7 +115,7 @@ def filter_pairs_by_angle(poses, delta, tol=0.0, degrees=False,
         upper_bound = delta + tol
         lower_bound = delta - tol
         id_pairs = []
-        ids = range(len(poses))
+        ids = list(range(len(poses)))
         if degrees:
             angles = [lie.so3_log(p[:3, :3]) * 180 / np.pi for p in poses]
         else:
@@ -134,43 +141,4 @@ def filter_pairs_by_angle(poses, delta, tol=0.0, degrees=False,
                 ids.append(i)
                 current_delta = 0.0
         id_pairs = [(i, j) for i, j in zip(ids, ids[1:])]
-    return id_pairs
-
-
-def id_pairs_from_delta(poses, delta, delta_unit, rel_tol=0.1,
-                        all_pairs=False):
-    """
-    high-level function - get index tuples of pairs with distance==delta
-    from a pose list
-    :param poses: list of SE(3) poses
-    :param delta: the interval step for indices
-    :param delta_unit: unit of delta (metrics.Unit enum member)
-    :param rel_tol: relative tolerance to accept or reject deltas
-    :param all_pairs: use all pairs instead of consecutive pairs
-    :return: list of index tuples (pairs)
-    """
-    from evo.core.metrics import Unit
-    if delta_unit == Unit.frames:
-        id_pairs = filter_pairs_by_index(poses, delta, all_pairs)
-    elif delta_unit == Unit.meters:
-        id_pairs = filter_pairs_by_path(poses, delta, delta * rel_tol,
-                                        all_pairs)
-    elif delta_unit in {Unit.degrees, Unit.radians}:
-        use_degrees = (delta_unit == Unit.degrees)
-        id_pairs = filter_pairs_by_angle(poses, delta, delta * rel_tol,
-                                         use_degrees, all_pairs)
-    else:
-        raise FilterException("unsupported delta unit: {}".format(delta_unit))
-
-    if len(id_pairs) == 0:
-        raise FilterException(
-            "delta = {} ({}) produced an empty index list - try lower values "
-            "or a less strict tolerance".format(delta, delta_unit.value))
-
-    logger.debug(
-        "Found {} pairs with delta {} ({}) "
-        "among {} poses ".format(
-            len(id_pairs), delta, delta_unit.value, len(poses)) +
-        ("using consecutive pairs." if not all_pairs else "using all pairs."))
-
     return id_pairs

@@ -26,7 +26,6 @@ import numpy as np
 from evo import EvoException
 from evo.core import geometry
 from evo.core import lie_algebra as lie
-from evo.core.metrics import Unit
 
 logger = logging.getLogger(__name__)
 

@@ -353,16 +353,14 @@ def run(args):
             if args.align or args.correct_scale:
                 logger.debug(SEP)
                 logger.debug("Aligning {} to reference.".format(name))
-                trajectories[name] = trajectory.align_trajectory(
-                    trajectories[name], ref_traj_tmp,
-                    correct_scale=args.correct_scale,
+                trajectories[name].align(
+                    ref_traj_tmp, correct_scale=args.correct_scale,
                     correct_only_scale=args.correct_scale and not args.align,
                     n=args.n_to_align)
             if args.align_origin:
                 logger.debug(SEP)
                 logger.debug("Aligning {}'s origin to reference.".format(name))
-                trajectories[name] = trajectory.align_trajectory_origin(
-                    trajectories[name], ref_traj_tmp)
+                trajectories[name].align_origin(ref_traj_tmp)
             if SETTINGS.plot_pose_correspondences:
                 synced_refs[name] = ref_traj_tmp
 

@@ -19,7 +19,6 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import copy
 import logging
 import typing
 
@@ -180,6 +179,63 @@ class PosePath3D(object):
             ]
         if hasattr(self, "_positions_xyz"):
             self._positions_xyz = s * self._positions_xyz
+
+    def align(self, traj_ref: 'PosePath3D', correct_scale: bool = False,
+              correct_only_scale: bool = False,
+              n: int = -1) -> geometry.UmeyamaResult:
+        """
+        align to a reference trajectory using Umeyama alignment
+        :param traj_ref: reference trajectory
+        :param correct_scale: set to True to adjust also the scale
+        :param correct_only_scale: set to True to correct the scale, but not the pose
+        :param n: the number of poses to use, counted from the start (default: all)
+        :return: the result parameters of the Umeyama algorithm
+        """
+        with_scale = correct_scale or correct_only_scale
+        if correct_only_scale:
+            logger.debug("Correcting scale...")
+        else:
+            logger.debug("Aligning using Umeyama's method..." +
+                         (" (with scale correction)" if with_scale else ""))
+        if n == -1:
+            r_a, t_a, s = geometry.umeyama_alignment(self.positions_xyz.T,
+                                                     traj_ref.positions_xyz.T,
+                                                     with_scale)
+        else:
+            r_a, t_a, s = geometry.umeyama_alignment(
+                self.positions_xyz[:n, :].T, traj_ref.positions_xyz[:n, :].T,
+                with_scale)
+
+        if not correct_only_scale:
+            logger.debug("Rotation of alignment:\n{}"
+                         "\nTranslation of alignment:\n{}".format(r_a, t_a))
+        logger.debug("Scale correction: {}".format(s))
+
+        if correct_only_scale:
+            self.scale(s)
+        elif correct_scale:
+            self.scale(s)
+            self.transform(lie.se3(r_a, t_a))
+        else:
+            self.transform(lie.se3(r_a, t_a))
+
+        return r_a, t_a, s
+
+    def align_origin(self, traj_ref: 'PosePath3D') -> np.ndarray:
+        """
+        align the origin to the origin of a reference trajectory
+        :param traj_ref: reference trajectory
+        :return: the used transformation
+        """
+        if self.num_poses == 0 or traj_ref.num_poses == 0:
+            raise TrajectoryException("can't align an empty trajectory...")
+        traj_origin = self.poses_se3[0]
+        traj_ref_origin = traj_ref.poses_se3[0]
+        to_ref_origin = traj_ref_origin.dot(lie.se3_inverse(traj_origin))
+        logger.debug(
+            "Origin alignment transformation:\n{}".format(to_ref_origin))
+        self.transform(to_ref_origin)
+        return to_ref_origin
 
     def reduce_to_ids(self, ids: typing.Sequence[int]) -> None:
         """
@@ -378,78 +434,6 @@ def se3_poses_to_xyz_quat_wxyz(
     xyz = np.array([pose[:3, 3] for pose in poses])
     quat_wxyz = np.array([tr.quaternion_from_matrix(pose) for pose in poses])
     return xyz, quat_wxyz
-
-
-def align_trajectory(
-        traj: PosePath3D, traj_ref: PosePath3D, correct_scale: bool = False,
-        correct_only_scale: bool = False, n: int = -1,
-        return_parameters: bool = False
-) -> typing.Union[PosePath3D, typing.Tuple]:
-    """
-    align a trajectory to a reference using Umeyama alignment
-    :param traj: the trajectory to align
-    :param traj_ref: reference trajectory
-    :param correct_scale: set to True to adjust also the scale
-    :param correct_only_scale: set to True to correct the scale, but not the pose
-    :param n: the number of poses to use, counted from the start (default: all)
-    :param return_parameters: also return result parameters of Umeyama's method
-    :return: the aligned trajectory
-    If return_parameters is set, the rotation matrix, translation vector and
-    scaling parameter of Umeyama's method are also returned.
-    """
-    # otherwise np arrays will be references and mess up stuff
-    traj_aligned = copy.deepcopy(traj)
-    with_scale = correct_scale or correct_only_scale
-    if correct_only_scale:
-        logger.debug("Correcting scale...")
-    else:
-        logger.debug("Aligning using Umeyama's method..." +
-                     (" (with scale correction)" if with_scale else ""))
-    if n == -1:
-        r_a, t_a, s = geometry.umeyama_alignment(traj_aligned.positions_xyz.T,
-                                                 traj_ref.positions_xyz.T,
-                                                 with_scale)
-    else:
-        r_a, t_a, s = geometry.umeyama_alignment(
-            traj_aligned.positions_xyz[:n, :].T,
-            traj_ref.positions_xyz[:n, :].T, with_scale)
-
-    if not correct_only_scale:
-        logger.debug("Rotation of alignment:\n{}"
-                     "\nTranslation of alignment:\n{}".format(r_a, t_a))
-    logger.debug("Scale correction: {}".format(s))
-
-    if correct_only_scale:
-        traj_aligned.scale(s)
-    elif correct_scale:
-        traj_aligned.scale(s)
-        traj_aligned.transform(lie.se3(r_a, t_a))
-    else:
-        traj_aligned.transform(lie.se3(r_a, t_a))
-
-    if return_parameters:
-        return traj_aligned, r_a, t_a, s
-    else:
-        return traj_aligned
-
-
-def align_trajectory_origin(traj: PosePath3D,
-                            traj_ref: PosePath3D) -> PosePath3D:
-    """
-    align a trajectory's origin to the origin of a reference trajectory
-    :param traj: the trajectory to align
-    :param traj_ref: reference trajectory
-    :return: the aligned trajectory
-    """
-    if traj.num_poses == 0 or traj_ref.num_poses == 0:
-        raise TrajectoryException("can't align an empty trajectory...")
-    traj_aligned = copy.deepcopy(traj)
-    traj_origin = traj.poses_se3[0]
-    traj_ref_origin = traj_ref.poses_se3[0]
-    to_ref_origin = traj_ref_origin.dot(lie.se3_inverse(traj_origin))
-    logger.debug("Origin alignment transformation:\n{}".format(to_ref_origin))
-    traj_aligned.transform(to_ref_origin)
-    return traj_aligned
 
 
 def merge(trajectories: typing.Sequence[PoseTrajectory3D]) -> PoseTrajectory3D:

@@ -131,7 +131,7 @@ class PE(Metric):
         else:
             raise MetricsException("unsupported statistics_type")
 
-    def get_all_statistics(self) -> typing.Dict[StatisticsType, float]:
+    def get_all_statistics(self) -> typing.Dict[str, float]:
         """
         :return: a dictionary {StatisticsType.value : float}
         """

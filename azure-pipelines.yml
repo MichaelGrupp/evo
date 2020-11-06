@@ -73,6 +73,7 @@ jobs:
   - script: |
       pip install mypy
       mypy --ignore-missing-imports evo/
+    displayName: 'mypy'
 
   - script: |
       pip install pytest

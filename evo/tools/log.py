@@ -20,7 +20,6 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import logging
-import six
 import sys
 
 import colorama
@@ -57,8 +56,7 @@ class ConsoleFormatter(logging.Formatter):
             self._fmt = self.info_fmt
         elif record.levelno == logging.DEBUG:
             self._fmt = self.debug_fmt
-        if six.PY3:
-            self._style._fmt = self._fmt
+        self._style._fmt = self._fmt
         result = logging.Formatter.format(self, record)
         return result
 

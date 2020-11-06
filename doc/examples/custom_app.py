@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
-
 print("loading required evo modules")
 from evo.core import trajectory, sync, metrics
 from evo.tools import file_interface

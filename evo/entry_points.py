@@ -20,23 +20,16 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from __future__ import print_function
-
 import argparse
 import logging
 import sys
-
-import six
 
 import argcomplete
 from evo import EvoException, NullHandler
 
 logger = logging.getLogger(__name__)
 
-if six.PY2:
-    KNOWN_EXCEPTIONS = EvoException
-else:
-    KNOWN_EXCEPTIONS = (EvoException, FileNotFoundError)
+KNOWN_EXCEPTIONS = (EvoException, FileNotFoundError)
 """
 the actual entry points:
 to save time for argcomplete (tab bash completion),

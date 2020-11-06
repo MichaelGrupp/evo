@@ -25,9 +25,6 @@ jobs:
 - job: 'Docker'
   strategy:
     matrix:
-      ROS-melodic:
-        dockerfile: 'Dockerfile.rosmelodic'
-        imageName: 'ubuntu-latest'
       ROS-noetic:
         dockerfile: 'Dockerfile.rosnoetic'
         imageName: 'ubuntu-latest'

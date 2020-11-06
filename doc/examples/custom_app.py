@@ -12,7 +12,7 @@ traj_est = file_interface.read_tum_trajectory_file(
 
 print("registering and aligning trajectories")
 traj_ref, traj_est = sync.associate_trajectories(traj_ref, traj_est)
-traj_est = trajectory.align_trajectory(traj_est, traj_ref, correct_scale=False)
+traj_est.align(traj_ref, correct_scale=False)
 
 print("calculating APE")
 data = (traj_ref, traj_est)
@@ -38,9 +38,10 @@ fig_2 = plt.figure(figsize=(8, 8))
 plot_mode = plot.PlotMode.xy
 ax = plot.prepare_axis(fig_2, plot_mode)
 plot.traj(ax, plot_mode, traj_ref, '--', 'gray', 'reference')
-plot.traj_colormap(
-    ax, traj_est, ape_metric.error, plot_mode, min_map=ape_statistics["min"],
-    max_map=ape_statistics["max"], title="APE mapped onto trajectory")
+plot.traj_colormap(ax, traj_est, ape_metric.error, plot_mode,
+                   min_map=ape_statistics["min"],
+                   max_map=ape_statistics["max"],
+                   title="APE mapped onto trajectory")
 plot_collection.add_figure("traj (error)", fig_2)
 
 # trajectory colormapped with speed

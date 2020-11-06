@@ -167,12 +167,10 @@ def ape(traj_ref, traj_est, pose_relation, align=False, correct_scale=False,
     only_scale = correct_scale and not align
     if align or correct_scale:
         logger.debug(SEP)
-        traj_est = trajectory.align_trajectory(traj_est, traj_ref,
-                                               correct_scale, only_scale,
-                                               n=n_to_align)
+        traj_est.align(traj_ref, correct_scale, only_scale, n=n_to_align)
     elif align_origin:
         logger.debug(SEP)
-        traj_est = trajectory.align_trajectory_origin(traj_est, traj_ref)
+        traj_est.align_origin(traj_ref)
 
     # Calculate APE.
     logger.debug(SEP)

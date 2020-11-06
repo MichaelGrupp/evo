@@ -39,20 +39,20 @@ jobs:
 - job: 'Test'
   strategy:
     matrix:
-      Python35-ubuntu:
-        python.version: '3.5'
-        imageName: 'ubuntu-latest'
       Python36-ubuntu:
         python.version: '3.6'
         imageName: 'ubuntu-latest'
       Python37-ubuntu:
         python.version: '3.7'
         imageName: 'ubuntu-latest'
-      Python37-mac:
-        python.version: '3.7'
+      Python38-ubuntu:
+        python.version: '3.8'
+        imageName: 'ubuntu-latest'
+      Python38-mac:
+        python.version: '3.8'
         imageName: 'macOS-latest'
-      Python37-windows:
-        python.version: '3.7'
+      Python38-windows:
+        python.version: '3.8'
         imageName: 'windows-latest'
     maxParallel: 10
   pool:

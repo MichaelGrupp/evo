@@ -25,6 +25,7 @@ import io
 import json
 import logging
 import os
+import typing
 import zipfile
 
 import numpy as np
@@ -88,7 +89,7 @@ def csv_read_matrix(file_path, delim=',', comment_str="#"):
     return mat
 
 
-def read_tum_trajectory_file(file_path):
+def read_tum_trajectory_file(file_path) -> PoseTrajectory3D:
     """
     parses trajectory file in TUM format (timestamp tx ty tz qx qy qz qw)
     :param file_path: the trajectory file path (or file handle)
@@ -113,7 +114,8 @@ def read_tum_trajectory_file(file_path):
     return PoseTrajectory3D(xyz, quat, stamps)
 
 
-def write_tum_trajectory_file(file_path, traj, confirm_overwrite=False):
+def write_tum_trajectory_file(file_path, traj: PoseTrajectory3D,
+                              confirm_overwrite: bool = False) -> None:
     """
     :param file_path: desired text file for trajectory (string or handle)
     :param traj: trajectory.PoseTrajectory3D
@@ -136,7 +138,7 @@ def write_tum_trajectory_file(file_path, traj, confirm_overwrite=False):
         logger.info("Trajectory saved to: " + file_path)
 
 
-def read_kitti_poses_file(file_path):
+def read_kitti_poses_file(file_path) -> PosePath3D:
     """
     parses pose file in KITTI format (first 3 rows of SE(3) matrix per line)
     :param file_path: the trajectory file path (or file handle)
@@ -162,7 +164,8 @@ def read_kitti_poses_file(file_path):
     return PosePath3D(poses_se3=poses)
 
 
-def write_kitti_poses_file(file_path, traj, confirm_overwrite=False):
+def write_kitti_poses_file(file_path, traj: PosePath3D,
+                           confirm_overwrite: bool = False) -> None:
     """
     :param file_path: desired text file for trajectory (string or handle)
     :param traj: trajectory.PosePath3D or trajectory.PoseTrajectory3D
@@ -179,7 +182,7 @@ def write_kitti_poses_file(file_path, traj, confirm_overwrite=False):
         logger.info("Poses saved to: " + file_path)
 
 
-def read_euroc_csv_trajectory(file_path):
+def read_euroc_csv_trajectory(file_path) -> PoseTrajectory3D:
     """
     parses ground truth trajectory from EuRoC MAV state estimate .csv
     :param file_path: <sequence>/mav0/state_groundtruth_estimate0/data.csv
@@ -202,7 +205,8 @@ def read_euroc_csv_trajectory(file_path):
     return PoseTrajectory3D(xyz, quat, stamps)
 
 
-def _get_xyz_quat_from_transform_stamped(msg):
+def _get_xyz_quat_from_transform_stamped(
+        msg) -> typing.Tuple[np.ndarray, np.ndarray]:
     xyz = [
         msg.transform.translation.x, msg.transform.translation.y,
         msg.transform.translation.z
@@ -214,7 +218,8 @@ def _get_xyz_quat_from_transform_stamped(msg):
     return xyz, quat
 
 
-def _get_xyz_quat_from_pose_or_odometry_msg(msg):
+def _get_xyz_quat_from_pose_or_odometry_msg(
+        msg) -> typing.Tuple[np.ndarray, np.ndarray]:
     # Make nav_msgs/Odometry behave like geometry_msgs/PoseStamped.
     while not hasattr(msg.pose, 'position') and not hasattr(
             msg.pose, 'orientation'):
@@ -227,7 +232,7 @@ def _get_xyz_quat_from_pose_or_odometry_msg(msg):
     return xyz, quat
 
 
-def get_supported_topics(bag_handle):
+def get_supported_topics(bag_handle) -> list:
     """
     :param bag_handle: opened bag handle, from rosbag.Bag(...)
     :return: list of ROS topics that are supported by this module
@@ -239,7 +244,7 @@ def get_supported_topics(bag_handle):
     ])
 
 
-def read_bag_trajectory(bag_handle, topic):
+def read_bag_trajectory(bag_handle, topic: str) -> PoseTrajectory3D:
     """
     :param bag_handle: opened bag handle, from rosbag.Bag(...)
     :param topic: trajectory topic of supported message type,
@@ -282,7 +287,8 @@ def read_bag_trajectory(bag_handle, topic):
     return PoseTrajectory3D(xyz, quat, stamps, meta={"frame_id": frame_id})
 
 
-def write_bag_trajectory(bag_handle, traj, topic_name, frame_id=""):
+def write_bag_trajectory(bag_handle, traj: PoseTrajectory3D, topic_name: str,
+                         frame_id: str = "") -> None:
     """
     :param bag_handle: opened bag handle, from rosbag.Bag(...)
     :param traj: trajectory.PoseTrajectory3D
@@ -310,7 +316,8 @@ def write_bag_trajectory(bag_handle, traj, topic_name, frame_id=""):
     logger.info("Saved geometry_msgs/PoseStamped topic: " + topic_name)
 
 
-def save_res_file(zip_path, result_obj, confirm_overwrite=False):
+def save_res_file(zip_path, result_obj: result.Result,
+                  confirm_overwrite: bool = False) -> None:
     """
     save results to a zip file that can be deserialized with load_res_file()
     :param zip_path: path to zip file (or file handle)
@@ -326,29 +333,29 @@ def save_res_file(zip_path, result_obj, confirm_overwrite=False):
         archive.writestr("info.json", json.dumps(result_obj.info))
         archive.writestr("stats.json", json.dumps(result_obj.stats))
         for name, array in result_obj.np_arrays.items():
-            buffer = io.BytesIO()
-            np.save(buffer, array)
-            buffer.seek(0)
-            archive.writestr("{}.npz".format(name), buffer.read())
-            buffer.close()
+            array_buffer = io.BytesIO()
+            np.save(array_buffer, array)
+            array_buffer.seek(0)
+            archive.writestr("{}.npz".format(name), array_buffer.read())
+            array_buffer.close()
         for name, traj in result_obj.trajectories.items():
-            buffer = io.StringIO()
+            traj_buffer = io.StringIO()
             if type(traj) is PosePath3D:
                 fmt_suffix = ".kitti"
-                write_kitti_poses_file(buffer, traj)
+                write_kitti_poses_file(traj_buffer, traj)
             elif type(traj) is PoseTrajectory3D:
                 fmt_suffix = ".tum"
-                write_tum_trajectory_file(buffer, traj)
+                write_tum_trajectory_file(traj_buffer, traj)
             else:
                 raise FileInterfaceException(
                     "unknown format of trajectory {}".format(name))
-            buffer.seek(0)
+            traj_buffer.seek(0)
             archive.writestr("{}{}".format(name, fmt_suffix),
-                             buffer.read().encode("utf-8"))
-            buffer.close()
+                             traj_buffer.read().encode("utf-8"))
+            traj_buffer.close()
 
 
-def load_res_file(zip_path, load_trajectories=False):
+def load_res_file(zip_path, load_trajectories: bool = False) -> result.Result:
     """
     load contents of a result .zip file saved with save_res_file(...)
     :param zip_path: path to zip file
@@ -364,32 +371,34 @@ def load_res_file(zip_path, load_trajectories=False):
             logger.warning("{} not suitable for evo_res".format(zip_path))
         npz_files = [n for n in archive.namelist() if n.endswith(".npz")]
         for filename in npz_files:
-            with io.BytesIO(archive.read(filename)) as f:
-                array = np.load(f)
+            with io.BytesIO(archive.read(filename)) as array_buffer:
+                array = np.load(array_buffer)
                 name = os.path.splitext(os.path.basename(filename))[0]
                 result_obj.add_np_array(name, array)
         if load_trajectories:
             tum_files = [n for n in archive.namelist() if n.endswith(".tum")]
             for filename in tum_files:
-                with io.TextIOWrapper(archive.open(filename, mode='r')) as f:
-                    traj = read_tum_trajectory_file(f)
+                with io.TextIOWrapper(archive.open(filename,
+                                                   mode='r')) as traj_buffer:
+                    traj = read_tum_trajectory_file(traj_buffer)
                     name = os.path.splitext(os.path.basename(filename))[0]
                     result_obj.add_trajectory(name, traj)
             kitti_files = [
                 n for n in archive.namelist() if n.endswith(".kitti")
             ]
             for filename in kitti_files:
-                with io.TextIOWrapper(archive.open(filename, mode='r')) as f:
-                    traj = read_kitti_poses_file(f)
+                with io.TextIOWrapper(archive.open(filename,
+                                                   mode='r')) as path_buffer:
+                    path = read_kitti_poses_file(path_buffer)
                     name = os.path.splitext(os.path.basename(filename))[0]
-                    result_obj.add_trajectory(name, traj)
+                    result_obj.add_trajectory(name, path)
         result_obj.info = json.loads(archive.read("info.json").decode("utf-8"))
         result_obj.stats = json.loads(
             archive.read("stats.json").decode("utf-8"))
     return result_obj
 
 
-def load_transform_json(json_path):
+def load_transform_json(json_path) -> np.ndarray:
     """
     load a transformation stored in xyz + quaternion format in a .json file
     :param json_path: path to the .json file

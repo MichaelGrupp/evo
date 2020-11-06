@@ -21,6 +21,7 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
 import re
+import typing
 import warnings
 
 import rospy
@@ -44,32 +45,24 @@ class TfCacheException(EvoException):
 __instance = None
 
 
-def instance():
-    """ Hacky module-level "singleton" of TfCache """
-    global __instance
-    if __instance is None:
-        __instance = TfCache()
-    return __instance
-
-
 class TfCache(object):
     """
     For caching TF messages and looking up trajectories of specific transforms.
     """
-
     def __init__(self):
         self.buffer = tf2_py.BufferCore(
             rospy.Duration.from_sec(SETTINGS.tf_cache_max_time))
         self.topics = []
         self.bags = []
 
-    def clear(self):
+    def clear(self) -> None:
         logger.debug("Clearing TF cache.")
         self.buffer.clear()
         self.topics = []
         self.bags = []
 
-    def from_bag(self, bag_handle, topic="/tf", static_topic="/tf_static"):
+    def from_bag(self, bag_handle, topic: str = "/tf",
+                 static_topic: str = "/tf_static") -> None:
         """
         Loads the TF topics from a bagfile into the buffer,
         if it's not already cached.
@@ -102,7 +95,7 @@ class TfCache(object):
         self.bags.append(bag_handle.filename)
 
     @staticmethod
-    def split_id(identifier):
+    def split_id(identifier: str) -> tuple:
         match = ROS_NAME_REGEX.findall(identifier)
         if not len(match) == 3:
             raise TfCacheException(
@@ -110,16 +103,18 @@ class TfCache(object):
                 "/tf:map.base_footprint")
         return tuple(match)
 
-    def check_id(self, identifier):
+    def check_id(self, identifier: str) -> bool:
         try:
             self.split_id(identifier)
         except TfCacheException:
             return False
         return True
 
-    def lookup_trajectory(self, parent_frame, child_frame, start_time,
-                          end_time,
-                          lookup_frequency=SETTINGS.tf_cache_lookup_frequency):
+    def lookup_trajectory(
+        self, parent_frame: str, child_frame: str, start_time: rospy.Time,
+        end_time: rospy.Time,
+        lookup_frequency: float = SETTINGS.tf_cache_lookup_frequency
+    ) -> PoseTrajectory3D:
         """
         Look up the trajectory of a transform chain from the cache's TF buffer.
         :param parent_frame, child_frame: TF transform frame IDs
@@ -143,15 +138,15 @@ class TfCache(object):
             quat.append(q)
             end_time = end_time - step
         # Flip the data order again for the final trajectory.
-        trajectory = PoseTrajectory3D(
-            np.flipud(xyz), np.flipud(quat), np.flipud(stamps))
+        trajectory = PoseTrajectory3D(np.flipud(xyz), np.flipud(quat),
+                                      np.flipud(stamps))
         trajectory.meta = {
             "frame_id": parent_frame,
             "child_frame_id": child_frame
         }
         return trajectory
 
-    def get_trajectory(self, bag_handle, identifier):
+    def get_trajectory(self, bag_handle, identifier: str) -> PoseTrajectory3D:
         """
         Get a TF trajectory from a bag file. Updates or uses the cache.
         :param bag_handle: opened bag handle, from rosbag.Bag(...)
@@ -169,5 +164,14 @@ class TfCache(object):
         except (tf2_py.LookupException, tf2_py.TransformException) as e:
             raise TfCacheException("Could not load trajectory: " + str(e))
         return self.lookup_trajectory(
-            parent, child, start_time=rospy.Time.from_sec(
-                bag_handle.get_start_time()), end_time=latest_time)
+            parent, child,
+            start_time=rospy.Time.from_sec(bag_handle.get_start_time()),
+            end_time=latest_time)
+
+
+def instance() -> TfCache:
+    """ Hacky module-level "singleton" of TfCache """
+    global __instance
+    if __instance is None:
+        __instance = TfCache()
+    return __instance

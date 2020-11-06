@@ -18,11 +18,10 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from __future__ import print_function
-
 import os
 import json
 import logging
+import typing
 
 from colorama import Fore
 
@@ -41,21 +40,22 @@ class SettingsException(EvoException):
 
 
 class SettingsContainer(dict):
-    def __init__(self, data, lock=True):
+    def __init__(self, data: dict, lock: bool = True):
         super(SettingsContainer, self).__init__()
         for k, v in data.items():
             setattr(self, k, v)
         setattr(self, "__locked__", lock)
 
     @classmethod
-    def from_json_file(cls, settings_path):
+    def from_json_file(cls, settings_path: str) -> SettingsContainer:
         with open(settings_path) as settings_file:
             data = json.load(settings_file)
         return SettingsContainer(data)
 
-    def locked(self):
+    def locked(self) -> bool:
         if "__locked__" in self:
             return self["__locked__"]
+        return False
 
     def __getattr__(self, attr):
         # allow dot access
@@ -72,7 +72,7 @@ class SettingsContainer(dict):
             self[attr] = value
 
 
-def merge_dicts(first, second, soft=False):
+def merge_dicts(first: dict, second: dict, soft: bool = False) -> dict:
     if soft:
         first.update({k: v for k, v in second.items() if k not in first})
     else:
@@ -80,12 +80,13 @@ def merge_dicts(first, second, soft=False):
     return first
 
 
-def write_to_json_file(json_path, dictionary):
+def write_to_json_file(json_path: str, dictionary: dict) -> None:
     with open(json_path, 'w') as json_file:
         json_file.write(json.dumps(dictionary, indent=4, sort_keys=True))
 
 
-def reset(destination=DEFAULT_PATH, parameter_subset=None):
+def reset(destination: str = DEFAULT_PATH,
+          parameter_subset: typing.Optional[typing.Sequence] = None) -> None:
     from evo.tools.settings_template import DEFAULT_SETTINGS_DICT
     if not os.path.exists(destination) or parameter_subset is None:
         write_to_json_file(destination, DEFAULT_SETTINGS_DICT)
@@ -98,7 +99,7 @@ def reset(destination=DEFAULT_PATH, parameter_subset=None):
         write_to_json_file(destination, reset_settings)
 
 
-def initialize_if_needed():
+def initialize_if_needed() -> None:
     """
     Initialize evo user folder after first installation
     (or if it was deleted).
@@ -115,12 +116,13 @@ def initialize_if_needed():
             print("{}Initialized new {}{}".format(Fore.LIGHTYELLOW_EX,
                                                   DEFAULT_PATH, Fore.RESET))
         except:
-            logger.error("Fatal: failed to write package settings file {}".
-                         format(DEFAULT_PATH))
+            logger.error(
+                "Fatal: failed to write package settings file {}".format(
+                    DEFAULT_PATH))
             raise
 
 
-def update_if_outdated():
+def update_if_outdated() -> None:
     """
     Update user settings to a new version if needed.
     """

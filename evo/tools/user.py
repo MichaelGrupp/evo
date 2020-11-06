@@ -23,12 +23,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Python 2/3 compatibility
-try:
-    input = raw_input
-except NameError:
-    pass
-
 
 def prompt_val(msg="enter a value:"):
     return input(msg + "\n")

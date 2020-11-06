@@ -21,6 +21,7 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
 import copy
 import logging
+import typing
 
 import numpy as np
 
@@ -41,9 +42,11 @@ class PosePath3D(object):
     just a path, no temporal information
     also: base class for real trajectory
     """
-
-    def __init__(self, positions_xyz=None, orientations_quat_wxyz=None,
-                 poses_se3=None, meta=None):
+    def __init__(
+            self, positions_xyz: typing.Optional[np.ndarray] = None,
+            orientations_quat_wxyz: typing.Optional[np.ndarray] = None,
+            poses_se3: typing.Optional[typing.Sequence[np.ndarray]] = None,
+            meta: typing.Optional[dict] = None):
         """
         :param positions_xyz: nx3 list of x,y,z positions
         :param orientations_quat_wxyz: nx4 list of quaternions (w,x,y,z format)
@@ -62,12 +65,12 @@ class PosePath3D(object):
             self._poses_se3 = poses_se3
         self.meta = {} if meta is None else meta
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "{} poses, {:.3f}m path length".format(self.num_poses,
                                                       self.path_length)
 
-    def __eq__(self, other):
-        if type(other) != type(self):
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, PosePath3D):
             return False
         if not self.num_poses == other.num_poses:
             return False
@@ -81,22 +84,22 @@ class PosePath3D(object):
         equal &= np.allclose(self.positions_xyz, other.positions_xyz)
         return equal
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         return not self == other
 
     @property
-    def positions_xyz(self):
+    def positions_xyz(self) -> np.ndarray:
         if not hasattr(self, "_positions_xyz"):
             assert hasattr(self, "_poses_se3")
             self._positions_xyz = np.array([p[:3, 3] for p in self._poses_se3])
         return self._positions_xyz
 
     @property
-    def distances(self):
+    def distances(self) -> np.ndarray:
         return geometry.accumulated_distances(self.positions_xyz)
 
     @property
-    def orientations_quat_wxyz(self):
+    def orientations_quat_wxyz(self) -> np.ndarray:
         if not hasattr(self, "_orientations_quat_wxyz"):
             assert hasattr(self, "_poses_se3")
             self._orientations_quat_wxyz \
@@ -105,7 +108,7 @@ class PosePath3D(object):
                      for p in self._poses_se3])
         return self._orientations_quat_wxyz
 
-    def get_orientations_euler(self, axes="sxyz"):
+    def get_orientations_euler(self, axes="sxyz") -> np.ndarray:
         if hasattr(self, "_poses_se3"):
             return np.array(
                 [tr.euler_from_matrix(p, axes=axes) for p in self._poses_se3])
@@ -116,7 +119,7 @@ class PosePath3D(object):
             ])
 
     @property
-    def poses_se3(self):
+    def poses_se3(self) -> typing.Sequence[np.ndarray]:
         if not hasattr(self, "_poses_se3"):
             assert hasattr(self, "_positions_xyz")
             assert hasattr(self, "_orientations_quat_wxyz")
@@ -126,21 +129,22 @@ class PosePath3D(object):
         return self._poses_se3
 
     @property
-    def num_poses(self):
+    def num_poses(self) -> int:
         if hasattr(self, "_poses_se3"):
             return len(self._poses_se3)
         else:
             return self.positions_xyz.shape[0]
 
     @property
-    def path_length(self):
+    def path_length(self) -> float:
         """
         calculates the path length (arc-length)
         :return: path length in meters
         """
         return float(geometry.arc_len(self.positions_xyz))
 
-    def transform(self, t, right_mul=False, propagate=False):
+    def transform(self, t: np.ndarray, right_mul: bool = False,
+                  propagate: bool = False) -> None:
         """
         apply a left or right multiplicative transformation to the whole path
         :param t: a 4x4 transformation matrix (e.g. SE(3) or Sim(3))
@@ -165,7 +169,7 @@ class PosePath3D(object):
         self._positions_xyz, self._orientations_quat_wxyz \
             = se3_poses_to_xyz_quat_wxyz(self.poses_se3)
 
-    def scale(self, s):
+    def scale(self, s: float) -> None:
         """
         apply a scaling to the whole path
         :param s: scale factor
@@ -177,7 +181,7 @@ class PosePath3D(object):
         if hasattr(self, "_positions_xyz"):
             self._positions_xyz = s * self._positions_xyz
 
-    def reduce_to_ids(self, ids):
+    def reduce_to_ids(self, ids: typing.Sequence[int]) -> None:
         """
         reduce the elements to the ones specified in ids
         :param ids: list of integer indices
@@ -189,7 +193,7 @@ class PosePath3D(object):
         if hasattr(self, "_poses_se3"):
             self._poses_se3 = [self._poses_se3[idx] for idx in ids]
 
-    def check(self):
+    def check(self) -> typing.Tuple[bool, dict]:
         """
         checks if the data is valid
         :return: True/False, dictionary with some detailed infos
@@ -211,7 +215,7 @@ class PosePath3D(object):
         }
         return valid, details
 
-    def get_infos(self):
+    def get_infos(self) -> dict:
         """
         :return: dictionary with some infos about the path
         """
@@ -222,7 +226,7 @@ class PosePath3D(object):
             "pos_end (m)": self.positions_xyz[-1]
         }
 
-    def get_statistics(self):
+    def get_statistics(self) -> dict:
         return {}  # no idea yet
 
 
@@ -230,26 +234,30 @@ class PoseTrajectory3D(PosePath3D, object):
     """
     a PosePath with temporal information
     """
-
-    def __init__(self, positions_xyz=None, orientations_quat_wxyz=None,
-                 timestamps=None, poses_se3=None, meta=None):
+    def __init__(
+            self, positions_xyz: typing.Optional[np.ndarray] = None,
+            orientations_quat_wxyz: typing.Optional[np.ndarray] = None,
+            timestamps: typing.Optional[np.ndarray] = None,
+            poses_se3: typing.Optional[typing.Sequence[np.ndarray]] = None,
+            meta: typing.Optional[dict] = None):
         """
         :param timestamps: optional nx1 list of timestamps
         """
-        super(PoseTrajectory3D, self).__init__(
-            positions_xyz, orientations_quat_wxyz, poses_se3, meta)
+        super(PoseTrajectory3D,
+              self).__init__(positions_xyz, orientations_quat_wxyz, poses_se3,
+                             meta)
         # this is a bit ugly...
         if timestamps is None:
             raise TrajectoryException("no timestamps provided")
         self.timestamps = np.array(timestamps)
 
-    def __str__(self):
+    def __str__(self) -> str:
         s = super(PoseTrajectory3D, self).__str__()
         return s + ", {:.3f}s duration".format(self.timestamps[-1] -
                                                self.timestamps[0])
 
-    def __eq__(self, other):
-        if type(other) != type(self):
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, PoseTrajectory3D):
             return False
         if not self.num_poses == other.num_poses:
             return False
@@ -257,14 +265,14 @@ class PoseTrajectory3D(PosePath3D, object):
         equal &= np.allclose(self.timestamps, other.timestamps)
         return equal
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         return not self == other
 
-    def reduce_to_ids(self, ids):
+    def reduce_to_ids(self, ids: typing.Sequence[int]) -> None:
         super(PoseTrajectory3D, self).reduce_to_ids(ids)
         self.timestamps = self.timestamps[ids]
 
-    def check(self):
+    def check(self) -> typing.Tuple[bool, dict]:
         valid, details = super(PoseTrajectory3D, self).check()
         len_stamps_valid = (len(self.timestamps) == len(self.positions_xyz))
         valid &= len_stamps_valid
@@ -280,7 +288,7 @@ class PoseTrajectory3D(PosePath3D, object):
             details["timestamps"] = "wrong, not ascending or duplicates"
         return valid, details
 
-    def get_infos(self):
+    def get_infos(self) -> dict:
         """
         :return: dictionary with some infos about the trajectory
         """
@@ -290,7 +298,7 @@ class PoseTrajectory3D(PosePath3D, object):
         infos["t_end (s)"] = self.timestamps[-1]
         return infos
 
-    def get_statistics(self):
+    def get_statistics(self) -> dict:
         """
         :return: dictionary with some statistics of the trajectory
         """
@@ -318,7 +326,8 @@ class Trajectory(PoseTrajectory3D):
     pass  # TODO compat
 
 
-def calc_speed(xyz_1, xyz_2, t_1, t_2):
+def calc_speed(xyz_1: np.ndarray, xyz_2: np.ndarray, t_1: float,
+               t_2: float) -> float:
     """
     :param xyz_1: position at timestamp 1
     :param xyz_2: position at timestamp 2
@@ -332,7 +341,8 @@ def calc_speed(xyz_1, xyz_2, t_1, t_2):
     return np.linalg.norm(xyz_2 - xyz_1) / (t_2 - t_1)
 
 
-def calc_angular_speed(p_1, p_2, t_1, t_2, degrees=False):
+def calc_angular_speed(p_1: np.ndarray, p_2: np.ndarray, t_1: float,
+                       t_2: float, degrees: bool = False) -> float:
     """
     :param p_1: pose at timestamp 1
     :param p_2: pose at timestamp 2
@@ -353,7 +363,8 @@ def calc_angular_speed(p_1, p_2, t_1, t_2, degrees=False):
     return (angle_2 - angle_1) / (t_2 - t_1)
 
 
-def xyz_quat_wxyz_to_se3_poses(xyz, quat):
+def xyz_quat_wxyz_to_se3_poses(
+        xyz: np.ndarray, quat: np.ndarray) -> typing.Sequence[np.ndarray]:
     poses = [
         lie.se3(lie.so3_from_se3(tr.quaternion_matrix(quat)), xyz)
         for quat, xyz in zip(quat, xyz)
@@ -361,14 +372,19 @@ def xyz_quat_wxyz_to_se3_poses(xyz, quat):
     return poses
 
 
-def se3_poses_to_xyz_quat_wxyz(poses):
+def se3_poses_to_xyz_quat_wxyz(
+    poses: typing.Sequence[np.ndarray]
+) -> typing.Tuple[np.ndarray, np.ndarray]:
     xyz = np.array([pose[:3, 3] for pose in poses])
     quat_wxyz = np.array([tr.quaternion_from_matrix(pose) for pose in poses])
     return xyz, quat_wxyz
 
 
-def align_trajectory(traj, traj_ref, correct_scale=False,
-                     correct_only_scale=False, n=-1, return_parameters=False):
+def align_trajectory(
+        traj: PosePath3D, traj_ref: PosePath3D, correct_scale: bool = False,
+        correct_only_scale: bool = False, n: int = -1,
+        return_parameters: bool = False
+) -> typing.Union[PosePath3D, typing.Tuple]:
     """
     align a trajectory to a reference using Umeyama alignment
     :param traj: the trajectory to align
@@ -417,7 +433,8 @@ def align_trajectory(traj, traj_ref, correct_scale=False,
         return traj_aligned
 
 
-def align_trajectory_origin(traj, traj_ref):
+def align_trajectory_origin(traj: PosePath3D,
+                            traj_ref: PosePath3D) -> PosePath3D:
     """
     align a trajectory's origin to the origin of a reference trajectory
     :param traj: the trajectory to align
@@ -435,7 +452,7 @@ def align_trajectory_origin(traj, traj_ref):
     return traj_aligned
 
 
-def merge(trajectories):
+def merge(trajectories: typing.Sequence[PoseTrajectory3D]) -> PoseTrajectory3D:
     """
     Merges multiple trajectories into a single, timestamp-sorted one.
     :param trajectories: list of PoseTrajectory3D objects

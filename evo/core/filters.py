@@ -38,7 +38,7 @@ IdPairs = typing.List[typing.Tuple[int, int]]
 
 
 def filter_pairs_by_index(poses: np.ndarray, delta: int,
-                          all_pairs=False) -> IdPairs:
+                          all_pairs: bool = False) -> IdPairs:
     """
     filters pairs in a list of SE(3) poses by their index distance
     :param poses: list of SE(3) poses
@@ -55,8 +55,8 @@ def filter_pairs_by_index(poses: np.ndarray, delta: int,
     return id_pairs
 
 
-def filter_pairs_by_path(poses: np.ndarray, delta: float, tol=0.0,
-                         all_pairs=False) -> IdPairs:
+def filter_pairs_by_path(poses: np.ndarray, delta: float, tol: float = 0.0,
+                         all_pairs: bool = False) -> IdPairs:
     """
     filters pairs in a list of SE(3) poses by their path distance in meters
      - the accumulated, traveled path distance between the two pair points
@@ -94,8 +94,9 @@ def filter_pairs_by_path(poses: np.ndarray, delta: float, tol=0.0,
     return id_pairs
 
 
-def filter_pairs_by_angle(poses: np.ndarray, delta: float, tol=0.0,
-                          degrees=False, all_pairs=False) -> IdPairs:
+def filter_pairs_by_angle(poses: np.ndarray, delta: float, tol: float = 0.0,
+                          degrees: bool = False,
+                          all_pairs: bool = False) -> IdPairs:
     """
     filters pairs in a list of SE(3) poses by their absolute relative angle
      - by default, the angle accumulated on the path between the two pair poses

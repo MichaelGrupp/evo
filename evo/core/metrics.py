@@ -396,9 +396,9 @@ class APE(PE):
             raise MetricsException("unsupported pose_relation")
 
 
-def id_pairs_from_delta(
-        poses: np.ndarray, delta: float, delta_unit: Unit,
-        rel_tol=0.1, all_pairs=False) -> filters.IdPairs:
+def id_pairs_from_delta(poses: np.ndarray, delta: float, delta_unit: Unit,
+                        rel_tol: float = 0.1,
+                        all_pairs: bool = False) -> filters.IdPairs:
     """
     high-level function - get index tuples of pairs with distance==delta
     from a pose list
@@ -412,14 +412,15 @@ def id_pairs_from_delta(
     if delta_unit == Unit.frames:
         id_pairs = filters.filter_pairs_by_index(poses, int(delta), all_pairs)
     elif delta_unit == Unit.meters:
-        id_pairs = filters.filter_pairs_by_path(
-            poses, delta, delta * rel_tol, all_pairs)
+        id_pairs = filters.filter_pairs_by_path(poses, delta, delta * rel_tol,
+                                                all_pairs)
     elif delta_unit in {Unit.degrees, Unit.radians}:
         use_degrees = (delta_unit == Unit.degrees)
-        id_pairs = filters.filter_pairs_by_angle(
-            poses, delta, delta * rel_tol, use_degrees, all_pairs)
+        id_pairs = filters.filter_pairs_by_angle(poses, delta, delta * rel_tol,
+                                                 use_degrees, all_pairs)
     else:
-        raise filters.FilterException("unsupported delta unit: {}".format(delta_unit))
+        raise filters.FilterException(
+            "unsupported delta unit: {}".format(delta_unit))
 
     if len(id_pairs) == 0:
         raise filters.FilterException(
@@ -428,8 +429,8 @@ def id_pairs_from_delta(
 
     logger.debug(
         "Found {} pairs with delta {} ({}) "
-        "among {} poses ".format(
-            len(id_pairs), delta, delta_unit.value, len(poses)) +
+        "among {} poses ".format(len(id_pairs), delta, delta_unit.value,
+                                 len(poses)) +
         ("using consecutive pairs." if not all_pairs else "using all pairs."))
 
     return id_pairs

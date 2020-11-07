@@ -29,7 +29,7 @@ from enum import Enum
 import numpy as np
 
 from evo import EvoException
-from evo.core import filters, sync, trajectory
+from evo.core import filters, trajectory
 from evo.core.result import Result
 from evo.core import lie_algebra as lie
 

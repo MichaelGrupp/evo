@@ -18,15 +18,26 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import argparse
 import logging
+import typing
+
+from evo.core.metrics import PoseRelation, Unit
+from evo.core.result import Result
+from evo.core.trajectory import PosePath3D, PoseTrajectory3D
 
 logger = logging.getLogger(__name__)
 
 SEP = "-" * 80  # separator line
 
 
-def load_trajectories(args):
+def load_trajectories(
+    args: argparse.Namespace
+) -> typing.Tuple[PosePath3D, PosePath3D, str, str]:
     from evo.tools import file_interface
+
+    traj_ref: typing.Union[PosePath3D, PoseTrajectory3D]
+    traj_est: typing.Union[PosePath3D, PoseTrajectory3D]
 
     if args.subcommand == "tum":
         traj_ref = file_interface.read_tum_trajectory_file(args.ref_file)
@@ -60,9 +71,7 @@ def load_trajectories(args):
     return traj_ref, traj_est, ref_name, est_name
 
 
-def get_pose_relation(args):
-    from evo.core.metrics import PoseRelation
-    pose_relation = None
+def get_pose_relation(args: argparse.Namespace) -> PoseRelation:
     if args.pose_relation == "full":
         pose_relation = PoseRelation.full_transformation
     elif args.pose_relation == "rot_part":
@@ -76,8 +85,7 @@ def get_pose_relation(args):
     return pose_relation
 
 
-def get_delta_unit(args):
-    from evo.core.metrics import Unit
+def get_delta_unit(args: argparse.Namespace) -> Unit:
     delta_unit = Unit.none
     if args.delta_unit == "f":
         delta_unit = Unit.frames
@@ -90,7 +98,9 @@ def get_delta_unit(args):
     return delta_unit
 
 
-def plot(args, result, traj_ref, traj_est, traj_ref_full=None):
+def plot_result(args: argparse.Namespace, result: Result, traj_ref: PosePath3D,
+                traj_est: PosePath3D,
+                traj_ref_full: typing.Optional[PosePath3D] = None) -> None:
     from evo.tools import plot
     from evo.tools.settings import SETTINGS
 

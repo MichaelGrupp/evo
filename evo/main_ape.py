@@ -21,8 +21,14 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import argparse
 import logging
 
+import evo.common_ape_rpe as common
+from evo.core import sync, metrics
+from evo.core.result import Result
+from evo.core.trajectory import PosePath3D, PoseTrajectory3D
+from evo.tools import file_interface, log
 from evo.tools.settings import SETTINGS
 
 logger = logging.getLogger(__name__)
@@ -30,9 +36,7 @@ logger = logging.getLogger(__name__)
 SEP = "-" * 80  # separator line
 
 
-def parser():
-    import argparse
-
+def parser() -> argparse.ArgumentParser:
     basic_desc = "Absolute pose error (APE) metric app"
     lic = "(c) evo authors"
 
@@ -157,11 +161,11 @@ def parser():
     return main_parser
 
 
-def ape(traj_ref, traj_est, pose_relation, align=False, correct_scale=False,
-        n_to_align=-1, align_origin=False, ref_name="reference",
-        est_name="estimate"):
-    from evo.core import metrics
-    from evo.core import trajectory
+def ape(traj_ref: PosePath3D, traj_est: PosePath3D,
+        pose_relation: metrics.PoseRelation, align: bool = False,
+        correct_scale: bool = False, n_to_align: int = -1,
+        align_origin: bool = False, ref_name: str = "reference",
+        est_name: str = "estimate") -> Result:
 
     # Align the trajectories.
     only_scale = correct_scale and not align
@@ -200,7 +204,7 @@ def ape(traj_ref, traj_est, pose_relation, align=False, correct_scale=False,
 
     ape_result.add_trajectory(ref_name, traj_ref)
     ape_result.add_trajectory(est_name, traj_est)
-    if isinstance(traj_est, trajectory.PoseTrajectory3D):
+    if isinstance(traj_est, PoseTrajectory3D):
         seconds_from_start = [
             t - traj_est.timestamps[0] for t in traj_est.timestamps
         ]
@@ -210,11 +214,7 @@ def ape(traj_ref, traj_est, pose_relation, align=False, correct_scale=False,
     return ape_result
 
 
-def run(args):
-    import evo.common_ape_rpe as common
-    from evo.core import sync
-    from evo.tools import file_interface, log
-
+def run(args: argparse.Namespace) -> None:
     log.configure_logging(args.verbose, args.silent, args.debug,
                           local_logfile=args.logfile)
     if args.debug:
@@ -230,7 +230,8 @@ def run(args):
         import copy
         traj_ref_full = copy.deepcopy(traj_ref)
 
-    if args.subcommand != "kitti":
+    if isinstance(traj_ref, PoseTrajectory3D) and isinstance(
+            traj_est, PoseTrajectory3D):
         logger.debug("Synchronizing trajectories...")
         traj_ref, traj_est = sync.associate_trajectories(
             traj_ref, traj_est, args.t_max_diff, args.t_offset,
@@ -251,8 +252,9 @@ def run(args):
     )
 
     if args.plot or args.save_plot or args.serialize_plot:
-        common.plot(args, result, traj_ref, result.trajectories[est_name],
-                    traj_ref_full=traj_ref_full)
+        common.plot_result(args, result, traj_ref,
+                           result.trajectories[est_name],
+                           traj_ref_full=traj_ref_full)
 
     if args.save_results:
         logger.debug(SEP)

@@ -29,7 +29,7 @@ from enum import Enum
 import numpy as np
 
 from evo import EvoException
-from evo.core import filters, sync
+from evo.core import filters, trajectory
 from evo.core.result import Result
 from evo.core import lie_algebra as lie
 
@@ -39,6 +39,9 @@ else:
     ABC = abc.ABCMeta('ABC', (), {})
 
 logger = logging.getLogger(__name__)
+
+
+PathPair = typing.Tuple[trajectory.PosePath3D, trajectory.PosePath3D]
 
 
 class MetricsException(EvoException):
@@ -227,7 +230,7 @@ class RPE(PE):
         E_i = lie.relative_se3(Q_rel, P_rel)
         return E_i
 
-    def process_data(self, data: sync.TrajectoryPair) -> None:
+    def process_data(self, data: PathPair) -> None:
         """
         Calculates the RPE on a batch of SE(3) poses from trajectories.
         :param data: tuple (traj_ref, traj_est) with:
@@ -324,7 +327,7 @@ class APE(PE):
         """
         return lie.relative_se3(x_t, x_t_star)
 
-    def process_data(self, data: sync.TrajectoryPair) -> None:
+    def process_data(self, data: PathPair) -> None:
         """
         Calculates the APE on a batch of SE(3) poses from trajectories.
         :param data: tuple (traj_ref, traj_est) with:

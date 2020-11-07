@@ -21,7 +21,16 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import argparse
 import logging
+import sys
+import typing
+
+import pandas as pd
+
+from evo.core.result import merge_results, Result
+from evo.tools import file_interface, log, user, pandas_bridge
+from evo.tools.settings import SETTINGS
 
 logger = logging.getLogger(__name__)
 
@@ -39,12 +48,11 @@ Mismatching titles - risk of aggregating data from different metrics. Conflict:
 Only the first one will be used as the title!"""
 
 
-def parser():
-    import argparse
+def parser() -> argparse.ArgumentParser:
     basic_desc = "tool for processing one or multiple result files"
     lic = "(c) evo authors"
-    main_parser = argparse.ArgumentParser(
-        description="%s %s" % (basic_desc, lic))
+    main_parser = argparse.ArgumentParser(description="%s %s" %
+                                          (basic_desc, lic))
     output_opts = main_parser.add_argument_group("output options")
     usability_opts = main_parser.add_argument_group("usability options")
     main_parser.add_argument("result_files",
@@ -91,13 +99,10 @@ def parser():
     return main_parser
 
 
-def load_results_as_dataframe(result_files, use_filenames=False, merge=False):
-    import pandas as pd
-    from evo.tools import pandas_bridge
-    from evo.tools import file_interface
-
+def load_results_as_dataframe(result_files: typing.Iterable[str],
+                              use_filenames: bool = False,
+                              merge: bool = False) -> pd.DataFrame:
     if merge:
-        from evo.core.result import merge_results
         results = [file_interface.load_res_file(f) for f in result_files]
         return pandas_bridge.result_to_df(merge_results(results))
 
@@ -110,13 +115,7 @@ def load_results_as_dataframe(result_files, use_filenames=False, merge=False):
     return df
 
 
-def run(args):
-    import sys
-
-    import pandas as pd
-
-    from evo.tools import log, user, pandas_bridge
-    from evo.tools.settings import SETTINGS
+def run(args: argparse.Namespace) -> None:
 
     pd.options.display.width = 80
     pd.options.display.max_colwidth = 20
@@ -165,15 +164,15 @@ def run(args):
     else:
         error_df = pd.DataFrame()
         for key in keys:
-            new_error_df = pd.DataFrame({
-                key: df.loc["np_arrays", "error_array"][key]
-            }, index=df.loc["np_arrays", common_index][key])
+            new_error_df = pd.DataFrame(
+                {key: df.loc["np_arrays", "error_array"][key]},
+                index=df.loc["np_arrays", common_index][key])
             duplicates = new_error_df.index.duplicated(keep="first")
             if any(duplicates):
                 logger.warning(
                     "duplicate indices in error array of {} - "
                     "keeping only first occurrence of duplicates".format(key))
-                new_error_df = new_error_df[~duplicates]
+                new_error_df = new_error_df[~duplicates]  # type: ignore
             error_df = pd.concat([error_df, new_error_df], axis=1)
 
     # check titles
@@ -214,9 +213,8 @@ def run(args):
         elif SETTINGS.table_export_data.lower() in ("info", "stats"):
             data = df.loc[SETTINGS.table_export_data.lower()]
         else:
-            raise ValueError(
-                "unsupported export data specifier: {}".format(
-                    SETTINGS.table_export_data))
+            raise ValueError("unsupported export data specifier: {}".format(
+                SETTINGS.table_export_data))
         pandas_bridge.save_df_as_table(data, args.save_table,
                                        confirm_overwrite=not args.no_warnings)
 

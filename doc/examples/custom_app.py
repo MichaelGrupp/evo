@@ -29,7 +29,7 @@ print("plotting")
 plot_collection = plot.PlotCollection("Example")
 # metric values
 fig_1 = plt.figure(figsize=(8, 8))
-plot.error_array(fig_1, ape_metric.error, statistics=ape_statistics,
+plot.error_array(fig_1.gca(), ape_metric.error, statistics=ape_statistics,
                  name="APE", title=str(ape_metric))
 plot_collection.add_figure("raw", fig_1)
 

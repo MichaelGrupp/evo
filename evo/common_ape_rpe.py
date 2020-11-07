@@ -109,8 +109,8 @@ def plot(args, result, traj_ref, traj_est, traj_ref_full=None):
         seconds_from_start = None
 
     plot.error_array(
-        fig1, result.np_arrays["error_array"], x_array=seconds_from_start,
-        statistics={
+        fig1.gca(), result.np_arrays["error_array"],
+        x_array=seconds_from_start, statistics={
             s: result.stats[s]
             for s in SETTINGS.plot_statistics if s not in ("min", "max")
         }, name=result.info["label"], title=result.info["title"],

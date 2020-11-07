@@ -20,9 +20,10 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os
+import collections
 import logging
 import pickle
-import collections
+import typing
 from enum import Enum
 
 import matplotlib as mpl
@@ -59,6 +60,8 @@ mpl.rcParams.update(rc)
 
 logger = logging.getLogger(__name__)
 
+ListOrArray = typing.Union[typing.Sequence[float], np.ndarray]
+
 
 class PlotException(EvoException):
     pass
@@ -75,25 +78,26 @@ class PlotMode(Enum):
 
 
 class PlotCollection:
-    def __init__(self, title="", deserialize=None):
+    def __init__(self, title: str = "",
+                 deserialize: typing.Optional[str] = None):
         self.title = " ".join(title.splitlines())  # one line title
         self.figures = collections.OrderedDict()  # remember placement order
-        # hack to avoid premature garbage collection with Qt
-        # (stackoverflow.com/questions/600289)
-        self.root_window = None  # for now: init later in tabbed_qt_window
+        # hack to avoid premature garbage collection when serializing with Qt
+        # initialized later in tabbed_{qt, tk}_window
+        self.root_window: typing.Optional[typing.Any] = None
         if deserialize is not None:
             logger.debug("Deserializing PlotCollection from " + deserialize +
                          "...")
             self.figures = pickle.load(open(deserialize, 'rb'))
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.title + " (" + str(len(self.figures)) + " figure(s))"
 
-    def add_figure(self, name, fig):
+    def add_figure(self, name: str, fig: plt.Figure) -> None:
         fig.tight_layout()
         self.figures[name] = fig
 
-    def tabbed_qt5_window(self):
+    def tabbed_qt5_window(self) -> None:
         from PyQt5 import QtGui, QtWidgets
         from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT
         # mpl backend can already create instance
@@ -119,7 +123,7 @@ class PlotCollection:
         self.root_window.show()
         app.exec_()
 
-    def tabbed_tk_window(self):
+    def tabbed_tk_window(self) -> None:
         from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
         import sys
         if sys.version_info[0] < 3:
@@ -154,7 +158,7 @@ class PlotCollection:
         self.root_window.mainloop()
         self.root_window.destroy()
 
-    def show(self):
+    def show(self) -> None:
         if len(self.figures.keys()) == 0:
             return
         if not SETTINGS.plot_split:
@@ -167,14 +171,14 @@ class PlotCollection:
         else:
             plt.show()
 
-    def serialize(self, dest, confirm_overwrite=True):
+    def serialize(self, dest: str, confirm_overwrite: bool = True) -> None:
         logger.debug("Serializing PlotCollection to " + dest + "...")
         if confirm_overwrite and not user.check_and_confirm_overwrite(dest):
             return
         else:
             pickle.dump(self.figures, open(dest, 'wb'))
 
-    def export(self, file_path, confirm_overwrite=True):
+    def export(self, file_path: str, confirm_overwrite: bool = True) -> None:
         fmt = SETTINGS.plot_export_format.lower()
         if fmt == "pdf" and not SETTINGS.plot_split:
             if confirm_overwrite and not user.check_and_confirm_overwrite(
@@ -199,7 +203,7 @@ class PlotCollection:
                 logger.info("Plot saved to " + dest)
 
 
-def set_aspect_equal_3d(ax):
+def set_aspect_equal_3d(ax: plt.Axes) -> None:
     """
     kudos to https://stackoverflow.com/a/35126679
     :param ax: matplotlib 3D axes object
@@ -224,7 +228,8 @@ def set_aspect_equal_3d(ax):
     ax.set_zlim3d([zmean - plot_radius, zmean + plot_radius])
 
 
-def prepare_axis(fig, plot_mode=PlotMode.xy, subplot_arg=111):
+def prepare_axis(fig: plt.Figure, plot_mode: PlotMode = PlotMode.xy,
+                 subplot_arg: int = 111) -> plt.Axes:
     """
     prepares an axis according to the plot mode (for trajectory plotting)
     :param fig: matplotlib figure object
@@ -260,7 +265,8 @@ def prepare_axis(fig, plot_mode=PlotMode.xy, subplot_arg=111):
     return ax
 
 
-def plot_mode_to_idx(plot_mode):
+def plot_mode_to_idx(
+        plot_mode: PlotMode) -> typing.Tuple[int, int, typing.Optional[int]]:
     if plot_mode == PlotMode.xy or plot_mode == PlotMode.xyz:
         x_idx = 0
         y_idx = 1
@@ -283,7 +289,9 @@ def plot_mode_to_idx(plot_mode):
     return x_idx, y_idx, z_idx
 
 
-def traj(ax, plot_mode, traj, style='-', color='black', label="", alpha=1.0):
+def traj(ax: plt.Axes, plot_mode: PlotMode, traj: trajectory.PosePath3D,
+         style: str = '-', color: str = 'black', label: str = "",
+         alpha: float = 1.0) -> None:
     """
     plot a path/trajectory based on xyz coordinates into an axis
     :param ax: the matplotlib axis
@@ -308,8 +316,11 @@ def traj(ax, plot_mode, traj, style='-', color='black', label="", alpha=1.0):
         ax.legend(frameon=True)
 
 
-def colored_line_collection(xyz, colors, plot_mode=PlotMode.xy,
-                            linestyles="solid", step=1, alpha=1.):
+def colored_line_collection(
+        xyz: np.ndarray, colors: typing.Sequence,
+        plot_mode: PlotMode = PlotMode.xy, linestyles: str = "solid",
+        step: int = 1, alpha: float = 1.
+) -> typing.Union[LineCollection, art3d.LineCollection]:
     if len(xyz) / step != len(colors):
         raise PlotException(
             "color values don't have correct length: %d vs. %d" %
@@ -322,18 +333,20 @@ def colored_line_collection(xyz, colors, plot_mode=PlotMode.xy,
     if plot_mode == PlotMode.xyz:
         zs = [[x_1, x_2]
               for x_1, x_2 in zip(xyz[:-1:step, z_idx], xyz[1::step, z_idx])]
-        segs = [list(zip(x, y, z)) for x, y, z in zip(xs, ys, zs)]
-        line_collection = art3d.Line3DCollection(segs, colors=colors,
+        segs_3d = [list(zip(x, y, z)) for x, y, z in zip(xs, ys, zs)]
+        line_collection = art3d.Line3DCollection(segs_3d, colors=colors,
                                                  alpha=alpha,
                                                  linestyles=linestyles)
     else:
-        segs = [list(zip(x, y)) for x, y in zip(xs, ys)]
-        line_collection = LineCollection(segs, colors=colors, alpha=alpha,
+        segs_2d = [list(zip(x, y)) for x, y in zip(xs, ys)]
+        line_collection = LineCollection(segs_2d, colors=colors, alpha=alpha,
                                          linestyle=linestyles)
     return line_collection
 
 
-def traj_colormap(ax, traj, array, plot_mode, min_map, max_map, title=""):
+def traj_colormap(ax: plt.Axes, traj: trajectory.PosePath3D,
+                  array: ListOrArray, plot_mode: PlotMode, min_map: float,
+                  max_map: float, title: str = "") -> None:
     """
     color map a path/trajectory in xyz coordinates according to
     an array of values
@@ -356,9 +369,8 @@ def traj_colormap(ax, traj, array, plot_mode, min_map, max_map, title=""):
     ax.add_collection(line_collection)
     ax.autoscale_view(True, True, True)
     if plot_mode == PlotMode.xyz:
-        ax.set_zlim(
-            np.amin(traj.positions_xyz[:, 2]),
-            np.amax(traj.positions_xyz[:, 2]))
+        ax.set_zlim(np.amin(traj.positions_xyz[:, 2]),
+                    np.amax(traj.positions_xyz[:, 2]))
         if SETTINGS.plot_xyz_realistic:
             set_aspect_equal_3d(ax)
     fig = plt.gcf()
@@ -374,8 +386,10 @@ def traj_colormap(ax, traj, array, plot_mode, min_map, max_map, title=""):
         plt.title(title)
 
 
-def draw_coordinate_axes(ax, traj, plot_mode, marker_scale=0.1, x_color="r",
-                         y_color="g", z_color="b"):
+def draw_coordinate_axes(ax: plt.Figure, traj: trajectory.PosePath3D,
+                         plot_mode: PlotMode, marker_scale: float = 0.1,
+                         x_color: str = "r", y_color: str = "g",
+                         z_color: str = "b") -> None:
     """
     Draws a coordinate frame axis for each pose of a trajectory.
     :param ax: plot axis
@@ -412,8 +426,10 @@ def draw_coordinate_axes(ax, traj, plot_mode, marker_scale=0.1, x_color="r",
     ax.add_collection(markers)
 
 
-def draw_correspondence_edges(ax, traj_1, traj_2, plot_mode, style='-',
-                              color="black", alpha=1.):
+def draw_correspondence_edges(ax: plt.Axes, traj_1: trajectory.PosePath3D,
+                              traj_2: trajectory.PosePath3D,
+                              plot_mode: PlotMode, style: str = '-',
+                              color: str = "black", alpha: float = 1.) -> None:
     """
     Draw edges between corresponding poses of two trajectories.
     Trajectories must be synced, i.e. having the same number of poses.
@@ -433,14 +449,14 @@ def draw_correspondence_edges(ax, traj_1, traj_2, plot_mode, style='-',
     interweaved_positions[0::2, :] = traj_1.positions_xyz
     interweaved_positions[1::2, :] = traj_2.positions_xyz
     colors = np.array(n * [color])
-    markers = colored_line_collection(
-        interweaved_positions, colors, plot_mode, step=2, alpha=alpha,
-        linestyles=style)
+    markers = colored_line_collection(interweaved_positions, colors, plot_mode,
+                                      step=2, alpha=alpha, linestyles=style)
     ax.add_collection(markers)
 
 
-def traj_xyz(axarr, traj, style='-', color='black', label="", alpha=1.0,
-             start_timestamp=None):
+def traj_xyz(axarr: np.ndarray, traj: trajectory.PosePath3D, style: str = '-',
+             color: str = 'black', label: str = "", alpha: float = 1.0,
+             start_timestamp: typing.Optional[float] = None) -> None:
     """
     plot a path/trajectory based on xyz coordinates into an axis
     :param axarr: an axis array (for x, y & z)
@@ -475,8 +491,9 @@ def traj_xyz(axarr, traj, style='-', color='black', label="", alpha=1.0,
         axarr[0].legend(frameon=True)
 
 
-def traj_rpy(axarr, traj, style='-', color='black', label="", alpha=1.0,
-             start_timestamp=None):
+def traj_rpy(axarr: np.ndarray, traj: trajectory.PosePath3D, style: str = '-',
+             color: str = 'black', label: str = "", alpha: float = 1.0,
+             start_timestamp: typing.Optional[float] = None) -> None:
     """
     plot a path/trajectory's Euler RPY angles into an axis
     :param axarr: an axis array (for R, P & Y)
@@ -512,12 +529,14 @@ def traj_rpy(axarr, traj, style='-', color='black', label="", alpha=1.0,
         axarr[0].legend(frameon=True)
 
 
-def trajectories(fig, trajectories, plot_mode=PlotMode.xy, title="",
-                 subplot_arg=111):
+def trajectories(fig: plt.Figure, trajectories: typing.Union[
+    trajectory.PosePath3D, typing.Sequence[trajectory.PosePath3D],
+    typing.Dict[str, trajectory.PosePath3D]], plot_mode=PlotMode.xy,
+                 title: str = "", subplot_arg: int = 111) -> None:
     """
     high-level function for plotting multiple trajectories
     :param fig: matplotlib figure
-    :param trajectories: instances or iterables of PosePath3D or derived
+    :param trajectories: instance or container of PosePath3D or derived
     - if it's a dictionary, the keys (names) will be used as labels
     :param plot_mode: e.g. plot.PlotMode.xy
     :param title: optional plot title
@@ -525,7 +544,8 @@ def trajectories(fig, trajectories, plot_mode=PlotMode.xy, title="",
     """
     ax = prepare_axis(fig, plot_mode, subplot_arg)
     cmap_colors = None
-    if SETTINGS.plot_multi_cmap.lower() != "none":
+    if SETTINGS.plot_multi_cmap.lower() != "none" and isinstance(
+            trajectories, collections.Iterable):
         cmap = getattr(cm, SETTINGS.plot_multi_cmap)
         cmap_colors = iter(cmap(np.linspace(0, 1, len(trajectories))))
 
@@ -549,16 +569,20 @@ def trajectories(fig, trajectories, plot_mode=PlotMode.xy, title="",
             draw(t)
 
 
-def error_array(fig, err_array, x_array=None, statistics=None, threshold=None,
-                cumulative=False, color='grey', name="error", title="",
-                xlabel="index", ylabel=None, subplot_arg=111, linestyle="-",
-                marker=None):
+def error_array(ax: plt.Axes, err_array: ListOrArray,
+                x_array: typing.Optional[ListOrArray] = None,
+                statistics: typing.Optional[typing.Dict[str, float]] = None,
+                threshold: float = None, cumulative: bool = False,
+                color: str = 'grey', name: str = "error", title: str = "",
+                xlabel: str = "index", ylabel: typing.Optional[str] = None,
+                subplot_arg: int = 111, linestyle: str = "-",
+                marker: typing.Optional[str] = None):
     """
     high-level function for plotting raw error values of a metric
-    :param fig: matplotlib figure
+    :param fig: matplotlib axes
     :param err_array: an nx1 array of values
     :param x_array: an nx1 array of x-axis values
-    :param statistics: optional dictionary of {metrics.StatisticsType: value}
+    :param statistics: optional dictionary of {metrics.StatisticsType.value: value}
     :param threshold: optional value for horizontal threshold line
     :param cumulative: set to True for cumulative plot
     :param name: optional name of the value array
@@ -568,9 +592,7 @@ def error_array(fig, err_array, x_array=None, statistics=None, threshold=None,
     :param subplot_arg: optional matplotlib subplot ID if used as subplot
     :param linestyle: matplotlib linestyle
     :param marker: optional matplotlib marker style for points
-    :return: the matplotlib figure with the plot
     """
-    ax = fig.add_subplot(subplot_arg)
     if cumulative:
         if x_array:
             ax.plot(x_array, np.cumsum(err_array), linestyle=linestyle,
@@ -602,12 +624,12 @@ def error_array(fig, err_array, x_array=None, statistics=None, threshold=None,
     plt.xlabel(xlabel)
     plt.title(title)
     plt.legend(frameon=True)
-    return fig
 
 
-def ros_map(ax, yaml_path, plot_mode, cmap="Greys_r",
-            mask_unknown_value=SETTINGS.ros_map_unknown_cell_value,
-            alpha=SETTINGS.ros_map_alpha_value):
+def ros_map(ax: plt.Axes, yaml_path: str, plot_mode: PlotMode,
+            cmap: str = "Greys_r",
+            mask_unknown_value: int = SETTINGS.ros_map_unknown_cell_value,
+            alpha: float = SETTINGS.ros_map_alpha_value) -> None:
     """
     Inserts an image of an 2D ROS map into the plot axis.
     See: http://wiki.ros.org/map_server#Map_format

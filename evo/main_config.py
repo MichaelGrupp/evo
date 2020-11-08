@@ -21,11 +21,12 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import argparse
+import json
+import logging
 import os
 import sys
-import json
-import argparse
-import logging
+import typing
 
 import colorama
 from colorama import Style
@@ -45,23 +46,24 @@ class ConfigError(EvoException):
     pass
 
 
-def log_info_dict_json(data_str, colored=True):
-    data_str = json.dumps(data_str, indent=4, sort_keys=True)
+def log_info_dict_json(data: dict, colored: bool = True) -> None:
+    data_str = json.dumps(data, indent=4, sort_keys=True)
     if colored and os.name != "nt":
         data_str = highlight(data_str, lexers.JsonLexer(),
                              formatters.Terminal256Formatter(style="monokai"))
     logger.info(data_str)
 
 
-def show(config_path, colored=True):
+def show(config_path: str, colored: bool = True) -> None:
     with open(config_path) as config_file:
         log_info_dict_json(json.load(config_file), colored)
 
 
-def merge_json_union(first, second, soft=False):
-    with open(first, 'r+') as f_1:
+def merge_json_union(first_file: str, second_file: str,
+                     soft: bool = False) -> None:
+    with open(first_file, 'r+') as f_1:
         config_1 = json.loads(f_1.read())
-        with open(second) as f_2:
+        with open(second_file) as f_2:
             config_2 = json.loads(f_2.read())
             config_1 = settings.merge_dicts(config_1, config_2, soft)
         f_1.truncate(0)
@@ -69,7 +71,7 @@ def merge_json_union(first, second, soft=False):
         f_1.write(json.dumps(config_1, indent=4, sort_keys=True))
 
 
-def is_number(token):
+def is_number(token: str) -> bool:
     try:
         float(token)
         return True
@@ -77,7 +79,7 @@ def is_number(token):
         return False
 
 
-def set_config(config_path, arg_list):
+def set_config(config_path: str, arg_list: typing.Sequence[str]) -> None:
     with open(config_path) as config_file:
         config = json.load(config_file)
     max_idx = len(arg_list) - 1
@@ -90,7 +92,7 @@ def set_config(config_path, arg_list):
             elif arg_list[i + 1].lower() == "false":
                 config[arg] = False
             else:
-                values = []
+                values: typing.List[typing.Any] = []
                 for j in range(i + 1, max_idx + 1):
                     value = arg_list[j]
                     if value in config.keys():
@@ -117,8 +119,8 @@ def set_config(config_path, arg_list):
         config_file.write(json.dumps(config, indent=4, sort_keys=True))
 
 
-def generate(arg_list):
-    data = {}
+def generate(arg_list: typing.Sequence[str]) -> typing.Dict[str, typing.Any]:
+    data: typing.Dict[str, typing.Any] = {}
     max_idx = len(arg_list) - 1
     for i, arg in enumerate(arg_list):
         if arg.startswith("-"):
@@ -127,7 +129,7 @@ def generate(arg_list):
                     and arg_list[i + 1].startswith("-")) or i + 1 > max_idx:
                 data[arg] = True  # just a boolean flag
             else:
-                values = []
+                values: typing.List[typing.Any] = []
                 for j in range(i + 1, max_idx + 1):
                     value = arg_list[j]
                     if value.startswith("-"):
@@ -188,7 +190,7 @@ To save the configuration, specify -o / --output.
 '''
 
 
-def main():
+def main() -> None:
     import argcomplete
     basic_desc = "crappy configuration tool"
     lic = "(c) evo authors"
@@ -236,9 +238,10 @@ def main():
         parents=[shared_parser])
     reset_parser.add_argument("-y", help="acknowledge automatically",
                               action="store_true")
-    reset_parser.add_argument(
-        "params", choices=list(DEFAULT_SETTINGS_DICT.keys()),
-        nargs=argparse.REMAINDER, help="parameters to reset")
+    reset_parser.add_argument("params",
+                              choices=list(DEFAULT_SETTINGS_DICT.keys()),
+                              nargs=argparse.REMAINDER,
+                              help="parameters to reset")
 
     argcomplete.autocomplete(main_parser)
     if len(sys.argv) > 1 and sys.argv[1] == "set":

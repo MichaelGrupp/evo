@@ -21,11 +21,11 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import os
-import sys
-import shutil
 import argparse
+import os
+import shutil
 import subprocess as sp
+import sys
 
 from evo import PACKAGE_BASE_PATH
 
@@ -37,7 +37,7 @@ Unknown command line arguments are forwarded to the ipython executable
 '''
 
 
-def main():
+def main() -> None:
     main_parser = argparse.ArgumentParser(
         description=DESC, formatter_class=argparse.RawTextHelpFormatter)
     args, other_args = main_parser.parse_known_args()

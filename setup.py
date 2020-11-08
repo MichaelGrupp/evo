@@ -8,7 +8,7 @@ import subprocess as sp
 
 # monkey patch because setuptools entry_points are slow as fuck
 # https://github.com/ninjaaron/fast-entry_points
-import fastentrypoints
+import fastentrypoints  # pylint: disable=unused-import
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 
@@ -104,7 +104,7 @@ setup(
         "pyyaml",
         "pillow",
     ],
-    python_requires=">=3.5",
+    python_requires=">=3.6",
     classifiers=[
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Topic :: Scientific/Engineering",

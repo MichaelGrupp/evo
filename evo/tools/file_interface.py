@@ -340,12 +340,12 @@ def save_res_file(zip_path, result_obj: result.Result,
             array_buffer.close()
         for name, traj in result_obj.trajectories.items():
             traj_buffer = io.StringIO()
-            if type(traj) is PosePath3D:
-                fmt_suffix = ".kitti"
-                write_kitti_poses_file(traj_buffer, traj)
-            elif type(traj) is PoseTrajectory3D:
+            if isinstance(traj, PoseTrajectory3D):
                 fmt_suffix = ".tum"
                 write_tum_trajectory_file(traj_buffer, traj)
+            elif isinstance(traj, PosePath3D):
+                fmt_suffix = ".kitti"
+                write_kitti_poses_file(traj_buffer, traj)
             else:
                 raise FileInterfaceException(
                     "unknown format of trajectory {}".format(name))

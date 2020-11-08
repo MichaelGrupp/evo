@@ -1,0 +1,4 @@
+[MASTER]
+
+ignore=fastentrypoints.py,transformations.py
+

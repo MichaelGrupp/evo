@@ -54,7 +54,7 @@ Tools:
 '''
 
 
-def main():
+def main() -> None:
     import sys
     import argparse
     import argcomplete
@@ -118,8 +118,9 @@ def main():
         if args.logfile or args.open_log:
             print(settings.GLOBAL_LOGFILE_PATH, end=line_end)
             if not os.path.exists(settings.GLOBAL_LOGFILE_PATH):
-                print("no logfile found - run: "
-                      "evo_config set global_logfile_enabled", end=line_end)
+                print(
+                    "no logfile found - run: "
+                    "evo_config set global_logfile_enabled", end=line_end)
                 sys.exit(1)
             if args.open_log:
                 import webbrowser
@@ -135,8 +136,9 @@ def main():
             sys.exit(1)
         if not args.message and sys.stdin.isatty():
             if not os.path.exists(settings.GLOBAL_LOGFILE_PATH):
-                print("no logfile found - run: "
-                      "evo_config set global_logfile_enabled", end=line_end)
+                print(
+                    "no logfile found - run: "
+                    "evo_config set global_logfile_enabled", end=line_end)
             else:
                 print(open(settings.GLOBAL_LOGFILE_PATH).read(), end="")
         elif not settings.SETTINGS.global_logfile_enabled:

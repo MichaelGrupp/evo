@@ -29,13 +29,13 @@ logger = logging.getLogger(__name__)
 SEP = "-" * 80  # separator line
 
 
-def main():
+def main() -> None:
     import argparse
     import argcomplete
     basic_desc = "experimental tool for opening a serialized PlotCollection"
     lic = "(c) evo authors"
-    main_parser = argparse.ArgumentParser(
-        description="%s %s" % (basic_desc, lic))
+    main_parser = argparse.ArgumentParser(description="%s %s" %
+                                          (basic_desc, lic))
     main_parser.add_argument("in_file",
                              help="path to a serialized plot_collection")
     main_parser.add_argument("-t", "--title",

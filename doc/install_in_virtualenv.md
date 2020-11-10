@@ -1,33 +1,43 @@
-Infos on virtual environments: https://www.dabapps.com/blog/introduction-to-pip-and-virtualenv-python/
+# Installation in a virtual environment
 
-### virtualenv setup
+Virtual environments allow you to install Python packages in an isolated environment.
+This is usually a good idea because it reduces the risk that you mess up your system's Python packages by installing globally with `pip`.
+Additionally, you can have multiple environments in parallel that don't interfere with each other.
 
-Install `pip`:
+## virtualenv & virtualenvwrapper
 
-```shell
-curl -O https://bootstrap.pypa.io/get-pip.py
-sudo python get-pip.py
-rm get-pip.py
-```
+`virtualenvwrapper` is highly recommended, it makes using virtual environments much more comfortable.
+
+Below are installation instructions for Ubuntu.
+If you use any other OS, see the documentation for how to install it on your system:
+
+* virtualenvwrapper: https://virtualenvwrapper.readthedocs.io/en/latest/
+* virtualenv documentation: https://virtualenv.pypa.io/en/latest/
+
+### virtualenvwrapper installation on Ubuntu
+
+***The following steps have been verified on Ubuntu 20. They probably also work on other Debian-based Linux distros.***
 
 Install `virtualenv` and `virtualenvwrapper`:
 ```shell
-sudo pip install virtualenv
-sudo pip install virtualenvwrapper
+sudo apt install python3-virtualenvwrapper
 ```
 
-Add setup code for `virtualenvwrapper` to shell startup file:
+Add setup code for `virtualenvwrapper` to your shell startup file:
 ```shell
-echo "export WORKON_HOME=$HOME/.virtualenvs && source /usr/local/bin/virtualenvwrapper.sh" >> ~/.bashrc
+echo "export WORKON_HOME=$HOME/.virtualenvs && source /usr/share/virtualenvwrapper/virtualenvwrapper.sh" >> ~/.bashrc
+
 source ~/.bashrc
 ```
 
-### Using a virtualenv for evo
+## Setting up a virtualenv for evo
 
+Once `virtualenvwrapper` is installed, we can create the virtual environment.
+The `--system-site-packages` flag is recommended if you are using ROS and want to use rosbags with evo:
+it enables to import the `rosbag` Python module that is installed outside of the virtualenv on your system.
 ```shell
-mkvirtualenv evaluation
+mkvirtualenv evaluation --system-site-packages
 ```
-Now, the package should be installed in the virtualenv and you can use it.
 
 To activate the environment, type:
 ```shell
@@ -36,18 +46,14 @@ workon evaluation
 
 Install evo and its dependencies inside the virtual environment:
 ```shell
-pip install evo --upgrade
+pip install --ignore-installed evo --no-binary evo
 
 # or alternatively from source:
-cd <evo>  # go to evo base source folder with setup.py
-pip install . --upgrade
+cd <evo>  # go to evo base source folder that contains setup.py
+pip install --ignore-installed --editable . --no-binary evo
 ```
+Now, the package should be installed in the virtualenv and you can use it.
 
-**Important**: if you want to use ROS bagfiles in the virtual environment, run this too:
-```
-pip install catkin_pkg rospkg pyyaml
-``` 
-For some reason these packages are not found in a virtual environment even if you have a proper ROS installation (see [ROS forums](https://answers.ros.org/question/85211/importerror-no-module-named-rospkg-on-hydro-solved/?answer=85331#post-id-85331))
 
 Check if evo is installed correctly by running:
 ```
@@ -58,6 +64,7 @@ To leave the virtualenv, close the shell or type:
 ```shell
 deactivate
 ```
+(activate again with `workon evaluation`)
 
 To delete the environment:
 ```shell

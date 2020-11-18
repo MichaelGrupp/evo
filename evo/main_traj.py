@@ -21,7 +21,9 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import argparse
 import logging
+import os
 
 from evo.tools.settings import SETTINGS
 
@@ -30,8 +32,7 @@ logger = logging.getLogger(__name__)
 SEP = "-" * 80
 
 
-def parser():
-    import argparse
+def parser() -> argparse.ArgumentParser:
     basic_desc = "trajectory analysis and manipulation tool"
     lic = "(c) evo authors"
     shared_parser = argparse.ArgumentParser(add_help=False)
@@ -170,7 +171,6 @@ def die(msg):
 
 
 def load_trajectories(args):
-    import os
     from collections import OrderedDict
     from evo.tools import file_interface
     trajectories = OrderedDict()
@@ -272,8 +272,13 @@ def print_traj_info(name, traj, verbose=False, full_check=False,
         logger.info("infos:\t" + str(traj))
 
 
+def filestem(name: str, args: argparse.Namespace) -> str:
+    if args.subcommand == "bag":
+        return name.replace('/', '_')
+    return os.path.splitext(os.path.basename(name))[0]
+
+
 def run(args):
-    import os
     import sys
 
     import numpy as np
@@ -475,21 +480,21 @@ def run(args):
     if args.save_as_tum:
         logger.info(SEP)
         for name, traj in trajectories.items():
-            dest = os.path.splitext(os.path.basename(name))[0] + ".tum"
+            dest = filestem(name, args) + ".tum"
             file_interface.write_tum_trajectory_file(
                 dest, traj, confirm_overwrite=not args.no_warnings)
         if args.ref:
-            dest = os.path.splitext(os.path.basename(args.ref))[0] + ".tum"
+            dest = filestem(args.ref, args) + ".tum"
             file_interface.write_tum_trajectory_file(
                 dest, ref_traj, confirm_overwrite=not args.no_warnings)
     if args.save_as_kitti:
         logger.info(SEP)
         for name, traj in trajectories.items():
-            dest = os.path.splitext(os.path.basename(name))[0] + ".kitti"
+            dest = filestem(name, args) + ".kitti"
             file_interface.write_kitti_poses_file(
                 dest, traj, confirm_overwrite=not args.no_warnings)
         if args.ref:
-            dest = os.path.splitext(os.path.basename(args.ref))[0] + ".kitti"
+            dest = filestem(args.ref, args) + ".kitti"
             file_interface.write_kitti_poses_file(
                 dest, ref_traj, confirm_overwrite=not args.no_warnings)
     if args.save_as_bag:
@@ -502,13 +507,13 @@ def run(args):
         bag = rosbag.Bag(dest_bag_path, 'w')
         try:
             for name, traj in trajectories.items():
-                dest_topic = os.path.splitext(os.path.basename(name))[0]
+                dest_topic = filestem(name, args)
                 frame_id = traj.meta[
                     "frame_id"] if "frame_id" in traj.meta else ""
                 file_interface.write_bag_trajectory(bag, traj, dest_topic,
                                                     frame_id)
             if args.ref:
-                dest_topic = os.path.splitext(os.path.basename(args.ref))[0]
+                dest_topic = filestem(args.ref, args)
                 frame_id = ref_traj.meta[
                     "frame_id"] if "frame_id" in ref_traj.meta else ""
                 file_interface.write_bag_trajectory(bag, ref_traj, dest_topic,

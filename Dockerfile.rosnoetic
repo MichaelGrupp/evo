@@ -30,7 +30,6 @@ RUN container-local/.ci/debian_install_pip3.sh
 
 # Build and install.
 RUN pip3 install /container-local --upgrade --no-binary evo
-RUN evo_config set plot_backend Agg
 
 # Run tests.
 RUN pip3 install pytest --upgrade

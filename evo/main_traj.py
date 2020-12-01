@@ -272,7 +272,7 @@ def print_traj_info(name, traj, verbose=False, full_check=False,
         logger.info("infos:\t" + str(traj))
 
 
-def filestem(name: str, args: argparse.Namespace) -> str:
+def to_filestem(name: str, args: argparse.Namespace) -> str:
     if args.subcommand == "bag":
         if name.startswith('/'):
             name = name[1:]
@@ -489,21 +489,21 @@ def run(args):
     if args.save_as_tum:
         logger.info(SEP)
         for name, traj in trajectories.items():
-            dest = filestem(name, args) + ".tum"
+            dest = to_filestem(name, args) + ".tum"
             file_interface.write_tum_trajectory_file(
                 dest, traj, confirm_overwrite=not args.no_warnings)
         if args.ref:
-            dest = filestem(args.ref, args) + ".tum"
+            dest = to_filestem(args.ref, args) + ".tum"
             file_interface.write_tum_trajectory_file(
                 dest, ref_traj, confirm_overwrite=not args.no_warnings)
     if args.save_as_kitti:
         logger.info(SEP)
         for name, traj in trajectories.items():
-            dest = filestem(name, args) + ".kitti"
+            dest = to_filestem(name, args) + ".kitti"
             file_interface.write_kitti_poses_file(
                 dest, traj, confirm_overwrite=not args.no_warnings)
         if args.ref:
-            dest = filestem(args.ref, args) + ".kitti"
+            dest = to_filestem(args.ref, args) + ".kitti"
             file_interface.write_kitti_poses_file(
                 dest, ref_traj, confirm_overwrite=not args.no_warnings)
     if args.save_as_bag:

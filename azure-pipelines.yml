@@ -67,7 +67,7 @@ jobs:
   - script: |
       python -m pip install --upgrade pip
       pip install . --no-binary evo
-      evo_config set plot_backend Agg
+      evo_config show --brief --no_color
     displayName: 'Install and configure package and dependencies'
 
   - script: |

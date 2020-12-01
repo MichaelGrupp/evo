@@ -274,8 +274,17 @@ def print_traj_info(name, traj, verbose=False, full_check=False,
 
 def filestem(name: str, args: argparse.Namespace) -> str:
     if args.subcommand == "bag":
+        if name.startswith('/'):
+            name = name[1:]
+        name = name.replace(':', '/')  # TF ID
         return name.replace('/', '_')
     return os.path.splitext(os.path.basename(name))[0]
+
+
+def to_topic_name(name: str, args: argparse.Namespace) -> str:
+    if args.subcommand == "bag":
+        return name.replace(':', '/')
+    return '/' + os.path.splitext(os.path.basename(name))[0].replace(' ', '_')
 
 
 def run(args):
@@ -507,13 +516,13 @@ def run(args):
         bag = rosbag.Bag(dest_bag_path, 'w')
         try:
             for name, traj in trajectories.items():
-                dest_topic = filestem(name, args)
+                dest_topic = to_topic_name(name, args)
                 frame_id = traj.meta[
                     "frame_id"] if "frame_id" in traj.meta else ""
                 file_interface.write_bag_trajectory(bag, traj, dest_topic,
                                                     frame_id)
             if args.ref:
-                dest_topic = filestem(args.ref, args)
+                dest_topic = to_topic_name(args.ref, args)
                 frame_id = ref_traj.meta[
                     "frame_id"] if "frame_id" in ref_traj.meta else ""
                 file_interface.write_bag_trajectory(bag, ref_traj, dest_topic,

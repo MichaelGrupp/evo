@@ -23,7 +23,7 @@ import pkgutil
 
 
 def get_default_plot_backend() -> str:
-    if os.name == "posix" and "DISPLAY" not in os.environ:
+    if os.name == "posix" and os.getenv("DISPLAY", default="") == "":
         return "Agg"
 
     backends = {"PyQt5": "Qt5Agg"}

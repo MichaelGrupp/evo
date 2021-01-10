@@ -346,7 +346,8 @@ def colored_line_collection(
 
 def traj_colormap(ax: plt.Axes, traj: trajectory.PosePath3D,
                   array: ListOrArray, plot_mode: PlotMode, min_map: float,
-                  max_map: float, title: str = "") -> None:
+                  max_map: float, title: str = "",
+                  fig: typing.Optional[mpl.figure.Figure] = None) -> None:
     """
     color map a path/trajectory in xyz coordinates according to
     an array of values
@@ -357,6 +358,7 @@ def traj_colormap(ax: plt.Axes, traj: trajectory.PosePath3D,
     :param min_map: lower bound value for color mapping
     :param max_map: upper bound value for color mapping
     :param title: plot title
+    :param fig: plot figure. Obtained with plt.gcf() if none is specified
     """
     pos = traj.positions_xyz
     norm = mpl.colors.Normalize(vmin=min_map, vmax=max_map, clip=True)
@@ -373,7 +375,8 @@ def traj_colormap(ax: plt.Axes, traj: trajectory.PosePath3D,
                     np.amax(traj.positions_xyz[:, 2]))
         if SETTINGS.plot_xyz_realistic:
             set_aspect_equal_3d(ax)
-    fig = plt.gcf()
+    if fig is None:
+        fig = plt.gcf()
     cbar = fig.colorbar(
         mapper, ticks=[min_map, (max_map - (max_map - min_map) / 2), max_map])
     cbar.ax.set_yticklabels([
@@ -383,7 +386,7 @@ def traj_colormap(ax: plt.Axes, traj: trajectory.PosePath3D,
     ])
     if title:
         ax.legend(frameon=True)
-        plt.title(title)
+        ax.set_title(title)
 
 
 def draw_coordinate_axes(ax: plt.Figure, traj: trajectory.PosePath3D,

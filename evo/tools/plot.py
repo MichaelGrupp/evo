@@ -346,7 +346,8 @@ def colored_line_collection(
 
 def traj_colormap(ax: plt.Axes, traj: trajectory.PosePath3D,
                   array: ListOrArray, plot_mode: PlotMode, min_map: float,
-                  max_map: float, title: str = "", fig: typing.Optional[mpl.figure.Figure] = None) -> None:
+                  max_map: float, title: str = "",
+                  fig: typing.Optional[mpl.figure.Figure] = None) -> None:
     """
     color map a path/trajectory in xyz coordinates according to
     an array of values

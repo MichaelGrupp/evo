@@ -104,13 +104,20 @@ def set_config(config_path: str, arg_list: typing.Sequence[str]) -> None:
                             values.append(int(float(value)))
                     else:
                         values.append(value)
-                if not isinstance(config[arg], list):
-                    values = values[0]
+                if isinstance(config[arg], bool):
+                    config[arg] = not config[arg]
                 elif len(values) == 1:
-                    if values[0].lower() in ("none", "", "[]"):
-                        values = []
-                config[arg] = not config[arg] if isinstance(config[arg],
-                                                            bool) else values
+                    if isinstance(values[0], str) \
+                            and values[0].lower() == ("[]"):
+                        config[arg] = []
+                    elif arg == "plot_seaborn_palette" and user.confirm(
+                            "Set value for {} as list {}? (y/n)".format(
+                                arg, values)):
+                        config[arg] = values
+                    else:
+                        config[arg] = values[0]
+                else:
+                    config[arg] = values
         else:
             # toggle boolean parameter
             config[arg] = not config[arg] if isinstance(config[arg],

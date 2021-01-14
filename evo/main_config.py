@@ -79,6 +79,40 @@ def is_number(token: str) -> bool:
         return False
 
 
+def finalize_values(config: dict, key: str,
+                values: typing.List[str]) -> typing.Any:
+    """
+    Turns parsed values into final value(s) for the config at the given key,
+    e.g. based on the previous type of that parameter or other constraints.
+    """
+    if len(values) == 0:
+        return None
+    # Special treatment for plot_seaborn_palette is needed, see #359.
+    if key == "plot_seaborn_palette":
+        if len(values) > 1:
+            return values
+        from seaborn.palettes import color_palette
+        try:
+            color_palette(values[0])
+            return values[0]
+        except ValueError:
+            return values
+    if isinstance(config[key], bool):
+        value = values[-1]
+        if isinstance(value, str) and value.lower() == "false":
+            return False
+        elif isinstance(value, str) and value.lower() == "true":
+            return True
+        else:
+            return not config[key]
+    if not isinstance(config[key], list):
+        return values[0]
+    if isinstance(values[0], str) and values[0].lower() in ("[]", "none"):
+        return []
+
+    return values
+
+
 def set_config(config_path: str, arg_list: typing.Sequence[str]) -> None:
     with open(config_path) as config_file:
         config = json.load(config_file)
@@ -87,39 +121,21 @@ def set_config(config_path: str, arg_list: typing.Sequence[str]) -> None:
         if arg not in config.keys():
             continue
         if i + 1 <= max_idx and arg_list[i + 1] not in config.keys():
-            if arg_list[i + 1].lower() == "true":
-                config[arg] = True
-            elif arg_list[i + 1].lower() == "false":
-                config[arg] = False
-            else:
-                values: typing.List[typing.Any] = []
-                for j in range(i + 1, max_idx + 1):
-                    value = arg_list[j]
-                    if value in config.keys():
-                        break
-                    if is_number(value):
-                        if int(float(value)) - float(value) != 0:
-                            values.append(float(value))
-                        else:
-                            values.append(int(float(value)))
+            values: typing.List[typing.Any] = []
+            for j in range(i + 1, max_idx + 1):
+                value = arg_list[j]
+                if value in config.keys():
+                    break
+                if is_number(value):
+                    if int(float(value)) - float(value) != 0:
+                        values.append(float(value))
                     else:
-                        values.append(value)
-                if isinstance(config[arg], bool):
-                    config[arg] = not config[arg]
-                elif len(values) == 1:
-                    if isinstance(values[0], str) \
-                            and values[0].lower() == ("[]"):
-                        config[arg] = []
-                    elif arg == "plot_seaborn_palette" and user.confirm(
-                            "Set value for {} as list {}? (y/n)".format(
-                                arg, values)):
-                        config[arg] = values
-                    else:
-                        config[arg] = values[0]
+                        values.append(int(float(value)))
                 else:
-                    config[arg] = values
+                    values.append(value)
+            config[arg] = finalize_values(config, arg, values)
         else:
-            # toggle boolean parameter
+            # no argument, toggle if it's a boolean parameter
             config[arg] = not config[arg] if isinstance(config[arg],
                                                         bool) else config[arg]
     with open(config_path, 'w') as config_file:

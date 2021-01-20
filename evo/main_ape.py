@@ -25,7 +25,7 @@ import argparse
 import logging
 
 import evo.common_ape_rpe as common
-from evo.core import sync, metrics
+from evo.core import lie_algebra, sync, metrics
 from evo.core.result import Result
 from evo.core.trajectory import PosePath3D, PoseTrajectory3D
 from evo.tools import file_interface, log
@@ -169,12 +169,14 @@ def ape(traj_ref: PosePath3D, traj_est: PosePath3D,
 
     # Align the trajectories.
     only_scale = correct_scale and not align
+    alignment_transformation = None
     if align or correct_scale:
         logger.debug(SEP)
-        traj_est.align(traj_ref, correct_scale, only_scale, n=n_to_align)
+        alignment_transformation = lie_algebra.sim3(
+            *traj_est.align(traj_ref, correct_scale, only_scale, n=n_to_align))
     elif align_origin:
         logger.debug(SEP)
-        traj_est.align_origin(traj_ref)
+        alignment_transformation = traj_est.align_origin(traj_ref)
 
     # Calculate APE.
     logger.debug(SEP)
@@ -210,6 +212,10 @@ def ape(traj_ref: PosePath3D, traj_est: PosePath3D,
         ]
         ape_result.add_np_array("seconds_from_start", seconds_from_start)
         ape_result.add_np_array("timestamps", traj_est.timestamps)
+
+    if alignment_transformation is not None:
+        ape_result.add_np_array("alignment_transformation_sim3",
+                                alignment_transformation)
 
     return ape_result
 

@@ -72,7 +72,7 @@ jobs:
 
   - script: |
       pip install mypy
-      mypy --ignore-missing-imports evo/ test/ contrib/ doc/ doc/examples
+      mypy --ignore-missing-imports evo/ test/ contrib/ doc/
     displayName: 'mypy'
 
   - script: |

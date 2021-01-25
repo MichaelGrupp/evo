@@ -86,7 +86,10 @@ def result_to_df(result_obj: result.Result,
         label = os.path.basename(data["info"]["est_name"])
     elif label is None:
         label = "unnamed_result"
-    return pd.DataFrame(data=data).T.stack().to_frame(name=label)
+    df = pd.DataFrame(data=data)
+    if df.empty:
+        raise ValueError("cannot create a dataframe from an empty result")
+    return df.T.stack().to_frame(name=label)
 
 
 def save_df_as_table(df: pd.DataFrame, path: str,

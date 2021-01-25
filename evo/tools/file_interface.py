@@ -336,7 +336,7 @@ def save_res_file(zip_path, result_obj: result.Result,
             array_buffer = io.BytesIO()
             np.save(array_buffer, array)
             array_buffer.seek(0)
-            archive.writestr("{}.npz".format(name), array_buffer.read())
+            archive.writestr("{}.npy".format(name), array_buffer.read())
             array_buffer.close()
         for name, traj in result_obj.trajectories.items():
             traj_buffer = io.StringIO()
@@ -366,35 +366,36 @@ def load_res_file(zip_path, load_trajectories: bool = False) -> result.Result:
     result_obj = result.Result()
     with zipfile.ZipFile(zip_path, mode='r') as archive:
         file_list = archive.namelist()
-        if not {"error_array.npz", "info.json", "stats.json"
-                } <= set(file_list):
-            logger.warning("{} not suitable for evo_res".format(zip_path))
-        npz_files = [n for n in archive.namelist() if n.endswith(".npz")]
-        for filename in npz_files:
+        if not {"info.json", "stats.json"} <= set(file_list):
+            raise FileInterfaceException(
+                "{} is not a valid result file".format(zip_path))
+        result_obj.info = json.loads(archive.read("info.json").decode("utf-8"))
+        result_obj.stats = json.loads(
+            archive.read("stats.json").decode("utf-8"))
+
+        # Compatibility: previous evo versions wrote .npz, although it was .npy
+        # In any case, np.load() supports both file formats.
+        np_files = [f for f in file_list if f.endswith((".npy", ".npz"))]
+        for filename in np_files:
             with io.BytesIO(archive.read(filename)) as array_buffer:
                 array = np.load(array_buffer)
                 name = os.path.splitext(os.path.basename(filename))[0]
                 result_obj.add_np_array(name, array)
         if load_trajectories:
-            tum_files = [n for n in archive.namelist() if n.endswith(".tum")]
+            tum_files = [f for f in file_list if f.endswith(".tum")]
             for filename in tum_files:
                 with io.TextIOWrapper(archive.open(filename,
                                                    mode='r')) as traj_buffer:
                     traj = read_tum_trajectory_file(traj_buffer)
                     name = os.path.splitext(os.path.basename(filename))[0]
                     result_obj.add_trajectory(name, traj)
-            kitti_files = [
-                n for n in archive.namelist() if n.endswith(".kitti")
-            ]
+            kitti_files = [f for f in file_list if f.endswith(".kitti")]
             for filename in kitti_files:
                 with io.TextIOWrapper(archive.open(filename,
                                                    mode='r')) as path_buffer:
                     path = read_kitti_poses_file(path_buffer)
                     name = os.path.splitext(os.path.basename(filename))[0]
                     result_obj.add_trajectory(name, path)
-        result_obj.info = json.loads(archive.read("info.json").decode("utf-8"))
-        result_obj.stats = json.loads(
-            archive.read("stats.json").decode("utf-8"))
     return result_obj
 
 

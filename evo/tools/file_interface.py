@@ -205,8 +205,7 @@ def read_euroc_csv_trajectory(file_path) -> PoseTrajectory3D:
     return PoseTrajectory3D(xyz, quat, stamps)
 
 
-def _get_xyz_quat_from_transform_stamped(
-        msg) -> typing.Tuple[np.ndarray, np.ndarray]:
+def _get_xyz_quat_from_transform_stamped(msg) -> typing.Tuple[list, list]:
     xyz = [
         msg.transform.translation.x, msg.transform.translation.y,
         msg.transform.translation.z
@@ -218,8 +217,7 @@ def _get_xyz_quat_from_transform_stamped(
     return xyz, quat
 
 
-def _get_xyz_quat_from_pose_or_odometry_msg(
-        msg) -> typing.Tuple[np.ndarray, np.ndarray]:
+def _get_xyz_quat_from_pose_or_odometry_msg(msg) -> typing.Tuple[list, list]:
     # Make nav_msgs/Odometry behave like geometry_msgs/PoseStamped.
     while not hasattr(msg.pose, 'position') and not hasattr(
             msg.pose, 'orientation'):
@@ -284,7 +282,8 @@ def read_bag_trajectory(bag_handle, topic: str) -> PoseTrajectory3D:
     generator = bag_handle.read_messages(topic)
     _, first_msg, _ = next(generator)
     frame_id = first_msg.header.frame_id
-    return PoseTrajectory3D(xyz, quat, stamps, meta={"frame_id": frame_id})
+    return PoseTrajectory3D(np.array(xyz), np.array(quat), np.array(stamps),
+                            meta={"frame_id": frame_id})
 
 
 def write_bag_trajectory(bag_handle, traj: PoseTrajectory3D, topic_name: str,

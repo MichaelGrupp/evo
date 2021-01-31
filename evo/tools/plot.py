@@ -317,9 +317,8 @@ def traj(ax: plt.Axes, plot_mode: PlotMode, traj: trajectory.PosePath3D,
 
 
 def colored_line_collection(
-        xyz: np.ndarray, colors: typing.Sequence,
-        plot_mode: PlotMode = PlotMode.xy, linestyles: str = "solid",
-        step: int = 1, alpha: float = 1.
+    xyz: np.ndarray, colors: ListOrArray, plot_mode: PlotMode = PlotMode.xy,
+    linestyles: str = "solid", step: int = 1, alpha: float = 1.
 ) -> typing.Union[LineCollection, art3d.LineCollection]:
     if len(xyz) / step != len(colors):
         raise PlotException(
@@ -533,8 +532,8 @@ def traj_rpy(axarr: np.ndarray, traj: trajectory.PosePath3D, style: str = '-',
 
 
 def trajectories(fig: plt.Figure, trajectories: typing.Union[
-    trajectory.PosePath3D, typing.Sequence[trajectory.PosePath3D],
-    typing.Dict[str, trajectory.PosePath3D]], plot_mode=PlotMode.xy,
+        trajectory.PosePath3D, typing.Sequence[trajectory.PosePath3D],
+        typing.Dict[str, trajectory.PosePath3D]], plot_mode=PlotMode.xy,
                  title: str = "", subplot_arg: int = 111) -> None:
     """
     high-level function for plotting multiple trajectories
@@ -662,8 +661,8 @@ def ros_map(ax: plt.Axes, yaml_path: str, plot_mode: PlotMode,
         image_path = os.path.join(os.path.dirname(yaml_path), image_path)
     image = plt.imread(image_path)
     if mask_unknown_value:
-        mask_unknown_value = np.uint8(mask_unknown_value)
-        image = np.ma.masked_where(image == mask_unknown_value, image)
+        image = np.ma.masked_where(image == np.uint8(mask_unknown_value),
+                                   image)
 
     # Squeeze extent to reflect metric coordinates.
     resolution = metadata["resolution"]

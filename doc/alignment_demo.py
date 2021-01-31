@@ -38,7 +38,7 @@ traj_est = file_interface.read_kitti_poses_file(
     "../test/data/KITTI_00_ORB.txt")
 
 # add artificial Sim(3) transformation
-traj_est.transform(lie.se3(np.eye(3), [0, 0, 0]))
+traj_est.transform(lie.se3(np.eye(3), np.array([0, 0, 0])))
 traj_est.scale(0.5)
 
 logger.info("\nUmeyama alignment without scaling")

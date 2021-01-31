@@ -24,6 +24,8 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 import argparse
 import logging
 
+import numpy as np
+
 import evo.common_ape_rpe as common
 from evo.core import lie_algebra, sync, metrics
 from evo.core.result import Result
@@ -207,9 +209,8 @@ def ape(traj_ref: PosePath3D, traj_est: PosePath3D,
     ape_result.add_trajectory(ref_name, traj_ref)
     ape_result.add_trajectory(est_name, traj_est)
     if isinstance(traj_est, PoseTrajectory3D):
-        seconds_from_start = [
-            t - traj_est.timestamps[0] for t in traj_est.timestamps
-        ]
+        seconds_from_start = np.array(
+            [t - traj_est.timestamps[0] for t in traj_est.timestamps])
         ape_result.add_np_array("seconds_from_start", seconds_from_start)
         ape_result.add_np_array("timestamps", traj_est.timestamps)
 

@@ -37,7 +37,7 @@ class FilterException(EvoException):
 IdPairs = typing.List[typing.Tuple[int, int]]
 
 
-def filter_pairs_by_index(poses: np.ndarray, delta: int,
+def filter_pairs_by_index(poses: typing.Sequence[np.ndarray], delta: int,
                           all_pairs: bool = False) -> IdPairs:
     """
     filters pairs in a list of SE(3) poses by their index distance
@@ -55,8 +55,8 @@ def filter_pairs_by_index(poses: np.ndarray, delta: int,
     return id_pairs
 
 
-def filter_pairs_by_path(poses: np.ndarray, delta: float, tol: float = 0.0,
-                         all_pairs: bool = False) -> IdPairs:
+def filter_pairs_by_path(poses: typing.Sequence[np.ndarray], delta: float,
+                         tol: float = 0.0, all_pairs: bool = False) -> IdPairs:
     """
     filters pairs in a list of SE(3) poses by their path distance in meters
      - the accumulated, traveled path distance between the two pair points
@@ -75,7 +75,8 @@ def filter_pairs_by_path(poses: np.ndarray, delta: float, tol: float = 0.0,
         for i in range(distances.size - 1):
             offset = i + 1
             distances_from_here = distances[offset:] - distances[i]
-            candidate_index = np.argmin(np.abs(distances_from_here - delta))
+            candidate_index = int(
+                np.argmin(np.abs(distances_from_here - delta)))
             if (np.abs(distances_from_here[candidate_index] - delta) > tol):
                 continue
             id_pairs.append((i, candidate_index + offset))
@@ -94,8 +95,8 @@ def filter_pairs_by_path(poses: np.ndarray, delta: float, tol: float = 0.0,
     return id_pairs
 
 
-def filter_pairs_by_angle(poses: np.ndarray, delta: float, tol: float = 0.0,
-                          degrees: bool = False,
+def filter_pairs_by_angle(poses: typing.Sequence[np.ndarray], delta: float,
+                          tol: float = 0.0, degrees: bool = False,
                           all_pairs: bool = False) -> IdPairs:
     """
     filters pairs in a list of SE(3) poses by their absolute relative angle

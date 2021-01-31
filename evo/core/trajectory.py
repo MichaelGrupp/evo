@@ -111,11 +111,11 @@ class PosePath3D(object):
         if hasattr(self, "_poses_se3"):
             return np.array(
                 [tr.euler_from_matrix(p, axes=axes) for p in self._poses_se3])
-        elif hasattr(self, "_orientations_quat_wxyz"):
-            return np.array([
-                tr.euler_from_quaternion(q, axes=axes)
-                for q in self._orientations_quat_wxyz
-            ])
+        assert hasattr(self, "_orientations_quat_wxyz")
+        return np.array([
+            tr.euler_from_quaternion(q, axes=axes)
+            for q in self._orientations_quat_wxyz
+        ])
 
     @property
     def poses_se3(self) -> typing.Sequence[np.ndarray]:
@@ -231,7 +231,7 @@ class PosePath3D(object):
             raise TrajectoryException("can't align an empty trajectory...")
         traj_origin = self.poses_se3[0]
         traj_ref_origin = traj_ref.poses_se3[0]
-        to_ref_origin = traj_ref_origin.dot(lie.se3_inverse(traj_origin))
+        to_ref_origin = np.dot(traj_ref_origin, lie.se3_inverse(traj_origin))
         logger.debug(
             "Origin alignment transformation:\n{}".format(to_ref_origin))
         self.transform(to_ref_origin)
@@ -333,8 +333,8 @@ class PoseTrajectory3D(PosePath3D, object):
         len_stamps_valid = (len(self.timestamps) == len(self.positions_xyz))
         valid &= len_stamps_valid
         details["nr. of stamps"] = "ok" if len_stamps_valid else "wrong"
-        stamps_ascending = np.alltrue(
-            np.sort(self.timestamps) == self.timestamps)
+        stamps_ascending = bool(
+            np.all(np.sort(self.timestamps) == self.timestamps))
         stamps_ascending &= np.unique(self.timestamps).size == len(
             self.timestamps)
         valid &= stamps_ascending

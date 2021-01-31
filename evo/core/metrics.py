@@ -40,7 +40,6 @@ else:
 
 logger = logging.getLogger(__name__)
 
-
 PathPair = typing.Tuple[trajectory.PosePath3D, trajectory.PosePath3D]
 
 
@@ -105,7 +104,7 @@ class PE(Metric):
     """
     def __init__(self):
         self.unit = Unit.none
-        self.error = []
+        self.error = np.array([])
 
     def __str__(self) -> str:
         return "PE metric base class"
@@ -122,7 +121,7 @@ class PE(Metric):
             squared_errors = np.power(self.error, 2)
             return np.sum(squared_errors)
         elif statistics_type == StatisticsType.mean:
-            return np.mean(self.error)
+            return float(np.mean(self.error))
         elif statistics_type == StatisticsType.median:
             return np.median(self.error)
         elif statistics_type == StatisticsType.max:
@@ -130,7 +129,7 @@ class PE(Metric):
         elif statistics_type == StatisticsType.min:
             return np.min(self.error)
         elif statistics_type == StatisticsType.std:
-            return np.std(self.error)
+            return float(np.std(self.error))
         else:
             raise MetricsException("unsupported statistics_type")
 
@@ -191,7 +190,7 @@ class RPE(PE):
         self.pose_relation = pose_relation
         self.all_pairs = all_pairs
         self.E: typing.List[np.ndarray] = []
-        self.error: typing.List[float] = []
+        self.error = np.array([])
         self.delta_ids: typing.List[int] = []
         if pose_relation == PoseRelation.translation_part:
             self.unit = Unit.meters
@@ -300,7 +299,7 @@ class APE(PE):
                  pose_relation: PoseRelation = PoseRelation.translation_part):
         self.pose_relation = pose_relation
         self.E: typing.List[np.ndarray] = []
-        self.error: typing.List[float] = []
+        self.error = np.array([])
         if pose_relation == PoseRelation.translation_part:
             self.unit = Unit.meters
         elif pose_relation == PoseRelation.rotation_angle_deg:
@@ -356,7 +355,7 @@ class APE(PE):
 
         if self.pose_relation == PoseRelation.translation_part:
             # E is an array of position vectors only in this case
-            self.error = [np.linalg.norm(E_i) for E_i in self.E]
+            self.error = np.array([np.linalg.norm(E_i) for E_i in self.E])
         elif self.pose_relation == PoseRelation.rotation_part:
             self.error = np.array([
                 np.linalg.norm(lie.so3_from_se3(E_i) - np.eye(3))
@@ -376,8 +375,8 @@ class APE(PE):
             raise MetricsException("unsupported pose_relation")
 
 
-def id_pairs_from_delta(poses: np.ndarray, delta: float, delta_unit: Unit,
-                        rel_tol: float = 0.1,
+def id_pairs_from_delta(poses: typing.Sequence[np.ndarray], delta: float,
+                        delta_unit: Unit, rel_tol: float = 0.1,
                         all_pairs: bool = False) -> filters.IdPairs:
     """
     high-level function - get index tuples of pairs with distance==delta

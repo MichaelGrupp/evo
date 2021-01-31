@@ -164,7 +164,7 @@ def is_so3(r: np.ndarray) -> bool:
     :return: True if r is in the SO(3) group
     """
     # Check the determinant.
-    det_valid = np.isclose(np.linalg.det(r), [1.0], atol=1e-6)
+    det_valid = np.allclose(np.linalg.det(r), [1.0], atol=1e-6)
     # Check if the transpose is the inverse.
     inv_valid = np.allclose(r.transpose().dot(r), np.eye(3), atol=1e-6)
     return det_valid and inv_valid

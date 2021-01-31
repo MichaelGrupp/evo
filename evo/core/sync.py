@@ -57,7 +57,7 @@ def matching_time_indices(stamps_1: np.ndarray, stamps_2: np.ndarray,
     stamps_2 += offset_2
     for index_1, stamp_1 in enumerate(stamps_1):
         diffs = np.abs(stamps_2 - stamp_1)
-        index_2 = np.argmin(diffs)
+        index_2 = int(np.argmin(diffs))
         if diffs[index_2] <= max_diff:
             matching_indices_1.append(index_1)
             matching_indices_2.append(index_2)

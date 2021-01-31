@@ -596,14 +596,14 @@ def error_array(ax: plt.Axes, err_array: ListOrArray,
     :param marker: optional matplotlib marker style for points
     """
     if cumulative:
-        if x_array:
+        if x_array is not None:
             ax.plot(x_array, np.cumsum(err_array), linestyle=linestyle,
                     marker=marker, color=color, label=name)
         else:
             ax.plot(np.cumsum(err_array), linestyle=linestyle, marker=marker,
                     color=color, label=name)
     else:
-        if x_array:
+        if x_array is not None:
             ax.plot(x_array, err_array, linestyle=linestyle, marker=marker,
                     color=color, label=name)
         else:

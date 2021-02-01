@@ -74,10 +74,6 @@ DEFAULT_SETTINGS_DICT_DOC = {
         ("Statistics that are included in plots of evo_{ape, rpe, res}.\n"
          "Can also be set to 'none'.")
     ),
-    "plot_export_format": (
-        "pdf",
-        "File format supported by matplotlib for exporting plots."
-    ),
     "plot_figsize": (
         [6, 6],
         "The default size of one (sub)plot figure (width, height)."

@@ -233,15 +233,10 @@ def load_trajectories(args):
 
 
 # TODO refactor
-def print_traj_info(name, traj, verbose=False, full_check=False,
-                    compact_name=True):
-    import os
+def print_traj_info(name, traj, verbose=False, full_check=False):
     from evo.core import trajectory
 
     logger.info(SEP)
-    if compact_name:
-        # /some/super/long/path/that/nobody/cares/about/traj.txt  ->  traj
-        name = os.path.splitext(os.path.basename(name))[0]
     logger.info("name:\t" + name)
 
     if verbose or full_check:
@@ -285,6 +280,16 @@ def to_topic_name(name: str, args: argparse.Namespace) -> str:
     if args.subcommand == "bag":
         return name.replace(':', '/')
     return '/' + os.path.splitext(os.path.basename(name))[0].replace(' ', '_')
+
+
+def to_compact_name(name: str, args: argparse.Namespace,
+                    latex_friendly=False) -> str:
+    if not args.subcommand == "bag":
+        # /some/super/long/path/that/nobody/cares/about/traj.txt  ->  traj
+        name = os.path.splitext(os.path.basename(name))[0]
+    if latex_friendly:
+        name = name.replace("_", "\\_")
+    return name
 
 
 def run(args):
@@ -378,13 +383,12 @@ def run(args):
             if SETTINGS.plot_pose_correspondences:
                 synced_refs[name] = ref_traj_tmp
 
-    print_compact_name = not args.subcommand == "bag"
     for name, traj in trajectories.items():
-        print_traj_info(name, traj, args.verbose, args.full_check,
-                        print_compact_name)
+        print_traj_info(
+            to_compact_name(name, args), traj, args.verbose, args.full_check)
     if args.ref:
-        print_traj_info(args.ref, ref_traj, args.verbose, args.full_check,
-                        print_compact_name)
+        print_traj_info(to_compact_name(args.ref, args), ref_traj,
+                        args.verbose, args.full_check)
 
     if args.plot or args.save_plot or args.serialize_plot:
         import numpy as np
@@ -410,9 +414,8 @@ def run(args):
                     and args.plot_relative_time:
                 start_time = ref_traj.timestamps[0]
 
-            short_traj_name = os.path.splitext(os.path.basename(args.ref))[0]
-            if SETTINGS.plot_usetex:
-                short_traj_name = short_traj_name.replace("_", "\\_")
+            short_traj_name = to_compact_name(
+                args.ref, args, SETTINGS.plot_usetex)
             plot.traj(ax_traj, plot_mode, ref_traj,
                       style=SETTINGS.plot_reference_linestyle,
                       color=SETTINGS.plot_reference_color,
@@ -444,12 +447,8 @@ def run(args):
                 color = next(ax_traj._get_lines.prop_cycler)['color']
             else:
                 color = next(cmap_colors)
-            if print_compact_name:
-                short_traj_name = os.path.splitext(os.path.basename(name))[0]
-            else:
-                short_traj_name = name
-            if SETTINGS.plot_usetex:
-                short_traj_name = short_traj_name.replace("_", "\\_")
+
+            short_traj_name = to_compact_name(name, args, SETTINGS.plot_usetex)
             plot.traj(ax_traj, plot_mode, traj,
                       SETTINGS.plot_trajectory_linestyle, color,
                       short_traj_name, alpha=SETTINGS.plot_trajectory_alpha)

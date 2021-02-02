@@ -179,8 +179,8 @@ class PlotCollection:
             pickle.dump(self.figures, open(dest, 'wb'))
 
     def export(self, file_path: str, confirm_overwrite: bool = True) -> None:
-        fmt = SETTINGS.plot_export_format.lower()
-        if fmt == "pdf" and not SETTINGS.plot_split:
+        base, ext = os.path.splitext(file_path)
+        if ext == ".pdf" and not SETTINGS.plot_split:
             if confirm_overwrite and not user.check_and_confirm_overwrite(
                     file_path):
                 return
@@ -193,13 +193,12 @@ class PlotCollection:
             logger.info("Plots saved to " + file_path)
         else:
             for name, fig in self.figures.items():
-                base, ext = os.path.splitext(file_path)
                 dest = base + '_' + name + ext
                 if confirm_overwrite and not user.check_and_confirm_overwrite(
                         dest):
                     return
                 fig.tight_layout()
-                fig.savefig(dest, fmt=fmt)
+                fig.savefig(dest)
                 logger.info("Plot saved to " + dest)
 
 

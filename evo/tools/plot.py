@@ -99,7 +99,8 @@ class PlotCollection:
 
     def tabbed_qt5_window(self) -> None:
         from PyQt5 import QtGui, QtWidgets
-        from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT
+        from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg,
+                                                        NavigationToolbar2QT)
         # mpl backend can already create instance
         # https://stackoverflow.com/a/40031190
         app = QtGui.QGuiApplication.instance()
@@ -124,14 +125,10 @@ class PlotCollection:
         app.exec_()
 
     def tabbed_tk_window(self) -> None:
-        from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-        import sys
-        if sys.version_info[0] < 3:
-            import Tkinter as tkinter
-            import ttk
-        else:
-            import tkinter
-            from tkinter import ttk
+        from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,
+                                                       NavigationToolbar2Tk)
+        import tkinter
+        from tkinter import ttk
         self.root_window = tkinter.Tk()
         self.root_window.title(self.title)
         # quit if the window is deleted

@@ -34,6 +34,7 @@ import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.art3d as art3d
 from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.backend_bases import FigureCanvasBase
 from matplotlib.collections import LineCollection
 from matplotlib.transforms import Affine2D
 
@@ -97,6 +98,16 @@ class PlotCollection:
         fig.tight_layout()
         self.figures[name] = fig
 
+    @staticmethod
+    def _bind_mouse_events_to_canvas(axes: Axes3D, canvas: FigureCanvasBase):
+        axes.mouse_init()
+        # Event binding was possible through mouse_init() up to matplotlib 3.2.
+        # In 3.3.0 this was moved, so we are forced to do it here.
+        if mpl.__version__ >= "3.3.0":
+            canvas.mpl_connect("button_press_event", axes._button_press)
+            canvas.mpl_connect("button_release_event", axes._button_release)
+            canvas.mpl_connect("motion_notify_event", axes._on_move)
+
     def tabbed_qt5_window(self) -> None:
         from PyQt5 import QtGui, QtWidgets
         from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg,
@@ -119,7 +130,7 @@ class PlotCollection:
             for axes in fig.get_axes():
                 if isinstance(axes, Axes3D):
                     # must explicitly allow mouse dragging for 3D plots
-                    axes.mouse_init()
+                    self._bind_mouse_events_to_canvas(axes, tab.canvas)
             self.root_window.addTab(tab, name)
         self.root_window.show()
         app.exec_()
@@ -149,7 +160,7 @@ class PlotCollection:
             for axes in fig.get_axes():
                 if isinstance(axes, Axes3D):
                     # must explicitly allow mouse dragging for 3D plots
-                    axes.mouse_init()
+                    self._bind_mouse_events_to_canvas(axes, canvas)
             nb.add(tab, text=name)
         nb.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
         self.root_window.mainloop()

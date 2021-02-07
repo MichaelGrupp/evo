@@ -119,6 +119,7 @@ class PlotCollection:
             app = QtWidgets.QApplication([self.title])
         self.root_window = QtWidgets.QTabWidget()
         self.root_window.setWindowTitle(self.title)
+        sizes = [(0, 0)]
         for name, fig in self.figures.items():
             tab = QtWidgets.QWidget(self.root_window)
             tab.canvas = FigureCanvasQTAgg(fig)
@@ -132,6 +133,9 @@ class PlotCollection:
                     # must explicitly allow mouse dragging for 3D plots
                     self._bind_mouse_events_to_canvas(axes, tab.canvas)
             self.root_window.addTab(tab, name)
+            sizes.append(tab.canvas.get_width_height())
+        # Resize window to avoid clipped axes.
+        self.root_window.resize(*max(sizes))
         self.root_window.show()
         app.exec_()
 

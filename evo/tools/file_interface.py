@@ -189,9 +189,10 @@ def read_euroc_csv_trajectory(file_path) -> PoseTrajectory3D:
     :return: trajectory.PoseTrajectory3D object
     """
     raw_mat = csv_read_matrix(file_path, delim=",", comment_str="#")
-    error_msg = ("EuRoC MAV state ground truth must have 17 entries per row "
-                 "and no trailing delimiter at the end of the rows (comma)")
-    if len(raw_mat) > 0 and len(raw_mat[0]) != 17:
+    error_msg = (
+        "EuRoC format ground truth must have at least 8 entries per row "
+        "and no trailing delimiter at the end of the rows (comma)")
+    if len(raw_mat) > 0 and len(raw_mat[0]) < 8:
         raise FileInterfaceException(error_msg)
     try:
         mat = np.array(raw_mat).astype(float)

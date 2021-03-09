@@ -237,7 +237,8 @@ class PosePath3D(object):
         self.transform(to_ref_origin)
         return to_ref_origin
 
-    def reduce_to_ids(self, ids: typing.Sequence[int]) -> None:
+    def reduce_to_ids(
+            self, ids: typing.Union[typing.Sequence[int], np.ndarray]) -> None:
         """
         reduce the elements to the ones specified in ids
         :param ids: list of integer indices

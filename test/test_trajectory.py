@@ -147,6 +147,16 @@ class TestPoseTrajectory3D(unittest.TestCase):
         self.assertEqual(traj.num_poses, 2)
         self.assertEqual(len(traj.timestamps), 2)
 
+    def test_reduce_to_time_range(self):
+        traj = helpers.fake_trajectory(10, 1)
+        start = 1.2
+        end = 7.8
+        traj.reduce_to_time_range(start, end)
+        self.assertEqual(traj.num_poses, 6)
+        self.assertEqual(len(traj.timestamps), 6)
+        self.assertGreaterEqual(traj.timestamps[0], start)
+        self.assertLessEqual(traj.timestamps[-1], end)
+
     def test_check(self):
         self.assertTrue(helpers.fake_trajectory(10, 1).check()[0])
         wrong_traj = helpers.fake_trajectory(10, 1)

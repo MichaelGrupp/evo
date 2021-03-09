@@ -324,9 +324,22 @@ class PoseTrajectory3D(PosePath3D, object):
     def __ne__(self, other: object) -> bool:
         return not self == other
 
-    def reduce_to_ids(self, ids: typing.Sequence[int]) -> None:
+    def reduce_to_ids(
+            self, ids: typing.Union[typing.Sequence[int], np.ndarray]) -> None:
         super(PoseTrajectory3D, self).reduce_to_ids(ids)
         self.timestamps = self.timestamps[ids]
+
+    def reduce_to_time_range(self, start_timestamp: float,
+                             end_timestamp: float):
+        """
+        Removes elements with timestamps outside of the specified time range.
+        :param start_timestamp: any data with lower timestamp is removed
+        :param end_timestamp: any data with larger timestamp is removed
+        """
+        ids = np.where(
+            np.logical_and(self.timestamps >= start_timestamp,
+                           self.timestamps <= end_timestamp))[0]
+        self.reduce_to_ids(ids)
 
     def check(self) -> typing.Tuple[bool, dict]:
         valid, details = super(PoseTrajectory3D, self).check()

@@ -237,7 +237,8 @@ class PosePath3D(object):
         self.transform(to_ref_origin)
         return to_ref_origin
 
-    def reduce_to_ids(self, ids: typing.Sequence[int]) -> None:
+    def reduce_to_ids(
+            self, ids: typing.Union[typing.Sequence[int], np.ndarray]) -> None:
         """
         reduce the elements to the ones specified in ids
         :param ids: list of integer indices
@@ -324,9 +325,35 @@ class PoseTrajectory3D(PosePath3D, object):
     def __ne__(self, other: object) -> bool:
         return not self == other
 
-    def reduce_to_ids(self, ids: typing.Sequence[int]) -> None:
+    def reduce_to_ids(
+            self, ids: typing.Union[typing.Sequence[int], np.ndarray]) -> None:
         super(PoseTrajectory3D, self).reduce_to_ids(ids)
         self.timestamps = self.timestamps[ids]
+
+    def reduce_to_time_range(self,
+                             start_timestamp: typing.Optional[float] = None,
+                             end_timestamp: typing.Optional[float] = None):
+        """
+        Removes elements with timestamps outside of the specified time range.
+        :param start_timestamp: any data with lower timestamp is removed
+                                if None: current start timestamp
+        :param end_timestamp: any data with larger timestamp is removed
+                              if None: current end timestamp
+        """
+        if self.num_poses == 0:
+            raise TrajectoryException("trajectory is empty")
+        if start_timestamp is None:
+            start_timestamp = self.timestamps[0]
+        if end_timestamp is None:
+            end_timestamp = self.timestamps[-1]
+        if start_timestamp > end_timestamp:
+            raise TrajectoryException(
+                "start_timestamp is greater than end_timestamp "
+                "({} > {})".format(start_timestamp, end_timestamp))
+        ids = np.where(
+            np.logical_and(self.timestamps >= start_timestamp,
+                           self.timestamps <= end_timestamp))[0]
+        self.reduce_to_ids(ids)
 
     def check(self) -> typing.Tuple[bool, dict]:
         valid, details = super(PoseTrajectory3D, self).check()

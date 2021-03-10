@@ -159,6 +159,13 @@ def parser() -> argparse.ArgumentParser:
         trajectory_parser.add_argument(
             "--t_offset", type=float, default=0.0,
             help="constant timestamp offset for data association")
+        trajectory_parser.add_argument(
+            "--t_start", type=float, default=None,
+            help="only use data with timestamps "
+            "greater or equal this start time")
+        trajectory_parser.add_argument(
+            "--t_end", type=float, default=None,
+            help="only use data with timestamps less or equal this end time")
 
     return main_parser
 
@@ -239,6 +246,13 @@ def run(args: argparse.Namespace) -> None:
 
     if isinstance(traj_ref, PoseTrajectory3D) and isinstance(
             traj_est, PoseTrajectory3D):
+        logger.debug(SEP)
+        if args.t_start or args.t_end:
+            if args.t_start:
+                logger.info("Using time range start: {}s".format(args.t_start))
+            if args.t_end:
+                logger.info("Using time range end: {}s".format(args.t_end))
+            traj_ref.reduce_to_time_range(args.t_start, args.t_end)
         logger.debug("Synchronizing trajectories...")
         traj_ref, traj_est = sync.associate_trajectories(
             traj_ref, traj_est, args.t_max_diff, args.t_offset,

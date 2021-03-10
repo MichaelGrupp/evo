@@ -148,6 +148,9 @@ class TestPoseTrajectory3D(unittest.TestCase):
         self.assertEqual(len(traj.timestamps), 2)
 
     def test_reduce_to_time_range(self):
+        """
+        Checks if a valid time-range reduces the trajectory correctly.
+        """
         traj = helpers.fake_trajectory(10, 1)
         start = 1.2
         end = 7.8
@@ -156,6 +159,17 @@ class TestPoseTrajectory3D(unittest.TestCase):
         self.assertEqual(len(traj.timestamps), 6)
         self.assertGreaterEqual(traj.timestamps[0], start)
         self.assertLessEqual(traj.timestamps[-1], end)
+
+    def test_reduce_to_empty_time_range(self):
+        """
+        A time-range that doesn't intersect should produce an empty trajectory.
+        """
+        traj = helpers.fake_trajectory(10, 1)
+        start = 42
+        end = 666
+        traj.reduce_to_time_range(start, end)
+        self.assertEqual(traj.num_poses, 0)
+        self.assertEqual(len(traj.timestamps), 0)
 
     def test_check(self):
         self.assertTrue(helpers.fake_trajectory(10, 1).check()[0])

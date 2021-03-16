@@ -255,6 +255,8 @@ class PosePath3D(object):
         checks if the data is valid
         :return: True/False, dictionary with some detailed infos
         """
+        if self.num_poses == 0:
+            return True, {}
         same_len = self.positions_xyz.shape[0] \
             == self.orientations_quat_wxyz.shape[0] \
             == len(self.poses_se3)
@@ -284,6 +286,8 @@ class PosePath3D(object):
         }
 
     def get_statistics(self) -> dict:
+        if self.num_poses < 2:
+            return {}
         return {}  # no idea yet
 
 
@@ -356,6 +360,8 @@ class PoseTrajectory3D(PosePath3D, object):
         self.reduce_to_ids(ids)
 
     def check(self) -> typing.Tuple[bool, dict]:
+        if self.num_poses == 0:
+            return True, {}
         valid, details = super(PoseTrajectory3D, self).check()
         len_stamps_valid = (len(self.timestamps) == len(self.positions_xyz))
         valid &= len_stamps_valid
@@ -385,6 +391,8 @@ class PoseTrajectory3D(PosePath3D, object):
         """
         :return: dictionary with some statistics of the trajectory
         """
+        if self.num_poses < 2:
+            return {}
         stats = super(PoseTrajectory3D, self).get_statistics()
         speeds = [
             calc_speed(self.positions_xyz[i], self.positions_xyz[i + 1],

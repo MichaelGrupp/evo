@@ -98,7 +98,7 @@ def read_tum_trajectory_file(file_path) -> PoseTrajectory3D:
     raw_mat = csv_read_matrix(file_path, delim=" ", comment_str="#")
     error_msg = ("TUM trajectory files must have 8 entries per row "
                  "and no trailing delimiter at the end of the rows (space)")
-    if len(raw_mat) > 0 and len(raw_mat[0]) != 8:
+    if not raw_mat or (len(raw_mat) > 0 and len(raw_mat[0]) != 8):
         raise FileInterfaceException(error_msg)
     try:
         mat = np.array(raw_mat).astype(float)
@@ -147,7 +147,7 @@ def read_kitti_poses_file(file_path) -> PosePath3D:
     raw_mat = csv_read_matrix(file_path, delim=" ", comment_str="#")
     error_msg = ("KITTI pose files must have 12 entries per row "
                  "and no trailing delimiter at the end of the rows (space)")
-    if len(raw_mat) > 0 and len(raw_mat[0]) != 12:
+    if not raw_mat or (len(raw_mat) > 0 and len(raw_mat[0]) != 12):
         raise FileInterfaceException(error_msg)
     try:
         mat = np.array(raw_mat).astype(float)
@@ -192,7 +192,7 @@ def read_euroc_csv_trajectory(file_path) -> PoseTrajectory3D:
     error_msg = (
         "EuRoC format ground truth must have at least 8 entries per row "
         "and no trailing delimiter at the end of the rows (comma)")
-    if len(raw_mat) > 0 and len(raw_mat[0]) < 8:
+    if not raw_mat or (len(raw_mat) > 0 and len(raw_mat[0]) < 8):
         raise FileInterfaceException(error_msg)
     try:
         mat = np.array(raw_mat).astype(float)

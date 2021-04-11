@@ -322,22 +322,6 @@ def run(args):
             "merged_trajectory": trajectory.merge(trajectories.values())
         }
 
-    if args.transform_left or args.transform_right:
-        tf_type = "left" if args.transform_left else "right"
-        tf_path = args.transform_left \
-                if args.transform_left else args.transform_right
-        transform = file_interface.load_transform_json(tf_path)
-        logger.debug(SEP)
-        if not lie.is_se3(transform):
-            logger.warning("Not a valid SE(3) transformation!")
-        if args.invert_transform:
-            transform = lie.se3_inverse(transform)
-        logger.debug("Applying a {}-multiplicative transformation:\n{}".format(
-            tf_type, transform))
-        for traj in trajectories.values():
-            traj.transform(transform, right_mul=args.transform_right,
-                           propagate=args.propagate_transform)
-
     if args.t_offset:
         logger.debug(SEP)
         for name, traj in trajectories.items():
@@ -382,6 +366,22 @@ def run(args):
                 trajectories[name].align_origin(ref_traj_tmp)
             if SETTINGS.plot_pose_correspondences:
                 synced_refs[name] = ref_traj_tmp
+
+    if args.transform_left or args.transform_right:
+        tf_type = "left" if args.transform_left else "right"
+        tf_path = args.transform_left \
+                if args.transform_left else args.transform_right
+        transform = file_interface.load_transform_json(tf_path)
+        logger.debug(SEP)
+        if not lie.is_se3(transform):
+            logger.warning("Not a valid SE(3) transformation!")
+        if args.invert_transform:
+            transform = lie.se3_inverse(transform)
+        logger.debug("Applying a {}-multiplicative transformation:\n{}".format(
+            tf_type, transform))
+        for traj in trajectories.values():
+            traj.transform(transform, right_mul=args.transform_right,
+                           propagate=args.propagate_transform)
 
     for name, traj in trajectories.items():
         print_traj_info(

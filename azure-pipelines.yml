@@ -71,7 +71,7 @@ jobs:
     displayName: 'Install and configure package and dependencies'
 
   - script: |
-      pip install mypy
+      pip install mypy types-PyYAML
       mypy --ignore-missing-imports evo/ test/ contrib/ doc/
     displayName: 'mypy'
 

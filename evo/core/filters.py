@@ -123,7 +123,7 @@ def filter_pairs_by_angle(poses: typing.Sequence[np.ndarray], delta: float,
             angles = [lie.so3_log(p[:3, :3]) for p in poses]
         for i in ids:
             for j in ids[i + 1:]:
-                current_angle = abs(angles[i] - angles[j])
+                current_angle = float(abs(angles[i] - angles[j]))
                 if lower_bound <= current_angle <= upper_bound:
                     id_pairs.append((i, j))
     else:
@@ -136,7 +136,7 @@ def filter_pairs_by_angle(poses: typing.Sequence[np.ndarray], delta: float,
         current_delta = 0.0
         ids.append(0)
         for i, current_angle in enumerate(angles):
-            current_delta += abs(current_angle - previous_angle)
+            current_delta += float(abs(current_angle - previous_angle))
             previous_angle = current_angle
             if current_delta >= delta:
                 ids.append(i)

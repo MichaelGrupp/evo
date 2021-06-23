@@ -451,7 +451,7 @@ def calc_angular_speed(p_1: np.ndarray, p_2: np.ndarray, t_1: float,
     else:
         angle_1 = lie.so3_log(p_1[:3, :3])
         angle_2 = lie.so3_log(p_2[:3, :3])
-    return (angle_2 - angle_1) / (t_2 - t_1)
+    return float((angle_2 - angle_1) / (t_2 - t_1))
 
 
 def xyz_quat_wxyz_to_se3_poses(

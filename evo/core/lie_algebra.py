@@ -177,7 +177,7 @@ def is_se3(p: np.ndarray) -> bool:
     """
     rot_valid = is_so3(p[:3, :3])
     lower_valid = np.equal(p[3, :], np.array([0.0, 0.0, 0.0, 1.0])).all()
-    return rot_valid and lower_valid
+    return rot_valid and bool(lower_valid)
 
 
 def is_sim3(p: np.ndarray, s: float) -> bool:
@@ -190,7 +190,7 @@ def is_sim3(p: np.ndarray, s: float) -> bool:
     rot_unscaled = np.multiply(rot, 1.0 / s)
     rot_valid = is_so3(rot_unscaled)
     lower_valid = np.equal(p[3, :], np.array([0.0, 0.0, 0.0, 1.0])).all()
-    return rot_valid and lower_valid
+    return rot_valid and bool(lower_valid)
 
 
 def relative_so3(r1: np.ndarray, r2: np.ndarray) -> np.ndarray:

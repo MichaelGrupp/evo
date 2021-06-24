@@ -91,9 +91,9 @@ class TestSO3(unittest.TestCase):
     def test_so3_log_exp(self):
         r = lie.random_so3()
         self.assertTrue(lie.is_so3(r))
-        rotvec = lie.so3_log(r, return_angle_only=False)
+        rotvec = lie.so3_log(r)
         self.assertTrue(np.allclose(r, lie.so3_exp(rotvec), atol=1e-6))
-        angle = lie.so3_log(r)
+        angle = lie.so3_log_angle(r)
         self.assertAlmostEqual(np.linalg.norm(rotvec), angle)
 
     def test_so3_log_exp_skew(self):

@@ -72,14 +72,11 @@ def so3_exp(rotation_vector: np.ndarray):
         return sst.Rotation.from_rotvec(rotation_vector).as_matrix()
 
 
-def so3_log(r: np.ndarray, return_angle_only: bool = True,
-            return_skew: bool = False) -> typing.Union[float, np.ndarray]:
+def so3_log(r: np.ndarray, return_skew: bool = False) -> np.ndarray:
     """
     :param r: SO(3) rotation matrix
-    :param return_angle_only: return only the angle (default)
     :param return_skew: return skew symmetric Lie algebra element
     :return:
-        if return_angle_only is False:
             rotation vector (axis * angle)
         or if return_skew is True:
              3x3 skew symmetric logarithmic map in so(3) (Ma, Soatto eq. 2.8)
@@ -90,13 +87,22 @@ def so3_log(r: np.ndarray, return_angle_only: bool = True,
         rotation_vector = sst.Rotation.from_dcm(r).as_rotvec()
     else:
         rotation_vector = sst.Rotation.from_matrix(r).as_rotvec()
-    angle = np.linalg.norm(rotation_vector)
-    if return_angle_only and not return_skew:
-        return angle
     if return_skew:
         return hat(rotation_vector)
     else:
         return rotation_vector
+
+
+def so3_log_angle(r: np.ndarray, degrees: bool = False) -> float:
+    """
+    :param r: SO(3) rotation matrix
+    :param degrees: whether to return in degrees, default is radians
+    :return: the rotation angle of the logarithmic map
+    """
+    angle = np.linalg.norm(so3_log(r, return_skew=False))
+    if degrees:
+        angle = np.rad2deg(angle)
+    return angle
 
 
 def se3(r: np.ndarray = np.eye(3),

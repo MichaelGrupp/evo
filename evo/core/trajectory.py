@@ -445,12 +445,8 @@ def calc_angular_speed(p_1: np.ndarray, p_2: np.ndarray, t_1: float,
     if (t_2 - t_1) <= 0:
         raise TrajectoryException("bad timestamps: " + str(t_1) + " & " +
                                   str(t_2))
-    if degrees:
-        angle_1 = lie.so3_log(p_1[:3, :3]) * 180 / np.pi
-        angle_2 = lie.so3_log(p_2[:3, :3]) * 180 / np.pi
-    else:
-        angle_1 = lie.so3_log(p_1[:3, :3])
-        angle_2 = lie.so3_log(p_2[:3, :3])
+    angle_1 = lie.so3_log(p_1[:3, :3], degrees)
+    angle_2 = lie.so3_log(p_2[:3, :3], degrees)
     return float((angle_2 - angle_1) / (t_2 - t_1))
 
 

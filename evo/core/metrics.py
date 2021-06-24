@@ -280,11 +280,10 @@ class RPE(PE):
                 [np.linalg.norm(E_i - np.eye(4)) for E_i in self.E])
         elif self.pose_relation == PoseRelation.rotation_angle_rad:
             self.error = np.array(
-                [abs(lie.so3_log(E_i[:3, :3])) for E_i in self.E])
+                [abs(lie.so3_log_angle(E_i[:3, :3])) for E_i in self.E])
         elif self.pose_relation == PoseRelation.rotation_angle_deg:
-            self.error = np.array([
-                abs(lie.so3_log(E_i[:3, :3])) * 180 / np.pi for E_i in self.E
-            ])
+            self.error = np.array(
+                [abs(lie.so3_log_angle(E_i[:3, :3], True)) for E_i in self.E])
         else:
             raise MetricsException("unsupported pose_relation: ",
                                    self.pose_relation)
@@ -366,11 +365,10 @@ class APE(PE):
                 [np.linalg.norm(E_i - np.eye(4)) for E_i in self.E])
         elif self.pose_relation == PoseRelation.rotation_angle_rad:
             self.error = np.array(
-                [abs(lie.so3_log(E_i[:3, :3])) for E_i in self.E])
+                [abs(lie.so3_log_angle(E_i[:3, :3])) for E_i in self.E])
         elif self.pose_relation == PoseRelation.rotation_angle_deg:
-            self.error = np.array([
-                abs(lie.so3_log(E_i[:3, :3])) * 180 / np.pi for E_i in self.E
-            ])
+            self.error = np.array(
+                [abs(lie.so3_log_angle(E_i[:3, :3], True)) for E_i in self.E])
         else:
             raise MetricsException("unsupported pose_relation")
 

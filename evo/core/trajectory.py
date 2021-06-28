@@ -62,6 +62,8 @@ class PosePath3D(object):
             self._orientations_quat_wxyz = np.array(orientations_quat_wxyz)
         if poses_se3 is not None:
             self._poses_se3 = poses_se3
+        if self.num_poses == 0:
+            raise TrajectoryException("pose data is empty")
         self.meta = {} if meta is None else meta
 
     def __str__(self) -> str:

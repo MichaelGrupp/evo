@@ -124,8 +124,12 @@ class TfCache(object):
         """
         stamps, xyz, quat = [], [], []
         step = rospy.Duration.from_sec(1. / lookup_frequency)
+        # Static TF have zero timestamp in the buffer, which will be lower
+        # than the bag start time. Looking up a static TF is a valid request,
+        # so this should be possible.
+        attempt_single_static_lookup = end_time.to_sec() == 0.
         # Look up the transforms of the trajectory in reverse order:
-        while end_time >= start_time:
+        while end_time >= start_time or attempt_single_static_lookup:
             try:
                 tf = self.buffer.lookup_transform_core(parent_frame,
                                                        child_frame, end_time)
@@ -135,6 +139,8 @@ class TfCache(object):
             x, q = _get_xyz_quat_from_transform_stamped(tf)
             xyz.append(x)
             quat.append(q)
+            if attempt_single_static_lookup:
+                break
             end_time = end_time - step
         # Flip the data order again for the final trajectory.
         trajectory = PoseTrajectory3D(np.flipud(xyz), np.flipud(quat),

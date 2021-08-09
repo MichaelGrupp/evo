@@ -120,6 +120,9 @@ def parser() -> argparse.ArgumentParser:
                                 action="store_true")
     usability_opts.add_argument("-v", "--verbose", help="verbose output",
                                 action="store_true")
+    usability_opts.add_argument(
+        "--show_full_names", help="don't shorten input file paths when "
+        "displaying trajectory names", action="store_true")
     usability_opts.add_argument("--silent", help="don't print any output",
                                 action="store_true")
     usability_opts.add_argument(
@@ -284,7 +287,7 @@ def to_topic_name(name: str, args: argparse.Namespace) -> str:
 
 def to_compact_name(name: str, args: argparse.Namespace,
                     latex_friendly=False) -> str:
-    if not args.subcommand == "bag":
+    if not args.show_full_names and not args.subcommand == "bag":
         # /some/super/long/path/that/nobody/cares/about/traj.txt  ->  traj
         name = os.path.splitext(os.path.basename(name))[0]
     if latex_friendly:

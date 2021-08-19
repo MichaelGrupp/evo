@@ -672,8 +672,19 @@ def ros_map(ax: plt.Axes, yaml_path: str, plot_mode: PlotMode,
         image_path = os.path.join(os.path.dirname(yaml_path), image_path)
     image = plt.imread(image_path)
     if mask_unknown_value:
-        image = np.ma.masked_where(image == np.uint8(mask_unknown_value),
-                                   image)
+        n_channels = image.shape[2]
+        if image.dtype == np.uint8 and n_channels == 1:
+            # Support for 8bit grayscale image.
+            image = np.ma.masked_where(image == np.uint8(mask_unknown_value), image)
+        elif image.dtype == np.float32 and n_channels == 3:
+            # Support for float32 RGB image.
+            mask_unknown_value_rgb = np.array([mask_unknown_value / 255.0] * 3, dtype=np.float32)
+            image = np.ma.masked_where(np.all(image == mask_unknown_value_rgb, 2), image[:,:,0])
+            print(image.shape)
+        else:
+            raise PlotException(
+                "masking unknown cells is not supported with "
+                "{}-channel {} pixels".format(n_channels, image.dtype))
 
     # Squeeze extent to reflect metric coordinates.
     resolution = metadata["resolution"]

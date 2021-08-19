@@ -649,7 +649,7 @@ def ros_map(ax: plt.Axes, yaml_path: str, plot_mode: PlotMode,
     :param ax: 2D matplotlib axes
     :param plot_mode: a 2D PlotMode
     :param yaml_path: yaml file that contains the metadata of the map image
-    :param cmap: color map used to map scalar data to colors
+    :param cmap: color map used to map scalar data to colors (8bit image only)
     :param mask_unknown_value: uint8 value that represents unknown cells.
                                If specified, these cells will be masked out.
                                If set to None or False, nothing will be masked.
@@ -671,25 +671,29 @@ def ros_map(ax: plt.Axes, yaml_path: str, plot_mode: PlotMode,
     if not os.path.isabs(image_path):
         image_path = os.path.join(os.path.dirname(yaml_path), image_path)
     image = plt.imread(image_path)
+
     if mask_unknown_value:
         n_channels = image.shape[2] if len(image.shape) > 2 else 1
-        if image.dtype == np.uint8 and n_channels == 1:
-            # Support for 8bit grayscale image.
-            image = np.ma.masked_where(image == np.uint8(mask_unknown_value),
-                                       image)
-        elif image.dtype == np.float32 and n_channels == 3:
-            # Support for float32 RGB image.
+        if image.dtype == np.uint8:
+            mask_unknown_value_rgb = np.array([mask_unknown_value] * 3,
+                                              dtype=np.uint8)
+        elif image.dtype == np.float32:
             mask_unknown_value_rgb = np.array([mask_unknown_value / 255.0] * 3,
                                               dtype=np.float32)
+        valid = image.dtype in (np.uint8, np.float32) and n_channels in (1, 3)
+        if not valid:
+            logger.warn("masking unknown map cells is not supported with "
+                        "{}-channel {} pixels".format(n_channels, image.dtype))
+        elif n_channels == 1:
+            image = np.ma.masked_where(image == mask_unknown_value_rgb[0],
+                                       image)
+        elif n_channels == 3:
+            # imshow doesn't like masked RGB images for some reason,
+            # add an alpha channel instead.
+            # https://stackoverflow.com/questions/60561680
             mask = np.all(image == mask_unknown_value_rgb, 2)
-            # imshow doesn't like masked RGB images for some reason, add an
-            # alpha channel instead.
-            image = np.dstack((image, (~mask).astype(np.float32)))
-            print(image[-1, -1])
-        else:
-            raise PlotException("masking unknown cells is not supported with "
-                                "{}-channel {} pixels".format(
-                                    n_channels, image.dtype))
+            max_alpha = 255 if image.dtype == np.uint8 else 1.
+            image = np.dstack((image, (~mask).astype(image.dtype) * max_alpha))
 
     # Squeeze extent to reflect metric coordinates.
     resolution = metadata["resolution"]

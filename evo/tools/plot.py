@@ -694,6 +694,7 @@ def ros_map(ax: plt.Axes, yaml_path: str, plot_mode: PlotMode,
             max_alpha = 255 if image.dtype == np.uint8 else 1.
             image = np.dstack((image, (~mask).astype(image.dtype) * max_alpha))
         else:
+            # E.g. if there's already an alpha channel it doesn't make sense.
             logger.warn("masking unknown map cells is not supported with "
                         "{}-channel {} pixels".format(n_channels, image.dtype))
 

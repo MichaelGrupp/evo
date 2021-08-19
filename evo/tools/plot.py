@@ -687,7 +687,7 @@ def ros_map(ax: plt.Axes, yaml_path: str, plot_mode: PlotMode,
             image = np.ma.masked_where(image == mask_unknown_value_rgb[0],
                                        image)
         elif n_channels == 3:
-            # imshow doesn't like masked RGB images for some reason,
+            # imshow ignores masked RGB regions for some reason,
             # add an alpha channel instead.
             # https://stackoverflow.com/questions/60561680
             mask = np.all(image == mask_unknown_value_rgb, 2)

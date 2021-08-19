@@ -650,6 +650,7 @@ def ros_map(ax: plt.Axes, yaml_path: str, plot_mode: PlotMode,
     :param plot_mode: a 2D PlotMode
     :param yaml_path: yaml file that contains the metadata of the map image
     :param cmap: color map used to map scalar data to colors
+                 (only for single channel image)
     :param mask_unknown_value: uint8 value that represents unknown cells.
                                If specified, these cells will be masked out.
                                If set to None or False, nothing will be masked.
@@ -671,9 +672,31 @@ def ros_map(ax: plt.Axes, yaml_path: str, plot_mode: PlotMode,
     if not os.path.isabs(image_path):
         image_path = os.path.join(os.path.dirname(yaml_path), image_path)
     image = plt.imread(image_path)
+
     if mask_unknown_value:
-        image = np.ma.masked_where(image == np.uint8(mask_unknown_value),
-                                   image)
+        # Support masking with single channel or RGB images, 8bit or normalized
+        # float. For RGB all channels must be equal to mask_unknown_value.
+        n_channels = image.shape[2] if len(image.shape) > 2 else 1
+        if image.dtype == np.uint8:
+            mask_unknown_value_rgb = np.array([mask_unknown_value] * 3,
+                                              dtype=np.uint8)
+        elif image.dtype == np.float32:
+            mask_unknown_value_rgb = np.array([mask_unknown_value / 255.0] * 3,
+                                              dtype=np.float32)
+        if n_channels == 1:
+            image = np.ma.masked_where(image == mask_unknown_value_rgb[0],
+                                       image)
+        elif n_channels == 3:
+            # imshow ignores masked RGB regions for some reason,
+            # add an alpha channel instead.
+            # https://stackoverflow.com/questions/60561680
+            mask = np.all(image == mask_unknown_value_rgb, 2)
+            max_alpha = 255 if image.dtype == np.uint8 else 1.
+            image = np.dstack((image, (~mask).astype(image.dtype) * max_alpha))
+        else:
+            # E.g. if there's already an alpha channel it doesn't make sense.
+            logger.warn("masking unknown map cells is not supported with "
+                        "{}-channel {} pixels".format(n_channels, image.dtype))
 
     # Squeeze extent to reflect metric coordinates.
     resolution = metadata["resolution"]

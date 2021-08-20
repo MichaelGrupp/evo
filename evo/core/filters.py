@@ -121,26 +121,32 @@ def filter_pairs_by_angle(poses: typing.Sequence[np.ndarray], delta: float,
         lower_bound = delta - tol
         id_pairs = []
         ids = list(range(len(poses)))
+        if len(poses) > 10000:
+            logger.warning("All-pairs filtering by angle can be very slow "
+                           "for a large number of poses.")
         for i in ids:
-            for j in ids[i + 1:]:
-                current_angle = lie.so3_log_angle(
+            offset = i + 1
+            delta_angles = [
+                lie.so3_log_angle(
                     lie.relative_so3(poses[i][:3, :3], poses[j][:3, :3]),
-                    degrees)
-                if lower_bound <= current_angle <= upper_bound:
-                    id_pairs.append((i, j))
+                    degrees) for j in ids[offset:]
+            ]
+            for relative_index, delta_angle in enumerate(delta_angles):
+                if lower_bound <= delta_angle <= upper_bound:
+                    id_pairs.append((i, offset + relative_index))
     else:
-        id_pairs = []
-        angles = [
+        delta_angles = [
             lie.so3_log_angle(lie.relative_so3(p1[:3, :3], p2[:3, :3]),
                               degrees) for p1, p2 in zip(poses, poses[1:])
         ]
-        current_delta = 0.0
+        accumulated_delta = 0.0
         current_start_index = 0
-        for i, current_angle in enumerate(angles):
+        id_pairs = []
+        for i, current_delta in enumerate(delta_angles):
             end_index = i + 1
-            current_delta += current_angle
-            if current_delta >= delta:
+            accumulated_delta += current_delta
+            if accumulated_delta >= delta:
                 id_pairs.append((current_start_index, end_index))
-                current_delta = 0.0
+                accumulated_delta = 0.0
                 current_start_index = end_index
     return id_pairs

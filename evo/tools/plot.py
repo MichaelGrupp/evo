@@ -695,8 +695,9 @@ def ros_map(ax: plt.Axes, yaml_path: str, plot_mode: PlotMode,
             image = np.dstack((image, (~mask).astype(image.dtype) * max_alpha))
         else:
             # E.g. if there's already an alpha channel it doesn't make sense.
-            logger.warn("masking unknown map cells is not supported with "
-                        "{}-channel {} pixels".format(n_channels, image.dtype))
+            logger.warning("masking unknown map cells is not supported "
+                           "with {}-channel {} pixels".format(
+                               n_channels, image.dtype))
 
     # Squeeze extent to reflect metric coordinates.
     resolution = metadata["resolution"]

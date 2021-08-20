@@ -112,28 +112,35 @@ def filter_pairs_by_angle(poses: typing.Sequence[np.ndarray], delta: float,
     :param all_pairs: use all pairs instead of consecutive pairs
     :return: list of index tuples of the filtered pairs
     """
+    # Angle-axis angles are within [0, pi] / [0, 180] (Euler theorem).
+    bounds = [0., 180.] if degrees else [0, np.pi]
+    if delta < bounds[0] or delta > bounds[1]:
+        raise FilterException(f"delta angle must be within {bounds}")
     if all_pairs:
         upper_bound = delta + tol
         lower_bound = delta - tol
         id_pairs = []
         ids = list(range(len(poses)))
-        angles = [lie.so3_log_angle(p[:3, :3], degrees) for p in poses]
         for i in ids:
             for j in ids[i + 1:]:
-                current_angle = abs(angles[i] - angles[j])
+                current_angle = lie.so3_log_angle(
+                    lie.relative_so3(poses[i][:3, :3], poses[j][:3, :3]),
+                    degrees)
                 if lower_bound <= current_angle <= upper_bound:
                     id_pairs.append((i, j))
     else:
-        ids = []
-        angles = [lie.so3_log_angle(p[:3, :3], degrees) for p in poses]
-        previous_angle = angles[0]
+        id_pairs = []
+        angles = [
+            lie.so3_log_angle(lie.relative_so3(p1[:3, :3], p2[:3, :3]),
+                              degrees) for p1, p2 in zip(poses, poses[1:])
+        ]
         current_delta = 0.0
-        ids.append(0)
+        current_start_index = 0
         for i, current_angle in enumerate(angles):
-            current_delta += abs(current_angle - previous_angle)
-            previous_angle = current_angle
+            end_index = i + 1
+            current_delta += current_angle
             if current_delta >= delta:
-                ids.append(i)
+                id_pairs.append((current_start_index, end_index))
                 current_delta = 0.0
-        id_pairs = [(i, j) for i, j in zip(ids, ids[1:])]
+                current_start_index = end_index
     return id_pairs

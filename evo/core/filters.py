@@ -136,7 +136,7 @@ def filter_pairs_by_angle(poses: typing.Sequence[np.ndarray], delta: float,
             rotations_i = lie.sst_rotation_from_matrix(
                 np.array([poses[i][:3, :3]] * len(end_indices)))
             rotations_j = lie.sst_rotation_from_matrix(
-                np.array([poses[j][:3, :3] for j in ids[end_indices]]))
+                np.array([poses[j][:3, :3] for j in end_indices]))
             delta_angles = np.linalg.norm(
                 (rotations_i.inv() * rotations_j).as_rotvec(), axis=1)
             matches = np.argwhere((lower_bound <= delta_angles)

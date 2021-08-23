@@ -144,8 +144,8 @@ def filter_pairs_by_angle(poses: typing.Sequence[np.ndarray], delta: float,
             id_pairs.extend([(i, j) for j in matches.flatten().tolist()])
     else:
         delta_angles = [
-            lie.so3_log_angle(lie.relative_so3(p1[:3, :3], p2[:3, :3]),
-                              degrees) for p1, p2 in zip(poses, poses[1:])
+            lie.so3_log_angle(lie.relative_so3(p1[:3, :3], p2[:3, :3]))
+            for p1, p2 in zip(poses, poses[1:])
         ]
         accumulated_delta = 0.0
         current_start_index = 0

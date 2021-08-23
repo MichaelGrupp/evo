@@ -122,6 +122,11 @@ class TestFilterPairsByAngle(unittest.TestCase):
         id_pairs = filters.filter_pairs_by_angle(poses_5, target_angle, tol,
                                                  all_pairs=False)
         self.assertEqual(id_pairs, [(0, 1), (1, 2), (2, 4)])
+        # Check for same result when using degrees:
+        target_angle = np.rad2deg(target_angle)
+        id_pairs = filters.filter_pairs_by_angle(poses_5, target_angle, tol,
+                                                 all_pairs=False, degrees=True)
+        self.assertEqual(id_pairs, [(0, 1), (1, 2), (2, 4)])
 
     def test_poses5_transformed(self):
         """ Result should be unaffected by global transformation """
@@ -137,6 +142,11 @@ class TestFilterPairsByAngle(unittest.TestCase):
         tol = 0.01
         id_pairs = filters.filter_pairs_by_angle(poses_5, target_angle, tol,
                                                  all_pairs=True)
+        self.assertEqual(id_pairs, [(0, 1), (0, 4), (1, 2), (2, 4)])
+        # Check for same result when using degrees:
+        target_angle = np.rad2deg(target_angle)
+        id_pairs = filters.filter_pairs_by_angle(poses_5, target_angle, tol,
+                                                 all_pairs=True, degrees=True)
         self.assertEqual(id_pairs, [(0, 1), (0, 4), (1, 2), (2, 4)])
 
     def test_poses5_transformed_all_pairs(self):

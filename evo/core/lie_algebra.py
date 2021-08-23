@@ -40,6 +40,18 @@ class LieAlgebraException(EvoException):
     pass
 
 
+def sst_rotation_from_matrix(so3_matrices: np.ndarray):
+    """
+    Helper for creating scipy.spatial.transform.Rotation
+    from 1..n SO(3) matrices.
+    :return: scipy.spatial.transform.Rotation
+    """
+    if _USE_DCM_NAME:
+        return sst.Rotation.from_dcm(so3_matrices)
+    else:
+        return sst.Rotation.from_matrix(so3_matrices)
+
+
 def hat(v: np.ndarray) -> np.ndarray:
     """
     :param v: 3x1 vector
@@ -83,10 +95,7 @@ def so3_log(r: np.ndarray, return_skew: bool = False) -> np.ndarray:
     """
     if not is_so3(r):
         raise LieAlgebraException("matrix is not a valid SO(3) group element")
-    if _USE_DCM_NAME:
-        rotation_vector = sst.Rotation.from_dcm(r).as_rotvec()
-    else:
-        rotation_vector = sst.Rotation.from_matrix(r).as_rotvec()
+    rotation_vector = sst_rotation_from_matrix(r).as_rotvec()
     if return_skew:
         return hat(rotation_vector)
     else:

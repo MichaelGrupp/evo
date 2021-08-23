@@ -116,24 +116,31 @@ def filter_pairs_by_angle(poses: typing.Sequence[np.ndarray], delta: float,
     bounds = [0., 180.] if degrees else [0, np.pi]
     if delta < bounds[0] or delta > bounds[1]:
         raise FilterException(f"delta angle must be within {bounds}")
+    delta = np.deg2rad(delta) if degrees else delta
+    tol = np.deg2rad(tol) if degrees else tol
     if all_pairs:
         upper_bound = delta + tol
         lower_bound = delta - tol
         id_pairs = []
         ids = list(range(len(poses)))
-        if len(poses) > 10000:
-            logger.warning("All-pairs filtering by angle can be very slow "
-                           "for a large number of poses.")
-        for i in ids:
+        # All pairs search is O(n^2) here. Use vectorized operations with
+        # scipy.spatial.transform.Rotation for quicker processing.
+        logger.info("Searching all pairs with matching rotation delta,"
+                    " this can take a while.")
+        for i in ids[:-1]:
+            if not i % 100:
+                print(int(i / len(ids[:-1]) * 100), "%", end="\r")
             offset = i + 1
-            delta_angles = [
-                lie.so3_log_angle(
-                    lie.relative_so3(poses[i][:3, :3], poses[j][:3, :3]),
-                    degrees) for j in ids[offset:]
-            ]
-            for relative_index, delta_angle in enumerate(delta_angles):
-                if lower_bound <= delta_angle <= upper_bound:
-                    id_pairs.append((i, offset + relative_index))
+            assert len(ids[offset:]) > 0
+            rotations_i = lie.sst_rotation_from_matrix(
+                np.array([poses[i][:3, :3]] * len(ids[offset:])))
+            rotations_j = lie.sst_rotation_from_matrix(
+                np.array([poses[j][:3, :3] for j in ids[offset:]]))
+            delta_angles = np.linalg.norm(
+                (rotations_i.inv() * rotations_j).as_rotvec(), axis=1)
+            matches = np.argwhere((lower_bound <= delta_angles)
+                                  & (delta_angles <= upper_bound)) + offset
+            id_pairs.extend([(i, j) for j in matches.flatten().tolist()])
     else:
         delta_angles = [
             lie.so3_log_angle(lie.relative_so3(p1[:3, :3], p2[:3, :3]),

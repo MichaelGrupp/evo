@@ -99,7 +99,7 @@ def filter_pairs_by_angle(poses: typing.Sequence[np.ndarray], delta: float,
                           tol: float = 0.0, degrees: bool = False,
                           all_pairs: bool = False) -> IdPairs:
     """
-    filters pairs in a list of SE(3) poses by their absolute relative angle
+    filters pairs in a list of SE(3) poses by their relative angle
      - by default, the angle accumulated on the path between the two pair poses
        is considered
      - if <all_pairs> is set to True, the direct angle between the two pair

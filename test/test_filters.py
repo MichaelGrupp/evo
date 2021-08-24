@@ -118,77 +118,55 @@ poses_6_transformed = [transform.dot(p) for p in poses_6]
 class TestFilterPairsByAngle(unittest.TestCase):
     def test_poses5(self):
         tol = 0.001
-        target_angle = math.pi - tol
-        id_pairs = filters.filter_pairs_by_angle(poses_5, target_angle, tol,
-                                                 all_pairs=False)
-        self.assertEqual(id_pairs, [(0, 1), (1, 2), (2, 4)])
-        # Check for same result when using degrees:
-        target_angle = np.rad2deg(target_angle)
-        id_pairs = filters.filter_pairs_by_angle(poses_5, target_angle, tol,
-                                                 all_pairs=False, degrees=True)
-        self.assertEqual(id_pairs, [(0, 1), (1, 2), (2, 4)])
-
-    def test_poses5_transformed(self):
-        """ Result should be unaffected by global transformation """
-        tol = 0.001
-        target_angle = math.pi - tol
-        id_pairs = filters.filter_pairs_by_angle(poses_5_transformed,
-                                                 target_angle, tol,
-                                                 all_pairs=False)
-        self.assertEqual(id_pairs, [(0, 1), (1, 2), (2, 4)])
+        expected_result = [(0, 1), (1, 2), (2, 4)]
+        # Result should be unaffected by global transformation.
+        for poses in (poses_5, poses_5_transformed):
+            target_angle = math.pi - tol
+            id_pairs = filters.filter_pairs_by_angle(poses, target_angle, tol,
+                                                     all_pairs=False)
+            self.assertEqual(id_pairs, expected_result)
+            # Check for same result when using degrees:
+            target_angle = np.rad2deg(target_angle)
+            id_pairs = filters.filter_pairs_by_angle(poses, target_angle, tol,
+                                                     all_pairs=False,
+                                                     degrees=True)
+            self.assertEqual(id_pairs, expected_result)
 
     def test_poses5_all_pairs(self):
-        target_angle = math.pi
         tol = 0.01
-        id_pairs = filters.filter_pairs_by_angle(poses_5, target_angle, tol,
-                                                 all_pairs=True)
-        self.assertEqual(id_pairs, [(0, 1), (0, 4), (1, 2), (2, 4)])
-        # Check for same result when using degrees:
-        target_angle = np.rad2deg(target_angle)
-        id_pairs = filters.filter_pairs_by_angle(poses_5, target_angle, tol,
-                                                 all_pairs=True, degrees=True)
-        self.assertEqual(id_pairs, [(0, 1), (0, 4), (1, 2), (2, 4)])
-
-    def test_poses5_transformed_all_pairs(self):
-        """ Result should be unaffected by global transformation """
-        target_angle = math.pi
-        tol = 0.01
-        id_pairs = filters.filter_pairs_by_angle(poses_5_transformed,
-                                                 target_angle, tol,
-                                                 all_pairs=True)
-        self.assertEqual(id_pairs, [(0, 1), (0, 4), (1, 2), (2, 4)])
+        expected_result = [(0, 1), (0, 4), (1, 2), (2, 4)]
+        # Result should be unaffected by global transformation.
+        for poses in (poses_5, poses_5_transformed):
+            target_angle = math.pi
+            id_pairs = filters.filter_pairs_by_angle(poses, target_angle, tol,
+                                                     all_pairs=True)
+            self.assertEqual(id_pairs, expected_result)
+            # Check for same result when using degrees:
+            target_angle = np.rad2deg(target_angle)
+            id_pairs = filters.filter_pairs_by_angle(poses, target_angle, tol,
+                                                     all_pairs=True,
+                                                     degrees=True)
+            self.assertEqual(id_pairs, expected_result)
 
     def test_poses6(self):
         tol = 0.001
         target_angle = math.pi - tol
-        id_pairs = filters.filter_pairs_by_angle(poses_6, target_angle, tol,
-                                                 all_pairs=False)
-        self.assertEqual(id_pairs, [(0, 3)])
-
-    def test_poses6_transformed(self):
-        """ Result should be unaffected by global transformation """
-        tol = 0.001
-        target_angle = math.pi - tol
-        id_pairs = filters.filter_pairs_by_angle(poses_6_transformed,
-                                                 target_angle, tol,
-                                                 all_pairs=False)
-        self.assertEqual(id_pairs, [(0, 3)])
+        expected_result = [(0, 3)]
+        # Result should be unaffected by global transformation.
+        for poses in (poses_6, poses_6_transformed):
+            id_pairs = filters.filter_pairs_by_angle(poses, target_angle, tol,
+                                                     all_pairs=False)
+            self.assertEqual(id_pairs, expected_result)
 
     def test_poses6_all_pairs(self):
         target_angle = math.pi
         tol = 0.001
-        id_pairs = filters.filter_pairs_by_angle(poses_6, target_angle, tol,
-                                                 all_pairs=True)
-        self.assertEqual(id_pairs, [(0, 3), (0, 4)])
-
-    def test_poses6_transformed_all_pairs(self):
-        """ Result should be unaffected by global transformation """
-        target_angle = math.pi
-        tol = 0.001
-        id_pairs = filters.filter_pairs_by_angle(poses_6_transformed,
-                                                 target_angle, tol,
-                                                 all_pairs=True)
-        self.assertEqual(id_pairs, [(0, 3), (0, 4)])
+        expected_result = [(0, 3), (0, 4)]
+        # Result should be unaffected by global transformation.
+        for poses in (poses_6, poses_6_transformed):
+            id_pairs = filters.filter_pairs_by_angle(poses, target_angle, tol,
+                                                     all_pairs=True)
+            self.assertEqual(id_pairs, expected_result)
 
 
 if __name__ == '__main__':

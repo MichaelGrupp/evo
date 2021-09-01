@@ -96,7 +96,8 @@ class TfCache(object):
     @staticmethod
     def split_id(identifier: str) -> tuple:
         match = ROS_NAME_REGEX.findall(identifier)
-        if not len(match) == 3:
+        # If a fourth component exists, it's interpreted as the static TF name.
+        if not len(match) in (3, 4):
             raise TfCacheException(
                 "ID string malformed, it should look similar to this: "
                 "/tf:map.base_footprint")
@@ -158,12 +159,14 @@ class TfCache(object):
         :param identifier: trajectory ID <topic>:<parent_frame>.<child_frame>
                            Example: /tf:map.base_link
         """
-        topic, parent, child = self.split_id(identifier)
-        logger.debug("Loading trajectory of transform '{} to {}' "
-                     "from topic {}".format(parent, child, topic))
+        split_id = self.split_id(identifier)
+        topic, parent, child = split_id[0], split_id[1], split_id[2]
+        static_topic = split_id[3] if len(split_id) == 4 else "/tf_static"
+        logger.debug(f"Loading trajectory of transform '{parent} to {child}' "
+                     f"from topic {topic} (static topic: {static_topic}).")
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=UserWarning)
-            self.from_bag(bag_handle, topic)
+            self.from_bag(bag_handle, topic, static_topic)
         try:
             latest_time = self.buffer.get_latest_common_time(parent, child)
         except (tf2_py.LookupException, tf2_py.TransformException) as e:

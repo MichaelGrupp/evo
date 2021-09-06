@@ -63,6 +63,7 @@ class PoseRelation(Enum):
     rotation_part = "rotation part"
     rotation_angle_rad = "rotation angle in radians"
     rotation_angle_deg = "rotation angle in degrees"
+    point_distance = "point distance"
 
 
 class Unit(Enum):
@@ -192,7 +193,8 @@ class RPE(PE):
         self.E: typing.List[np.ndarray] = []
         self.error = np.array([])
         self.delta_ids: typing.List[int] = []
-        if pose_relation == PoseRelation.translation_part:
+        if pose_relation in (PoseRelation.translation_part,
+                             PoseRelation.point_distance):
             self.unit = Unit.meters
         elif pose_relation == PoseRelation.rotation_angle_deg:
             self.unit = Unit.degrees
@@ -251,11 +253,25 @@ class RPE(PE):
         # Store flat id list e.g. for plotting.
         self.delta_ids = [j for i, j in id_pairs]
 
-        self.E = [
-            self.rpe_base(traj_ref.poses_se3[i], traj_ref.poses_se3[j],
-                          traj_est.poses_se3[i], traj_est.poses_se3[j])
-            for i, j in id_pairs
-        ]
+        if self.pose_relation == PoseRelation.point_distance:
+            # Only compares the magnitude of the point distance instead of
+            # doing the full vector comparison of 'translation_part'.
+            # Can be directly calculated on positions instead of full poses.
+            self.error = [
+                abs(
+                    np.linalg.norm(traj_ref.positions_xyz[i] -
+                                   traj_ref.positions_xyz[j]) -
+                    np.linalg.norm(traj_est.positions_xyz[i] -
+                                   traj_est.positions_xyz[j]))
+                for i, j in id_pairs
+            ]
+        else:
+            # All other pose relations require the full pose error.
+            self.E = [
+                self.rpe_base(traj_ref.poses_se3[i], traj_ref.poses_se3[j],
+                              traj_est.poses_se3[i], traj_est.poses_se3[j])
+                for i, j in id_pairs
+            ]
 
         logger.debug(
             "Compared {} relative pose pairs, delta = {} ({}) {}".format(
@@ -266,7 +282,10 @@ class RPE(PE):
         logger.debug("Calculating RPE for {} pose relation...".format(
             self.pose_relation.value))
 
-        if self.pose_relation == PoseRelation.translation_part:
+        if self.pose_relation == PoseRelation.point_distance:
+            # Already computed, see above.
+            pass
+        elif self.pose_relation == PoseRelation.translation_part:
             self.error = [np.linalg.norm(E_i[:3, 3]) for E_i in self.E]
         elif self.pose_relation == PoseRelation.rotation_part:
             # ideal: rot(E_i) = 3x3 identity
@@ -299,7 +318,8 @@ class APE(PE):
         self.pose_relation = pose_relation
         self.E: typing.List[np.ndarray] = []
         self.error = np.array([])
-        if pose_relation == PoseRelation.translation_part:
+        if pose_relation in (PoseRelation.translation_part,
+                             PoseRelation.point_distance):
             self.unit = Unit.meters
         elif pose_relation == PoseRelation.rotation_angle_deg:
             self.unit = Unit.degrees
@@ -340,8 +360,10 @@ class APE(PE):
             raise MetricsException(
                 "trajectories must have same number of poses")
 
-        if self.pose_relation == PoseRelation.translation_part:
-            # don't require full SE(3) matrices for faster computation
+        if self.pose_relation in (PoseRelation.translation_part,
+                                  PoseRelation.point_distance):
+            # Translation part of APE is equivalent to distance between poses,
+            # we don't require full SE(3) matrices for faster computation.
             self.E = traj_est.positions_xyz - traj_ref.positions_xyz
         else:
             self.E = [
@@ -352,7 +374,8 @@ class APE(PE):
         logger.debug("Calculating APE for {} pose relation...".format(
             (self.pose_relation.value)))
 
-        if self.pose_relation == PoseRelation.translation_part:
+        if self.pose_relation in (PoseRelation.translation_part,
+                                  PoseRelation.point_distance):
             # E is an array of position vectors only in this case
             self.error = np.array([np.linalg.norm(E_i) for E_i in self.E])
         elif self.pose_relation == PoseRelation.rotation_part:

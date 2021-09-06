@@ -82,6 +82,8 @@ def get_pose_relation(args: argparse.Namespace) -> PoseRelation:
         pose_relation = PoseRelation.rotation_angle_deg
     elif args.pose_relation == "angle_rad":
         pose_relation = PoseRelation.rotation_angle_rad
+    elif args.pose_relation == "point_distance":
+        pose_relation = PoseRelation.point_distance
     return pose_relation
 
 

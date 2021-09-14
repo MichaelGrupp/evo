@@ -64,6 +64,7 @@ class PoseRelation(Enum):
     rotation_angle_rad = "rotation angle in radians"
     rotation_angle_deg = "rotation angle in degrees"
     point_distance = "point distance"
+    point_distance_ratio = "point distance ratio"
 
 
 class Unit(Enum):
@@ -253,18 +254,22 @@ class RPE(PE):
         # Store flat id list e.g. for plotting.
         self.delta_ids = [j for i, j in id_pairs]
 
-        if self.pose_relation == PoseRelation.point_distance:
+        if self.pose_relation in (PoseRelation.point_distance,
+                                  PoseRelation.point_distance_ratio):
             # Only compares the magnitude of the point distance instead of
             # doing the full vector comparison of 'translation_part'.
             # Can be directly calculated on positions instead of full poses.
-            self.error = [
-                abs(
-                    np.linalg.norm(traj_ref.positions_xyz[i] -
-                                   traj_ref.positions_xyz[j]) -
-                    np.linalg.norm(traj_est.positions_xyz[i] -
-                                   traj_est.positions_xyz[j]))
-                for i, j in id_pairs
-            ]
+            ref_distances = np.array([
+                np.linalg.norm(traj_ref.positions_xyz[i] -
+                               traj_ref.positions_xyz[j]) for i, j in id_pairs
+            ])
+            est_distances = np.array([
+                np.linalg.norm(traj_est.positions_xyz[i] -
+                               traj_est.positions_xyz[j]) for i, j in id_pairs
+            ])
+            self.error = np.abs(ref_distances - est_distances)
+            if self.pose_relation == PoseRelation.point_distance_ratio:
+                self.error = np.divide(self.error, ref_distances)
         else:
             # All other pose relations require the full pose error.
             self.E = [
@@ -282,7 +287,8 @@ class RPE(PE):
         logger.debug("Calculating RPE for {} pose relation...".format(
             self.pose_relation.value))
 
-        if self.pose_relation == PoseRelation.point_distance:
+        if self.pose_relation in (PoseRelation.point_distance,
+                                  PoseRelation.point_distance_ratio):
             # Already computed, see above.
             pass
         elif self.pose_relation == PoseRelation.translation_part:

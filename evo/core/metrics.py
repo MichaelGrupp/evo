@@ -269,7 +269,14 @@ class RPE(PE):
             ])
             self.error = np.abs(ref_distances - est_distances)
             if self.pose_relation == PoseRelation.point_distance_ratio:
-                self.error = np.divide(self.error, ref_distances)
+                nonzero = ref_distances.nonzero()[0]
+                if nonzero.size != ref_distances.size:
+                    logger.warn(
+                        "Ignoring %i zero divisions in ratio calculations." %
+                        (ref_distances.size - nonzero.size))
+                    self.delta_ids = [self.delta_ids[i] for i in nonzero]
+                self.error = np.divide(self.error[nonzero],
+                                       ref_distances[nonzero])
         else:
             # All other pose relations require the full pose error.
             self.E = [

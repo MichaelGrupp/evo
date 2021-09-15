@@ -64,7 +64,7 @@ class PoseRelation(Enum):
     rotation_angle_rad = "rotation angle in radians"
     rotation_angle_deg = "rotation angle in degrees"
     point_distance = "point distance"
-    point_distance_ratio = "point distance ratio"
+    point_distance_ratio = "point distance error ratio"
 
 
 class Unit(Enum):

@@ -74,6 +74,7 @@ class Unit(Enum):
     degrees = "deg"
     radians = "rad"
     frames = "frames"
+    percent = "%"  # used like a unit for display purposes
 
 
 class VelUnit(Enum):
@@ -197,6 +198,8 @@ class RPE(PE):
         if pose_relation in (PoseRelation.translation_part,
                              PoseRelation.point_distance):
             self.unit = Unit.meters
+        elif pose_relation == PoseRelation.point_distance_ratio:
+            self.unit = Unit.percent
         elif pose_relation == PoseRelation.rotation_angle_deg:
             self.unit = Unit.degrees
         elif pose_relation == PoseRelation.rotation_angle_rad:
@@ -276,7 +279,7 @@ class RPE(PE):
                         (ref_distances.size - nonzero.size))
                     self.delta_ids = [self.delta_ids[i] for i in nonzero]
                 self.error = np.divide(self.error[nonzero],
-                                       ref_distances[nonzero])
+                                       ref_distances[nonzero]) * 100
         else:
             # All other pose relations require the full pose error.
             self.E = [

@@ -275,8 +275,8 @@ class RPE(PE):
                 nonzero = ref_distances.nonzero()[0]
                 if nonzero.size != ref_distances.size:
                     logger.warning(
-                        "Ignoring %i zero divisions in ratio calculations." %
-                        (ref_distances.size - nonzero.size))
+                        f"Ignoring {ref_distances.size - nonzero.size} zero "
+                        "divisions in ratio calculations.")
                     self.delta_ids = [self.delta_ids[i] for i in nonzero]
                 self.error = np.divide(self.error[nonzero],
                                        ref_distances[nonzero]) * 100

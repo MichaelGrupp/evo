@@ -274,7 +274,7 @@ class RPE(PE):
             if self.pose_relation == PoseRelation.point_distance_error_ratio:
                 nonzero = ref_distances.nonzero()[0]
                 if nonzero.size != ref_distances.size:
-                    logger.warn(
+                    logger.warning(
                         "Ignoring %i zero divisions in ratio calculations." %
                         (ref_distances.size - nonzero.size))
                     self.delta_ids = [self.delta_ids[i] for i in nonzero]

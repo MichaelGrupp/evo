@@ -30,9 +30,9 @@ from evo.tools.settings import SETTINGS, GLOBAL_LOGFILE_PATH
 
 colorama.init()
 
-CONSOLE_ERROR_FMT = "{}[%(levelname)s]{} %(msg)s".format(
+CONSOLE_ERROR_FMT = "{}[%(levelname)s]{} %(message)s".format(
     Fore.LIGHTRED_EX, Fore.RESET)
-CONSOLE_WARN_FMT = "{}[%(levelname)s]{} %(msg)s".format(
+CONSOLE_WARN_FMT = "{}[%(levelname)s]{} %(message)s".format(
     Fore.LIGHTYELLOW_EX, Fore.RESET)
 DEFAULT_LONG_FMT = "[%(levelname)s][%(asctime)s][%(module)s.%(funcName)s():%(lineno)s]\n%(message)s"
 

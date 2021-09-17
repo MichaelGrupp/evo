@@ -156,7 +156,8 @@ DEFAULT_SETTINGS_DICT_DOC = {
     ),
     "plot_xyz_realistic": (
         True,
-        "Equal axes ratio in 'xyz' plot mode for realistic trajectory plots."
+        "Equal axes ratio for realistic trajectory plots.\n"
+        "Turning it off allows to stretch the plot without keeping the ratio."
     ),
     "ros_map_alpha_value": (
         1.0,

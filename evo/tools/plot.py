@@ -250,9 +250,12 @@ def prepare_axis(fig: plt.Figure, plot_mode: PlotMode = PlotMode.xy,
     """
     if plot_mode == PlotMode.xyz:
         ax = fig.add_subplot(subplot_arg, projection="3d")
+        if SETTINGS.plot_xyz_realistic:
+            set_aspect_equal_3d(ax)
     else:
         ax = fig.add_subplot(subplot_arg)
-        ax.axis("equal")
+        if SETTINGS.plot_xyz_realistic:
+            ax.axis("equal")
     if plot_mode in {PlotMode.xy, PlotMode.xz, PlotMode.xyz}:
         xlabel = "$x$ (m)"
     elif plot_mode in {PlotMode.yz, PlotMode.yx}:
@@ -319,8 +322,6 @@ def traj(ax: plt.Axes, plot_mode: PlotMode, traj: trajectory.PosePath3D,
     if plot_mode == PlotMode.xyz:
         z = traj.positions_xyz[:, z_idx]
         ax.plot(x, y, z, style, color=color, label=label, alpha=alpha)
-        if SETTINGS.plot_xyz_realistic:
-            set_aspect_equal_3d(ax)
     else:
         ax.plot(x, y, style, color=color, label=label, alpha=alpha)
     if label:
@@ -383,8 +384,6 @@ def traj_colormap(ax: plt.Axes, traj: trajectory.PosePath3D,
     if plot_mode == PlotMode.xyz:
         ax.set_zlim(np.amin(traj.positions_xyz[:, 2]),
                     np.amax(traj.positions_xyz[:, 2]))
-        if SETTINGS.plot_xyz_realistic:
-            set_aspect_equal_3d(ax)
     if fig is None:
         fig = plt.gcf()
     cbar = fig.colorbar(

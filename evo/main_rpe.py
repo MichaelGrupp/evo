@@ -51,7 +51,7 @@ def parser() -> argparse.ArgumentParser:
         "-r", "--pose_relation", default="trans_part",
         help="pose relation on which the RPE is based", choices=[
             "full", "trans_part", "rot_part", "angle_deg", "angle_rad",
-            "point_distance"
+            "point_distance", "point_distance_error_ratio"
         ])
     algo_opts.add_argument("-a", "--align",
                            help="alignment with Umeyama's method (no scale)",

@@ -64,6 +64,7 @@ class PoseRelation(Enum):
     rotation_angle_rad = "rotation angle in radians"
     rotation_angle_deg = "rotation angle in degrees"
     point_distance = "point distance"
+    point_distance_error_ratio = "point distance error ratio"
 
 
 class Unit(Enum):
@@ -73,6 +74,7 @@ class Unit(Enum):
     degrees = "deg"
     radians = "rad"
     frames = "frames"
+    percent = "%"  # used like a unit for display purposes
 
 
 class VelUnit(Enum):
@@ -196,6 +198,8 @@ class RPE(PE):
         if pose_relation in (PoseRelation.translation_part,
                              PoseRelation.point_distance):
             self.unit = Unit.meters
+        elif pose_relation == PoseRelation.point_distance_error_ratio:
+            self.unit = Unit.percent
         elif pose_relation == PoseRelation.rotation_angle_deg:
             self.unit = Unit.degrees
         elif pose_relation == PoseRelation.rotation_angle_rad:
@@ -253,18 +257,29 @@ class RPE(PE):
         # Store flat id list e.g. for plotting.
         self.delta_ids = [j for i, j in id_pairs]
 
-        if self.pose_relation == PoseRelation.point_distance:
+        if self.pose_relation in (PoseRelation.point_distance,
+                                  PoseRelation.point_distance_error_ratio):
             # Only compares the magnitude of the point distance instead of
             # doing the full vector comparison of 'translation_part'.
             # Can be directly calculated on positions instead of full poses.
-            self.error = [
-                abs(
-                    np.linalg.norm(traj_ref.positions_xyz[i] -
-                                   traj_ref.positions_xyz[j]) -
-                    np.linalg.norm(traj_est.positions_xyz[i] -
-                                   traj_est.positions_xyz[j]))
-                for i, j in id_pairs
-            ]
+            ref_distances = np.array([
+                np.linalg.norm(traj_ref.positions_xyz[i] -
+                               traj_ref.positions_xyz[j]) for i, j in id_pairs
+            ])
+            est_distances = np.array([
+                np.linalg.norm(traj_est.positions_xyz[i] -
+                               traj_est.positions_xyz[j]) for i, j in id_pairs
+            ])
+            self.error = np.abs(ref_distances - est_distances)
+            if self.pose_relation == PoseRelation.point_distance_error_ratio:
+                nonzero = ref_distances.nonzero()[0]
+                if nonzero.size != ref_distances.size:
+                    logger.warning(
+                        f"Ignoring {ref_distances.size - nonzero.size} zero "
+                        "divisions in ratio calculations.")
+                    self.delta_ids = [self.delta_ids[i] for i in nonzero]
+                self.error = np.divide(self.error[nonzero],
+                                       ref_distances[nonzero]) * 100
         else:
             # All other pose relations require the full pose error.
             self.E = [
@@ -282,7 +297,8 @@ class RPE(PE):
         logger.debug("Calculating RPE for {} pose relation...".format(
             self.pose_relation.value))
 
-        if self.pose_relation == PoseRelation.point_distance:
+        if self.pose_relation in (PoseRelation.point_distance,
+                                  PoseRelation.point_distance_error_ratio):
             # Already computed, see above.
             pass
         elif self.pose_relation == PoseRelation.translation_part:

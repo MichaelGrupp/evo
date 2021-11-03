@@ -117,18 +117,24 @@ def plot_result(args: argparse.Namespace, result: Result, traj_ref: PosePath3D,
 
     # Plot the raw metric values.
     fig1 = plt.figure(figsize=SETTINGS.plot_figsize)
-    if "seconds_from_start" in result.np_arrays:
-        seconds_from_start = result.np_arrays["seconds_from_start"]
+    x_val = None
+    x_label="index"
+    if args.plot_in_fct_of_distance:
+        if "distances_from_start" in result.np_arrays:
+            x_val = result.np_arrays["distances_from_start"]
+            x_label = "$d$ (m)"
     else:
-        seconds_from_start = None
+        if "seconds_from_start" in result.np_arrays:
+            x_val = result.np_arrays["seconds_from_start"]
+            x_label = "$t$ (s)"
 
     plot.error_array(
         fig1.gca(), result.np_arrays["error_array"],
-        x_array=seconds_from_start, statistics={
+        x_array=x_val, statistics={
             s: result.stats[s]
             for s in SETTINGS.plot_statistics if s not in ("min", "max")
         }, name=result.info["label"], title=result.info["title"],
-        xlabel="$t$ (s)" if seconds_from_start is not None else "index")
+        xlabel=x_label)
 
     # Plot the values color-mapped onto the trajectory.
     fig2 = plt.figure(figsize=SETTINGS.plot_figsize)

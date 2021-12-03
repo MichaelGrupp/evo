@@ -91,7 +91,8 @@ def parser() -> argparse.ArgumentParser:
         help="the axes for plot projection",
         choices=["xy", "xz", "yx", "yz", "zx", "zy", "xyz"])
     output_opts.add_argument(
-        "--plot_x_dimension", choices=["index", "seconds", "distances"], default="seconds",
+        "--plot_x_dimension", choices=["index", "seconds",
+                                       "distances"], default="seconds",
         help="dimension that is used on the x-axis of the raw value plot"
         "(default: seconds, or index if no timestamps are present)")
     output_opts.add_argument(

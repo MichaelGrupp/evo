@@ -117,20 +117,19 @@ def plot_result(args: argparse.Namespace, result: Result, traj_ref: PosePath3D,
 
     # Plot the raw metric values.
     fig1 = plt.figure(figsize=SETTINGS.plot_figsize)
-    x_val = None
-    x_label="index"
-    if args.plot_in_fct_of_distance:
-        if "distances_from_start" in result.np_arrays:
-            x_val = result.np_arrays["distances_from_start"]
-            x_label = "$d$ (m)"
+    if (args.plot_x_dimension == "distances" and "distances_from_start" in result.np_arrays):
+        x_array = result.np_arrays["distances_from_start"]
+        x_label = "$d$ (m)"
+    elif (args.plot_x_dimension == "seconds" and "seconds_from_start" in result.np_arrays):
+        x_array = result.np_arrays["seconds_from_start"]
+        x_label = "$t$ (s)"
     else:
-        if "seconds_from_start" in result.np_arrays:
-            x_val = result.np_arrays["seconds_from_start"]
-            x_label = "$t$ (s)"
+        x_array = None
+        x_label = "index"
 
     plot.error_array(
         fig1.gca(), result.np_arrays["error_array"],
-        x_array=x_val, statistics={
+        x_array=x_array, statistics={
             s: result.stats[s]
             for s in SETTINGS.plot_statistics if s not in ("min", "max")
         }, name=result.info["label"], title=result.info["title"],

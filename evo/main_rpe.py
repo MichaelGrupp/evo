@@ -91,6 +91,11 @@ def parser() -> argparse.ArgumentParser:
         help="the axes for plot projection",
         choices=["xy", "xz", "yx", "yz", "zx", "zy", "xyz"])
     output_opts.add_argument(
+        "--plot_x_dimension", choices=["index", "seconds",
+                                       "distances"], default="seconds",
+        help="dimension that is used on the x-axis of the raw value plot"
+        "(default: seconds, or index if no timestamps are present)")
+    output_opts.add_argument(
         "--plot_colormap_max", type=float,
         help="the upper bound used for the color map plot "
         "(default: maximum error value)")
@@ -246,6 +251,10 @@ def rpe(traj_ref: PosePath3D, traj_est: PosePath3D,
             [t - traj_est.timestamps[0] for t in traj_est.timestamps])
         rpe_result.add_np_array("seconds_from_start", seconds_from_start)
         rpe_result.add_np_array("timestamps", traj_est.timestamps)
+        distances_from_start = np.array(
+            [d - traj_ref.distances[0] for d in traj_ref.distances])
+        rpe_result.add_np_array("distances_from_start", distances_from_start)
+        rpe_result.add_np_array("distances", traj_est.distances)
 
     if alignment_transformation is not None:
         rpe_result.add_np_array("alignment_transformation_sim3",

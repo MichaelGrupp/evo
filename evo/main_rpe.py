@@ -91,10 +91,9 @@ def parser() -> argparse.ArgumentParser:
         help="the axes for plot projection",
         choices=["xy", "xz", "yx", "yz", "zx", "zy", "xyz"])
     output_opts.add_argument(
-        "--plot_in_fct_of_distance",
-        action="store_false",
-        help="plot in function of distance (otherwise, in funcion of time) "
-        "(default: false)")
+        "--plot_x_dimension", choices=["index", "seconds", "distances"], default="seconds",
+        help="dimension that is used on the x-axis of the raw value plot"
+        "(default: seconds, or index if no timestamps are present)")
     output_opts.add_argument(
         "--plot_colormap_max", type=float,
         help="the upper bound used for the color map plot "

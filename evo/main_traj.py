@@ -206,7 +206,7 @@ def load_trajectories(args):
             ref_traj = file_interface.read_euroc_csv_trajectory(args.ref)
     elif args.subcommand == "bag":
         ros_version=os.getenv('ROS_VERSION')
-        if ros_version == 1 :
+        if ros_version == "1" :
             if not (args.topics or args.all_topics):
                 die("No topics used - specify topics or set --all_topics.")
             if not os.path.exists(args.bag):
@@ -234,7 +234,7 @@ def load_trajectories(args):
                     ref_traj = file_interface.read_bag_trajectory(bag, args.ref)
             finally:
                 bag.close()
-        elif ros_version == 2 :
+        elif ros_version == "2" :
             if not (args.topics or args.all_topics):
                 die("No topics used - specify topics or set --all_topics.")
             if not os.path.exists(args.bag):
@@ -243,6 +243,7 @@ def load_trajectories(args):
             from rosbags.rosbag2 import Reader
             logger.debug("Opening bag file " + args.bag)
             bag = Reader(args.bag)
+            bag.open()
             try:
                 if args.all_topics:
                     topics = args.topics + file_interface.get_supported_topics(bag)

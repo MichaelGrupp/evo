@@ -160,7 +160,17 @@ def parser() -> argparse.ArgumentParser:
         parents=[shared_parser])
     bag_parser.add_argument("bag", help="ROS bag file")
     bag_parser.add_argument("topics", help="multiple trajectory topics",
-                            nargs='*')                         
+                            nargs='*')
+    bag_parser.add_argument("--all_topics",
+                            help="use all compatible topics in the bag",
+                            action="store_true")
+
+    bag_parser = sub_parsers.add_parser(
+        "bag2", description="%s for ROS2 bag files - %s" % (basic_desc, lic),
+        parents=[shared_parser])
+    bag_parser.add_argument("bag", help="ROS2 bag file")
+    bag_parser.add_argument("topics", help="multiple trajectory topics",
+                            nargs='*')
     bag_parser.add_argument("--all_topics",
                             help="use all compatible topics in the bag",
                             action="store_true")
@@ -204,66 +214,40 @@ def load_trajectories(args):
                         csv_file)
         if args.ref:
             ref_traj = file_interface.read_euroc_csv_trajectory(args.ref)
-    elif args.subcommand == "bag":
-        ros_version=os.getenv('ROS_VERSION')
-        if ros_version == "1" :
-            if not (args.topics or args.all_topics):
-                die("No topics used - specify topics or set --all_topics.")
-            if not os.path.exists(args.bag):
-                raise file_interface.FileInterfaceException(
-                    "File doesn't exist: {}".format(args.bag))
-            import rosbag
-            logger.debug("Opening bag file " + args.bag)
-            bag = rosbag.Bag(args.bag)
-            try:
-                if args.all_topics:
-                    topics = args.topics + file_interface.get_supported_topics(bag)
-                    if args.ref in topics:
-                        topics.remove(args.ref)
-                    if len(topics) == 0:
-                        die("No topics of supported types: {}".format(
-                            " ".join(file_interface.SUPPORTED_ROS_MSGS)))
-                else:
-                    topics = args.topics
-                for topic in topics:
-                    if topic == args.ref:
-                        continue
-                    trajectories[topic] = file_interface.read_bag_trajectory(
-                        bag, topic)
-                if args.ref:
-                    ref_traj = file_interface.read_bag_trajectory(bag, args.ref)
-            finally:
-                bag.close()
-        elif ros_version == "2" :
-            if not (args.topics or args.all_topics):
-                die("No topics used - specify topics or set --all_topics.")
-            if not os.path.exists(args.bag):
-                raise file_interface.FileInterfaceException(
-                    "File doesn't exist: {}".format(args.bag))
-            from rosbags.rosbag2 import Reader
-            logger.debug("Opening bag file " + args.bag)
-            bag = Reader(args.bag)
-            bag.open()
-            try:
-                if args.all_topics:
-                    topics = args.topics + file_interface.get_supported_topics(bag)
-                    if args.ref in topics:
-                        topics.remove(args.ref)
-                    if len(topics) == 0:
-                        die("No topics of supported types: {}".format(
-                            " ".join(file_interface.SUPPORTED_ROS_MSGS)))
-                else:
-                    topics = args.topics
-                for topic in topics:
-                    if topic == args.ref:
-                        continue
-                    trajectories[topic] = file_interface.read_bag2_trajectory(
-                        bag, topic)
-                if args.ref:
-                    ref_traj = file_interface.read_bag2_trajectory(bag, args.ref)
-            finally:
-                bag.close()
-        return trajectories, ref_traj
+    elif args.subcommand in ("bag", "bag2"):
+        if not (args.topics or args.all_topics):
+            die("No topics used - specify topics or set --all_topics.")
+        if not os.path.exists(args.bag):
+            raise file_interface.FileInterfaceException(
+                "File doesn't exist: {}".format(args.bag))
+        logger.debug("Opening bag file " + args.bag)
+        if args.subcommand == "bag2":
+            from rosbags.rosbag2 import Reader as Rosbag2Reader
+            bag = Rosbag2Reader(args.bag)
+        else:
+            from rosbags.rosbag1 import Reader as Rosbag1Reader
+            bag = Rosbag1Reader(args.bag)
+        bag.open()
+        try:
+            if args.all_topics:
+                topics = args.topics + file_interface.get_supported_topics(bag)
+                if args.ref in topics:
+                    topics.remove(args.ref)
+                if len(topics) == 0:
+                    die("No topics of supported types: {}".format(
+                        " ".join(file_interface.SUPPORTED_ROS_MSGS)))
+            else:
+                topics = args.topics
+            for topic in topics:
+                if topic == args.ref:
+                    continue
+                trajectories[topic] = file_interface.read_bag_trajectory(
+                    bag, topic)
+            if args.ref:
+                ref_traj = file_interface.read_bag_trajectory(bag, args.ref)
+        finally:
+            bag.close()
+    return trajectories, ref_traj
 
 # TODO refactor
 def print_traj_info(name, traj, verbose=False, full_check=False):

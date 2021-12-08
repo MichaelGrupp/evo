@@ -64,6 +64,7 @@ class TfCache(object):
         self.topics = []
         self.bags = []
 
+    # TODO: support also ROS2 bag reader.
     def from_bag(self, reader: Rosbag1Reader, topic: str = "/tf",
                  static_topic: str = "/tf_static") -> None:
         """
@@ -89,9 +90,9 @@ class TfCache(object):
             logger.debug("Caching TF topic {} from {} ...".format(
                 tf_topic, reader.path.name))
             connections = [
-                c for c in reader.connections.values() if c.topic in tf_topics
+                c for c in reader.connections.values() if c.topic == tf_topic
             ]
-            for connection, timestamp, rawdata in reader.messages(
+            for connection, _, rawdata in reader.messages(
                     connections=connections):
                 msg = deserialize_cdr(ros1_to_cdr(rawdata, connection.msgtype),
                                       connection.msgtype)
@@ -107,7 +108,7 @@ class TfCache(object):
                         self.buffer.set_transform_static(tf, __name__)
                     else:
                         self.buffer.set_transform(tf, __name__)
-                self.topics.append(tf_topic)
+            self.topics.append(tf_topic)
         self.bags.append(reader.path.name)
 
     @staticmethod
@@ -189,9 +190,10 @@ class TfCache(object):
             latest_time = self.buffer.get_latest_common_time(parent, child)
         except (tf2_py.LookupException, tf2_py.TransformException) as e:
             raise TfCacheException("Could not load trajectory: " + str(e))
-        return self.lookup_trajectory(
-            parent, child, start_time=rospy.Time.from_sec(reader.start_time),
-            end_time=latest_time)
+        # rosbags Reader start_time is in nanoseconds.
+        start_time = rospy.Time.from_sec(reader.start_time * 1e-9)
+        return self.lookup_trajectory(parent, child, start_time=start_time,
+                                      end_time=latest_time)
 
 
 def instance() -> TfCache:

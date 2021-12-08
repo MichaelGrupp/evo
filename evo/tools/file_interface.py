@@ -288,9 +288,10 @@ def read_bag_trajectory(reader: typing.Union[Rosbag1Reader, Rosbag2Reader],
         else:
             msg = deserialize_cdr(rawdata, connection.msgtype)
         # Use the header timestamps (converted to seconds).
+        # Note: msg/stamp is a rosbags type here, not native ROS.
         # TODO: does this work for ROS2?
         t = msg.header.stamp
-        stamps.append(t * 1e-9)
+        stamps.append(t.sec + (t.nanosec * 1e-9))
         xyz_t, quat_t = get_xyz_quat(msg)
         xyz.append(xyz_t)
         quat.append(quat_t)

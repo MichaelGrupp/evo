@@ -165,15 +165,15 @@ def parser() -> argparse.ArgumentParser:
                             help="use all compatible topics in the bag",
                             action="store_true")
 
-    bag_parser = sub_parsers.add_parser(
+    bag2_parser = sub_parsers.add_parser(
         "bag2", description="%s for ROS2 bag files - %s" % (basic_desc, lic),
         parents=[shared_parser])
-    bag_parser.add_argument("bag", help="ROS2 bag file")
-    bag_parser.add_argument("topics", help="multiple trajectory topics",
-                            nargs='*')
-    bag_parser.add_argument("--all_topics",
-                            help="use all compatible topics in the bag",
-                            action="store_true")
+    bag2_parser.add_argument("bag", help="ROS2 bag file")
+    bag2_parser.add_argument("topics", help="multiple trajectory topics",
+                             nargs='*')
+    bag2_parser.add_argument("--all_topics",
+                             help="use all compatible topics in the bag",
+                             action="store_true")
     return main_parser
 
 

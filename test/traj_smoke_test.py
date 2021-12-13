@@ -17,14 +17,9 @@ data = {
     "evo_traj kitti data/KITTI_00_gt.txt data/KITTI_00_ORB.txt data/KITTI_00_SPTAM.txt "
     "--ref data/KITTI_00_gt.txt": "cfg/traj/kitti",
     "evo_traj tum data/fr2_desk_groundtruth.txt data/fr2_desk_ORB.txt data/fr2_desk_ORB_kf_mono.txt "
-    "--ref data/fr2_desk_groundtruth.txt": "cfg/traj/tum"
+    "--ref data/fr2_desk_groundtruth.txt": "cfg/traj/tum",
+    "evo_traj bag data/ROS_example.bag groundtruth S-PTAM ORB-SLAM --ref groundtruth": "cfg/traj/bag"
 }
-try:
-    import rosbag  # pylint: disable=unused-import
-    data["evo_traj bag data/ROS_example.bag groundtruth S-PTAM ORB-SLAM --ref groundtruth"] \
-      = "cfg/traj/bag"
-except ImportError:
-    pass
 
 try:
     for d in data.keys():

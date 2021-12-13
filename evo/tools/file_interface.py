@@ -28,12 +28,10 @@ import os
 import typing
 import zipfile
 
-from rosbags.rosbag2 import Reader
-from rosbags.serde import deserialize_cdr
-import os
-from pathlib import Path
-
 import numpy as np
+from rosbags.rosbag1 import Reader as Rosbag1Reader
+from rosbags.rosbag2 import Reader as Rosbag2Reader
+from rosbags.serde import deserialize_cdr, ros1_to_cdr
 
 from evo import EvoException
 import evo.core.lie_algebra as lie
@@ -44,9 +42,11 @@ from evo.tools import user
 
 logger = logging.getLogger(__name__)
 
+# TODO: ensure that this works for both ROS1 and ROS2.
 SUPPORTED_ROS_MSGS = {
-    "geometry_msgs/PoseStamped", "geometry_msgs/PoseWithCovarianceStamped",
-    "geometry_msgs/TransformStamped", "nav_msgs/Odometry"
+    "geometry_msgs/msg/PoseStamped",
+    "geometry_msgs/msg/PoseWithCovarianceStamped",
+    "geometry_msgs/msg/TransformStamped", "nav_msgs/msg/Odometry"
 }
 
 
@@ -236,119 +236,82 @@ def _get_xyz_quat_from_pose_or_odometry_msg(msg) -> typing.Tuple[list, list]:
     return xyz, quat
 
 
-def get_supported_topics(bag_handle) -> list:
+def get_supported_topics(
+        reader: typing.Union[Rosbag1Reader, Rosbag2Reader]) -> list:
     """
     :param bag_handle: opened bag handle, from rosbag.Bag(...)
     :return: list of ROS topics that are supported by this module
     """
-    ros_version=os.getenv('ROS_VERSION')
-    if ros_version == "1": 
-        topic_info = bag_handle.get_type_and_topic_info()
-        return sorted([
-            t for t in topic_info[1].keys()
-            if topic_info[1][t][0] in SUPPORTED_ROS_MSGS
-        ])
-    elif ros_version == "2":
-        topic_info = bag_handle.topics
-        return sorted([
-            t for t in topic_info.keys()
-            if topic_info[t].msgtype in SUPPORTED_ROS_MSGS
-        ])
+    return sorted([
+        c.topic for c in reader.connections.values()
+        if c.msgtype in SUPPORTED_ROS_MSGS
+    ])
 
 
-def read_bag_trajectory(bag_handle, topic: str) -> PoseTrajectory3D:
+def read_bag_trajectory(reader: typing.Union[Rosbag1Reader, Rosbag2Reader],
+                        topic: str) -> PoseTrajectory3D:
     """
-    :param bag_handle: opened bag handle, from rosbag.Bag(...)
+    :param reader: opened bag reader (rosbags.rosbag2 or rosbags.rosbag1)
     :param topic: trajectory topic of supported message type,
                   or a TF trajectory ID (e.g.: '/tf:map.base_link' )
     :return: trajectory.PoseTrajectory3D
     """
-    from evo.tools import tf_cache
+    # TODO: Support TF also with ROS2 bags.
+    if isinstance(reader, Rosbag1Reader):
+        from evo.tools import tf_cache
 
-    # Use TfCache instead if it's a TF transform ID.
-    if tf_cache.instance().check_id(topic):
-        return tf_cache.instance().get_trajectory(bag_handle, identifier=topic)
+        # Use TfCache instead if it's a TF transform ID.
+        if tf_cache.instance().check_id(topic):
+            return tf_cache.instance().get_trajectory(reader, identifier=topic)
 
-    if not bag_handle.get_message_count(topic) > 0:
+    if not reader.message_count > 0:
         raise FileInterfaceException("no messages for topic '" + topic +
                                      "' in bag")
-    msg_type = bag_handle.get_type_and_topic_info().topics[topic].msg_type
+
+    msg_type = reader.topics[topic].msgtype
     if msg_type not in SUPPORTED_ROS_MSGS:
         raise FileInterfaceException(
             "unsupported message type: {}".format(msg_type))
 
     # Choose appropriate message conversion.
+    # TODO: ensure that this works for both ROS1 and ROS2.
     if msg_type == "geometry_msgs/TransformStamped":
         get_xyz_quat = _get_xyz_quat_from_transform_stamped
     else:
         get_xyz_quat = _get_xyz_quat_from_pose_or_odometry_msg
 
     stamps, xyz, quat = [], [], []
-    for topic, msg, _ in bag_handle.read_messages(topic):
+
+    connections = [c for c in reader.connections.values() if c.topic == topic]
+    for connection, _, rawdata in reader.messages(connections=connections):
+        if isinstance(reader, Rosbag1Reader):
+            msg = deserialize_cdr(ros1_to_cdr(rawdata, connection.msgtype),
+                                  connection.msgtype)
+        else:
+            msg = deserialize_cdr(rawdata, connection.msgtype)
         # Use the header timestamps (converted to seconds).
+        # Note: msg/stamp is a rosbags type here, not native ROS.
+        # TODO: does this work for ROS2?
         t = msg.header.stamp
-        stamps.append(t.secs + (t.nsecs * 1e-9))
+        stamps.append(t.sec + (t.nanosec * 1e-9))
         xyz_t, quat_t = get_xyz_quat(msg)
         xyz.append(xyz_t)
         quat.append(quat_t)
+
     logger.debug("Loaded {} {} messages of topic: {}".format(
         len(stamps), msg_type, topic))
-    generator = bag_handle.read_messages(topic)
-    _, first_msg, _ = next(generator)
-    frame_id = first_msg.header.frame_id
-    return PoseTrajectory3D(np.array(xyz), np.array(quat), np.array(stamps),
-                            meta={"frame_id": frame_id})
 
-
-def read_bag2_trajectory(bag_handle, topic: str) -> PoseTrajectory3D:
-    """
-    :param bag_handle: opened bag handle, from rosbag.Bag(...)
-    :param topic: trajectory topic of supported message type,
-                  or a TF trajectory ID (e.g.: '/tf:map.base_link' )
-    :return: trajectory.PoseTrajectory3D
-    """
-    #from evo.tools import tf_cache
-
-    # Use TfCache instead if it's a TF transform ID.
-    #if tf_cache.instance().check_id(topic):
-    #    return tf_cache.instance().get_trajectory(bag_handle, identifier=topic)
-    
-
-    if not bag_handle.message_count > 0:
-        raise FileInterfaceException("no messages for topic '" + topic +
-                                     "' in bag")
-    
-    msg_type = bag_handle.topics[topic].msgtype
-    if msg_type not in SUPPORTED_ROS_MSGS:
-        raise FileInterfaceException(
-            "unsupported message type: {}".format(msg_type))
-
-    # Choose appropriate message conversion.
-    if msg_type == "geometry_msgs/TransformStamped":
-        get_xyz_quat = _get_xyz_quat_from_transform_stamped
+    (connection, _,
+     rawdata) = list(reader.messages(connections=connections))[0]
+    if isinstance(reader, Rosbag1Reader):
+        first_msg = deserialize_cdr(ros1_to_cdr(rawdata, connection.msgtype),
+                                    connection.msgtype)
     else:
-        get_xyz_quat = _get_xyz_quat_from_pose_or_odometry_msg
-
-    stamps, xyz, quat = [], [], []
-
-    connections = [x for x in bag_handle.connections.values() if x.topic == topic]
-    for connection, timestamp, rawdata in bag_handle.messages(connections=connections):
-        # Use the header timestamps (converted to seconds).
-        t = timestamp
-        msg = deserialize_cdr(rawdata, connection.msgtype)
-        stamps.append(t * 1e-9)
-        xyz_t, quat_t = get_xyz_quat(msg)
-        xyz.append(xyz_t)
-        quat.append(quat_t)
-
-    logger.debug("Loaded {} {} messages of topic: {}".format(
-        len(stamps), msg_type, topic))
-
-    (connection, timestamp, rawdata) = list(bag_handle.messages(connections=connections))[0]
-    first_msg = deserialize_cdr(rawdata, connection.msgtype)
+        first_msg = deserialize_cdr(rawdata, connection.msgtype)
     frame_id = first_msg.header.frame_id
     return PoseTrajectory3D(np.array(xyz), np.array(quat), np.array(stamps),
                             meta={"frame_id": frame_id})
+
 
 def write_bag_trajectory(bag_handle, traj: PoseTrajectory3D, topic_name: str,
                          frame_id: str = "") -> None:

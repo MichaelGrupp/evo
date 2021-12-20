@@ -341,6 +341,38 @@ def write_bag_trajectory(bag_handle, traj: PoseTrajectory3D, topic_name: str,
         bag_handle.write(topic_name, p, t=p.header.stamp)
     logger.info("Saved geometry_msgs/PoseStamped topic: " + topic_name)
 
+def write_bag2_trajectory(bag_handle, traj: PoseTrajectory3D, topic_name: str,
+                         frame_id: str = "") -> None:
+    """
+    :param bag_handle: opened bag handle, from rosbag.Bag(...)
+    :param traj: trajectory.PoseTrajectory3D
+    :param topic_name: the desired topic name for the trajectory
+    :param frame_id: optional ROS frame_id
+    """
+    from rosbags.serde import serialize_cdr
+    from rosbags.typesys.types import geometry_msgs__msg__PoseStamped as PoseStamped
+    from rosbags.typesys.types import std_msgs__msg__Header as Header
+    from rosbags.typesys.types import geometry_msgs__msg__Pose as Pose
+    from rosbags.typesys.types import geometry_msgs__msg__Point as Position
+    from rosbags.typesys.types import geometry_msgs__msg__Quaternion as Quaternion
+    from rosbags.typesys.types import builtin_interfaces__msg__Time as Time
+    if not isinstance(traj, PoseTrajectory3D):
+        raise FileInterfaceException(
+            "trajectory must be a PoseTrajectory3D object")
+    msgtype = PoseStamped.__msgtype__
+    connection = bag_handle.add_connection(topic_name, msgtype, 'cdr', '')
+    for stamp, xyz, quat in zip(traj.timestamps, traj.positions_xyz,
+                                traj.orientations_quat_wxyz):
+        #Assuming timestamps come in ns
+        timestamp=Time(int(stamp) ,int(stamp))
+        header= Header(timestamp,frame_id)
+        position = Position (xyz[0],xyz[1],xyz[2])
+        quaternion = Quaternion(quat[0],quat[1],quat[2],quat[3])
+        pose = Pose(position,quaternion)
+        p = PoseStamped(header,pose)
+        bag_handle.write(connection, int(stamp*1e9), serialize_cdr(p, msgtype))
+    logger.info("Saved geometry_msgs/PoseStamped topic: " + topic_name)
+
 
 def save_res_file(zip_path, result_obj: result.Result,
                   confirm_overwrite: bool = False) -> None:

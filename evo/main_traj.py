@@ -113,6 +113,9 @@ def parser() -> argparse.ArgumentParser:
     output_opts.add_argument("--save_as_bag",
                              help="save trajectories in ROS bag as <date>.bag",
                              action="store_true")
+    output_opts.add_argument("--save_as_bag2",
+                             help="save trajectories in ROS2 bag as <date>",
+                             action="store_true")
     output_opts.add_argument("--logfile", help="Local logfile path.",
                              default=None)
     usability_opts.add_argument("--no_warnings",
@@ -545,7 +548,26 @@ def run(args):
                                                     frame_id)
         finally:
             bag.close()
-
+    if args.save_as_bag2:
+        import datetime
+        from rosbags.rosbag2 import Writer
+        from rosbags.serde import serialize_cdr
+        dest_bag_path = str(
+            datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
+        logger.info(SEP)
+        logger.info("Saving trajectories to " + dest_bag_path + "...")
+        bag = Writer(dest_bag_path)
+        bag.open()
+        try:
+            for name, traj in trajectories.items():
+                dest_topic = to_topic_name(name, args)
+                frame_id = traj.meta[
+                    "frame_id"] if "frame_id" in traj.meta else ""
+                file_interface.write_bag2_trajectory(bag, traj, dest_topic,
+                                                    frame_id)
+        finally:
+            bag.close()
+                
     if args.save_table:
         from evo.tools import pandas_bridge
         logger.debug(SEP)

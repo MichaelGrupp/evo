@@ -171,8 +171,17 @@ def parser() -> argparse.ArgumentParser:
     bag_parser.add_argument("ref_topic", help="reference trajectory topic")
     bag_parser.add_argument("est_topic", help="estimated trajectory topic")
 
+    bag2_parser = sub_parsers.add_parser(
+        "bag2", parents=[shared_parser],
+        description="{} for ROS2 bag files - {}".format(basic_desc, lic))
+    bag2_parser.add_argument("bag", help="ROS2 bag file")
+    bag2_parser.add_argument("ref_topic", help="reference trajectory topic")
+    bag2_parser.add_argument("est_topic", help="estimated trajectory topic")
+
     # Add time-sync options to parser of trajectory formats.
-    for trajectory_parser in {bag_parser, euroc_parser, tum_parser}:
+    for trajectory_parser in {
+            bag_parser, bag2_parser, euroc_parser, tum_parser
+    }:
         trajectory_parser.add_argument(
             "--t_max_diff", type=float, default=0.01,
             help="maximum timestamp difference for data association")

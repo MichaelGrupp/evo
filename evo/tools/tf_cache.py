@@ -20,21 +20,23 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import logging
-import re
 import warnings
 
 import rospy
 import tf2_py
+from geometry_msgs.msg import TransformStamped
+from rosbags.rosbag1 import Reader as Rosbag1Reader
+from rosbags.serde.serdes import deserialize_cdr, ros1_to_cdr
+from std_msgs.msg import Header
 
 import numpy as np
 from evo import EvoException
+from evo.tools import tf_id
 from evo.core.trajectory import PoseTrajectory3D
 from evo.tools.file_interface import _get_xyz_quat_from_transform_stamped
 from evo.tools.settings import SETTINGS
 
 logger = logging.getLogger(__name__)
-
-ROS_NAME_REGEX = re.compile(r"([\/|_|0-9|a-z|A-Z]+)")
 
 
 class TfCacheException(EvoException):
@@ -60,55 +62,52 @@ class TfCache(object):
         self.topics = []
         self.bags = []
 
-    def from_bag(self, bag_handle, topic: str = "/tf",
+    # TODO: support also ROS2 bag reader.
+    def from_bag(self, reader: Rosbag1Reader, topic: str = "/tf",
                  static_topic: str = "/tf_static") -> None:
         """
         Loads the TF topics from a bagfile into the buffer,
         if it's not already cached.
-        :param bag_handle: opened bag handle, from rosbag.Bag(...)
+        :param reader: opened bag reader (rosbags.rosbag1)
         :param topic: TF topic
         """
         tf_topics = [topic]
-        if not bag_handle.get_message_count(topic) > 0:
+        if topic not in reader.topics:
             raise TfCacheException(
                 "no messages for topic {} in bag".format(topic))
         # Implicitly add static TFs to buffer if present.
-        if bag_handle.get_message_count(static_topic) > 0:
+        if static_topic in reader.topics:
             tf_topics.append(static_topic)
 
         # Add TF data to buffer if this bag/topic pair is not already cached.
         for tf_topic in tf_topics:
-            if tf_topic in self.topics and bag_handle.filename in self.bags:
+            if tf_topic in self.topics and reader.path.name in self.bags:
                 logger.debug("Using cache for topic {} from {}".format(
-                    tf_topic, bag_handle.filename))
+                    tf_topic, reader.path.name))
                 continue
             logger.debug("Caching TF topic {} from {} ...".format(
-                tf_topic, bag_handle.filename))
-            for _, msg, _ in bag_handle.read_messages(tf_topic):
+                tf_topic, reader.path.name))
+            connections = [
+                c for c in reader.connections.values() if c.topic == tf_topic
+            ]
+            for connection, _, rawdata in reader.messages(
+                    connections=connections):
+                msg = deserialize_cdr(ros1_to_cdr(rawdata, connection.msgtype),
+                                      connection.msgtype)
                 for tf in msg.transforms:
+                    # Convert from rosbags.typesys.types to native ROS.
+                    # Related: https://gitlab.com/ternaris/rosbags/-/issues/13
+                    stamp = rospy.Time()
+                    stamp.secs = tf.header.stamp.sec
+                    stamp.nsecs = tf.header.stamp.nanosec
+                    tf = TransformStamped(Header(0, stamp, tf.header.frame_id),
+                                          tf.child_frame_id, tf.transform)
                     if tf_topic == static_topic:
                         self.buffer.set_transform_static(tf, __name__)
                     else:
                         self.buffer.set_transform(tf, __name__)
             self.topics.append(tf_topic)
-        self.bags.append(bag_handle.filename)
-
-    @staticmethod
-    def split_id(identifier: str) -> tuple:
-        match = ROS_NAME_REGEX.findall(identifier)
-        # If a fourth component exists, it's interpreted as the static TF name.
-        if not len(match) in (3, 4):
-            raise TfCacheException(
-                "ID string malformed, it should look similar to this: "
-                "/tf:map.base_footprint")
-        return tuple(match)
-
-    def check_id(self, identifier: str) -> bool:
-        try:
-            self.split_id(identifier)
-        except TfCacheException:
-            return False
-        return True
+        self.bags.append(reader.path.name)
 
     def lookup_trajectory(
         self, parent_frame: str, child_frame: str, start_time: rospy.Time,
@@ -152,29 +151,30 @@ class TfCache(object):
         }
         return trajectory
 
-    def get_trajectory(self, bag_handle, identifier: str) -> PoseTrajectory3D:
+    def get_trajectory(self, reader: Rosbag1Reader,
+                       identifier: str) -> PoseTrajectory3D:
         """
         Get a TF trajectory from a bag file. Updates or uses the cache.
-        :param bag_handle: opened bag handle, from rosbag.Bag(...)
+        :param reader: opened bag reader (rosbags.rosbag1)
         :param identifier: trajectory ID <topic>:<parent_frame>.<child_frame>
                            Example: /tf:map.base_link
         """
-        split_id = self.split_id(identifier)
+        split_id = tf_id.split_id(identifier)
         topic, parent, child = split_id[0], split_id[1], split_id[2]
         static_topic = split_id[3] if len(split_id) == 4 else "/tf_static"
         logger.debug(f"Loading trajectory of transform '{parent} to {child}' "
                      f"from topic {topic} (static topic: {static_topic}).")
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=UserWarning)
-            self.from_bag(bag_handle, topic, static_topic)
+            self.from_bag(reader, topic, static_topic)
         try:
             latest_time = self.buffer.get_latest_common_time(parent, child)
         except (tf2_py.LookupException, tf2_py.TransformException) as e:
             raise TfCacheException("Could not load trajectory: " + str(e))
-        return self.lookup_trajectory(
-            parent, child,
-            start_time=rospy.Time.from_sec(bag_handle.get_start_time()),
-            end_time=latest_time)
+        # rosbags Reader start_time is in nanoseconds.
+        start_time = rospy.Time.from_sec(reader.start_time * 1e-9)
+        return self.lookup_trajectory(parent, child, start_time=start_time,
+                                      end_time=latest_time)
 
 
 def instance() -> TfCache:

@@ -39,9 +39,6 @@ jobs:
 - job: 'Test'
   strategy:
     matrix:
-      Python37-ubuntu:
-        python.version: '3.7'
-        imageName: 'ubuntu-latest'
       Python38-ubuntu:
         python.version: '3.8'
         imageName: 'ubuntu-latest'

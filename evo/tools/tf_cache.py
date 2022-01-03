@@ -20,7 +20,6 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import logging
-import re
 import warnings
 
 import rospy
@@ -32,13 +31,12 @@ from std_msgs.msg import Header
 
 import numpy as np
 from evo import EvoException
+from evo.tools import tf_id
 from evo.core.trajectory import PoseTrajectory3D
 from evo.tools.file_interface import _get_xyz_quat_from_transform_stamped
 from evo.tools.settings import SETTINGS
 
 logger = logging.getLogger(__name__)
-
-ROS_NAME_REGEX = re.compile(r"([\/|_|0-9|a-z|A-Z]+)")
 
 
 class TfCacheException(EvoException):
@@ -111,23 +109,6 @@ class TfCache(object):
             self.topics.append(tf_topic)
         self.bags.append(reader.path.name)
 
-    @staticmethod
-    def split_id(identifier: str) -> tuple:
-        match = ROS_NAME_REGEX.findall(identifier)
-        # If a fourth component exists, it's interpreted as the static TF name.
-        if not len(match) in (3, 4):
-            raise TfCacheException(
-                "ID string malformed, it should look similar to this: "
-                "/tf:map.base_footprint")
-        return tuple(match)
-
-    def check_id(self, identifier: str) -> bool:
-        try:
-            self.split_id(identifier)
-        except TfCacheException:
-            return False
-        return True
-
     def lookup_trajectory(
         self, parent_frame: str, child_frame: str, start_time: rospy.Time,
         end_time: rospy.Time,
@@ -178,7 +159,7 @@ class TfCache(object):
         :param identifier: trajectory ID <topic>:<parent_frame>.<child_frame>
                            Example: /tf:map.base_link
         """
-        split_id = self.split_id(identifier)
+        split_id = tf_id.split_id(identifier)
         topic, parent, child = split_id[0], split_id[1], split_id[2]
         static_topic = split_id[3] if len(split_id) == 4 else "/tf_static"
         logger.debug(f"Loading trajectory of transform '{parent} to {child}' "

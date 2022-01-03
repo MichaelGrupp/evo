@@ -39,7 +39,7 @@ import evo.core.lie_algebra as lie
 import evo.core.transformations as tr
 from evo.core import result
 from evo.core.trajectory import PosePath3D, PoseTrajectory3D
-from evo.tools import user
+from evo.tools import user, tf_id
 
 logger = logging.getLogger(__name__)
 
@@ -265,10 +265,9 @@ def read_bag_trajectory(reader: typing.Union[Rosbag1Reader, Rosbag2Reader],
 
     # TODO: Support TF also with ROS2 bags.
     if isinstance(reader, Rosbag1Reader):
-        from evo.tools import tf_cache
-
         # Use TfCache instead if it's a TF transform ID.
-        if tf_cache.instance().check_id(topic):
+        if tf_id.check_id(topic):
+            from evo.tools import tf_cache
             return tf_cache.instance().get_trajectory(reader, identifier=topic)
 
     if not reader.message_count > 0:
@@ -290,7 +289,8 @@ def read_bag_trajectory(reader: typing.Union[Rosbag1Reader, Rosbag2Reader],
     stamps, xyz, quat = [], [], []
 
     connections = [c for c in reader.connections.values() if c.topic == topic]
-    for connection, _, rawdata in reader.messages(connections=connections):  # type: ignore
+    for connection, _, rawdata in reader.messages(
+            connections=connections):  # type: ignore
         if isinstance(reader, Rosbag1Reader):
             msg = deserialize_cdr(ros1_to_cdr(rawdata, connection.msgtype),
                                   connection.msgtype)
@@ -307,8 +307,8 @@ def read_bag_trajectory(reader: typing.Union[Rosbag1Reader, Rosbag2Reader],
     logger.debug("Loaded {} {} messages of topic: {}".format(
         len(stamps), msg_type, topic))
 
-    (connection, _,
-     rawdata) = list(reader.messages(connections=connections))[0]  # type: ignore
+    (connection, _, rawdata) = list(
+        reader.messages(connections=connections))[0]  # type: ignore
     if isinstance(reader, Rosbag1Reader):
         first_msg = deserialize_cdr(ros1_to_cdr(rawdata, connection.msgtype),
                                     connection.msgtype)

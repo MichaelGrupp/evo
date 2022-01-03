@@ -42,10 +42,10 @@ class PosePath3D(object):
     also: base class for real trajectory
     """
     def __init__(
-            self, positions_xyz: typing.Optional[np.ndarray] = None,
-            orientations_quat_wxyz: typing.Optional[np.ndarray] = None,
-            poses_se3: typing.Optional[typing.Sequence[np.ndarray]] = None,
-            meta: typing.Optional[dict] = None):
+        self, positions_xyz: typing.Optional[np.ndarray] = None,
+        orientations_quat_wxyz: typing.Optional[np.ndarray] = None,
+        poses_se3: typing.Optional[typing.Sequence[np.ndarray]] = None,
+        meta: typing.Optional[dict] = None):
         """
         :param positions_xyz: nx3 list of x,y,z positions
         :param orientations_quat_wxyz: nx4 list of quaternions (w,x,y,z format)
@@ -298,11 +298,11 @@ class PoseTrajectory3D(PosePath3D, object):
     a PosePath with temporal information
     """
     def __init__(
-            self, positions_xyz: typing.Optional[np.ndarray] = None,
-            orientations_quat_wxyz: typing.Optional[np.ndarray] = None,
-            timestamps: typing.Optional[np.ndarray] = None,
-            poses_se3: typing.Optional[typing.Sequence[np.ndarray]] = None,
-            meta: typing.Optional[dict] = None):
+        self, positions_xyz: typing.Optional[np.ndarray] = None,
+        orientations_quat_wxyz: typing.Optional[np.ndarray] = None,
+        timestamps: typing.Optional[np.ndarray] = None,
+        poses_se3: typing.Optional[typing.Sequence[np.ndarray]] = None,
+        meta: typing.Optional[dict] = None):
         """
         :param timestamps: optional nx1 list of timestamps
         """
@@ -431,7 +431,7 @@ def calc_speed(xyz_1: np.ndarray, xyz_2: np.ndarray, t_1: float,
     if (t_2 - t_1) <= 0:
         raise TrajectoryException("bad timestamps: " + str(t_1) + " & " +
                                   str(t_2))
-    return np.linalg.norm(xyz_2 - xyz_1) / (t_2 - t_1)
+    return float(np.linalg.norm(xyz_2 - xyz_1) / (t_2 - t_1))
 
 
 def calc_angular_speed(p_1: np.ndarray, p_2: np.ndarray, t_1: float,

@@ -29,9 +29,10 @@ import typing
 import zipfile
 
 import numpy as np
-from rosbags.rosbag1 import Reader as Rosbag1Reader
-from rosbags.rosbag2 import Reader as Rosbag2Reader
-from rosbags.serde import deserialize_cdr, ros1_to_cdr
+from rosbags.rosbag1 import (Reader as Rosbag1Reader, Writer as Rosbag1Writer)
+from rosbags.rosbag2 import (Reader as Rosbag2Reader, Writer as Rosbag2Writer)
+from rosbags.serde import deserialize_cdr, ros1_to_cdr, serialize_cdr
+from rosbags.serde.serdes import cdr_to_ros1
 
 from evo import EvoException
 import evo.core.lie_algebra as lie
@@ -256,6 +257,12 @@ def read_bag_trajectory(reader: typing.Union[Rosbag1Reader, Rosbag2Reader],
                   or a TF trajectory ID (e.g.: '/tf:map.base_link' )
     :return: trajectory.PoseTrajectory3D
     """
+    if not isinstance(reader, (Rosbag1Reader, Rosbag2Reader)):
+        raise FileInterfaceException(
+            "reader must be a rosbags.rosbags1.reader.Reader "
+            "or rosbags.rosbags2.reader.Reader - "
+            "rosbag.Bag() is not supported by evo anymore")
+
     # TODO: Support TF also with ROS2 bags.
     if isinstance(reader, Rosbag1Reader):
         from evo.tools import tf_cache
@@ -291,7 +298,6 @@ def read_bag_trajectory(reader: typing.Union[Rosbag1Reader, Rosbag2Reader],
             msg = deserialize_cdr(rawdata, connection.msgtype)
         # Use the header timestamps (converted to seconds).
         # Note: msg/stamp is a rosbags type here, not native ROS.
-        # TODO: does this work for ROS2?
         t = msg.header.stamp
         stamps.append(t.sec + (t.nanosec * 1e-9))
         xyz_t, quat_t = get_xyz_quat(msg)
@@ -313,64 +319,44 @@ def read_bag_trajectory(reader: typing.Union[Rosbag1Reader, Rosbag2Reader],
                             meta={"frame_id": frame_id})
 
 
-def write_bag_trajectory(bag_handle, traj: PoseTrajectory3D, topic_name: str,
+def write_bag_trajectory(writer, traj: PoseTrajectory3D, topic_name: str,
                          frame_id: str = "") -> None:
     """
-    :param bag_handle: opened bag handle, from rosbag.Bag(...)
+    :param writer: opened bag writer (rosbags.rosbag2 or rosbags.rosbag1)
     :param traj: trajectory.PoseTrajectory3D
     :param topic_name: the desired topic name for the trajectory
     :param frame_id: optional ROS frame_id
     """
-    import rospy
-    from geometry_msgs.msg import PoseStamped
+    from rosbags.typesys.types import (
+        geometry_msgs__msg__PoseStamped as PoseStamped, std_msgs__msg__Header
+        as Header, geometry_msgs__msg__Pose as Pose, geometry_msgs__msg__Point
+        as Position, geometry_msgs__msg__Quaternion as Quaternion,
+        builtin_interfaces__msg__Time as Time)
     if not isinstance(traj, PoseTrajectory3D):
         raise FileInterfaceException(
             "trajectory must be a PoseTrajectory3D object")
-    for stamp, xyz, quat in zip(traj.timestamps, traj.positions_xyz,
-                                traj.orientations_quat_wxyz):
-        p = PoseStamped()
-        p.header.stamp = rospy.Time.from_sec(stamp)
-        p.header.frame_id = frame_id
-        p.pose.position.x = xyz[0]
-        p.pose.position.y = xyz[1]
-        p.pose.position.z = xyz[2]
-        p.pose.orientation.w = quat[0]
-        p.pose.orientation.x = quat[1]
-        p.pose.orientation.y = quat[2]
-        p.pose.orientation.z = quat[3]
-        bag_handle.write(topic_name, p, t=p.header.stamp)
-    logger.info("Saved geometry_msgs/PoseStamped topic: " + topic_name)
+    if not isinstance(writer, (Rosbag1Writer, Rosbag2Writer)):
+        raise FileInterfaceException(
+            "writer must be a rosbags.rosbags1.writer.Writer "
+            "or rosbags.rosbags2.writer.Writer - "
+            "rosbag.Bag() is not supported by evo anymore")
 
-def write_bag2_trajectory(bag_handle, traj: PoseTrajectory3D, topic_name: str,
-                         frame_id: str = "") -> None:
-    """
-    :param bag_handle: opened bag handle, from rosbag.Bag(...)
-    :param traj: trajectory.PoseTrajectory3D
-    :param topic_name: the desired topic name for the trajectory
-    :param frame_id: optional ROS frame_id
-    """
-    from rosbags.serde import serialize_cdr
-    from rosbags.typesys.types import geometry_msgs__msg__PoseStamped as PoseStamped
-    from rosbags.typesys.types import std_msgs__msg__Header as Header
-    from rosbags.typesys.types import geometry_msgs__msg__Pose as Pose
-    from rosbags.typesys.types import geometry_msgs__msg__Point as Position
-    from rosbags.typesys.types import geometry_msgs__msg__Quaternion as Quaternion
-    from rosbags.typesys.types import builtin_interfaces__msg__Time as Time
-    if not isinstance(traj, PoseTrajectory3D):
-        raise FileInterfaceException(
-            "trajectory must be a PoseTrajectory3D object")
     msgtype = PoseStamped.__msgtype__
-    connection = bag_handle.add_connection(topic_name, msgtype, 'cdr', '')
+    connection = writer.add_connection(topic_name, msgtype)
     for stamp, xyz, quat in zip(traj.timestamps, traj.positions_xyz,
                                 traj.orientations_quat_wxyz):
-        #Assuming timestamps come in ns
-        timestamp=Time(int(stamp) ,int(stamp))
-        header= Header(timestamp,frame_id)
-        position = Position (xyz[0],xyz[1],xyz[2])
-        quaternion = Quaternion(quat[0],quat[1],quat[2],quat[3])
-        pose = Pose(position,quaternion)
-        p = PoseStamped(header,pose)
-        bag_handle.write(connection, int(stamp*1e9), serialize_cdr(p, msgtype))
+        sec = int(stamp // 1)
+        nanosec = int((stamp - sec) * 1e9)
+        time = Time(sec, nanosec)
+        header = Header(time, frame_id)
+        position = Position(x=xyz[0], y=xyz[1], z=xyz[2])
+        quaternion = Quaternion(w=quat[0], x=quat[1], y=quat[2], z=quat[3])
+        pose = Pose(position, quaternion)
+        p = PoseStamped(header, pose)
+        serialized_msg = serialize_cdr(p, msgtype)
+        if isinstance(writer, Rosbag1Writer):
+            serialized_msg = cdr_to_ros1(serialized_msg, msgtype)
+        writer.write(connection, int(stamp * 1e9), serialized_msg)
     logger.info("Saved geometry_msgs/PoseStamped topic: " + topic_name)
 
 

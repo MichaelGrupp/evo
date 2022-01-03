@@ -24,6 +24,8 @@ import tempfile
 import unittest
 
 import numpy as np
+from rosbags.rosbag1 import (Reader as Rosbag1Reader, Writer as Rosbag1Writer)
+from rosbags.rosbag2 import (Reader as Rosbag2Reader, Writer as Rosbag2Writer)
 
 import helpers
 from evo.core.result import Result
@@ -150,22 +152,26 @@ class TestBagFile(MockFileTestCase):
     def __init__(self, *args, **kwargs):
         super(TestBagFile, self).__init__(io.BytesIO(), *args, **kwargs)
 
-    @MockFileTestCase.allow_import_error
     def test_write_read_integrity(self):
-        import rosbag
-        tmp_file = tempfile.NamedTemporaryFile(delete=False)
-        bag_out = rosbag.Bag(tmp_file.name, 'w')
-        traj_out = helpers.fake_trajectory(1000, 0.1)
-        self.assertTrue(traj_out.check())
-        file_interface.write_bag_trajectory(bag_out, traj_out, "/test",
-                                            frame_id="map")
-        bag_out.close()
-        bag_in = rosbag.Bag(tmp_file.name, 'r')
-        traj_in = file_interface.read_bag_trajectory(bag_in, "/test")
-        self.assertIsInstance(traj_in, PoseTrajectory3D)
-        self.assertTrue(traj_in.check())
-        self.assertTrue(traj_out == traj_in)
-        self.assertEqual(traj_in.meta["frame_id"], "map")
+        for reader_t, writer_t in zip([Rosbag1Reader, Rosbag2Reader],
+                                      [Rosbag1Writer, Rosbag2Writer]):
+            # TODO: rosbags cannot overwrite existing paths, this forces us
+            # to do this here to get only a filepath:
+            tmp_filename = tempfile.NamedTemporaryFile(delete=True).name
+            bag_out = writer_t(tmp_filename)
+            bag_out.open()
+            traj_out = helpers.fake_trajectory(1000, 0.1)
+            self.assertTrue(traj_out.check())
+            file_interface.write_bag_trajectory(bag_out, traj_out, "/test",
+                                                frame_id="map")
+            bag_out.close()
+            bag_in = reader_t(tmp_filename)
+            bag_in.open()
+            traj_in = file_interface.read_bag_trajectory(bag_in, "/test")
+            self.assertIsInstance(traj_in, PoseTrajectory3D)
+            self.assertTrue(traj_in.check())
+            self.assertTrue(traj_out == traj_in)
+            self.assertEqual(traj_in.meta["frame_id"], "map")
 
 
 class TestResultFile(MockFileTestCase):

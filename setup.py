@@ -103,7 +103,7 @@ setup(
         "pygments",
         "pyyaml",
         "pillow",
-        "rosbags",
+        "rosbags>=0.9.8",
     ],
     python_requires=">=3.6",
     classifiers=[

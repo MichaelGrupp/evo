@@ -431,7 +431,7 @@ def calc_speed(xyz_1: np.ndarray, xyz_2: np.ndarray, t_1: float,
     if (t_2 - t_1) <= 0:
         raise TrajectoryException("bad timestamps: " + str(t_1) + " & " +
                                   str(t_2))
-    return np.linalg.norm(xyz_2 - xyz_1) / (t_2 - t_1)
+    return float(np.linalg.norm(xyz_2 - xyz_1) / (t_2 - t_1))
 
 
 def calc_angular_speed(p_1: np.ndarray, p_2: np.ndarray, t_1: float,

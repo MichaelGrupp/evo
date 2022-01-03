@@ -111,7 +111,7 @@ def so3_log_angle(r: np.ndarray, degrees: bool = False) -> float:
     angle = np.linalg.norm(so3_log(r, return_skew=False))
     if degrees:
         angle = np.rad2deg(angle)
-    return angle
+    return float(angle)
 
 
 def se3(r: np.ndarray = np.eye(3),

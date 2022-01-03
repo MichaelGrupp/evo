@@ -47,7 +47,7 @@ def filter_pairs_by_index(poses: typing.Sequence[np.ndarray], delta: int,
     :return: list of index tuples of the filtered pairs
     """
     if all_pairs:
-        ids = range(len(poses))
+        ids = np.arange(len(poses))
         id_pairs = [(i, i + delta) for i in ids if i + delta < len(poses)]
     else:
         ids = np.arange(0, len(poses), delta)
@@ -85,8 +85,8 @@ def filter_pairs_by_path(poses: typing.Sequence[np.ndarray], delta: float,
         previous_pose = poses[0]
         current_path = 0.0
         for i, current_pose in enumerate(poses):
-            current_path += np.linalg.norm(current_pose[:3, 3] -
-                                           previous_pose[:3, 3])
+            current_path += float(
+                np.linalg.norm(current_pose[:3, 3] - previous_pose[:3, 3]))
             previous_pose = current_pose
             if current_path >= delta:
                 ids.append(i)

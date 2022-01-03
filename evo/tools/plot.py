@@ -495,7 +495,7 @@ def traj_xyz(axarr: np.ndarray, traj: trajectory.PosePath3D, style: str = '-',
             x = traj.timestamps
         xlabel = "$t$ (s)"
     else:
-        x = np.arange(0, len(traj.positions_xyz))
+        x = np.arange(0., len(traj.positions_xyz))
         xlabel = "index"
     ylabels = ["$x$ (m)", "$y$ (m)", "$z$ (m)"]
     for i in range(0, 3):
@@ -533,7 +533,7 @@ def traj_rpy(axarr: np.ndarray, traj: trajectory.PosePath3D, style: str = '-',
             x = traj.timestamps
         xlabel = "$t$ (s)"
     else:
-        x = np.arange(0, len(angles))
+        x = np.arange(0., len(angles))
         xlabel = "index"
     ylabels = ["$roll$ (deg)", "$pitch$ (deg)", "$yaw$ (deg)"]
     for i in range(0, 3):

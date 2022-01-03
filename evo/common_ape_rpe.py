@@ -59,10 +59,10 @@ def load_trajectories(
                 "File doesn't exist: {}".format(args.bag))
         if args.subcommand == "bag2":
             from rosbags.rosbag2 import Reader as Rosbag2Reader
-            bag = Rosbag2Reader(args.bag)
+            bag = Rosbag2Reader(args.bag)  # type: ignore
         else:
             from rosbags.rosbag1 import Reader as Rosbag1Reader
-            bag = Rosbag1Reader(args.bag)
+            bag = Rosbag1Reader(args.bag)  # type: ignore
         try:
             bag.open()
             traj_ref = file_interface.read_bag_trajectory(bag, args.ref_topic)

@@ -290,7 +290,7 @@ def read_bag_trajectory(reader: typing.Union[Rosbag1Reader, Rosbag2Reader],
     stamps, xyz, quat = [], [], []
 
     connections = [c for c in reader.connections.values() if c.topic == topic]
-    for connection, _, rawdata in reader.messages(connections=connections):
+    for connection, _, rawdata in reader.messages(connections=connections):  # type: ignore
         if isinstance(reader, Rosbag1Reader):
             msg = deserialize_cdr(ros1_to_cdr(rawdata, connection.msgtype),
                                   connection.msgtype)
@@ -308,7 +308,7 @@ def read_bag_trajectory(reader: typing.Union[Rosbag1Reader, Rosbag2Reader],
         len(stamps), msg_type, topic))
 
     (connection, _,
-     rawdata) = list(reader.messages(connections=connections))[0]
+     rawdata) = list(reader.messages(connections=connections))[0]  # type: ignore
     if isinstance(reader, Rosbag1Reader):
         first_msg = deserialize_cdr(ros1_to_cdr(rawdata, connection.msgtype),
                                     connection.msgtype)

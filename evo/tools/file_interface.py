@@ -307,8 +307,9 @@ def read_bag_trajectory(reader: typing.Union[Rosbag1Reader, Rosbag2Reader],
     logger.debug("Loaded {} {} messages of topic: {}".format(
         len(stamps), msg_type, topic))
 
-    (connection, _, rawdata) = list(
-        reader.messages(connections=connections))[0]  # type: ignore
+    # yapf: disable
+    (connection, _, rawdata) = list(reader.messages(connections=connections))[0]  # type: ignore
+    # yapf: enable
     if isinstance(reader, Rosbag1Reader):
         first_msg = deserialize_cdr(ros1_to_cdr(rawdata, connection.msgtype),
                                     connection.msgtype)

@@ -39,9 +39,9 @@ def split_id(identifier: str) -> tuple:
     return tuple(match)
 
 
-def check_id(self, identifier: str) -> bool:
+def check_id(identifier: str) -> bool:
     try:
-        self.split_id(identifier)
+        split_id(identifier)
     except TfIdException:
         return False
     return True

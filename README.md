@@ -2,7 +2,7 @@
 
 ***Python package for the evaluation of odometry and SLAM***
 
-| Linux / macOS / Windows / ROS |
+| Linux / macOS / Windows / ROS / ROS2 |
 | :---: |
 | [![Build Status](https://dev.azure.com/michl2222/michl2222/_apis/build/status/MichaelGrupp.evo?branchName=master)](https://dev.azure.com/michl2222/michl2222/_build/latest?definitionId=1&branchName=master) |
 
@@ -13,7 +13,7 @@ Supported trajectory formats:
 * 'TUM' trajectory files
 * 'KITTI' pose files
 * 'EuRoC MAV' (.csv groundtruth and TUM trajectory file)
-* ROS bagfile with `geometry_msgs/PoseStamped`, `geometry_msgs/TransformStamped`, `geometry_msgs/PoseWithCovarianceStamped` or `nav_msgs/Odometry` topics or [TF messages](https://github.com/MichaelGrupp/evo/wiki/Formats#bag---ros-bagfile)
+* ROS and ROS2 bagfile with `geometry_msgs/PoseStamped`, `geometry_msgs/TransformStamped`, `geometry_msgs/PoseWithCovarianceStamped` or `nav_msgs/Odometry` topics or [TF messages](https://github.com/MichaelGrupp/evo/wiki/Formats#bag---ros-bagfile)
 
 See [here](https://github.com/MichaelGrupp/evo/wiki/Formats) for more infos about the formats.
 
@@ -51,7 +51,7 @@ evo has several advantages over other public benchmarking tools:
 
 Installation is easy-peasy if you're familiar with this: https://xkcd.com/1987/#
 
-evo supports **Python 3.6+**. The last evo version that supports **Python 2.7** is `1.12.0`. If you want to use the ROS bagfile interface, first check which Python version is used by your ROS installation and install accordingly.
+evo supports **Python 3.8+**. The last evo version that supports **Python 2.7** is `1.12.0`.
 You might also want to use a [virtual environment](https://github.com/MichaelGrupp/evo/blob/master/doc/install_in_virtualenv.md).
 
 ### From PyPi

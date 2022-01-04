@@ -280,8 +280,7 @@ def read_bag_trajectory(reader: typing.Union[Rosbag1Reader, Rosbag2Reader],
             "unsupported message type: {}".format(msg_type))
 
     # Choose appropriate message conversion.
-    # TODO: ensure that this works for both ROS1 and ROS2.
-    if msg_type == "geometry_msgs/TransformStamped":
+    if msg_type == "geometry_msgs/msg/TransformStamped":
         get_xyz_quat = _get_xyz_quat_from_transform_stamped
     else:
         get_xyz_quat = _get_xyz_quat_from_pose_or_odometry_msg

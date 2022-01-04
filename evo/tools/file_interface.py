@@ -264,11 +264,14 @@ def read_bag_trajectory(reader: typing.Union[Rosbag1Reader, Rosbag2Reader],
             "rosbag.Bag() is not supported by evo anymore")
 
     # TODO: Support TF also with ROS2 bags.
-    if isinstance(reader, Rosbag1Reader):
-        # Use TfCache instead if it's a TF transform ID.
-        if tf_id.check_id(topic):
+    if tf_id.check_id(topic):
+        if isinstance(reader, Rosbag1Reader):
+            # Use TfCache instead if it's a TF transform ID.
             from evo.tools import tf_cache
             return tf_cache.instance().get_trajectory(reader, identifier=topic)
+        else:
+            raise FileInterfaceException(
+                "TF support for ROS2 bags is not implemented")
 
     if not reader.message_count > 0:
         raise FileInterfaceException("no messages for topic '" + topic +
@@ -280,8 +283,7 @@ def read_bag_trajectory(reader: typing.Union[Rosbag1Reader, Rosbag2Reader],
             "unsupported message type: {}".format(msg_type))
 
     # Choose appropriate message conversion.
-    # TODO: ensure that this works for both ROS1 and ROS2.
-    if msg_type == "geometry_msgs/TransformStamped":
+    if msg_type == "geometry_msgs/msg/TransformStamped":
         get_xyz_quat = _get_xyz_quat_from_transform_stamped
     else:
         get_xyz_quat = _get_xyz_quat_from_pose_or_odometry_msg

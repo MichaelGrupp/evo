@@ -28,6 +28,9 @@ jobs:
       ROS-noetic:
         dockerfile: 'Dockerfile.rosnoetic'
         imageName: 'ubuntu-latest'
+      ROS-galactic:
+        dockerfile: 'Dockerfile.rosgalactic'
+        imageName: 'ubuntu-latest'
   pool:
     vmImage: $(imageName)
   steps:

@@ -236,9 +236,7 @@ def ape(traj_ref: PosePath3D, traj_est: PosePath3D,
             [t - traj_est.timestamps[0] for t in traj_est.timestamps])
         ape_result.add_np_array("seconds_from_start", seconds_from_start)
         ape_result.add_np_array("timestamps", traj_est.timestamps)
-        distances_from_start = np.array(
-            [d - traj_ref.distances[0] for d in traj_ref.distances])
-        ape_result.add_np_array("distances_from_start", distances_from_start)
+        ape_result.add_np_array("distances_from_start", traj_ref.distances)
         ape_result.add_np_array("distances", traj_est.distances)
 
     if alignment_transformation is not None:

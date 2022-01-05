@@ -77,7 +77,7 @@ jobs:
 
   - script: |
       pip install pytest
-      pytest -sv --junitxml=junit/test-results.xml
+      pytest -sv --capture=no --junitxml=junit/test-results.xml
     displayName: 'pytest'
 
   - task: PublishTestResults@2

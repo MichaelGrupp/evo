@@ -289,7 +289,7 @@ def print_traj_info(name, traj, verbose=False, full_check=False):
 
 
 def to_filestem(name: str, args: argparse.Namespace) -> str:
-    if args.subcommand == "bag":
+    if args.subcommand in ("bag", "bag2"):
         if name.startswith('/'):
             name = name[1:]
         name = name.replace(':', '/')  # TF ID
@@ -298,14 +298,14 @@ def to_filestem(name: str, args: argparse.Namespace) -> str:
 
 
 def to_topic_name(name: str, args: argparse.Namespace) -> str:
-    if args.subcommand == "bag":
+    if args.subcommand in ("bag", "bag2"):
         return name.replace(':', '/')
     return '/' + os.path.splitext(os.path.basename(name))[0].replace(' ', '_')
 
 
 def to_compact_name(name: str, args: argparse.Namespace,
                     latex_friendly=False) -> str:
-    if not args.show_full_names and not args.subcommand == "bag":
+    if not args.show_full_names and args.subcommand not in ("bag", "bag2"):
         # /some/super/long/path/that/nobody/cares/about/traj.txt  ->  traj
         name = os.path.splitext(os.path.basename(name))[0]
     if latex_friendly:

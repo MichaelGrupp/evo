@@ -43,7 +43,6 @@ from evo.tools import user, tf_id
 
 logger = logging.getLogger(__name__)
 
-# TODO: ensure that this works for both ROS1 and ROS2.
 SUPPORTED_ROS_MSGS = {
     "geometry_msgs/msg/PoseStamped",
     "geometry_msgs/msg/PoseWithCovarianceStamped",
@@ -240,7 +239,7 @@ def _get_xyz_quat_from_pose_or_odometry_msg(msg) -> typing.Tuple[list, list]:
 def get_supported_topics(
         reader: typing.Union[Rosbag1Reader, Rosbag2Reader]) -> list:
     """
-    :param bag_handle: opened bag handle, from rosbag.Bag(...)
+    :param reader: opened bag reader (rosbags.rosbag2 or rosbags.rosbag1)
     :return: list of ROS topics that are supported by this module
     """
     return sorted([

@@ -80,7 +80,7 @@ PyQt5 will give you the enhanced GUI for plot figures from the "*Qt5Agg*" matplo
 
 **ROS (optional)**
 
-All ROS-related features like reading bagfiles require a ROS installation, see [here](http://www.ros.org/). We are testing this package with ROS Noetic. Previous versions (`<= 1.12.0`) work with Melodic, Kinetic and Indigo.
+Some ROS-related features require a ROS installation, see [here](http://www.ros.org/). We are testing this package with ROS Noetic and Galactic. Previous versions (`<= 1.12.0`) work with Melodic, Kinetic and Indigo.
 
 ---
 

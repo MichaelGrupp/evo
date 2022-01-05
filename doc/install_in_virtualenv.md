@@ -33,8 +33,8 @@ source ~/.bashrc
 ## Setting up a virtualenv for evo
 
 Once `virtualenvwrapper` is installed, we can create the virtual environment.
-The `--system-site-packages` flag is recommended if you are using ROS and want to use rosbags with evo:
-it enables to import the `rosbag` Python module that is installed outside of the virtualenv on your system.
+The `--system-site-packages` flag is recommended if you are using ROS with evo:
+it enables to import ROS Python modules that are installed outside of the virtualenv on your system.
 ```shell
 mkvirtualenv evaluation --system-site-packages
 ```

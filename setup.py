@@ -92,7 +92,7 @@ setup(
         "upload": UploadCommand
     },
     install_requires=[
-        "numpy",
+        "numpy>=1.18.5",
         "matplotlib",
         "scipy>=1.2",
         "pandas",
@@ -105,7 +105,7 @@ setup(
         "pillow",
         "rosbags>=0.9.8",
     ],
-    python_requires=">=3.6",
+    python_requires=">=3.8",
     classifiers=[
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Topic :: Scientific/Engineering",

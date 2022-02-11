@@ -447,7 +447,7 @@ def run(args):
                       label=short_traj_name,
                       alpha=SETTINGS.plot_reference_alpha)
             plot.draw_coordinate_axes(ax_traj, ref_traj, plot_mode,
-                                      SETTINGS.plot_axis_marker_scale)
+                                      SETTINGS.plot_reference_axis_marker_scale)
             plot.traj_xyz(
                 axarr_xyz, ref_traj, style=SETTINGS.plot_reference_linestyle,
                 color=SETTINGS.plot_reference_color, label=short_traj_name,

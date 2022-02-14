@@ -153,7 +153,7 @@ def plot_result(args: argparse.Namespace, result: Result, traj_ref: PosePath3D,
               color=SETTINGS.plot_reference_color, label='reference',
               alpha=SETTINGS.plot_reference_alpha)
     plot.draw_coordinate_axes(ax, traj_ref, plot_mode,
-                              SETTINGS.plot_axis_marker_scale)
+                              SETTINGS.plot_reference_axis_marker_scale)
 
     if args.plot_colormap_min is None:
         args.plot_colormap_min = result.stats["min"]

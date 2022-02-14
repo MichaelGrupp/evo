@@ -121,7 +121,8 @@ DEFAULT_SETTINGS_DICT_DOC = {
     ),
     "plot_reference_axis_marker_scale": (
         0.,
-        "Scaling parameter of pose coordinate frame markers of reference trajectories. 0 will draw nothing."
+        "Scaling parameter of pose coordinate frame markers of reference trajectories. "
+        + "0 will draw nothing."
     ),
     "plot_seaborn_palette": (
         "deep6",

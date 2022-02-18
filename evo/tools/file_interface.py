@@ -272,7 +272,7 @@ def read_bag_trajectory(reader: typing.Union[Rosbag1Reader, Rosbag2Reader],
             raise FileInterfaceException(
                 "TF support for ROS2 bags is not implemented")
 
-    if topic not in reader.topics or reader.topics[topic].msgcount == 0:
+    if topic not in reader.topics:
         raise FileInterfaceException("no messages for topic '" + topic +
                                      "' in bag")
 

@@ -243,8 +243,7 @@ def get_supported_topics(
     :return: list of ROS topics that are supported by this module
     """
     return sorted([
-        c.topic for c in reader.connections.values()
-        if c.msgtype in SUPPORTED_ROS_MSGS
+        c.topic for c in reader.connections if c.msgtype in SUPPORTED_ROS_MSGS
     ])
 
 
@@ -289,7 +288,7 @@ def read_bag_trajectory(reader: typing.Union[Rosbag1Reader, Rosbag2Reader],
 
     stamps, xyz, quat = [], [], []
 
-    connections = [c for c in reader.connections.values() if c.topic == topic]
+    connections = [c for c in reader.connections if c.topic == topic]
     for connection, _, rawdata in reader.messages(
             connections=connections):  # type: ignore
         if isinstance(reader, Rosbag1Reader):

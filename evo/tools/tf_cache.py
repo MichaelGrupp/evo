@@ -88,7 +88,7 @@ class TfCache(object):
             logger.debug("Caching TF topic {} from {} ...".format(
                 tf_topic, reader.path.name))
             connections = [
-                c for c in reader.connections.values() if c.topic == tf_topic
+                c for c in reader.connections if c.topic == tf_topic
             ]
             for connection, _, rawdata in reader.messages(
                     connections=connections):

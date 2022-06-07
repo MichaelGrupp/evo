@@ -119,6 +119,11 @@ DEFAULT_SETTINGS_DICT_DOC = {
         "--",
         "matplotlib linestyle of reference trajectories in plots."
     ),
+    "plot_reference_axis_marker_scale": (
+        0.,
+        "Scaling parameter of pose coordinate frame markers of reference trajectories. "
+        + "0 will draw nothing."
+    ),
     "plot_seaborn_palette": (
         "deep6",
         "Default color cycle, taken from a palette of the seaborn package.\n"

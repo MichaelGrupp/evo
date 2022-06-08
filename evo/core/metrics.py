@@ -66,7 +66,6 @@ class PoseRelation(Enum):
     point_distance = "point distance"
     point_distance_error_ratio = "point distance error ratio"
 
-
 class Unit(Enum):
     none = "unit-less"
     meters = "m"
@@ -270,7 +269,7 @@ class RPE(PE):
                 np.linalg.norm(traj_est.positions_xyz[i] -
                                traj_est.positions_xyz[j]) for i, j in id_pairs
             ])
-            self.error = np.abs(ref_distances - est_distances)
+            self.error = ref_distances - est_distances
             if self.pose_relation == PoseRelation.point_distance_error_ratio:
                 nonzero = ref_distances.nonzero()[0]
                 if nonzero.size != ref_distances.size:

@@ -91,6 +91,8 @@ def get_pose_relation(args: argparse.Namespace) -> PoseRelation:
         pose_relation = PoseRelation.point_distance
     elif args.pose_relation == "point_distance_error_ratio":
         pose_relation = PoseRelation.point_distance_error_ratio
+    elif args.pose_relation == "scale_error":
+        pose_relation = PoseRelation.scale_error
     return pose_relation
 
 

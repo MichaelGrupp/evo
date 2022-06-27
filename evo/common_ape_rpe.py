@@ -189,3 +189,4 @@ def plot_result(args: argparse.Namespace, result: Result, traj_ref: PosePath3D,
         logger.debug(SEP)
         plot_collection.serialize(args.serialize_plot,
                                   confirm_overwrite=not args.no_warnings)
+    plot_collection.close()

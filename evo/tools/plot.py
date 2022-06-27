@@ -183,6 +183,10 @@ class PlotCollection:
         else:
             plt.show()
 
+    def close(self) -> None:
+        for name, fig in self.figures.items():
+            plt.close(fig)
+
     def serialize(self, dest: str, confirm_overwrite: bool = True) -> None:
         logger.debug("Serializing PlotCollection to " + dest + "...")
         if confirm_overwrite and not user.check_and_confirm_overwrite(dest):

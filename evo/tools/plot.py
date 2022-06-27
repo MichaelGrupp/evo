@@ -184,8 +184,6 @@ class PlotCollection:
             plt.show()
 
     def close(self) -> None:
-        if len(self.figures.keys()) == 0:
-            return
         for name, fig in self.figures.items():
             plt.close(fig)
 

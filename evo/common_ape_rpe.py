@@ -166,7 +166,7 @@ def plot_result(args: argparse.Namespace, result: Result, traj_ref: PosePath3D,
     plot.traj_colormap(ax, traj_est, result.np_arrays["error_array"],
                        plot_mode, min_map=args.plot_colormap_min,
                        max_map=args.plot_colormap_max,
-                       title="Error mapped onto trajectory")
+                       title=result.info["title"])
     plot.draw_coordinate_axes(ax, traj_est, plot_mode,
                               SETTINGS.plot_axis_marker_scale)
     if SETTINGS.plot_pose_correspondences:

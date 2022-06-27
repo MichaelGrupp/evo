@@ -113,8 +113,6 @@ def plot_result(args: argparse.Namespace, result: Result, traj_ref: PosePath3D,
     from evo.tools import plot
     from evo.tools.settings import SETTINGS
 
-    from matplotlib import use
-    use('agg')
     import matplotlib.pyplot as plt
     import numpy as np
 

@@ -595,6 +595,7 @@ def error_array(ax: plt.Axes, err_array: ListOrArray,
                 threshold: float = None, cumulative: bool = False,
                 color: str = 'grey', name: str = "error", title: str = "",
                 xlabel: str = "index", ylabel: typing.Optional[str] = None,
+                xlim: typing.Tuple[float, float] = None, ylim: typing.Tuple[float, float] = None,
                 subplot_arg: int = 111, linestyle: str = "-",
                 marker: typing.Optional[str] = None):
     """
@@ -609,6 +610,8 @@ def error_array(ax: plt.Axes, err_array: ListOrArray,
     :param title: optional plot title
     :param xlabel: optional x-axis label
     :param ylabel: optional y-axis label
+    :param xlim: optional tuple of x-axis limits
+    :param ylim: optional tuple of y-axis limits 
     :param subplot_arg: optional matplotlib subplot ID if used as subplot
     :param linestyle: matplotlib linestyle
     :param marker: optional matplotlib marker style for points
@@ -627,6 +630,12 @@ def error_array(ax: plt.Axes, err_array: ListOrArray,
         else:
             ax.plot(err_array, linestyle=linestyle, marker=marker, color=color,
                     label=name)
+
+    if xlim is not None:
+        ax.set_xlim(xlim)
+    if ylim is not None:
+        ax.set_ylim(ylim)
+
     if statistics is not None:
         for stat_name, value in statistics.items():
             color = next(ax._get_lines.prop_cycler)['color']
@@ -640,6 +649,7 @@ def error_array(ax: plt.Axes, err_array: ListOrArray,
     if threshold is not None:
         ax.axhline(y=threshold, color='red', linestyle='dashed', linewidth=2.0,
                    label="threshold")
+
     plt.ylabel(ylabel if ylabel else name)
     plt.xlabel(xlabel)
     plt.title(title)

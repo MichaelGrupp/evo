@@ -647,7 +647,7 @@ def error_array(ax: plt.Axes, err_array: ListOrArray,
 
 
 def ros_map(ax: plt.Axes, yaml_path: str, plot_mode: PlotMode,
-            cmap: str = "Greys_r",
+            cmap: str = SETTINGS.ros_map_cmap,
             mask_unknown_value: int = SETTINGS.ros_map_unknown_cell_value,
             alpha: float = SETTINGS.ros_map_alpha_value) -> None:
     """

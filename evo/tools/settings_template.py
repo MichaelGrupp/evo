@@ -168,6 +168,10 @@ DEFAULT_SETTINGS_DICT_DOC = {
         1.0,
         "Alpha value for blending ROS map image slices."
     ),
+    "ros_map_cmap": (
+        "Greys_r",
+        "matplotlib colormap for coloring ROS map cells."
+    ),
     "ros_map_unknown_cell_value": (
         205,
         "uint8 value that represents unknown cells in a ROS map image.\n"

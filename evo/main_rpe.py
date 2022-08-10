@@ -250,18 +250,25 @@ def rpe(traj_ref: PosePath3D, traj_est: PosePath3D,
         import copy
         traj_ref = copy.deepcopy(traj_ref)
         traj_est = copy.deepcopy(traj_est)
-    traj_ref.reduce_to_ids(rpe_metric.delta_ids)
-    traj_est.reduce_to_ids(rpe_metric.delta_ids)
+    # Note: the pose at index 0 is added for plotting purposes, although it has
+    # no RPE value assigned to it since it has no previous pose.
+    # (for each pair (i, j), the 'delta_ids' represent only j)
+    delta_ids_with_first_pose = [0] + rpe_metric.delta_ids
+    traj_ref.reduce_to_ids(delta_ids_with_first_pose)
+    traj_est.reduce_to_ids(delta_ids_with_first_pose)
     rpe_result.add_trajectory(ref_name, traj_ref)
     rpe_result.add_trajectory(est_name, traj_est)
 
     if isinstance(traj_est, PoseTrajectory3D):
         seconds_from_start = np.array(
             [t - traj_est.timestamps[0] for t in traj_est.timestamps])
-        rpe_result.add_np_array("seconds_from_start", seconds_from_start)
-        rpe_result.add_np_array("timestamps", traj_est.timestamps)
-        rpe_result.add_np_array("distances_from_start", traj_ref.distances)
-        rpe_result.add_np_array("distances", traj_est.distances)
+        # Save times/distances of each calculated value.
+        # Note: here the first index needs that was added before needs to be
+        # ignored again as it's not relevant for the values (see above).
+        rpe_result.add_np_array("seconds_from_start", seconds_from_start[1:])
+        rpe_result.add_np_array("timestamps", traj_est.timestamps[1:])
+        rpe_result.add_np_array("distances_from_start", traj_ref.distances[1:])
+        rpe_result.add_np_array("distances", traj_est.distances[1:])
 
     if alignment_transformation is not None:
         rpe_result.add_np_array("alignment_transformation_sim3",

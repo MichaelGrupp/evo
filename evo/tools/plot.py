@@ -338,7 +338,7 @@ def colored_line_collection(
     xyz: np.ndarray, colors: ListOrArray, plot_mode: PlotMode = PlotMode.xy,
     linestyles: str = "solid", step: int = 1, alpha: float = 1.
 ) -> typing.Union[LineCollection, art3d.LineCollection]:
-    if len(xyz) / step != len(colors):
+    if step > 1 and len(xyz) / step != len(colors):
         raise PlotException(
             "color values don't have correct length: %d vs. %d" %
             (len(xyz) / step, len(colors)))

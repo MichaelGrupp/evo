@@ -96,6 +96,7 @@ setup(
         "matplotlib",
         "scipy>=1.2",
         "pandas",
+        "numexpr>=2.7.3"
         "seaborn>=0.9",
         "natsort",
         "argcomplete",

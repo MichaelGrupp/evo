@@ -134,13 +134,22 @@ def plot_result(args: argparse.Namespace, result: Result, traj_ref: PosePath3D,
         x_array = None
         x_label = "index"
 
+    if args.plot_colormap_min is None:
+        args.plot_colormap_min = result.stats["min"]
+    if args.plot_colormap_max is None:
+        args.plot_colormap_max = result.stats["max"]
+
+    y_lim = (None, None)
+    if args.plot_raw_with_same_limits_as_colormap:
+        y_lim = (args.plot_colormap_min, args.plot_colormap_max)
+
     plot.error_array(
         fig1.gca(), result.np_arrays["error_array"], x_array=x_array,
         statistics={
             s: result.stats[s]
             for s in SETTINGS.plot_statistics if s not in ("min", "max")
         }, name=result.info["label"], title=result.info["title"],
-        xlabel=x_label)
+        xlabel=x_label, ylim=y_lim)
 
     # Plot the values color-mapped onto the trajectory.
     fig2 = plt.figure(figsize=SETTINGS.plot_figsize)
@@ -155,10 +164,6 @@ def plot_result(args: argparse.Namespace, result: Result, traj_ref: PosePath3D,
     plot.draw_coordinate_axes(ax, traj_ref, plot_mode,
                               SETTINGS.plot_reference_axis_marker_scale)
 
-    if args.plot_colormap_min is None:
-        args.plot_colormap_min = result.stats["min"]
-    if args.plot_colormap_max is None:
-        args.plot_colormap_max = result.stats["max"]
     if args.plot_colormap_max_percentile is not None:
         args.plot_colormap_max = np.percentile(
             result.np_arrays["error_array"], args.plot_colormap_max_percentile)

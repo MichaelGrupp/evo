@@ -96,6 +96,10 @@ def parser() -> argparse.ArgumentParser:
         "as the upper bound of the color map plot "
         "(in %%, overrides --plot_colormap_max)")
     output_opts.add_argument(
+        "--plot_raw_with_same_limits_as_colormap", type=bool,
+        help="set y-axis of raw value plot to the limits  "
+        "of the color map plot (default: autoscaling)")
+    output_opts.add_argument(
         "--plot_full_ref",
         action="store_true",
         help="plot the full, unsynchronized reference trajectory",

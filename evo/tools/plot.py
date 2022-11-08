@@ -593,11 +593,11 @@ def trajectories(fig: plt.Figure, trajectories: typing.Union[
 def error_array(ax: plt.Axes, err_array: ListOrArray,
                 x_array: typing.Optional[ListOrArray] = None,
                 statistics: typing.Optional[typing.Dict[str, float]] = None,
-                threshold: float = None, cumulative: bool = False,
-                color: str = 'grey', name: str = "error", title: str = "",
-                xlabel: str = "index", ylabel: typing.Optional[str] = None,
-                subplot_arg: int = 111, linestyle: str = "-",
-                marker: typing.Optional[str] = None):
+                threshold: typing.Optional[float] = None,
+                cumulative: bool = False, color: str = 'grey',
+                name: str = "error", title: str = "", xlabel: str = "index",
+                ylabel: typing.Optional[str] = None, subplot_arg: int = 111,
+                linestyle: str = "-", marker: typing.Optional[str] = None):
     """
     high-level function for plotting raw error values of a metric
     :param fig: matplotlib axes

@@ -458,6 +458,14 @@ def run(args):
                 color=SETTINGS.plot_reference_color, label=short_traj_name,
                 alpha=SETTINGS.plot_reference_alpha,
                 start_timestamp=start_time)
+        elif args.plot_relative_time:
+            # Use lower bound timestamp as the 0 time if there's no reference.
+            if len(trajectories) > 1:
+                logger.warning("--plot_relative_time is set for multiple "
+                               "trajectories without --ref. "
+                               "Using the lowest timestamp as zero time.")
+            start_time = min(traj.timestamps[0]
+                             for _, traj in trajectories.items())
 
         if args.ros_map_yaml:
             plot.ros_map(ax_traj, args.ros_map_yaml, plot_mode)

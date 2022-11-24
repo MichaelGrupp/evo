@@ -265,17 +265,17 @@ def print_traj_info(name, traj, verbose=False, full_check=False):
     logger.info("name:\t" + name)
 
     if verbose or full_check:
-        infos = traj.get_infos()
-        info_str = ""
-        for info, value in sorted(infos.items()):
-            info_str += "\n\t" + info + "\t" + str(value)
-        logger.info("infos:" + info_str)
+        def print_dict(name: str, data: dict):
+            string = ""
+            for key, value in sorted(data.items()):
+                string += "\n\t" + key + "\t" + str(value)
+            logger.info(name + ":" + string)
+
+        print_dict("infos", traj.get_infos())
+        if traj.meta:
+            print_dict("meta", traj.meta)
         if full_check:
-            passed, details = traj.check()
-            check_str = ""
-            for test, result in sorted(details.items()):
-                check_str += "\n\t" + test + "\t" + result
-            logger.info("checks:" + check_str)
+            print_dict("checks", traj.check()[1])
             stat_str = ""
             try:
                 stats = traj.get_statistics()

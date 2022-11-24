@@ -272,7 +272,7 @@ def print_traj_info(name, traj, verbose=False, full_check=False):
             logger.info(name + ":" + string)
 
         print_dict("infos", traj.get_infos())
-        if len(traj.meta) > 0:
+        if traj.meta:
             print_dict("meta", traj.meta)
         if full_check:
             print_dict("checks", traj.check()[1])

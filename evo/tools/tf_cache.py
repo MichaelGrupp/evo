@@ -21,7 +21,10 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
 import warnings
+from collections import defaultdict
+from typing import DefaultDict
 
+import numpy as np
 import rospy
 import tf2_py
 from geometry_msgs.msg import TransformStamped
@@ -29,10 +32,9 @@ from rosbags.rosbag1 import Reader as Rosbag1Reader
 from rosbags.serde.serdes import deserialize_cdr, ros1_to_cdr
 from std_msgs.msg import Header
 
-import numpy as np
 from evo import EvoException
-from evo.tools import tf_id
 from evo.core.trajectory import PoseTrajectory3D
+from evo.tools import tf_id
 from evo.tools.file_interface import _get_xyz_quat_from_transform_stamped
 from evo.tools.settings import SETTINGS
 
@@ -41,9 +43,6 @@ logger = logging.getLogger(__name__)
 
 class TfCacheException(EvoException):
     pass
-
-
-__instance = None
 
 
 class TfCache(object):
@@ -176,10 +175,9 @@ class TfCache(object):
         return self.lookup_trajectory(parent, child, start_time=start_time,
                                       end_time=latest_time)
 
+__instance: DefaultDict[int, TfCache] = defaultdict(lambda : TfCache())
 
-def instance() -> TfCache:
+def instance(hash: int) -> TfCache:
     """ Hacky module-level "singleton" of TfCache """
     global __instance
-    if __instance is None:
-        __instance = TfCache()
-    return __instance
+    return __instance[hash]

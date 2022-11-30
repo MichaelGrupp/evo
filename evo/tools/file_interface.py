@@ -247,12 +247,16 @@ def get_supported_topics(
     ])
 
 
-def read_bag_trajectory(reader: typing.Union[Rosbag1Reader, Rosbag2Reader],
-                        topic: str) -> PoseTrajectory3D:
+def read_bag_trajectory(reader: typing.Union[Rosbag1Reader,
+                                             Rosbag2Reader], topic: str,
+                        cache_tf_tree: bool = False) -> PoseTrajectory3D:
     """
     :param reader: opened bag reader (rosbags.rosbag2 or rosbags.rosbag1)
     :param topic: trajectory topic of supported message type,
                   or a TF trajectory ID (e.g.: '/tf:map.base_link' )
+    :param cache_tf_tree: cache the tf tree. This speeds up the trajectory
+                  reading in case multiple TF trajectories are loaded from
+                  the same reader.
     :return: trajectory.PoseTrajectory3D
     """
     if not isinstance(reader, (Rosbag1Reader, Rosbag2Reader)):
@@ -266,7 +270,9 @@ def read_bag_trajectory(reader: typing.Union[Rosbag1Reader, Rosbag2Reader],
         if isinstance(reader, Rosbag1Reader):
             # Use TfCache instead if it's a TF transform ID.
             from evo.tools import tf_cache
-            return tf_cache.instance(reader.__hash__()).get_trajectory(reader, identifier=topic)
+            tf_tree_cache = (tf_cache.instance(reader.__hash__())
+                             if cache_tf_tree else tf_cache.TfCache())
+            return tf_tree_cache.get_trajectory(reader, identifier=topic)
         else:
             raise FileInterfaceException(
                 "TF support for ROS2 bags is not implemented")

@@ -53,6 +53,8 @@ def main() -> None:
             print("IPython is not installed", file=sys.stderr)
             sys.exit(1)
 
+    python = ipython[1:]
+
     try:
         sp.check_call([ipython, "profile", "locate", "evo"], stdout=FNULL,
                       stderr=FNULL)
@@ -65,7 +67,8 @@ def main() -> None:
         profile_dir = profile_dir.rstrip()
         shutil.copy(config, os.path.join(profile_dir, "ipython_config.py"))
     try:
-        sp.check_call([ipython, "--profile", "evo"] + other_args)
+        sp.check_call([python, "-m", "IPython", "--profile", "evo"] +
+                      other_args)
     except sp.CalledProcessError as e:
         print("IPython error", e.output, file=sys.stderr)
         sys.exit(1)

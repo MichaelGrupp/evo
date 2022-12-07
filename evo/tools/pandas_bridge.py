@@ -27,7 +27,7 @@ import numpy as np
 import pandas as pd
 
 from evo.core import trajectory, result
-from evo.tools import user
+from evo.tools import file_interface, user
 from evo.tools.settings import SETTINGS
 
 logger = logging.getLogger(__name__)
@@ -107,3 +107,25 @@ def save_df_as_table(df: pd.DataFrame, path: str,
     else:
         getattr(df, "to_" + format_str)(path)
     logger.debug("{} table saved to: {}".format(format_str, path))
+
+
+def load_results_as_dataframe(result_files: typing.Iterable[str],
+                              use_filenames: bool = False,
+                              merge: bool = False) -> pd.DataFrame:
+    """
+    Load multiple result files into a MultiIndex dataframe.
+    :param result_files: result files to load
+    :param use_filenames: use the result filename as label instead of
+                          the 'est_name' label from the result's info
+    :param merge: merge all results into an average result
+    """
+    if merge:
+        results = [file_interface.load_res_file(f) for f in result_files]
+        return result_to_df(result.merge_results(results))
+
+    df = pd.DataFrame()
+    for result_file in result_files:
+        result_obj = file_interface.load_res_file(result_file)
+        name = result_file if use_filenames else None
+        df = pd.concat([df, result_to_df(result_obj, name)], axis="columns")
+    return df

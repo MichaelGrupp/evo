@@ -125,7 +125,7 @@ def load_results_as_dataframe(result_files: typing.Iterable[str],
 
     df = pd.DataFrame()
     for result_file in result_files:
-        result = file_interface.load_res_file(result_file)
+        result_obj = file_interface.load_res_file(result_file)
         name = result_file if use_filenames else None
-        df = pd.concat([df, result_to_df(result, name)], axis="columns")
+        df = pd.concat([df, result_to_df(result_obj, name)], axis="columns")
     return df

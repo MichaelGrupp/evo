@@ -331,6 +331,19 @@ class PoseTrajectory3D(PosePath3D, object):
     def __ne__(self, other: object) -> bool:
         return not self == other
 
+    @property
+    def speeds(self) -> np.ndarray:
+        """
+        :return: array with speed of motion between poses
+        """
+        if self.num_poses < 2:
+            return np.array([])
+        return np.array([
+            calc_speed(self.positions_xyz[i], self.positions_xyz[i + 1],
+                       self.timestamps[i], self.timestamps[i + 1])
+            for i in range(len(self.positions_xyz) - 1)
+        ])
+
     def reduce_to_ids(
             self, ids: typing.Union[typing.Sequence[int], np.ndarray]) -> None:
         super(PoseTrajectory3D, self).reduce_to_ids(ids)
@@ -396,14 +409,10 @@ class PoseTrajectory3D(PosePath3D, object):
         if self.num_poses < 2:
             return {}
         stats = super(PoseTrajectory3D, self).get_statistics()
-        speeds = [
-            calc_speed(self.positions_xyz[i], self.positions_xyz[i + 1],
-                       self.timestamps[i], self.timestamps[i + 1])
-            for i in range(len(self.positions_xyz) - 1)
-        ]
-        vmax = max(speeds)
-        vmin = min(speeds)
-        vmean = np.mean(speeds)
+        speeds = self.speeds
+        vmax = speeds.max()
+        vmin = speeds.min()
+        vmean = speeds.mean()
         stats.update({
             "v_max (m/s)": vmax,
             "v_min (m/s)": vmin,

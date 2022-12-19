@@ -36,7 +36,7 @@ import mpl_toolkits.mplot3d.art3d as art3d
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.backend_bases import FigureCanvasBase
 from matplotlib.collections import LineCollection
-from matplotlib.transforms import Affine2D
+from matplotlib.transforms import Affine2D, Bbox
 
 import numpy as np
 import seaborn as sns
@@ -710,7 +710,9 @@ def ros_map(ax: plt.Axes, yaml_path: str, plot_mode: PlotMode,
     # Squeeze extent to reflect metric coordinates.
     resolution = metadata["resolution"]
     n_rows, n_cols = image.shape[x_idx], image.shape[y_idx]
-    extent = [0, n_cols * resolution, 0, n_rows * resolution]
+    metric_width = n_cols * resolution
+    metric_height = n_rows * resolution
+    extent = [0, metric_width, 0, metric_height]
     if plot_mode == PlotMode.yx:
         image = np.rot90(image)
         image = np.fliplr(image)
@@ -727,6 +729,14 @@ def ros_map(ax: plt.Axes, yaml_path: str, plot_mode: PlotMode,
         angle *= -1
     map_to_pixel_origin.rotate(angle)
     ax_image.set_transform(map_to_pixel_origin + ax.transData)
+
+    # Data limits aren't updated properly after the transformation by
+    # ax.relim() / ax.autoscale_view(), so we have to do it manually...
+    # Not ideal, but it allows to avoid a clipping viewport.
+    # TODO: check if this is a bug in matplotlib.
+    bbox = Bbox(np.array([[0, 0], [metric_width, metric_height]]))
+    ax.update_datalim(map_to_pixel_origin.transform_bbox(bbox))
+    ax.autoscale_view()
 
     # Initially flipped axes are lost for mysterious reasons...
     if SETTINGS.plot_invert_xaxis:

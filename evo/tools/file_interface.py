@@ -211,7 +211,8 @@ def read_euroc_csv_trajectory(file_path) -> PoseTrajectory3D:
     return PoseTrajectory3D(xyz, quat, stamps)
 
 
-def _get_xyz_quat_from_transform_stamped(msg) -> typing.Tuple[list, list]:
+def _get_xyz_quat_from_transform_stamped(
+        msg) -> typing.Tuple[typing.List[float], typing.List[float]]:
     xyz = [
         msg.transform.translation.x, msg.transform.translation.y,
         msg.transform.translation.z
@@ -223,7 +224,8 @@ def _get_xyz_quat_from_transform_stamped(msg) -> typing.Tuple[list, list]:
     return xyz, quat
 
 
-def _get_xyz_quat_from_pose_or_odometry_msg(msg) -> typing.Tuple[list, list]:
+def _get_xyz_quat_from_pose_or_odometry_msg(
+        msg) -> typing.Tuple[typing.List[float], typing.List[float]]:
     # Make nav_msgs/Odometry behave like geometry_msgs/PoseStamped.
     while not hasattr(msg.pose, 'position') and not hasattr(
             msg.pose, 'orientation'):

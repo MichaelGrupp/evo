@@ -22,7 +22,7 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 import warnings
 from collections import defaultdict
-from typing import DefaultDict
+from typing import DefaultDict, List, Optional
 
 import numpy as np
 import rospy
@@ -108,50 +108,39 @@ class TfCache(object):
             self.topics.append(tf_topic)
         self.bags.append(reader.path.name)
 
-    def lookup_trajectory(
-        self, parent_frame: str, child_frame: str, start_time: rospy.Time,
-        end_time: rospy.Time,
-        lookup_frequency: float = SETTINGS.tf_cache_lookup_frequency
-    ) -> PoseTrajectory3D:
+    def lookup_trajectory(self, parent_frame: str, child_frame: str,
+                          timestamps: List[rospy.Time]) -> PoseTrajectory3D:
         """
         Look up the trajectory of a transform chain from the cache's TF buffer.
         :param parent_frame, child_frame: TF transform frame IDs
-        :param start_time, end_time: expected start and end time of the
-                                     trajectory in the buffer
+        :param timestamps: timestamps at which to lookup the trajectory poses.
         :param lookup_frequency: frequency of TF lookups between start and end
                                  time, in Hz.
         """
         stamps, xyz, quat = [], [], []
-        step = rospy.Duration.from_sec(1. / lookup_frequency)
-        # Static TF have zero timestamp in the buffer, which will be lower
-        # than the bag start time. Looking up a static TF is a valid request,
-        # so this should be possible.
-        attempt_single_static_lookup = end_time.to_sec() == 0.
         # Look up the transforms of the trajectory in reverse order:
-        while end_time >= start_time or attempt_single_static_lookup:
+        timestamps.sort()
+        for timestamp in timestamps:
             try:
                 tf = self.buffer.lookup_transform_core(parent_frame,
-                                                       child_frame, end_time)
+                                                       child_frame, timestamp)
             except tf2_py.ExtrapolationException:
-                break
+                continue
             stamps.append(tf.header.stamp.to_sec())
             x, q = _get_xyz_quat_from_transform_stamped(tf)
             xyz.append(x)
             quat.append(q)
-            if attempt_single_static_lookup:
-                break
-            end_time = end_time - step
         # Flip the data order again for the final trajectory.
-        trajectory = PoseTrajectory3D(np.flipud(xyz), np.flipud(quat),
-                                      np.flipud(stamps))
-        trajectory.meta = {
-            "frame_id": parent_frame,
-            "child_frame_id": child_frame
-        }
+        trajectory = PoseTrajectory3D(
+            np.array(xyz), np.array(quat), np.array(stamps), meta={
+                "frame_id": parent_frame,
+                "child_frame_id": child_frame
+            })
         return trajectory
 
-    def get_trajectory(self, reader: Rosbag1Reader,
-                       identifier: str) -> PoseTrajectory3D:
+    def get_trajectory(
+            self, reader: Rosbag1Reader, identifier: str,
+            timestamps: Optional[List[rospy.Time]] = None) -> PoseTrajectory3D:
         """
         Get a TF trajectory from a bag file. Updates or uses the cache.
         :param reader: opened bag reader (rosbags.rosbag1)
@@ -172,10 +161,25 @@ class TfCache(object):
             raise TfCacheException("Could not load trajectory: " + str(e))
         # rosbags Reader start_time is in nanoseconds.
         start_time = rospy.Time.from_sec(reader.start_time * 1e-9)
-        return self.lookup_trajectory(parent, child, start_time=start_time,
-                                      end_time=latest_time)
+        if timestamps is None:
+            timestamps = []
+            # Static TF have zero timestamp in the buffer, which will be lower
+            # than the bag start time. Looking up a static TF is a valid request,
+            # so this should be possible.
+            if latest_time < start_time:
+                timestamps.append(latest_time)
+            else:
+                step = rospy.Duration.from_sec(
+                    1. / SETTINGS.tf_cache_lookup_frequency)
+                time = start_time
+                while time <= latest_time:
+                    timestamps.append(time)
+                    time = time + step
+        return self.lookup_trajectory(parent, child, timestamps)
 
-__instance: DefaultDict[int, TfCache] = defaultdict(lambda : TfCache())
+
+__instance: DefaultDict[int, TfCache] = defaultdict(lambda: TfCache())
+
 
 def instance(hash: int) -> TfCache:
     """ Hacky module-level "singleton" of TfCache """

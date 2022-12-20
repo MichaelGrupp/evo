@@ -467,9 +467,6 @@ def run(args):
             start_time = min(traj.timestamps[0]
                              for _, traj in trajectories.items())
 
-        if args.ros_map_yaml:
-            plot.ros_map(ax_traj, args.ros_map_yaml, plot_mode)
-
         cmap_colors = None
         if SETTINGS.plot_multi_cmap.lower() != "none":
             cmap = getattr(cm, SETTINGS.plot_multi_cmap)
@@ -503,6 +500,9 @@ def run(args):
             if not SETTINGS.plot_usetex:
                 fig_rpy.text(0., 0.005, "euler_angle_sequence: {}".format(
                     SETTINGS.euler_angle_sequence), fontsize=6)
+
+        if args.ros_map_yaml:
+            plot.ros_map(ax_traj, args.ros_map_yaml, plot_mode)
 
         plot_collection.add_figure("trajectories", fig_traj)
         plot_collection.add_figure("xyz_view", fig_xyz)

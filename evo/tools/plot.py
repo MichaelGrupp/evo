@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import copy
 import os
 import collections
 import logging
@@ -76,6 +77,12 @@ class PlotMode(Enum):
     zx = "zx"
     zy = "zy"
     xyz = "xyz"
+
+
+class Viewport(Enum):
+    update = "update"
+    keep_unchanged = "keep_unchanged"
+    zoom_to_map = "zoom_to_map"
 
 
 class PlotCollection:
@@ -647,10 +654,13 @@ def error_array(ax: plt.Axes, err_array: ListOrArray,
     plt.legend(frameon=True)
 
 
-def ros_map(ax: plt.Axes, yaml_path: str, plot_mode: PlotMode,
-            cmap: str = SETTINGS.ros_map_cmap,
-            mask_unknown_value: int = SETTINGS.ros_map_unknown_cell_value,
-            alpha: float = SETTINGS.ros_map_alpha_value) -> None:
+def ros_map(
+    ax: plt.Axes, yaml_path: str, plot_mode: PlotMode,
+    cmap: str = SETTINGS.ros_map_cmap,
+    mask_unknown_value: int = SETTINGS.ros_map_unknown_cell_value,
+    alpha: float = SETTINGS.ros_map_alpha_value,
+    viewport: Viewport = Viewport(SETTINGS.ros_map_viewport)
+) -> None:
     """
     Inserts an image of an 2D ROS map into the plot axis.
     See: http://wiki.ros.org/map_server#Map_format
@@ -662,6 +672,7 @@ def ros_map(ax: plt.Axes, yaml_path: str, plot_mode: PlotMode,
     :param mask_unknown_value: uint8 value that represents unknown cells.
                                If specified, these cells will be masked out.
                                If set to None or False, nothing will be masked.
+    :param viewport: Viewport defining how the axis limits will be changed
     """
     import yaml
 
@@ -707,6 +718,8 @@ def ros_map(ax: plt.Axes, yaml_path: str, plot_mode: PlotMode,
                            "with {}-channel {} pixels".format(
                                n_channels, image.dtype))
 
+    original_bbox = copy.deepcopy(ax.dataLim)
+
     # Squeeze extent to reflect metric coordinates.
     resolution = metadata["resolution"]
     n_rows, n_cols = image.shape[x_idx], image.shape[y_idx]
@@ -730,13 +743,20 @@ def ros_map(ax: plt.Axes, yaml_path: str, plot_mode: PlotMode,
     map_to_pixel_origin.rotate(angle)
     ax_image.set_transform(map_to_pixel_origin + ax.transData)
 
-    # Data limits aren't updated properly after the transformation by
-    # ax.relim() / ax.autoscale_view(), so we have to do it manually...
-    # Not ideal, but it allows to avoid a clipping viewport.
-    # TODO: check if this is a bug in matplotlib.
-    bbox = Bbox(np.array([[0, 0], [metric_width, metric_height]]))
-    ax.update_datalim(map_to_pixel_origin.transform_bbox(bbox))
-    ax.autoscale_view()
+    if viewport in (viewport.update, viewport.zoom_to_map):
+        bbox = map_to_pixel_origin.transform_bbox(
+            Bbox(np.array([[0, 0], [metric_width, metric_height]])))
+        if viewport == viewport.update:
+            # Data limits aren't updated properly after the transformation by
+            # ax.relim() / ax.autoscale_view(), so we have to do it manually...
+            # Not ideal, but it allows to avoid a clipping viewport.
+            # TODO: check if this is a bug in matplotlib.
+            ax.update_datalim(bbox)
+            ax.autoscale_view()
+        elif viewport == viewport.zoom_to_map:
+            ax.dataLim = bbox
+    elif viewport == viewport.keep_unchanged:
+        ax.dataLim = original_bbox
 
     # Initially flipped axes are lost for mysterious reasons...
     if SETTINGS.plot_invert_xaxis:

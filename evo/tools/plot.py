@@ -751,7 +751,7 @@ def ros_map(
             # ax.relim() / ax.autoscale_view(), so we have to do it manually...
             # Not ideal, but it allows to avoid a clipping viewport.
             # TODO: check if this is a bug in matplotlib.
-            ax.update_datalim(bbox)
+            ax.dataLim = Bbox.union([original_bbox, bbox])
         elif viewport == viewport.zoom_to_map:
             ax.dataLim = bbox
     elif viewport == viewport.keep_unchanged:

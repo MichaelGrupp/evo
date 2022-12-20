@@ -179,6 +179,11 @@ DEFAULT_SETTINGS_DICT_DOC = {
         "\nmap_saver uses 205, other tools might not.\n"
         "(for example, Cartographer uses 128 for images of probability grids)"
     ),
+    "ros_map_viewport": (
+        "keep_unchanged",
+        "How to change the plot axis limits (viewport) when plotting a map.\n"
+        "One of the following options: keep_unchanged, zoom_to_map, update"
+    ),
     "save_traj_in_zip": (
         False,
         "Store backup trajectories in result zip files (increases size)."

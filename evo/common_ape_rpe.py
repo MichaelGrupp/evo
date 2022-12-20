@@ -145,8 +145,6 @@ def plot_result(args: argparse.Namespace, result: Result, traj_ref: PosePath3D,
     # Plot the values color-mapped onto the trajectory.
     fig2 = plt.figure(figsize=SETTINGS.plot_figsize)
     ax = plot.prepare_axis(fig2, plot_mode)
-    if args.ros_map_yaml:
-        plot.ros_map(ax, args.ros_map_yaml, plot_mode)
 
     plot.traj(ax, plot_mode, traj_ref_full if traj_ref_full else traj_ref,
               style=SETTINGS.plot_reference_linestyle,
@@ -169,6 +167,8 @@ def plot_result(args: argparse.Namespace, result: Result, traj_ref: PosePath3D,
                        title=result.info["title"])
     plot.draw_coordinate_axes(ax, traj_est, plot_mode,
                               SETTINGS.plot_axis_marker_scale)
+    if args.ros_map_yaml:
+        plot.ros_map(ax, args.ros_map_yaml, plot_mode)
     if SETTINGS.plot_pose_correspondences:
         plot.draw_correspondence_edges(
             ax, traj_est, traj_ref, plot_mode,

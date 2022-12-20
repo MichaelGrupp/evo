@@ -752,11 +752,11 @@ def ros_map(
             # Not ideal, but it allows to avoid a clipping viewport.
             # TODO: check if this is a bug in matplotlib.
             ax.update_datalim(bbox)
-            ax.autoscale_view()
         elif viewport == viewport.zoom_to_map:
             ax.dataLim = bbox
     elif viewport == viewport.keep_unchanged:
         ax.dataLim = original_bbox
+    ax.autoscale_view()
 
     # Initially flipped axes are lost for mysterious reasons...
     if SETTINGS.plot_invert_xaxis:

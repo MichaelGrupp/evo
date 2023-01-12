@@ -78,9 +78,16 @@ def merge_config(args: argparse.Namespace) -> argparse.Namespace:
         with open(args.config) as config:
             merged_config_dict = vars(args).copy()
             # merge both parameter dicts
-            merged_config_dict.update(json.loads(config.read()))
+            config_dict = json.loads(config.read())
+            merged_config_dict.update(config_dict)
             # override args the hacky way
             args = argparse.Namespace(**merged_config_dict)
+
+            # Override global settings for this session
+            # if the config file contains matching keys.
+            from evo.tools.settings import SETTINGS
+            SETTINGS.update_existing_keys(other=config_dict)
+
     return args
 
 

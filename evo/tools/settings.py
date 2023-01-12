@@ -71,6 +71,9 @@ class SettingsContainer(dict):
         else:
             self[attr] = value
 
+    def update_existing_keys(self, other: dict):
+        self.update((key, other[key]) for key in self.keys() & other.keys())
+
 
 def merge_dicts(first: dict, second: dict, soft: bool = False) -> dict:
     if soft:

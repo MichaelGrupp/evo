@@ -79,6 +79,9 @@ def parser() -> argparse.ArgumentParser:
         action="store_true",
         help="use all pairs instead of consecutive pairs (disables plot)",
     )
+    algo_opts.add_argument(
+        "--pairs_from_reference", action="store_true",
+        help="determine the pose pairs from the reference trajectory")
 
     output_opts.add_argument(
         "-p",
@@ -202,8 +205,8 @@ def parser() -> argparse.ArgumentParser:
 def rpe(traj_ref: PosePath3D, traj_est: PosePath3D,
         pose_relation: metrics.PoseRelation, delta: float,
         delta_unit: metrics.Unit, rel_delta_tol: float = 0.1,
-        all_pairs: bool = False, align: bool = False,
-        correct_scale: bool = False, n_to_align: int = -1,
+        all_pairs: bool = False, pairs_from_reference: bool = False,
+        align: bool = False, correct_scale: bool = False, n_to_align: int = -1,
         align_origin: bool = False, ref_name: str = "reference",
         est_name: str = "estimate", support_loop: bool = False) -> Result:
 
@@ -222,7 +225,7 @@ def rpe(traj_ref: PosePath3D, traj_est: PosePath3D,
     logger.debug(SEP)
     data = (traj_ref, traj_est)
     rpe_metric = metrics.RPE(pose_relation, delta, delta_unit, rel_delta_tol,
-                             all_pairs)
+                             all_pairs, pairs_from_reference)
     rpe_metric.process_data(data)
 
     title = str(rpe_metric)
@@ -318,6 +321,7 @@ def run(args: argparse.Namespace) -> None:
         delta_unit=delta_unit,
         rel_delta_tol=args.delta_tol,
         all_pairs=args.all_pairs,
+        pairs_from_reference=args.pairs_from_reference,
         align=args.align,
         correct_scale=args.correct_scale,
         n_to_align=args.n_to_align,

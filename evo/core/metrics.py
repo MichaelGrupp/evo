@@ -180,7 +180,8 @@ class RPE(PE):
     def __init__(self,
                  pose_relation: PoseRelation = PoseRelation.translation_part,
                  delta: float = 1.0, delta_unit: Unit = Unit.frames,
-                 rel_delta_tol: float = 0.1, all_pairs: bool = False):
+                 rel_delta_tol: float = 0.1, all_pairs: bool = False,
+                 pairs_from_reference: bool = False):
         if delta < 0:
             raise MetricsException("delta must be a positive number")
         if delta_unit == Unit.frames and not isinstance(delta, int) \
@@ -192,6 +193,7 @@ class RPE(PE):
         self.rel_delta_tol = rel_delta_tol
         self.pose_relation = pose_relation
         self.all_pairs = all_pairs
+        self.pairs_from_reference = pairs_from_reference
         self.E: typing.List[np.ndarray] = []
         self.error = np.array([])
         self.delta_ids: typing.List[int] = []
@@ -250,9 +252,10 @@ class RPE(PE):
             raise MetricsException(
                 "trajectories must have same number of poses")
 
-        id_pairs = id_pairs_from_delta(traj_est.poses_se3, self.delta,
-                                       self.delta_unit, self.rel_delta_tol,
-                                       all_pairs=self.all_pairs)
+        id_pairs = id_pairs_from_delta(
+            (traj_ref.poses_se3
+             if self.pairs_from_reference else traj_est.poses_se3), self.delta,
+            self.delta_unit, self.rel_delta_tol, all_pairs=self.all_pairs)
 
         # Store flat id list e.g. for plotting.
         self.delta_ids = [j for i, j in id_pairs]

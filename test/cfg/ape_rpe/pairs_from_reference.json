@@ -1,0 +1,11 @@
+{
+    "all_pairs": true,
+    "debug": true,
+    "delta": 1.0,
+    "delta_tol": 0.05,
+    "delta_unit": "m",
+    "pose_relation": "trans_part",
+    "pairs_from_reference": true,
+    "t_max_diff": 0.01,
+    "t_offset": 0.0
+}

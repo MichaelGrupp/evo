@@ -76,6 +76,10 @@ class TestPosePath3D(unittest.TestCase):
         self.assertFalse(path_1 != path_1_copy)
 
     def test_equals_equivalent_quaternion(self):
+        """
+        Checks that paths with equivalent quaternions (q = -q)
+        are treated as equal.
+        """
         path_1 = helpers.fake_path(10)
         path_2 = PosePath3D(path_1.positions_xyz,
                             path_1.orientations_quat_wxyz * -1)

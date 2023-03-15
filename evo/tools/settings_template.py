@@ -135,6 +135,14 @@ DEFAULT_SETTINGS_DICT_DOC = {
         "Defines the plot background/grid.\n"
         + "Options: 'whitegrid', 'darkgrid', 'white' or 'dark'."
     ),
+    "plot_show_axis": (
+        True,
+        "Enables / disables the plot axis in trajectory plots."
+    ),
+    "plot_show_legend": (
+        True,
+        "Enables / disables the legend in trajectory plots."
+    ),
     "plot_split": (
         False,
         "Show / save each figure separately instead of a collection."

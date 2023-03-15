@@ -136,7 +136,7 @@ DEFAULT_SETTINGS_DICT_DOC = {
         + "Options: 'whitegrid', 'darkgrid', 'white' or 'dark'."
     ),
     "plot_show_axis": (
-        False,
+        True,
         "Enables / disables the plot axis in trajectory plots."
     ),
     "plot_show_legend": (

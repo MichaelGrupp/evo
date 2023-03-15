@@ -27,7 +27,7 @@ import numpy as np
 import helpers
 from evo.core import trajectory
 from evo.core import lie_algebra as lie
-from evo.core.trajectory import PoseTrajectory3D
+from evo.core.trajectory import PosePath3D, PoseTrajectory3D
 from evo.core.geometry import GeometryException
 
 
@@ -74,6 +74,19 @@ class TestPosePath3D(unittest.TestCase):
         self.assertFalse(path_1 == path_2)
         self.assertTrue(path_1 != path_2)
         self.assertFalse(path_1 != path_1_copy)
+
+    def test_equals_equivalent_quaternion(self):
+        """
+        Checks that paths with equivalent quaternions (q = -q)
+        are treated as equal.
+        """
+        path_1 = helpers.fake_path(10)
+        path_2 = PosePath3D(path_1.positions_xyz,
+                            path_1.orientations_quat_wxyz * -1)
+        self.assertFalse(
+            np.allclose(path_1.orientations_quat_wxyz,
+                        path_2.orientations_quat_wxyz))
+        self.assertEqual(path_1, path_2)
 
     def test_reduce_to_ids(self):
         path = helpers.fake_path(10)

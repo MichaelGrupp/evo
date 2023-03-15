@@ -287,6 +287,8 @@ def prepare_axis(fig: plt.Figure, plot_mode: PlotMode = PlotMode.xy,
         plt.gca().invert_xaxis()
     if SETTINGS.plot_invert_yaxis:
         plt.gca().invert_yaxis()
+    if not SETTINGS.plot_show_axis:
+        ax.set_axis_off()
     return ax
 
 
@@ -337,7 +339,7 @@ def traj(ax: plt.Axes, plot_mode: PlotMode, traj: trajectory.PosePath3D,
         ax.plot(x, y, style, color=color, label=label, alpha=alpha)
     if SETTINGS.plot_xyz_realistic:
         set_aspect_equal(ax)
-    if label:
+    if label and SETTINGS.plot_show_legend:
         ax.legend(frameon=True)
 
 

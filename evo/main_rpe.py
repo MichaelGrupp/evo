@@ -77,7 +77,7 @@ def parser() -> argparse.ArgumentParser:
     algo_opts.add_argument(
         "--all_pairs",
         action="store_true",
-        help="use all pairs instead of consecutive pairs (disables plot)",
+        help="use all pairs instead of consecutive pairs",
     )
     algo_opts.add_argument(
         "--pairs_from_reference", action="store_true",

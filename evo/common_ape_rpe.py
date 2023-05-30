@@ -49,7 +49,10 @@ def load_trajectories(
         ref_name, est_name = args.ref_file, args.est_file
     elif args.subcommand == "euroc":
         traj_ref = file_interface.read_euroc_csv_trajectory(args.state_gt_csv)
-        traj_est = file_interface.read_tum_trajectory_file(args.est_file)
+        if args.est_file.endswith('.csv'):
+            traj_est = file_interface.read_euroc_csv_trajectory(args.est_file)
+        else:
+            traj_est = file_interface.read_tum_trajectory_file(args.est_file)
         ref_name, est_name = args.state_gt_csv, args.est_file
     elif args.subcommand in ("bag", "bag2"):
         import os

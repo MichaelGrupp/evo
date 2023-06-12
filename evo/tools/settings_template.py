@@ -180,12 +180,18 @@ DEFAULT_SETTINGS_DICT_DOC = {
         "Greys_r",
         "matplotlib colormap for coloring ROS map cells."
     ),
+    "ros_map_enable_masking": (
+        True,
+        "Enables/disables the masking of unknown cells from a map image,\n"
+        "based on the 'ros_map_unknown_cell_value'."
+    ),
     "ros_map_unknown_cell_value": (
         205,
         "uint8 value that represents unknown cells in a ROS map image.\n"
         "Used to remove unknown cell pixels when a ROS map is added to a plot."
         "\nmap_saver uses 205, other tools might not.\n"
         "(for example, Cartographer uses 128 for images of probability grids)"
+        "\nHas no effect if ros_map_enable_masking is set to false."
     ),
     "ros_map_viewport": (
         "keep_unchanged",

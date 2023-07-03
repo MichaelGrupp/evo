@@ -28,8 +28,8 @@ jobs:
       ROS-noetic:
         dockerfile: 'Dockerfile.rosnoetic'
         imageName: 'ubuntu-latest'
-      ROS-galactic:
-        dockerfile: 'Dockerfile.rosgalactic'
+      ROS-iron:
+        dockerfile: 'Dockerfile.ros-iron'
         imageName: 'ubuntu-latest'
   pool:
     vmImage: $(imageName)
@@ -46,13 +46,13 @@ jobs:
         python.version: '3.8'
         imageName: 'ubuntu-latest'
       Python39-ubuntu:
-        python.version: '3.9'
+        python.version: '3.11'
         imageName: 'ubuntu-latest'
       Python39-mac:
-        python.version: '3.9'
+        python.version: '3.11'
         imageName: 'macOS-latest'
       Python39-windows:
-        python.version: '3.9'
+        python.version: '3.11'
         imageName: 'windows-latest'
     maxParallel: 10
   pool:

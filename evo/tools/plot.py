@@ -22,6 +22,7 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 import copy
 import os
 import collections
+import collections.abc
 import logging
 import pickle
 import typing
@@ -575,7 +576,7 @@ def trajectories(fig: plt.Figure, trajectories: typing.Union[
     ax = prepare_axis(fig, plot_mode, subplot_arg)
     cmap_colors = None
     if SETTINGS.plot_multi_cmap.lower() != "none" and isinstance(
-            trajectories, collections.Iterable):
+            trajectories, collections.abc.Iterable):
         cmap = getattr(cm, SETTINGS.plot_multi_cmap)
         cmap_colors = iter(cmap(np.linspace(0, 1, len(trajectories))))
 

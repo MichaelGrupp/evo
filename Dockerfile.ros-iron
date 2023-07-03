@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
-FROM ros:galactic
+FROM ros:iron
 
 # Copy the whole tree into the container.
 COPY . container-local/
@@ -23,7 +23,7 @@ COPY . container-local/
 ENTRYPOINT ["container-local/.ci/ros_entrypoint.sh"]
 
 # Install tf2
-RUN apt-get update && apt-get -y install ros-galactic-tf2-ros
+RUN apt-get update && apt-get -y install ros-iron-tf2-ros
 
 RUN container-local/.ci/debian_install_pip3.sh
 

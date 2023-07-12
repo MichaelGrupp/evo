@@ -317,9 +317,32 @@ def plot_mode_to_idx(
     return x_idx, y_idx, z_idx
 
 
+def add_start_end_markers(ax: plt.Axes, plot_mode: PlotMode,
+                          traj: trajectory.PosePath3D, start_symbol: str = "o",
+                          start_color: str = "black", end_symbol: str = "x",
+                          end_color: str = "black", alpha: float = 1.0,
+                          traj_name: typing.Optional[str] = None):
+    if traj.num_poses == 0:
+        return
+    start = traj.positions_xyz[0]
+    end = traj.positions_xyz[-1]
+    x_idx, y_idx, z_idx = plot_mode_to_idx(plot_mode)
+    start_coords = [start[x_idx], start[y_idx]]
+    end_coords = [end[x_idx], end[y_idx]]
+    if plot_mode == PlotMode.xyz:
+        start_coords.append(start[z_idx])
+        end_coords.append(end[z_idx])
+    start_label = f"Start of {traj_name}" if traj_name else None
+    end_label = f"End of {traj_name}" if traj_name else None
+    ax.scatter(*start_coords, marker=start_symbol, color=start_color,
+               alpha=alpha, label=start_label)
+    ax.scatter(*end_coords, marker=end_symbol, color=end_color, alpha=alpha,
+               label=end_label)
+
+
 def traj(ax: plt.Axes, plot_mode: PlotMode, traj: trajectory.PosePath3D,
          style: str = '-', color: str = 'black', label: str = "",
-         alpha: float = 1.0) -> None:
+         alpha: float = 1.0, plot_start_end_markers: bool = False) -> None:
     """
     plot a path/trajectory based on xyz coordinates into an axis
     :param ax: the matplotlib axis
@@ -329,6 +352,8 @@ def traj(ax: plt.Axes, plot_mode: PlotMode, traj: trajectory.PosePath3D,
     :param color: matplotlib color
     :param label: label (for legend)
     :param alpha: alpha value for transparency
+    :param plot_start_end_markers: Mark the start and end of a trajectory
+                                   with a symbol.
     """
     x_idx, y_idx, z_idx = plot_mode_to_idx(plot_mode)
     x = traj.positions_xyz[:, x_idx]
@@ -342,6 +367,9 @@ def traj(ax: plt.Axes, plot_mode: PlotMode, traj: trajectory.PosePath3D,
         set_aspect_equal(ax)
     if label and SETTINGS.plot_show_legend:
         ax.legend(frameon=True)
+    if plot_start_end_markers:
+        add_start_end_markers(ax, plot_mode, traj, start_color=color,
+                              end_color=color, alpha=alpha)
 
 
 def colored_line_collection(
@@ -374,7 +402,8 @@ def colored_line_collection(
 def traj_colormap(ax: plt.Axes, traj: trajectory.PosePath3D,
                   array: ListOrArray, plot_mode: PlotMode, min_map: float,
                   max_map: float, title: str = "",
-                  fig: typing.Optional[mpl.figure.Figure] = None) -> None:
+                  fig: typing.Optional[mpl.figure.Figure] = None,
+                  plot_start_end_markers: bool = False) -> None:
     """
     color map a path/trajectory in xyz coordinates according to
     an array of values
@@ -386,6 +415,8 @@ def traj_colormap(ax: plt.Axes, traj: trajectory.PosePath3D,
     :param max_map: upper bound value for color mapping
     :param title: plot title
     :param fig: plot figure. Obtained with plt.gcf() if none is specified
+    :param plot_start_end_markers: Mark the start and end of a trajectory
+                                   with a symbol.
     """
     pos = traj.positions_xyz
     norm = mpl.colors.Normalize(vmin=min_map, vmax=max_map, clip=True)
@@ -415,6 +446,9 @@ def traj_colormap(ax: plt.Axes, traj: trajectory.PosePath3D,
     if title:
         ax.legend(frameon=True)
         ax.set_title(title)
+    if plot_start_end_markers:
+        add_start_end_markers(ax, plot_mode, traj, start_color=colors[0],
+                              end_color=colors[-1])
 
 
 def draw_coordinate_axes(ax: plt.Figure, traj: trajectory.PosePath3D,

@@ -147,6 +147,11 @@ DEFAULT_SETTINGS_DICT_DOC = {
         False,
         "Show / save each figure separately instead of a collection."
     ),
+    "plot_start_end_markers": (
+        False,
+        "Mark the start and end of a trajectory with a symbol.\n"
+        "Start is marked with a circle, end with a cross."
+    ),
     "plot_texsystem": (
         "pdflatex",
         "'xelatex', 'lualatex' or 'pdflatex', see: https://matplotlib.org/users/pgf.html",

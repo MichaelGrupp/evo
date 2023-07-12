@@ -149,7 +149,8 @@ def plot_result(args: argparse.Namespace, result: Result, traj_ref: PosePath3D,
     plot.traj(ax, plot_mode, traj_ref_full if traj_ref_full else traj_ref,
               style=SETTINGS.plot_reference_linestyle,
               color=SETTINGS.plot_reference_color, label='reference',
-              alpha=SETTINGS.plot_reference_alpha)
+              alpha=SETTINGS.plot_reference_alpha,
+              plot_start_end_markers=SETTINGS.plot_start_end_markers)
     plot.draw_coordinate_axes(ax, traj_ref, plot_mode,
                               SETTINGS.plot_reference_axis_marker_scale)
 
@@ -164,7 +165,8 @@ def plot_result(args: argparse.Namespace, result: Result, traj_ref: PosePath3D,
     plot.traj_colormap(ax, traj_est, result.np_arrays["error_array"],
                        plot_mode, min_map=args.plot_colormap_min,
                        max_map=args.plot_colormap_max,
-                       title=result.info["title"])
+                       title=result.info["title"],
+                       plot_start_end_markers=SETTINGS.plot_start_end_markers)
     plot.draw_coordinate_axes(ax, traj_est, plot_mode,
                               SETTINGS.plot_axis_marker_scale)
     if args.ros_map_yaml:

@@ -597,7 +597,8 @@ def traj_rpy(axarr: np.ndarray, traj: trajectory.PosePath3D, style: str = '-',
 def trajectories(fig: plt.Figure, trajectories: typing.Union[
         trajectory.PosePath3D, typing.Sequence[trajectory.PosePath3D],
         typing.Dict[str, trajectory.PosePath3D]], plot_mode=PlotMode.xy,
-                 title: str = "", subplot_arg: int = 111) -> None:
+                 title: str = "", subplot_arg: int = 111,
+                 plot_start_end_markers: bool = False) -> None:
     """
     high-level function for plotting multiple trajectories
     :param fig: matplotlib figure
@@ -606,8 +607,13 @@ def trajectories(fig: plt.Figure, trajectories: typing.Union[
     :param plot_mode: e.g. plot.PlotMode.xy
     :param title: optional plot title
     :param subplot_arg: optional matplotlib subplot ID if used as subplot
+    :param plot_start_end_markers: Mark the start and end of a trajectory
+                                   with a symbol.
     """
     ax = prepare_axis(fig, plot_mode, subplot_arg)
+    if title:
+        ax.set_title(title)
+
     cmap_colors = None
     if SETTINGS.plot_multi_cmap.lower() != "none" and isinstance(
             trajectories, collections.abc.Iterable):
@@ -622,7 +628,8 @@ def trajectories(fig: plt.Figure, trajectories: typing.Union[
             color = next(cmap_colors)
         if SETTINGS.plot_usetex:
             name = name.replace("_", "\\_")
-        traj(ax, plot_mode, t, '-', color, name)
+        traj(ax, plot_mode, t, '-', color, name,
+             plot_start_end_markers=plot_start_end_markers)
 
     if isinstance(trajectories, trajectory.PosePath3D):
         draw(trajectories)

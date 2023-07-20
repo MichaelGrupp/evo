@@ -23,6 +23,7 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
 import logging
+import typing
 
 import numpy as np
 
@@ -66,6 +67,10 @@ def parser() -> argparse.ArgumentParser:
         "--align_origin",
         help="align the trajectory origin to the origin of the reference "
         "trajectory", action="store_true")
+    algo_opts.add_argument(
+        "--change_unit", default=None, choices=[
+            u.value for u in (metrics.ANGLE_UNITS + metrics.LENGTH_UNITS)
+        ], help="Changes the output unit of the metric, if possible.")
 
     output_opts.add_argument(
         "-p",
@@ -190,7 +195,8 @@ def ape(traj_ref: PosePath3D, traj_est: PosePath3D,
         pose_relation: metrics.PoseRelation, align: bool = False,
         correct_scale: bool = False, n_to_align: int = -1,
         align_origin: bool = False, ref_name: str = "reference",
-        est_name: str = "estimate") -> Result:
+        est_name: str = "estimate",
+        change_unit: typing.Optional[metrics.Unit] = None) -> Result:
 
     # Align the trajectories.
     only_scale = correct_scale and not align
@@ -208,6 +214,9 @@ def ape(traj_ref: PosePath3D, traj_est: PosePath3D,
     data = (traj_ref, traj_est)
     ape_metric = metrics.APE(pose_relation)
     ape_metric.process_data(data)
+
+    if change_unit:
+        ape_metric.change_unit(change_unit)
 
     title = str(ape_metric)
     if align and not correct_scale:
@@ -277,18 +286,13 @@ def run(args: argparse.Namespace) -> None:
             first_name=ref_name, snd_name=est_name)
 
     pose_relation = common.get_pose_relation(args)
+    change_unit = metrics.Unit(args.change_unit) if args.change_unit else None
 
-    result = ape(
-        traj_ref=traj_ref,
-        traj_est=traj_est,
-        pose_relation=pose_relation,
-        align=args.align,
-        correct_scale=args.correct_scale,
-        n_to_align=args.n_to_align,
-        align_origin=args.align_origin,
-        ref_name=ref_name,
-        est_name=est_name,
-    )
+    result = ape(traj_ref=traj_ref, traj_est=traj_est,
+                 pose_relation=pose_relation, align=args.align,
+                 correct_scale=args.correct_scale, n_to_align=args.n_to_align,
+                 align_origin=args.align_origin, ref_name=ref_name,
+                 est_name=est_name, change_unit=change_unit)
 
     if args.plot or args.save_plot or args.serialize_plot:
         common.plot_result(args, result, traj_ref,

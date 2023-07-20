@@ -256,6 +256,13 @@ def set_aspect_equal(ax: plt.Axes) -> None:
     ax.set_zlim3d([zmean - plot_radius, zmean + plot_radius])
 
 
+def _get_length_formatter(length_unit: Unit) -> typing.Callable:
+    def formatter(x, _):
+        return "{0:g}".format(x / METER_SCALE_FACTORS[length_unit])
+
+    return formatter
+
+
 def prepare_axis(fig: plt.Figure, plot_mode: PlotMode = PlotMode.xy,
                  subplot_arg: int = 111,
                  length_unit: Unit = Unit.meters) -> plt.Axes:
@@ -299,10 +306,7 @@ def prepare_axis(fig: plt.Figure, plot_mode: PlotMode = PlotMode.xy,
         ax.set_axis_off()
 
     if length_unit is not Unit.meters:
-
-        def formatter(x, _):
-            return "{0:g}".format(x / METER_SCALE_FACTORS[length_unit])
-
+        formatter = _get_length_formatter(length_unit)
         ax.xaxis.set_major_formatter(formatter)
         ax.yaxis.set_major_formatter(formatter)
         if plot_mode == PlotMode.xyz:
@@ -539,7 +543,8 @@ def draw_correspondence_edges(ax: plt.Axes, traj_1: trajectory.PosePath3D,
 
 def traj_xyz(axarr: np.ndarray, traj: trajectory.PosePath3D, style: str = '-',
              color: str = 'black', label: str = "", alpha: float = 1.0,
-             start_timestamp: typing.Optional[float] = None) -> None:
+             start_timestamp: typing.Optional[float] = None,
+             length_unit: Unit = Unit.meters) -> None:
     """
     plot a path/trajectory based on xyz coordinates into an axis
     :param axarr: an axis array (for x, y & z)
@@ -551,10 +556,15 @@ def traj_xyz(axarr: np.ndarray, traj: trajectory.PosePath3D, style: str = '-',
     :param alpha: alpha value for transparency
     :param start_timestamp: optional start time of the reference
                             (for x-axis alignment)
+    :param length_unit: Set to another length unit than meters to scale plots.
+                        Note that trajectory data is still expected in meters.
     """
     if len(axarr) != 3:
         raise PlotException("expected an axis array with 3 subplots - got " +
                             str(len(axarr)))
+    if length_unit not in LENGTH_UNITS:
+        raise PlotException(f"{length_unit} is not a length unit")
+
     if isinstance(traj, trajectory.PoseTrajectory3D):
         if start_timestamp:
             x = traj.timestamps - start_timestamp
@@ -564,8 +574,14 @@ def traj_xyz(axarr: np.ndarray, traj: trajectory.PosePath3D, style: str = '-',
     else:
         x = np.arange(0., len(traj.positions_xyz))
         xlabel = "index"
-    ylabels = ["$x$ (m)", "$y$ (m)", "$z$ (m)"]
+    ylabels = [
+        f"$x$ ({length_unit.value})", f"$y$ ({length_unit.value})",
+        f"$z$ ({length_unit.value})"
+    ]
     for i in range(0, 3):
+        if length_unit is not Unit.meters:
+            formatter = _get_length_formatter(length_unit)
+            axarr[i].yaxis.set_major_formatter(formatter)
         axarr[i].plot(x, traj.positions_xyz[:, i], style, color=color,
                       label=label, alpha=alpha)
         axarr[i].set_ylabel(ylabels[i])
@@ -616,7 +632,8 @@ def trajectories(fig: plt.Figure, trajectories: typing.Union[
         trajectory.PosePath3D, typing.Sequence[trajectory.PosePath3D],
         typing.Dict[str, trajectory.PosePath3D]], plot_mode=PlotMode.xy,
                  title: str = "", subplot_arg: int = 111,
-                 plot_start_end_markers: bool = False) -> None:
+                 plot_start_end_markers: bool = False,
+                 length_unit: Unit = Unit.meters) -> None:
     """
     high-level function for plotting multiple trajectories
     :param fig: matplotlib figure
@@ -627,8 +644,10 @@ def trajectories(fig: plt.Figure, trajectories: typing.Union[
     :param subplot_arg: optional matplotlib subplot ID if used as subplot
     :param plot_start_end_markers: Mark the start and end of a trajectory
                                    with a symbol.
+    :param length_unit: Set to another length unit than meters to scale plots.
+                        Note that trajectory data is still expected in meters.
     """
-    ax = prepare_axis(fig, plot_mode, subplot_arg)
+    ax = prepare_axis(fig, plot_mode, subplot_arg, length_unit)
     if title:
         ax.set_title(title)
 

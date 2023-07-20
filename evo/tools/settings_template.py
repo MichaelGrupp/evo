@@ -164,6 +164,11 @@ DEFAULT_SETTINGS_DICT_DOC = {
         "jet",
         "matplotlib color map used for mapping values on a trajectory.",
     ),
+    "plot_trajectory_length_unit": (
+        "m",
+        "Length unit in which trajectories are displayed.\n"
+        "Supported units: mm, cm, m, km"
+    ),
     "plot_trajectory_linestyle": (
         "-",
         "matplotlib linestyle of non-reference trajectories in plots.",

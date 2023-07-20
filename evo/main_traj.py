@@ -324,7 +324,7 @@ def run(args):
 
     import evo.core.lie_algebra as lie
     from evo.core import trajectory
-    from evo.core.trajectory import PoseTrajectory3D
+    from evo.core.metrics import Unit
     from evo.tools import file_interface, log
 
     log.configure_logging(verbose=args.verbose, silent=args.silent,
@@ -429,7 +429,9 @@ def run(args):
         fig_traj = plt.figure(figsize=tuple(SETTINGS.plot_figsize))
 
         plot_mode = plot.PlotMode[args.plot_mode]
-        ax_traj = plot.prepare_axis(fig_traj, plot_mode)
+        length_unit = Unit(SETTINGS.plot_trajectory_length_unit)
+        ax_traj = plot.prepare_axis(fig_traj, plot_mode,
+                                    length_unit=length_unit)
 
         # for x-axis alignment starting from 0 with --plot_relative_time
         start_time = None
@@ -453,7 +455,7 @@ def run(args):
                 axarr_xyz, ref_traj, style=SETTINGS.plot_reference_linestyle,
                 color=SETTINGS.plot_reference_color, label=short_traj_name,
                 alpha=SETTINGS.plot_reference_alpha,
-                start_timestamp=start_time)
+                start_timestamp=start_time, length_unit=length_unit)
             plot.traj_rpy(
                 axarr_rpy, ref_traj, style=SETTINGS.plot_reference_linestyle,
                 color=SETTINGS.plot_reference_color, label=short_traj_name,
@@ -494,7 +496,7 @@ def run(args):
             plot.traj_xyz(axarr_xyz, traj, SETTINGS.plot_trajectory_linestyle,
                           color, short_traj_name,
                           alpha=SETTINGS.plot_trajectory_alpha,
-                          start_timestamp=start_time)
+                          start_timestamp=start_time, length_unit=length_unit)
             plot.traj_rpy(axarr_rpy, traj, SETTINGS.plot_trajectory_linestyle,
                           color, short_traj_name,
                           alpha=SETTINGS.plot_trajectory_alpha,

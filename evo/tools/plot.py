@@ -46,6 +46,7 @@ import seaborn as sns
 from evo import EvoException
 from evo.tools import user
 from evo.core import trajectory
+from evo.core.metrics import Unit, LENGTH_UNITS, METER_SCALE_FACTORS
 
 # configure matplotlib and seaborn according to package settings
 # TODO: 'color_codes=False' to work around this bug:
@@ -256,40 +257,57 @@ def set_aspect_equal(ax: plt.Axes) -> None:
 
 
 def prepare_axis(fig: plt.Figure, plot_mode: PlotMode = PlotMode.xy,
-                 subplot_arg: int = 111) -> plt.Axes:
+                 subplot_arg: int = 111,
+                 length_unit: Unit = Unit.meters) -> plt.Axes:
     """
     prepares an axis according to the plot mode (for trajectory plotting)
     :param fig: matplotlib figure object
     :param plot_mode: PlotMode
     :param subplot_arg: optional if using subplots - the subplot id (e.g. '122')
+    :param length_unit: Set to another length unit than meters to scale plots.
+                        Note that trajectory data is still expected in meters.
     :return: the matplotlib axis
     """
+    if length_unit not in LENGTH_UNITS:
+        raise PlotException(f"{length_unit} is not a length unit")
+
     if plot_mode == PlotMode.xyz:
         ax = fig.add_subplot(subplot_arg, projection="3d")
     else:
         ax = fig.add_subplot(subplot_arg)
     if plot_mode in {PlotMode.xy, PlotMode.xz, PlotMode.xyz}:
-        xlabel = "$x$ (m)"
+        xlabel = f"$x$ ({length_unit.value})"
     elif plot_mode in {PlotMode.yz, PlotMode.yx}:
-        xlabel = "$y$ (m)"
+        xlabel = f"$y$ ({length_unit.value})"
     else:
-        xlabel = "$z$ (m)"
+        xlabel = f"$z$ ({length_unit.value})"
     if plot_mode in {PlotMode.xy, PlotMode.zy, PlotMode.xyz}:
-        ylabel = "$y$ (m)"
+        ylabel = f"$y$ ({length_unit.value})"
     elif plot_mode in {PlotMode.zx, PlotMode.yx}:
-        ylabel = "$x$ (m)"
+        ylabel = f"$x$ ({length_unit.value})"
     else:
-        ylabel = "$z$ (m)"
+        ylabel = f"$z$ ({length_unit.value})"
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     if plot_mode == PlotMode.xyz:
-        ax.set_zlabel('$z$ (m)')
+        ax.set_zlabel(f'$z$ ({length_unit.value})')
     if SETTINGS.plot_invert_xaxis:
         plt.gca().invert_xaxis()
     if SETTINGS.plot_invert_yaxis:
         plt.gca().invert_yaxis()
     if not SETTINGS.plot_show_axis:
         ax.set_axis_off()
+
+    if length_unit is not Unit.meters:
+
+        def formatter(x, _):
+            return "{0:g}".format(x / METER_SCALE_FACTORS[length_unit])
+
+        ax.xaxis.set_major_formatter(formatter)
+        ax.yaxis.set_major_formatter(formatter)
+        if plot_mode == PlotMode.xyz:
+            ax.zaxis.set_major_formatter(formatter)
+
     return ax
 
 

@@ -324,7 +324,7 @@ def run(args):
 
     import evo.core.lie_algebra as lie
     from evo.core import trajectory
-    from evo.core.trajectory import PoseTrajectory3D
+    from evo.core.metrics import Unit
     from evo.tools import file_interface, log
 
     log.configure_logging(verbose=args.verbose, silent=args.silent,
@@ -429,7 +429,9 @@ def run(args):
         fig_traj = plt.figure(figsize=tuple(SETTINGS.plot_figsize))
 
         plot_mode = plot.PlotMode[args.plot_mode]
-        ax_traj = plot.prepare_axis(fig_traj, plot_mode)
+        ax_traj = plot.prepare_axis(
+            fig_traj, plot_mode,
+            length_unit=Unit(SETTINGS.plot_trajectory_length_unit))
 
         # for x-axis alignment starting from 0 with --plot_relative_time
         start_time = None

@@ -454,17 +454,48 @@ def load_res_file(zip_path, load_trajectories: bool = False) -> result.Result:
 
 def load_transform_json(json_path) -> np.ndarray:
     """
-    load a transformation stored in xyz + quaternion format in a .json file
-    :param json_path: path to the .json file
-    :return: t (SE(3) matrix)
+    load a transformation stored in xyz + quaternion format in a .json file,
+    optionally with a "scale" field.
+    :param json_path: path to the .json file (or file handle)
+    :return: t (SE(3) or Sim(3) matrix)
     """
-    with open(json_path, 'r') as tf_file:
-        data = json.load(tf_file)
-        keys = ("x", "y", "z", "qx", "qy", "qz", "qw")
-        if not all(key in data for key in keys):
-            raise FileInterfaceException(
-                "invalid transform file - expected keys " + str(keys))
-        xyz = np.array([data["x"], data["y"], data["z"]])
-        quat = np.array([data["qw"], data["qx"], data["qy"], data["qz"]])
-        t = lie.se3(lie.so3_from_se3(tr.quaternion_matrix(quat)), xyz)
-        return t
+    if hasattr(json_path, "read"):
+        data = json.load(json_path)
+    else:
+        with open(json_path, 'r') as tf_file:
+            data = json.load(tf_file)
+    keys = ("x", "y", "z", "qx", "qy", "qz", "qw")
+    if not all(key in data for key in keys):
+        raise FileInterfaceException(
+            "invalid transform file - expected keys " + str(keys))
+    xyz = np.array([data["x"], data["y"], data["z"]])
+    quat = np.array([data["qw"], data["qx"], data["qy"], data["qz"]])
+    scale = 1 if "scale" not in data else data["scale"]
+    t = lie.sim3(lie.so3_from_se3(tr.quaternion_matrix(quat)), xyz, scale)
+    return t
+
+
+def load_transform(file_path) -> np.ndarray:
+    """
+    Load a SE(3) or Sim(3) transformation from either
+    - a binary .npy or a text file containing a 4x4 matrix,
+      saved with either np.save() or np.savetxt()
+    - a JSON file with keys x, y, z, qw, qx, qy, qz (+ scale)
+    :return: 4x4 transformation matrix
+    """
+    if os.path.getsize(file_path) < np.lib.format.MAGIC_LEN:
+        raise FileInterfaceException(f"Cannot determine type of {file_path}")
+
+    with open(file_path, "rb") as file_handle:
+        header = file_handle.read(np.lib.format.MAGIC_LEN)
+        if header.startswith(np.lib.format.MAGIC_PREFIX):
+            matrix = np.load(file_path)
+        elif header.strip().startswith(b"{"):
+            matrix = load_transform_json(file_path)
+        else:
+            matrix = np.loadtxt(file_path)
+
+    if not matrix.shape == (4, 4) or not lie.is_sim3(matrix):
+        raise FileInterfaceException(
+            f"{file_path} doesn't contain a valid Sim(3) or SE(3) matrix")
+    return matrix

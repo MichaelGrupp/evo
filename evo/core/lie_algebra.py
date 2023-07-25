@@ -158,6 +158,18 @@ def se3_inverse(p: np.ndarray) -> np.ndarray:
     return se3(r_inv, t_inv)
 
 
+def sim3_scale(a: np.ndarray) -> float:
+    """
+    :param a: Sim(3) matrix in form:
+              s*R  t
+               0   1
+    :return: s
+    """
+    # det(s*R) = s^3 * det(R)   | det(R) = 1
+    # s = det(s*R) ^ 1/3
+    return np.power(np.linalg.det(a[:3, :3]), 1 / 3)
+
+
 def sim3_inverse(a: np.ndarray) -> np.ndarray:
     """
     :param a: Sim(3) matrix in form:
@@ -165,9 +177,7 @@ def sim3_inverse(a: np.ndarray) -> np.ndarray:
                0   1
     :return: inverse Sim(3) matrix
     """
-    # det(s*R) = s^3 * det(R)   | det(R) = 1
-    # s = det(s*R) ^ 1/3
-    s = np.power(np.linalg.det(a[:3, :3]), 1 / 3)
+    s = sim3_scale(a)
     r = (1 / s * a[:3, :3]).T
     t = -r.dot(1 / s * a[:3, 3])
     return sim3(r, t, 1 / s)
@@ -195,12 +205,14 @@ def is_se3(p: np.ndarray) -> bool:
     return rot_valid and bool(lower_valid)
 
 
-def is_sim3(p: np.ndarray, s: float) -> bool:
+def is_sim3(p: np.ndarray, s: typing.Optional[float] = None) -> bool:
     """
     :param p: a 4x4 matrix
-    :param s: expected scale factor
+    :param s: expected scale factor (determined via sim3_scale() if not given)
     :return: True if p is in the Sim(3) group with scale s
     """
+    if s is None:
+        s = sim3_scale(p)
     rot = p[:3, :3]
     rot_unscaled = np.multiply(rot, 1.0 / s)
     rot_valid = is_so3(rot_unscaled)

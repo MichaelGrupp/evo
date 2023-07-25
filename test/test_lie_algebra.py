@@ -133,6 +133,11 @@ class TestSim3(unittest.TestCase):
         p_inv = lie.sim3_inverse(p)
         self.assertTrue(np.allclose(p_inv.dot(p), np.eye(4)))
 
+    def test_sim3_scale(self):
+        s = random.random()
+        p = lie.sim3(lie.random_so3(), np.random.random(3), s)
+        self.assertAlmostEqual(s, lie.sim3_scale(p))
+
 
 if __name__ == '__main__':
     """

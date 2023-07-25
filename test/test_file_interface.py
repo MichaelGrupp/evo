@@ -28,6 +28,7 @@ from rosbags.rosbag1 import (Reader as Rosbag1Reader, Writer as Rosbag1Writer)
 from rosbags.rosbag2 import (Reader as Rosbag2Reader, Writer as Rosbag2Writer)
 
 import helpers
+import evo.core.lie_algebra as lie
 from evo.core.result import Result
 from evo.core.trajectory import PosePath3D, PoseTrajectory3D
 from evo.tools import file_interface
@@ -202,6 +203,45 @@ class TestHasUtf8Bom(unittest.TestCase):
         with open(tmp_file.name, 'wb') as f:
             f.write(b"\xef\xbb\xbf")
         self.assertTrue(file_interface.has_utf8_bom(tmp_file.name))
+
+
+class TestLoadTransform(unittest.TestCase):
+    def test_json(self):
+        tmp_file = tempfile.NamedTemporaryFile(delete=False)
+        with open(tmp_file.name, 'w') as f:
+            f.write(""" {
+                "x": 1.0,
+                "y": 2.5,
+                "z": 3.0,
+                "qx": 0.0,
+                "qy": 0.0,
+                "qz": 0.0,
+                "qw": 1.0,
+                "scale": 0.5
+            }
+            """)
+        transform = file_interface.load_transform(tmp_file.name)
+        self.assertTrue(lie.is_sim3(transform))
+        self.assertTrue(np.allclose(transform[:3, :3], np.eye(3) * 0.5))
+        self.assertTrue(np.allclose(transform[:3, 3], [1, 2.5, 3]))
+        self.assertAlmostEqual(lie.sim3_scale(transform), 0.5)
+
+    def test_npy(self):
+        transform_out = lie.sim3(lie.random_so3(), np.random.random(3),
+                                 np.random.random_sample())
+        tmp_file = tempfile.NamedTemporaryFile(delete=False)
+        np.save(tmp_file.name, transform_out)
+        # np.save automatically adds ".npy" to the file name
+        transform_in = file_interface.load_transform(tmp_file.name + ".npy")
+        self.assertTrue(np.allclose(transform_out, transform_in))
+
+    def test_txt(self):
+        transform_out = lie.sim3(lie.random_so3(), np.random.random(3),
+                                 np.random.random_sample())
+        tmp_file = tempfile.NamedTemporaryFile(delete=False)
+        np.savetxt(tmp_file.name, transform_out)
+        transform_in = file_interface.load_transform(tmp_file.name)
+        self.assertTrue(np.allclose(transform_out, transform_in))
 
 
 if __name__ == '__main__':

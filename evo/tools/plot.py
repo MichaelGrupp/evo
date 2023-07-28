@@ -46,7 +46,7 @@ import seaborn as sns
 from evo import EvoException
 from evo.tools import user
 from evo.core import trajectory
-from evo.core.metrics import Unit, LENGTH_UNITS, METER_SCALE_FACTORS
+from evo.core.units import Unit, LENGTH_UNITS, METER_SCALE_FACTORS
 
 # configure matplotlib and seaborn according to package settings
 # TODO: 'color_codes=False' to work around this bug:

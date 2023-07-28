@@ -40,30 +40,34 @@ only do required imports in respective module when creating parser
 
 
 def ape() -> None:
-    from evo import main_ape
-    parser = main_ape.parser()
+    from evo import main_ape_parser
+    parser = main_ape_parser.parser()
     argcomplete.autocomplete(parser)
+    from evo import main_ape
     launch(main_ape, parser)
 
 
 def rpe() -> None:
-    from evo import main_rpe
-    parser = main_rpe.parser()
+    from evo import main_rpe_parser
+    parser = main_rpe_parser.parser()
     argcomplete.autocomplete(parser)
+    from evo import main_rpe
     launch(main_rpe, parser)
 
 
 def res() -> None:
-    from evo import main_res
-    parser = main_res.parser()
+    from evo import main_res_parser
+    parser = main_res_parser.parser()
     argcomplete.autocomplete(parser)
+    from evo import main_res
     launch(main_res, parser)
 
 
 def traj() -> None:
-    from evo import main_traj
-    parser = main_traj.parser()
+    from evo import main_traj_parser
+    parser = main_traj_parser.parser()
     argcomplete.autocomplete(parser)
+    from evo import main_traj
     launch(main_traj, parser)
 
 

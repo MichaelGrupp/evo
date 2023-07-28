@@ -33,6 +33,8 @@ from evo import EvoException
 from evo.core import filters, trajectory
 from evo.core.result import Result
 from evo.core import lie_algebra as lie
+from evo.core.units import (Unit, ANGLE_UNITS, LENGTH_UNITS,
+                            METER_SCALE_FACTORS)
 
 if sys.version_info[0] >= 3 and sys.version_info[1] >= 4:
     ABC = abc.ABC
@@ -56,48 +58,6 @@ class StatisticsType(Enum):
     min = "min"
     max = "max"
     sse = "sse"
-
-
-class PoseRelation(Enum):
-    full_transformation = "full transformation"
-    translation_part = "translation part"
-    rotation_part = "rotation part"
-    rotation_angle_rad = "rotation angle"
-    rotation_angle_deg = "rotation angle"
-    point_distance = "point distance"
-    point_distance_error_ratio = "point distance error ratio"
-
-
-class Unit(Enum):
-    none = "unit-less"
-    millimeters = "mm"
-    centimeters = "cm"
-    meters = "m"
-    kilometers = "km"
-    seconds = "s"
-    degrees = "deg"
-    radians = "rad"
-    frames = "frames"
-    percent = "%"  # used like a unit for display purposes
-
-
-class VelUnit(Enum):
-    meters_per_sec = "m/s"
-    rad_per_sec = "rad/s"
-    degrees_per_sec = "deg/s"
-
-
-LENGTH_UNITS = (Unit.millimeters, Unit.centimeters, Unit.meters,
-                Unit.kilometers)
-ANGLE_UNITS = (Unit.degrees, Unit.radians)
-
-# Factors to apply to a value a to convert it to meters.
-METER_SCALE_FACTORS = {
-    Unit.millimeters: 1e-3,
-    Unit.centimeters: 1e-2,
-    Unit.meters: 1,
-    Unit.kilometers: 1e3
-}
 
 
 class Metric(ABC):

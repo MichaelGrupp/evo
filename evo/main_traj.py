@@ -64,16 +64,16 @@ def parser() -> argparse.ArgumentParser:
         help="associate trajectories via matching timestamps - requires --ref",
         action="store_true")
     algo_opts.add_argument(
-        "--transform_left", help="path to a .json file with a transformation"
+        "--transform_left", help="path to a file with a transformation"
         " to apply to the trajectories (left multiplicative)")
     algo_opts.add_argument(
-        "--transform_right", help="path to a .json file with a transformation"
+        "--transform_right", help="path to a file with a transformation"
         " to apply to the trajectories (right_multiplicative)")
     algo_opts.add_argument(
         "--propagate_transform", help="with --transform_right: transform each "
         "pose and propagate resulting drift to the next.", action="store_true")
     algo_opts.add_argument("--invert_transform",
-                           help="invert the transformation of the .json file",
+                           help="invert the transformation of the file",
                            action="store_true")
     algo_opts.add_argument(
         "--ref", help="trajectory that will be marked/used as the reference")
@@ -396,12 +396,10 @@ def run(args):
         tf_type = "left" if args.transform_left else "right"
         tf_path = args.transform_left \
                 if args.transform_left else args.transform_right
-        transform = file_interface.load_transform_json(tf_path)
-        logger.debug(SEP)
-        if not lie.is_se3(transform):
-            logger.warning("Not a valid SE(3) transformation!")
+        transform = file_interface.load_transform(tf_path)
         if args.invert_transform:
             transform = lie.se3_inverse(transform)
+        logger.debug(SEP)
         logger.debug("Applying a {}-multiplicative transformation:\n{}".format(
             tf_type, transform))
         for traj in trajectories.values():

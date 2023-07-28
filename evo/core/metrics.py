@@ -60,6 +60,16 @@ class StatisticsType(Enum):
     sse = "sse"
 
 
+class PoseRelation(Enum):
+    full_transformation = "full transformation"
+    translation_part = "translation part"
+    rotation_part = "rotation part"
+    rotation_angle_rad = "rotation angle"
+    rotation_angle_deg = "rotation angle"
+    point_distance = "point distance"
+    point_distance_error_ratio = "point distance error ratio"
+
+
 class Metric(ABC):
     @abc.abstractmethod
     def process_data(self, data):

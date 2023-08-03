@@ -65,8 +65,10 @@ def load_trajectories(
             bag = Rosbag1Reader(args.bag)  # type: ignore
         try:
             bag.open()
-            traj_ref = file_interface.read_bag_trajectory(bag, args.ref_topic)
-            traj_est = file_interface.read_bag_trajectory(bag, args.est_topic)
+            traj_ref = file_interface.read_bag_trajectory(
+                bag, args.ref_topic, cache_tf_tree=True)
+            traj_est = file_interface.read_bag_trajectory(
+                bag, args.est_topic, cache_tf_tree=True)
             ref_name, est_name = args.ref_topic, args.est_topic
         finally:
             bag.close()

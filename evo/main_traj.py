@@ -102,9 +102,10 @@ def load_trajectories(args):
                 if topic == args.ref:
                     continue
                 trajectories[topic] = file_interface.read_bag_trajectory(
-                    bag, topic)
+                    bag, topic, cache_tf_tree=True)
             if args.ref:
-                ref_traj = file_interface.read_bag_trajectory(bag, args.ref)
+                ref_traj = file_interface.read_bag_trajectory(
+                    bag, args.ref, cache_tf_tree=True)
         finally:
             bag.close()
     return trajectories, ref_traj

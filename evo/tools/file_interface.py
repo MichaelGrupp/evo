@@ -241,7 +241,7 @@ def _get_xyz_quat_from_point_msg(
         msg) -> typing.Tuple[typing.List[float], typing.List[float]]:
     xyz = [msg.point.x, msg.point.y, msg.point.z]
     # geometry_msgs/PointStamped does not have rotation, add unit quaternion.
-    quat = [1, 0, 0, 0]
+    quat = [1., 0., 0., 0.]
     return xyz, quat
 
 

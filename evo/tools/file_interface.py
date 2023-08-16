@@ -44,7 +44,7 @@ from evo.tools import user, tf_id
 logger = logging.getLogger(__name__)
 
 SUPPORTED_ROS_MSGS = {
-    "geometry_msgs/msg/PoseStamped",
+    "geometry_msgs/msg/PointStamped", "geometry_msgs/msg/PoseStamped",
     "geometry_msgs/msg/PoseWithCovarianceStamped",
     "geometry_msgs/msg/TransformStamped", "nav_msgs/msg/Odometry"
 }
@@ -237,6 +237,13 @@ def _get_xyz_quat_from_pose_or_odometry_msg(
     ]
     return xyz, quat
 
+def _get_xyz_quat_from_point_msg(
+        msg) -> typing.Tuple[typing.List[float], typing.List[float]]:
+    xyz = [msg.point.x, msg.point.y, msg.point.z]
+    # geometry_msgs/PointStamped does not have rotation, add unit quaternion.
+    quat = [1., 0., 0., 0.]
+    return xyz, quat
+
 
 def get_supported_topics(
         reader: typing.Union[Rosbag1Reader, Rosbag2Reader]) -> list:
@@ -291,6 +298,12 @@ def read_bag_trajectory(reader: typing.Union[Rosbag1Reader,
     # Choose appropriate message conversion.
     if msg_type == "geometry_msgs/msg/TransformStamped":
         get_xyz_quat = _get_xyz_quat_from_transform_stamped
+    elif msg_type == "geometry_msgs/msg/PointStamped":
+        logger.warning(
+            "geometry_msgs/PointStamped does not contain rotation, "
+            "evo will use unit quaternion. Note that rotation metrics will be "
+            "invalid and RPE will only be valid with point_distance metric.")
+        get_xyz_quat = _get_xyz_quat_from_point_msg
     else:
         get_xyz_quat = _get_xyz_quat_from_pose_or_odometry_msg
 

@@ -85,6 +85,8 @@ def get_pose_relation(args: argparse.Namespace) -> PoseRelation:
         pose_relation = PoseRelation.rotation_part
     elif args.pose_relation == "trans_part":
         pose_relation = PoseRelation.translation_part
+    elif args.pose_relation == "xy_trans_part":
+        pose_relation = PoseRelation.xy_translation_part
     elif args.pose_relation == "angle_deg":
         pose_relation = PoseRelation.rotation_angle_deg
     elif args.pose_relation == "angle_rad":

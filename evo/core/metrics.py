@@ -25,7 +25,7 @@ import logging
 import math
 import sys
 import typing
-from enum import Enum
+from enum import Enum, unique
 
 import numpy as np
 
@@ -50,6 +50,7 @@ class MetricsException(EvoException):
     pass
 
 
+@unique
 class StatisticsType(Enum):
     rmse = "rmse"
     mean = "mean"
@@ -60,12 +61,13 @@ class StatisticsType(Enum):
     sse = "sse"
 
 
+@unique
 class PoseRelation(Enum):
     full_transformation = "full transformation"
     translation_part = "translation part"
     rotation_part = "rotation part"
-    rotation_angle_rad = "rotation angle"
-    rotation_angle_deg = "rotation angle"
+    rotation_angle_rad = "rotation angle in radians"
+    rotation_angle_deg = "rotation angle in degrees"
     point_distance = "point distance"
     point_distance_error_ratio = "point distance error ratio"
 

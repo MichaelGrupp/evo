@@ -13,7 +13,7 @@ Supported trajectory formats:
 * 'TUM' trajectory files
 * 'KITTI' pose files
 * 'EuRoC MAV' (.csv groundtruth and TUM trajectory file)
-* ROS and ROS2 bagfile with `geometry_msgs/PoseStamped`, `geometry_msgs/TransformStamped`, `geometry_msgs/PoseWithCovarianceStamped` or `nav_msgs/Odometry` topics or [TF messages](https://github.com/MichaelGrupp/evo/wiki/Formats#bag---ros-bagfile)
+* ROS and ROS2 bagfile with `geometry_msgs/PoseStamped`, `geometry_msgs/TransformStamped`, `geometry_msgs/PoseWithCovarianceStamped`, `geometry_msgs/PointStamped` or `nav_msgs/Odometry` topics or [TF messages](https://github.com/MichaelGrupp/evo/wiki/Formats#bag---ros-bagfile)
 
 See [here](https://github.com/MichaelGrupp/evo/wiki/Formats) for more infos about the formats.
 

@@ -37,7 +37,7 @@ Supported trajectory formats:
 * KITTI pose files
 * ROS and ROS2 bagfile with geometry_msgs/PoseStamped,
     geometry_msgs/TransformStamped, geometry_msgs/PoseWithCovarianceStamped,
-    nav_msgs/Odometry topics or TF messages
+    geometry_msgs/PointStamped, nav_msgs/Odometry topics or TF messages
 * EuRoC MAV dataset groundtruth files
 
 The following executables are available:

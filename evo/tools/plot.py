@@ -814,7 +814,7 @@ def ros_map(
         image = np.rot90(image)
         image = np.fliplr(image)
     ax_image = ax.imshow(image, origin="upper", cmap=cmap, extent=extent,
-                         zorder=1, alpha=alpha)
+                         zorder=-1, alpha=alpha)
 
     # Transform map frame to plot axis origin.
     map_to_pixel_origin = Affine2D()

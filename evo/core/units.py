@@ -19,9 +19,10 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from enum import Enum
+from enum import Enum, unique
 
 
+@unique
 class Unit(Enum):
     none = "unit-less"
     millimeters = "mm"

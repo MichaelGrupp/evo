@@ -26,7 +26,7 @@ import collections.abc
 import logging
 import pickle
 import typing
-from enum import Enum
+from enum import Enum, unique
 
 import matplotlib as mpl
 from evo.tools.settings import SETTINGS
@@ -71,6 +71,7 @@ class PlotException(EvoException):
     pass
 
 
+@unique
 class PlotMode(Enum):
     xy = "xy"
     xz = "xz"
@@ -81,6 +82,7 @@ class PlotMode(Enum):
     xyz = "xyz"
 
 
+@unique
 class Viewport(Enum):
     update = "update"
     keep_unchanged = "keep_unchanged"

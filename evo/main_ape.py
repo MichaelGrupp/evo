@@ -97,8 +97,8 @@ def ape(traj_ref: PosePath3D, traj_est: PosePath3D,
         ape_result.add_np_array("distances", traj_est.distances)
 
     if alignment_transformation is not None:
-        ape_result.add_np_array("alignment_transformation_sim3",
-                                alignment_transformation)
+        ape_result.add_info(
+            {"alignment_transformation_sim3": alignment_transformation})
 
     return ape_result
 

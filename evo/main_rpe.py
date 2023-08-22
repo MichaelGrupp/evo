@@ -115,8 +115,8 @@ def rpe(traj_ref: PosePath3D, traj_est: PosePath3D,
         rpe_result.add_np_array("distances", traj_est.distances[1:])
 
     if alignment_transformation is not None:
-        rpe_result.add_np_array("alignment_transformation_sim3",
-                                alignment_transformation)
+        rpe_result.add_info(
+            {"alignment_transformation_sim3": alignment_transformation})
 
     return rpe_result
 

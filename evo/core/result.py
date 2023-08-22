@@ -111,17 +111,29 @@ def merge_results(results: typing.Sequence[Result]) -> Result:
 
     merged_result = copy.deepcopy(results[0])
     logger.warning("Using info dict of first result.")
+
+    # Sum up values (or append).
     for result in results[1:]:
         merged_result.stats = {
-            key: ((merged_result.stats[key] + result.stats[key]) / 2)
-            for key in merged_result.stats
+            key: value + result.stats[key]
+            for key, value in merged_result.stats.items()
         }
         for key, array in merged_result.np_arrays.items():
             if strategy == "average":
-                merged_result.np_arrays[key] = np.mean(
-                    (array, result.np_arrays[key]), axis=0)
+                merged_result.np_arrays[key] = np.add(array,
+                                                      result.np_arrays[key])
             elif strategy == "append":
                 merged_result.np_arrays[key] = np.append(
                     array, result.np_arrays[key])
+
+    # Compute average.
+    merged_result.stats = {
+        key: summed_value / len(results)
+        for key, summed_value in merged_result.stats.items()
+    }
+    if strategy == "average":
+        for key, summed_array in merged_result.np_arrays.items():
+            merged_result.np_arrays[key] = np.divide(summed_array,
+                                                     len(results))
 
     return merged_result

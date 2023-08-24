@@ -242,7 +242,7 @@ def main() -> None:
         "show", description="show configuration - %s" % lic,
         parents=[shared_parser])
     show_parser.add_argument(
-        "--config",
+        "-c", "--config",
         help="path of the config file to display (default: package settings)")
     show_parser.add_argument("--brief", help="show only the .json data",
                              action="store_true")

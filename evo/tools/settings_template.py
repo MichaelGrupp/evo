@@ -182,6 +182,11 @@ DEFAULT_SETTINGS_DICT_DOC = {
         "Equal axes ratio for realistic trajectory plots.\n"
         "Turning it off allows to stretch the plot without keeping the ratio."
     ),
+    "pygments_style": (
+        "monokai",
+        "Style used for the syntax highlighting in evo_config.\n"
+        "See here for available styles: https://pygments.org/styles/"
+    ),
     "ros_map_alpha_value": (
         1.0,
         "Alpha value for blending ROS map image slices."

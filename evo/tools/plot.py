@@ -28,43 +28,49 @@ import pickle
 import typing
 from enum import Enum, unique
 
+import numpy as np
 import matplotlib as mpl
-from evo.tools.settings import SETTINGS
-
-mpl.use(SETTINGS.plot_backend)
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.art3d as art3d
+import seaborn as sns
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.backend_bases import FigureCanvasBase
 from matplotlib.collections import LineCollection
 from matplotlib.transforms import Affine2D, Bbox
 
-import numpy as np
-import seaborn as sns
-
 from evo import EvoException
 from evo.tools import user
+from evo.tools.settings import SETTINGS, SettingsContainer
 from evo.core import trajectory
 from evo.core.units import Unit, LENGTH_UNITS, METER_SCALE_FACTORS
-
-# configure matplotlib and seaborn according to package settings
-# TODO: 'color_codes=False' to work around this bug:
-# https://github.com/mwaskom/seaborn/issues/1546
-sns.set(style=SETTINGS.plot_seaborn_style, font=SETTINGS.plot_fontfamily,
-        font_scale=SETTINGS.plot_fontscale, color_codes=False,
-        palette=SETTINGS.plot_seaborn_palette)
-rc = {
-    "lines.linewidth": SETTINGS.plot_linewidth,
-    "text.usetex": SETTINGS.plot_usetex,
-    "font.family": SETTINGS.plot_fontfamily,
-    "pgf.texsystem": SETTINGS.plot_texsystem
-}
-mpl.rcParams.update(rc)
 
 logger = logging.getLogger(__name__)
 
 ListOrArray = typing.Union[typing.Sequence[float], np.ndarray]
+
+
+def apply_settings(settings: SettingsContainer = SETTINGS):
+    """
+    Configure matplotlib and seaborn according to package settings.
+    """
+    mpl.use(settings.plot_backend)
+
+    # TODO: 'color_codes=False' to work around this bug:
+    # https://github.com/mwaskom/seaborn/issues/1546
+    sns.set(style=settings.plot_seaborn_style, font=settings.plot_fontfamily,
+            font_scale=settings.plot_fontscale, color_codes=False,
+            palette=settings.plot_seaborn_palette)
+
+    mpl.rcParams.update({
+        "lines.linewidth": settings.plot_linewidth,
+        "text.usetex": settings.plot_usetex,
+        "font.family": settings.plot_fontfamily,
+        "pgf.texsystem": settings.plot_texsystem
+    })
+
+
+apply_settings(SETTINGS)
 
 
 class PlotException(EvoException):

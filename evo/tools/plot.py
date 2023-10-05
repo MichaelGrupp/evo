@@ -35,6 +35,8 @@ import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.art3d as art3d
 import seaborn as sns
 from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 from matplotlib.backend_bases import FigureCanvasBase
 from matplotlib.collections import LineCollection
 from matplotlib.transforms import Affine2D, Bbox
@@ -111,7 +113,7 @@ class PlotCollection:
     def __str__(self) -> str:
         return self.title + " (" + str(len(self.figures)) + " figure(s))"
 
-    def add_figure(self, name: str, fig: plt.Figure) -> None:
+    def add_figure(self, name: str, fig: Figure) -> None:
         fig.tight_layout()
         self.figures[name] = fig
 
@@ -235,7 +237,7 @@ class PlotCollection:
                 logger.info("Plot saved to " + dest)
 
 
-def set_aspect_equal(ax: plt.Axes) -> None:
+def set_aspect_equal(ax: Axes) -> None:
     """
     kudos to https://stackoverflow.com/a/35126679
     :param ax: matplotlib 3D axes object
@@ -271,9 +273,9 @@ def _get_length_formatter(length_unit: Unit) -> typing.Callable:
     return formatter
 
 
-def prepare_axis(fig: plt.Figure, plot_mode: PlotMode = PlotMode.xy,
+def prepare_axis(fig: Figure, plot_mode: PlotMode = PlotMode.xy,
                  subplot_arg: int = 111,
-                 length_unit: Unit = Unit.meters) -> plt.Axes:
+                 length_unit: Unit = Unit.meters) -> Axes:
     """
     prepares an axis according to the plot mode (for trajectory plotting)
     :param fig: matplotlib figure object
@@ -347,7 +349,7 @@ def plot_mode_to_idx(
     return x_idx, y_idx, z_idx
 
 
-def add_start_end_markers(ax: plt.Axes, plot_mode: PlotMode,
+def add_start_end_markers(ax: Axes, plot_mode: PlotMode,
                           traj: trajectory.PosePath3D, start_symbol: str = "o",
                           start_color: str = "black", end_symbol: str = "x",
                           end_color: str = "black", alpha: float = 1.0,
@@ -370,7 +372,7 @@ def add_start_end_markers(ax: plt.Axes, plot_mode: PlotMode,
                label=end_label)
 
 
-def traj(ax: plt.Axes, plot_mode: PlotMode, traj: trajectory.PosePath3D,
+def traj(ax: Axes, plot_mode: PlotMode, traj: trajectory.PosePath3D,
          style: str = '-', color: str = 'black', label: str = "",
          alpha: float = 1.0, plot_start_end_markers: bool = False) -> None:
     """
@@ -429,9 +431,9 @@ def colored_line_collection(
     return line_collection
 
 
-def traj_colormap(ax: plt.Axes, traj: trajectory.PosePath3D,
-                  array: ListOrArray, plot_mode: PlotMode, min_map: float,
-                  max_map: float, title: str = "",
+def traj_colormap(ax: Axes, traj: trajectory.PosePath3D, array: ListOrArray,
+                  plot_mode: PlotMode, min_map: float, max_map: float,
+                  title: str = "",
                   fig: typing.Optional[mpl.figure.Figure] = None,
                   plot_start_end_markers: bool = False) -> None:
     """
@@ -481,7 +483,7 @@ def traj_colormap(ax: plt.Axes, traj: trajectory.PosePath3D,
                               end_color=colors[-1])
 
 
-def draw_coordinate_axes(ax: plt.Figure, traj: trajectory.PosePath3D,
+def draw_coordinate_axes(ax: Figure, traj: trajectory.PosePath3D,
                          plot_mode: PlotMode, marker_scale: float = 0.1,
                          x_color: str = "r", y_color: str = "g",
                          z_color: str = "b") -> None:
@@ -521,7 +523,7 @@ def draw_coordinate_axes(ax: plt.Figure, traj: trajectory.PosePath3D,
     ax.add_collection(markers)
 
 
-def draw_correspondence_edges(ax: plt.Axes, traj_1: trajectory.PosePath3D,
+def draw_correspondence_edges(ax: Axes, traj_1: trajectory.PosePath3D,
                               traj_2: trajectory.PosePath3D,
                               plot_mode: PlotMode, style: str = '-',
                               color: str = "black", alpha: float = 1.) -> None:
@@ -636,7 +638,7 @@ def traj_rpy(axarr: np.ndarray, traj: trajectory.PosePath3D, style: str = '-',
         axarr[0].legend(frameon=True)
 
 
-def trajectories(fig: plt.Figure, trajectories: typing.Union[
+def trajectories(fig: Figure, trajectories: typing.Union[
         trajectory.PosePath3D, typing.Sequence[trajectory.PosePath3D],
         typing.Dict[str, trajectory.PosePath3D]], plot_mode=PlotMode.xy,
                  title: str = "", subplot_arg: int = 111,
@@ -686,7 +688,7 @@ def trajectories(fig: plt.Figure, trajectories: typing.Union[
             draw(t)
 
 
-def error_array(ax: plt.Axes, err_array: ListOrArray,
+def error_array(ax: Axes, err_array: ListOrArray,
                 x_array: typing.Optional[ListOrArray] = None,
                 statistics: typing.Optional[typing.Dict[str, float]] = None,
                 threshold: typing.Optional[float] = None,
@@ -744,7 +746,7 @@ def error_array(ax: plt.Axes, err_array: ListOrArray,
 
 
 def ros_map(
-    ax: plt.Axes, yaml_path: str, plot_mode: PlotMode,
+    ax: Axes, yaml_path: str, plot_mode: PlotMode,
     cmap: str = SETTINGS.ros_map_cmap,
     mask_unknown_value: typing.Optional[int] = (
         SETTINGS.ros_map_unknown_cell_value if SETTINGS.ros_map_enable_masking

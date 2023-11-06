@@ -628,8 +628,8 @@ def traj_rpy(axarr: np.ndarray, traj: trajectory.PosePath3D, style: str = '-',
         xlabel = "index"
     ylabels = ["$roll$ (deg)", "$pitch$ (deg)", "$yaw$ (deg)"]
     for i in range(0, 3):
-        axarr[i].plot(x, np.rad2deg(angles[:, i]), style, color=color,
-                      label=label, alpha=alpha)
+        axarr[i].plot(x, np.rad2deg(np.unwrap(angles[:, i])), style,
+                      color=color, label=label, alpha=alpha)
         axarr[i].set_ylabel(ylabels[i])
     axarr[2].set_xlabel(xlabel)
     if label:

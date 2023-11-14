@@ -108,7 +108,10 @@ def run(args: argparse.Namespace) -> None:
             error_df = pd.concat([error_df, new_error_df], axis=1)
 
     # check titles
-    first_title = df.loc["info", "title"][0] if not args.ignore_title else ""
+    if args.ignore_title:
+        first_title = ""
+    else:
+        first_title = df.loc["info", "title"].iloc[0]
     first_file = args.result_files[0]
     if not args.no_warnings and not args.ignore_title:
         checks = df.loc["info", "title"] != first_title
@@ -176,7 +179,7 @@ def run(args: argparse.Namespace) -> None:
             index_label = df.loc["info", "xlabel"][0]
         else:
             index_label = "$t$ (s)" if common_index else "index"
-        metric_label = df.loc["info", "label"][0]
+        metric_label = df.loc["info", "label"].iloc[0]
 
         plot_collection = plot.PlotCollection(first_title)
         # raw value plot

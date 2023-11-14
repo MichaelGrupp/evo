@@ -23,6 +23,7 @@ import copy
 import os
 import collections
 import collections.abc
+import itertools
 import logging
 import pickle
 import typing
@@ -668,10 +669,12 @@ def trajectories(fig: Figure, trajectories: typing.Union[
         cmap = getattr(cm, SETTINGS.plot_multi_cmap)
         cmap_colors = iter(cmap(np.linspace(0, 1, len(trajectories))))
 
+    color_palette = itertools.cycle(sns.color_palette())
+
     # helper function
     def draw(t, name=""):
         if cmap_colors is None:
-            color = next(ax._get_lines.prop_cycler)['color']
+            color = next(color_palette)
         else:
             color = next(cmap_colors)
         if SETTINGS.plot_usetex:
@@ -727,9 +730,10 @@ def error_array(ax: Axes, err_array: ListOrArray,
         else:
             ax.plot(err_array, linestyle=linestyle, marker=marker, color=color,
                     label=name)
+    color_pallete = itertools.cycle(sns.color_palette())
     if statistics is not None:
         for stat_name, value in statistics.items():
-            color = next(ax._get_lines.prop_cycler)['color']
+            color = next(color_pallete)
             if stat_name == "std" and "mean" in statistics:
                 mean, std = statistics["mean"], statistics["std"]
                 ax.axhspan(mean - std / 2, mean + std / 2, color=color,

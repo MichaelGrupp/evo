@@ -98,7 +98,9 @@ jobs:
       versionSpec: '3.x'
       architecture: 'x64'
 
-  - script: python setup.py sdist
+  - script: |
+      pip install --upgrade setuptools
+      python setup.py sdist
     displayName: 'Build sdist'
 
 # Currently, that's it. No actual deployment.

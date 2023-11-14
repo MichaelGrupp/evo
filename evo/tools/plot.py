@@ -28,7 +28,6 @@ import logging
 import pickle
 import typing
 from enum import Enum, unique
-from distutils.version import LooseVersion
 
 import numpy as np
 import matplotlib as mpl

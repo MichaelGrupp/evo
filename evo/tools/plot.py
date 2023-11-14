@@ -368,19 +368,17 @@ def add_start_end_markers(ax: Axes, plot_mode: PlotMode,
     start = traj.positions_xyz[0]
     end = traj.positions_xyz[-1]
     x_idx, y_idx, z_idx = plot_mode_to_idx(plot_mode)
-    # Note: Type annotation for variable length needed because of unpacking
-    # in call to ax.scatter. https://github.com/python/mypy/issues/9710
-    start_coords: typing.Tuple[float, ...] = (start[x_idx], start[y_idx])
-    end_coords: typing.Tuple[float, ...] = (end[x_idx], end[y_idx])
+    start_coords = [start[x_idx], start[y_idx]]
+    end_coords = [end[x_idx], end[y_idx]]
     if plot_mode == PlotMode.xyz:
-        start_coords + (start[z_idx])
-        end_coords + (end[z_idx])
+        start_coords.append(start[z_idx])
+        end_coords.append(end[z_idx])
     start_label = f"Start of {traj_name}" if traj_name else None
     end_label = f"End of {traj_name}" if traj_name else None
     ax.scatter(*start_coords, marker=start_symbol, color=start_color,
-               alpha=alpha, label=start_label)
+               alpha=alpha, label=start_label)  # type: ignore[misc]
     ax.scatter(*end_coords, marker=end_symbol, color=end_color, alpha=alpha,
-               label=end_label)
+               label=end_label) # type: ignore[misc]
 
 
 def traj(ax: Axes, plot_mode: PlotMode, traj: trajectory.PosePath3D,

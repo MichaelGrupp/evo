@@ -50,13 +50,6 @@ from evo.core.units import Unit, LENGTH_UNITS, METER_SCALE_FACTORS
 
 logger = logging.getLogger(__name__)
 
-if LooseVersion(mpl.__version__) >= LooseVersion("3.8"):
-    from matplotlib.typing import ColorType
-else:
-    ColorType = typing.Union[typing.Tuple[float, float, float],
-                             typing.Tuple[float, float, float, float], str]
-
-ColorSequence = typing.Union[typing.Sequence[ColorType], np.ndarray]
 ListOrArray = typing.Union[typing.Sequence[float], np.ndarray]
 
 
@@ -359,9 +352,8 @@ def plot_mode_to_idx(
 
 def add_start_end_markers(ax: Axes, plot_mode: PlotMode,
                           traj: trajectory.PosePath3D, start_symbol: str = "o",
-                          start_color: ColorType = "black",
-                          end_symbol: str = "x",
-                          end_color: ColorType = "black", alpha: float = 1.0,
+                          start_color="black", end_symbol: str = "x",
+                          end_color="black", alpha: float = 1.0,
                           traj_name: typing.Optional[str] = None):
     if traj.num_poses == 0:
         return
@@ -375,15 +367,16 @@ def add_start_end_markers(ax: Axes, plot_mode: PlotMode,
         end_coords.append(end[z_idx])
     start_label = f"Start of {traj_name}" if traj_name else None
     end_label = f"End of {traj_name}" if traj_name else None
+    # TODO: mypy doesn't deal well with * unpack here for some reason.
     ax.scatter(*start_coords, marker=start_symbol, color=start_color,
                alpha=alpha, label=start_label)  # type: ignore[misc]
     ax.scatter(*end_coords, marker=end_symbol, color=end_color, alpha=alpha,
-               label=end_label) # type: ignore[misc]
+               label=end_label)  # type: ignore[misc]
 
 
 def traj(ax: Axes, plot_mode: PlotMode, traj: trajectory.PosePath3D,
-         style: str = '-', color: ColorType = 'black', label: str = "",
-         alpha: float = 1.0, plot_start_end_markers: bool = False) -> None:
+         style: str = '-', color='black', label: str = "", alpha: float = 1.0,
+         plot_start_end_markers: bool = False) -> None:
     """
     plot a path/trajectory based on xyz coordinates into an axis
     :param ax: the matplotlib axis
@@ -414,7 +407,7 @@ def traj(ax: Axes, plot_mode: PlotMode, traj: trajectory.PosePath3D,
 
 
 def colored_line_collection(
-    xyz: np.ndarray, colors: ColorSequence, plot_mode: PlotMode = PlotMode.xy,
+    xyz: np.ndarray, colors, plot_mode: PlotMode = PlotMode.xy,
     linestyles: str = "solid", step: int = 1, alpha: float = 1.
 ) -> typing.Union[LineCollection, art3d.LineCollection]:
     if step > 1 and len(xyz) / step != len(colors):
@@ -494,8 +487,7 @@ def traj_colormap(ax: Axes, traj: trajectory.PosePath3D, array: ListOrArray,
 
 def draw_coordinate_axes(ax: Axes, traj: trajectory.PosePath3D,
                          plot_mode: PlotMode, marker_scale: float = 0.1,
-                         x_color: ColorType = "r", y_color: ColorType = "g",
-                         z_color: ColorType = "b") -> None:
+                         x_color="r", y_color="g", z_color="b") -> None:
     """
     Draws a coordinate frame axis for each pose of a trajectory.
     :param ax: plot axis
@@ -535,8 +527,7 @@ def draw_coordinate_axes(ax: Axes, traj: trajectory.PosePath3D,
 def draw_correspondence_edges(ax: Axes, traj_1: trajectory.PosePath3D,
                               traj_2: trajectory.PosePath3D,
                               plot_mode: PlotMode, style: str = '-',
-                              color: ColorType = "black",
-                              alpha: float = 1.) -> None:
+                              color="black", alpha: float = 1.) -> None:
     """
     Draw edges between corresponding poses of two trajectories.
     Trajectories must be synced, i.e. having the same number of poses.
@@ -562,7 +553,7 @@ def draw_correspondence_edges(ax: Axes, traj_1: trajectory.PosePath3D,
 
 
 def traj_xyz(axarr: np.ndarray, traj: trajectory.PosePath3D, style: str = '-',
-             color: ColorType = 'black', label: str = "", alpha: float = 1.0,
+             color='black', label: str = "", alpha: float = 1.0,
              start_timestamp: typing.Optional[float] = None,
              length_unit: Unit = Unit.meters) -> None:
     """
@@ -611,7 +602,7 @@ def traj_xyz(axarr: np.ndarray, traj: trajectory.PosePath3D, style: str = '-',
 
 
 def traj_rpy(axarr: np.ndarray, traj: trajectory.PosePath3D, style: str = '-',
-             color: ColorType = 'black', label: str = "", alpha: float = 1.0,
+             color='black', label: str = "", alpha: float = 1.0,
              start_timestamp: typing.Optional[float] = None) -> None:
     """
     plot a path/trajectory's Euler RPY angles into an axis
@@ -702,8 +693,8 @@ def error_array(ax: Axes, err_array: ListOrArray,
                 x_array: typing.Optional[ListOrArray] = None,
                 statistics: typing.Optional[typing.Dict[str, float]] = None,
                 threshold: typing.Optional[float] = None,
-                cumulative: bool = False, color: ColorType = 'grey',
-                name: str = "error", title: str = "", xlabel: str = "index",
+                cumulative: bool = False, color='grey', name: str = "error",
+                title: str = "", xlabel: str = "index",
                 ylabel: typing.Optional[str] = None, subplot_arg: int = 111,
                 linestyle: str = "-", marker: typing.Optional[str] = None):
     """

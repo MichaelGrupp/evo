@@ -21,6 +21,7 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
 import typing
+from enum import Enum, unique
 
 import numpy as np
 
@@ -34,6 +35,13 @@ logger = logging.getLogger(__name__)
 
 class TrajectoryException(EvoException):
     pass
+
+
+@unique
+class ProjectionPlane(Enum):
+    xy = "xy"
+    xz = "xz"
+    yz = "yz"
 
 
 class PosePath3D(object):
@@ -65,6 +73,7 @@ class PosePath3D(object):
         if self.num_poses == 0:
             raise TrajectoryException("pose data is empty")
         self.meta = {} if meta is None else meta
+        self._projected = False
 
     def __str__(self) -> str:
         return "{} poses, {:.3f}m path length".format(self.num_poses,
@@ -183,6 +192,30 @@ class PosePath3D(object):
             ]
         if hasattr(self, "_positions_xyz"):
             self._positions_xyz = s * self._positions_xyz
+
+    def project(self, plane: ProjectionPlane) -> None:
+        """
+        Projects the positions of the path into a plane.
+        Orientations are left unchanged.
+        :param plane: desired plane into which the positions will be projected
+        """
+        if self._projected:
+            raise TrajectoryException("path was already projected once")
+        if plane == ProjectionPlane.xy:
+            null_dim = 2
+        elif plane == ProjectionPlane.xz:
+            null_dim = 1
+        elif plane == ProjectionPlane.yz:
+            null_dim = 0
+        else:
+            raise TrajectoryException(f"unknown projection plane {plane}")
+        if hasattr(self, "_poses_se3"):
+            for pose in self._poses_se3:
+                pose[null_dim, 3] = 0
+        if hasattr(self, "_positions_xyz"):
+            for position in self._positions_xyz:
+                position[null_dim] = 0
+        self._projected = True
 
     def align(self, traj_ref: 'PosePath3D', correct_scale: bool = False,
               correct_only_scale: bool = False,

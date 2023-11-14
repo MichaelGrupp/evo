@@ -119,7 +119,7 @@ def run(args: argparse.Namespace) -> None:
             if not differs:
                 continue
             else:
-                mismatching_title = df.loc["info", "title"][i]
+                mismatching_title = df.loc["info", "title"].iloc[i]
                 mismatching_file = args.result_files[i]
                 logger.debug(SEP)
                 logger.warning(
@@ -176,7 +176,7 @@ def run(args: argparse.Namespace) -> None:
         # labels according to first dataset
         if "xlabel" in df.loc["info"].index and not df.loc[
                 "info", "xlabel"].isnull().values.any():
-            index_label = df.loc["info", "xlabel"][0]
+            index_label = df.loc["info", "xlabel"].iloc[0]
         else:
             index_label = "$t$ (s)" if common_index else "index"
         metric_label = df.loc["info", "label"].iloc[0]

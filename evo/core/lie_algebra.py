@@ -23,7 +23,7 @@ import typing
 
 import numpy as np
 import scipy.spatial.transform as sst
-from distutils.version import LooseVersion
+from packaging.version import Version
 from scipy import __version__ as scipy_version
 
 from evo import EvoException
@@ -33,7 +33,7 @@ from evo.core import transformations as tr
 # which is not available for Python 2.7.
 # Use the legacy direct cosine matrix naming (*_dcm()) if needed.
 # TODO: remove this junk once Python 2.7 is finally dead in ROS.
-_USE_DCM_NAME = LooseVersion(scipy_version) < LooseVersion("1.4")
+_USE_DCM_NAME = Version(scipy_version) < Version("1.4")
 
 
 class LieAlgebraException(EvoException):

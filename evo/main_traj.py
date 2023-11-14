@@ -23,6 +23,7 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
 import datetime
+import itertools
 import logging
 import os
 
@@ -274,6 +275,7 @@ def run(args):
         from evo.tools import plot
         import matplotlib.pyplot as plt
         import matplotlib.cm as cm
+        import seaborn as sns
 
         plot_collection = plot.PlotCollection("evo_traj - trajectory plot")
         fig_xyz, axarr_xyz = plt.subplots(3, sharex="col",
@@ -331,10 +333,11 @@ def run(args):
         if SETTINGS.plot_multi_cmap.lower() != "none":
             cmap = getattr(cm, SETTINGS.plot_multi_cmap)
             cmap_colors = iter(cmap(np.linspace(0, 1, len(trajectories))))
+        color_palette = itertools.cycle(sns.color_palette())
 
         for name, traj in trajectories.items():
             if cmap_colors is None:
-                color = next(ax_traj._get_lines.prop_cycler)['color']
+                color = next(color_palette)
             else:
                 color = next(cmap_colors)
 

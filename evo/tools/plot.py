@@ -459,7 +459,8 @@ def traj_colormap(ax: Axes, traj: trajectory.PosePath3D, array: ListOrArray,
         norm=norm,
         cmap=SETTINGS.plot_trajectory_cmap)  # cm.*_r is reversed cmap
     mapper.set_array(array)
-    colors = [mapper.to_rgba(a) for a in array]
+    # TODO: why does mypy complain about 'a' here, float is fine?
+    colors = [mapper.to_rgba(a) for a in array]  # type: ignore[arg-type]
     line_collection = colored_line_collection(pos, colors, plot_mode)
     ax.add_collection(line_collection)
     ax.autoscale_view(True, True, True)
@@ -822,7 +823,7 @@ def ros_map(
     n_rows, n_cols = image.shape[x_idx], image.shape[y_idx]
     metric_width = n_cols * resolution
     metric_height = n_rows * resolution
-    extent = [0, metric_width, 0, metric_height]
+    extent = (0, metric_width, 0, metric_height)
     if plot_mode == PlotMode.yx:
         image = np.rot90(image)
         image = np.fliplr(image)

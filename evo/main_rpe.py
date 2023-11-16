@@ -63,7 +63,8 @@ def rpe(traj_ref: PosePath3D, traj_est: PosePath3D,
     # Projection is done after potential 3D alignment & transformation steps.
     if project_to_plane:
         logger.debug(SEP)
-        logger.debug(f"Projecting trajectories to {project_to_plane} plane.")
+        logger.debug(
+            f"Projecting trajectories to {project_to_plane.value} plane.")
         traj_ref.project(project_to_plane)
         traj_est.project(project_to_plane)
 

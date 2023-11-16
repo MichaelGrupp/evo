@@ -27,6 +27,7 @@ import itertools
 import logging
 import pickle
 import typing
+import warnings
 from enum import Enum, unique
 
 import numpy as np
@@ -464,8 +465,11 @@ def traj_colormap(ax: Axes, traj: trajectory.PosePath3D, array: ListOrArray,
     ax.add_collection(line_collection)
     ax.autoscale_view(True, True, True)
     if plot_mode == PlotMode.xyz and isinstance(ax, Axes3D):
-        ax.set_zlim(np.amin(traj.positions_xyz[:, 2]),
-                    np.amax(traj.positions_xyz[:, 2]))
+        min_z = np.amin(traj.positions_xyz[:, 2])
+        max_z = np.amax(traj.positions_xyz[:, 2])                
+        # Only adjust limits if there are z values to suppress mpl warning.
+        if min_z != max_z:
+            ax.set_zlim(min_z, max_z)
     if SETTINGS.plot_xyz_realistic:
         set_aspect_equal(ax)
     if fig is None:

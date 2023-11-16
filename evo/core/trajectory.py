@@ -195,8 +195,7 @@ class PosePath3D(object):
 
     def project(self, plane: ProjectionPlane) -> None:
         """
-        Projects the positions of the path into a plane.
-        Orientations are left unchanged.
+        Projects the positions and orientations of the path into a plane.
         :param plane: desired plane into which the positions will be projected
         """
         if self._projected:
@@ -209,12 +208,20 @@ class PosePath3D(object):
             null_dim = 0
         else:
             raise TrajectoryException(f"unknown projection plane {plane}")
-        if hasattr(self, "_poses_se3"):
-            for pose in self._poses_se3:
-                pose[null_dim, 3] = 0
+
+        rotation_axis = np.zeros(3)
+        rotation_axis[null_dim] = 1
+        for pose in self.poses_se3:
+            pose[null_dim, 3] = 0
+            angle_axis = rotation_axis * tr.euler_from_matrix(
+                pose[:3, :3], "sxyz")[null_dim]
+            pose[:3, :3] = lie.so3_exp(angle_axis)
+
+        # Flush private data that will be regenerated on demand via @property.
         if hasattr(self, "_positions_xyz"):
-            for position in self._positions_xyz:
-                position[null_dim] = 0
+            del self._positions_xyz
+        if hasattr(self, "_orientations_quat_wxyz"):
+            del self._orientations_quat_wxyz
         self._projected = True
 
     def align(self, traj_ref: 'PosePath3D', correct_scale: bool = False,

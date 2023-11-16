@@ -143,6 +143,20 @@ class TestPosePath3D(unittest.TestCase):
         self.assertEqual(path.distances.size, path.num_poses)
         self.assertAlmostEqual(path.distances[-1], path.path_length)
 
+    def test_projection(self):
+        for plane, null_dim in zip(trajectory.ProjectionPlane, [2, 1, 0]):
+            path = helpers.fake_path(length=1)
+            axis = np.zeros(3)
+            axis[null_dim] = 1
+            angle = path.get_orientations_euler("sxyz")[0][null_dim]
+
+            path.project(plane)
+            self.assertEqual(path.poses_se3[0][null_dim][3], 0)
+            self.assertEqual(path.positions_xyz[0][null_dim], 0)
+            self.assertTrue(
+                np.allclose(lie.so3_log(lie.so3_from_se3(path.poses_se3[0])),
+                            angle * axis))
+
 
 class TestPoseTrajectory3D(unittest.TestCase):
     def test_equals(self):

@@ -36,6 +36,10 @@ def parser() -> argparse.ArgumentParser:
         "--change_unit", default=None,
         choices=[u.value for u in (units.ANGLE_UNITS + units.LENGTH_UNITS)],
         help="Changes the output unit of the metric, if possible.")
+    algo_opts.add_argument(
+        "--project_to_plane", type=str, choices=["xy", "xz", "yz"],
+        help="Projects the trajectories to 2D in the desired plane. "
+        "This is done after potential 3D alignment & transformation steps.")
 
     output_opts.add_argument(
         "-p",

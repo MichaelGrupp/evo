@@ -92,6 +92,9 @@ def rpe(traj_ref: PosePath3D, traj_est: PosePath3D,
     if (align or correct_scale) and n_to_align != -1:
         title += " (aligned poses: {})".format(n_to_align)
 
+    if project_to_plane:
+        title += f"\n(projected to {project_to_plane.value} plane)"
+
     rpe_result = rpe_metric.get_result(ref_name, est_name)
     rpe_result.info["title"] = title
     logger.debug(SEP)

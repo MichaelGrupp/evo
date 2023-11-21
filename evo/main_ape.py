@@ -89,6 +89,9 @@ def ape(traj_ref: PosePath3D, traj_est: PosePath3D,
     if (align or correct_scale) and n_to_align != -1:
         title += " (aligned poses: {})".format(n_to_align)
 
+    if project_to_plane:
+        title += f"\n(projected to {project_to_plane.value} plane)"
+
     ape_result = ape_metric.get_result(ref_name, est_name)
     ape_result.info["title"] = title
 

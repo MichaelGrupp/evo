@@ -144,7 +144,10 @@ class TestPosePath3D(unittest.TestCase):
         self.assertAlmostEqual(path.distances[-1], path.path_length)
 
     def test_projection(self):
-        for plane, null_dim in zip(trajectory.ProjectionPlane, [2, 1, 0]):
+        """
+        Checks that projection into a plane modifies the poses correctly.
+        """
+        for plane, null_dim in zip(trajectory.Plane, [2, 1, 0]):
             path = helpers.fake_path(length=1)
             axis = np.zeros(3)
             axis[null_dim] = 1
@@ -160,13 +163,13 @@ class TestPosePath3D(unittest.TestCase):
                             angle * axis))
             # Quaternion has to be zero around the plane's basis vectors.
             quat_wxyz = path.orientations_quat_wxyz[0]
-            if plane == trajectory.ProjectionPlane.xy:
+            if plane == trajectory.Plane.XY:
                 self.assertAlmostEqual(quat_wxyz[1], 0)  # x
                 self.assertAlmostEqual(quat_wxyz[2], 0)  # y
-            elif plane == trajectory.ProjectionPlane.xz:
+            elif plane == trajectory.Plane.XZ:
                 self.assertAlmostEqual(quat_wxyz[1], 0)  # x
                 self.assertAlmostEqual(quat_wxyz[3], 0)  # z
-            elif plane == trajectory.ProjectionPlane.yz:
+            elif plane == trajectory.Plane.YZ:
                 self.assertAlmostEqual(quat_wxyz[2], 0)  # y
                 self.assertAlmostEqual(quat_wxyz[3], 0)  # z
 

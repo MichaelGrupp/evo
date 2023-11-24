@@ -265,9 +265,9 @@ def run(args):
 
     # Note: projection is done after potential alignment & transformation steps.
     if args.project_to_plane:
-        plane = trajectory.ProjectionPlane(args.project_to_plane)
+        plane = trajectory.Plane(args.project_to_plane)
         logger.debug(SEP)
-        logger.debug(f"Projecting trajectories to {plane.value} plane.")
+        logger.debug("Projecting trajectories to %s plane.", plane.value)
         for traj in trajectories.values():
             traj.project(plane)
         if ref_traj:

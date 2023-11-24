@@ -38,10 +38,13 @@ class TrajectoryException(EvoException):
 
 
 @unique
-class ProjectionPlane(Enum):
-    xy = "xy"
-    xz = "xz"
-    yz = "yz"
+class Plane(Enum):
+    """
+    Planes embedded in R3, e.g. for projection purposes.
+    """
+    XY = "xy"
+    XZ = "xz"
+    YZ = "yz"
 
 
 class PosePath3D(object):
@@ -193,18 +196,18 @@ class PosePath3D(object):
         if hasattr(self, "_positions_xyz"):
             self._positions_xyz = s * self._positions_xyz
 
-    def project(self, plane: ProjectionPlane) -> None:
+    def project(self, plane: Plane) -> None:
         """
         Projects the positions and orientations of the path into a plane.
-        :param plane: desired plane into which the positions will be projected
+        :param plane: desired plane into which the poses will be projected
         """
         if self._projected:
             raise TrajectoryException("path was already projected once")
-        if plane == ProjectionPlane.xy:
+        if plane == Plane.XY:
             null_dim = 2
-        elif plane == ProjectionPlane.xz:
+        elif plane == Plane.XZ:
             null_dim = 1
-        elif plane == ProjectionPlane.yz:
+        elif plane == Plane.YZ:
             null_dim = 0
         else:
             raise TrajectoryException(f"unknown projection plane {plane}")

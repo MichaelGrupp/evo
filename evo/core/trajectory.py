@@ -204,14 +204,15 @@ class PosePath3D(object):
         if self._projected:
             raise TrajectoryException("path was already projected once")
         if plane == Plane.XY:
-            null_dim = 2
+            null_dim = 2  # Z
         elif plane == Plane.XZ:
-            null_dim = 1
+            null_dim = 1  # Y
         elif plane == Plane.YZ:
-            null_dim = 0
+            null_dim = 0  # X
         else:
             raise TrajectoryException(f"unknown projection plane {plane}")
 
+        # Project poses and rotations (forcing to angle around normal).
         rotation_axis = np.zeros(3)
         rotation_axis[null_dim] = 1
         for pose in self.poses_se3:
@@ -220,7 +221,7 @@ class PosePath3D(object):
                 pose[:3, :3], "sxyz")[null_dim]
             pose[:3, :3] = lie.so3_exp(angle_axis)
 
-        # Flush private data that will be regenerated on demand via @property.
+        # Flush cached data that will be regenerated on demand via @property.
         if hasattr(self, "_positions_xyz"):
             del self._positions_xyz
         if hasattr(self, "_orientations_quat_wxyz"):

@@ -21,6 +21,7 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
 import typing
+from enum import Enum, unique
 
 import numpy as np
 
@@ -34,6 +35,16 @@ logger = logging.getLogger(__name__)
 
 class TrajectoryException(EvoException):
     pass
+
+
+@unique
+class Plane(Enum):
+    """
+    Planes embedded in R3, e.g. for projection purposes.
+    """
+    XY = "xy"
+    XZ = "xz"
+    YZ = "yz"
 
 
 class PosePath3D(object):
@@ -65,6 +76,7 @@ class PosePath3D(object):
         if self.num_poses == 0:
             raise TrajectoryException("pose data is empty")
         self.meta = {} if meta is None else meta
+        self._projected = False
 
     def __str__(self) -> str:
         return "{} poses, {:.3f}m path length".format(self.num_poses,
@@ -183,6 +195,38 @@ class PosePath3D(object):
             ]
         if hasattr(self, "_positions_xyz"):
             self._positions_xyz = s * self._positions_xyz
+
+    def project(self, plane: Plane) -> None:
+        """
+        Projects the positions and orientations of the path into a plane.
+        :param plane: desired plane into which the poses will be projected
+        """
+        if self._projected:
+            raise TrajectoryException("path was already projected once")
+        if plane == Plane.XY:
+            null_dim = 2  # Z
+        elif plane == Plane.XZ:
+            null_dim = 1  # Y
+        elif plane == Plane.YZ:
+            null_dim = 0  # X
+        else:
+            raise TrajectoryException(f"unknown projection plane {plane}")
+
+        # Project poses and rotations (forcing to angle around normal).
+        rotation_axis = np.zeros(3)
+        rotation_axis[null_dim] = 1
+        for pose in self.poses_se3:
+            pose[null_dim, 3] = 0
+            angle_axis = rotation_axis * tr.euler_from_matrix(
+                pose[:3, :3], "sxyz")[null_dim]
+            pose[:3, :3] = lie.so3_exp(angle_axis)
+
+        # Flush cached data that will be regenerated on demand via @property.
+        if hasattr(self, "_positions_xyz"):
+            del self._positions_xyz
+        if hasattr(self, "_orientations_quat_wxyz"):
+            del self._orientations_quat_wxyz
+        self._projected = True
 
     def align(self, traj_ref: 'PosePath3D', correct_scale: bool = False,
               correct_only_scale: bool = False,

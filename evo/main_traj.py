@@ -263,6 +263,16 @@ def run(args):
             traj.transform(transform, right_mul=args.transform_right,
                            propagate=args.propagate_transform)
 
+    # Note: projection is done after potential alignment & transformation steps.
+    if args.project_to_plane:
+        plane = trajectory.Plane(args.project_to_plane)
+        logger.debug(SEP)
+        logger.debug("Projecting trajectories to %s plane.", plane.value)
+        for traj in trajectories.values():
+            traj.project(plane)
+        if ref_traj:
+            ref_traj.project(plane)
+
     for name, traj in trajectories.items():
         print_traj_info(to_compact_name(name, args), traj, args.verbose,
                         args.full_check)

@@ -56,6 +56,10 @@ def parser() -> argparse.ArgumentParser:
     algo_opts.add_argument(
         "--merge", help="merge the trajectories in a single trajectory",
         action="store_true")
+    algo_opts.add_argument(
+        "--project_to_plane", type=str, choices=["xy", "xz", "yz"],
+        help="Projects the trajectories to 2D in the desired plane. "
+        "This is done after potential 3D alignment & transformation steps.")
     output_opts.add_argument("-p", "--plot", help="show plot window",
                              action="store_true")
     output_opts.add_argument(

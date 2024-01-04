@@ -30,7 +30,7 @@ import numpy as np
 import evo.common_ape_rpe as common
 from evo.core import lie_algebra, sync, metrics
 from evo.core.result import Result
-from evo.core.trajectory import PosePath3D, PoseTrajectory3D
+from evo.core.trajectory import PosePath3D, PoseTrajectory3D, Plane
 from evo.tools import file_interface, log
 from evo.tools.settings import SETTINGS
 
@@ -44,7 +44,8 @@ def ape(traj_ref: PosePath3D, traj_est: PosePath3D,
         correct_scale: bool = False, n_to_align: int = -1,
         align_origin: bool = False, ref_name: str = "reference",
         est_name: str = "estimate",
-        change_unit: typing.Optional[metrics.Unit] = None) -> Result:
+        change_unit: typing.Optional[metrics.Unit] = None,
+        project_to_plane: typing.Optional[Plane] = None) -> Result:
 
     # Align the trajectories.
     only_scale = correct_scale and not align
@@ -56,6 +57,14 @@ def ape(traj_ref: PosePath3D, traj_est: PosePath3D,
     elif align_origin:
         logger.debug(SEP)
         alignment_transformation = traj_est.align_origin(traj_ref)
+
+    # Projection is done after potential 3D alignment & transformation steps.
+    if project_to_plane:
+        logger.debug(SEP)
+        logger.debug("Projecting trajectories to %s plane.",
+                     project_to_plane.value)
+        traj_ref.project(project_to_plane)
+        traj_est.project(project_to_plane)
 
     # Calculate APE.
     logger.debug(SEP)
@@ -79,6 +88,9 @@ def ape(traj_ref: PosePath3D, traj_est: PosePath3D,
         title += "\n(not aligned)"
     if (align or correct_scale) and n_to_align != -1:
         title += " (aligned poses: {})".format(n_to_align)
+
+    if project_to_plane:
+        title += f"\n(projected to {project_to_plane.value} plane)"
 
     ape_result = ape_metric.get_result(ref_name, est_name)
     ape_result.info["title"] = title
@@ -135,12 +147,14 @@ def run(args: argparse.Namespace) -> None:
 
     pose_relation = common.get_pose_relation(args)
     change_unit = metrics.Unit(args.change_unit) if args.change_unit else None
+    plane = Plane(args.project_to_plane) if args.project_to_plane else None
 
     result = ape(traj_ref=traj_ref, traj_est=traj_est,
                  pose_relation=pose_relation, align=args.align,
                  correct_scale=args.correct_scale, n_to_align=args.n_to_align,
                  align_origin=args.align_origin, ref_name=ref_name,
-                 est_name=est_name, change_unit=change_unit)
+                 est_name=est_name, change_unit=change_unit,
+                 project_to_plane=plane)
 
     if args.plot or args.save_plot or args.serialize_plot:
         common.plot_result(args, result, traj_ref,

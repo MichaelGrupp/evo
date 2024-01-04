@@ -40,6 +40,8 @@ from evo.tools.settings import SETTINGS
 
 logger = logging.getLogger(__name__)
 
+SUPPORTED_TF_MSG = "tf2_msgs/msg/TFMessage"
+
 
 class TfCacheException(EvoException):
     pass
@@ -91,6 +93,10 @@ class TfCache(object):
             ]
             for connection, _, rawdata in reader.messages(
                     connections=connections):
+                if connection.msgtype != SUPPORTED_TF_MSG:
+                    raise TfCacheException(
+                        f"Expected {SUPPORTED_TF_MSG} message type for topic "
+                        f"{tf_topic}, got: {connection.msgtype}")
                 msg = deserialize_cdr(ros1_to_cdr(rawdata, connection.msgtype),
                                       connection.msgtype)
                 for tf in msg.transforms:

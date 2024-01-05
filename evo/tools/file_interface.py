@@ -27,6 +27,7 @@ import logging
 import os
 import typing
 import zipfile
+from pathlib import Path
 
 import numpy as np
 from rosbags.rosbag1 import (Reader as Rosbag1Reader, Writer as Rosbag1Writer)
@@ -40,6 +41,7 @@ import evo.core.transformations as tr
 from evo.core import result
 from evo.core.trajectory import PosePath3D, PoseTrajectory3D
 from evo.tools import user, tf_id
+from evo.tools._typing import PathStr, PathStrHandle
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +56,7 @@ class FileInterfaceException(EvoException):
     pass
 
 
-def has_utf8_bom(file_path):
+def has_utf8_bom(file_path: PathStr) -> bool:
     """
     Checks if the given file starts with a UTF8 BOM
     wikipedia.org/wiki/Byte_order_mark
@@ -66,7 +68,7 @@ def has_utf8_bom(file_path):
         return not int(binascii.hexlify(f.read(3)), 16) ^ 0xEFBBBF
 
 
-def csv_read_matrix(file_path, delim=',', comment_str="#"):
+def csv_read_matrix(file_path: PathStrHandle, delim=',', comment_str="#"):
     """
     directly parse a csv-like file into a matrix
     :param file_path: path of csv file (or file handle)
@@ -74,12 +76,12 @@ def csv_read_matrix(file_path, delim=',', comment_str="#"):
     :param comment_str: string indicating a comment line to ignore
     :return: 2D list with raw data (string)
     """
-    if hasattr(file_path, 'read'):  # if file handle
+    if isinstance(file_path, io.IOBase):  # if file handle
         generator = (line for line in file_path
                      if not line.startswith(comment_str))
         reader = csv.reader(generator, delimiter=delim)
         mat = [row for row in reader]
-    else:
+    elif isinstance(file_path, (str, Path)):
         if not os.path.isfile(file_path):
             raise FileInterfaceException("csv file " + str(file_path) +
                                          " does not exist")
@@ -94,7 +96,7 @@ def csv_read_matrix(file_path, delim=',', comment_str="#"):
     return mat
 
 
-def read_tum_trajectory_file(file_path) -> PoseTrajectory3D:
+def read_tum_trajectory_file(file_path: PathStrHandle) -> PoseTrajectory3D:
     """
     parses trajectory file in TUM format (timestamp tx ty tz qx qy qz qw)
     :param file_path: the trajectory file path (or file handle)
@@ -119,7 +121,7 @@ def read_tum_trajectory_file(file_path) -> PoseTrajectory3D:
     return PoseTrajectory3D(xyz, quat, stamps)
 
 
-def write_tum_trajectory_file(file_path, traj: PoseTrajectory3D,
+def write_tum_trajectory_file(file_path: PathStrHandle, traj: PoseTrajectory3D,
                               confirm_overwrite: bool = False) -> None:
     """
     :param file_path: desired text file for trajectory (string or handle)
@@ -127,7 +129,7 @@ def write_tum_trajectory_file(file_path, traj: PoseTrajectory3D,
     :param confirm_overwrite: whether to require user interaction
            to overwrite existing files
     """
-    if isinstance(file_path, str) and confirm_overwrite:
+    if confirm_overwrite and isinstance(file_path, (str, Path)):
         if not user.check_and_confirm_overwrite(file_path):
             return
     if not isinstance(traj, PoseTrajectory3D):
@@ -143,7 +145,7 @@ def write_tum_trajectory_file(file_path, traj: PoseTrajectory3D,
         logger.info("Trajectory saved to: " + file_path)
 
 
-def read_kitti_poses_file(file_path) -> PosePath3D:
+def read_kitti_poses_file(file_path: PathStrHandle) -> PosePath3D:
     """
     parses pose file in KITTI format (first 3 rows of SE(3) matrix per line)
     :param file_path: the trajectory file path (or file handle)
@@ -169,7 +171,7 @@ def read_kitti_poses_file(file_path) -> PosePath3D:
     return PosePath3D(poses_se3=poses)
 
 
-def write_kitti_poses_file(file_path, traj: PosePath3D,
+def write_kitti_poses_file(file_path: PathStrHandle, traj: PosePath3D,
                            confirm_overwrite: bool = False) -> None:
     """
     :param file_path: desired text file for trajectory (string or handle)
@@ -177,7 +179,7 @@ def write_kitti_poses_file(file_path, traj: PosePath3D,
     :param confirm_overwrite: whether to require user interaction
            to overwrite existing files
     """
-    if isinstance(file_path, str) and confirm_overwrite:
+    if confirm_overwrite and isinstance(file_path, (str, Path)):
         if not user.check_and_confirm_overwrite(file_path):
             return
     # first 3 rows  of SE(3) matrix flattened
@@ -187,7 +189,7 @@ def write_kitti_poses_file(file_path, traj: PosePath3D,
         logger.info("Poses saved to: " + file_path)
 
 
-def read_euroc_csv_trajectory(file_path) -> PoseTrajectory3D:
+def read_euroc_csv_trajectory(file_path: PathStrHandle) -> PoseTrajectory3D:
     """
     parses ground truth trajectory from EuRoC MAV state estimate .csv
     :param file_path: <sequence>/mav0/state_groundtruth_estimate0/data.csv
@@ -236,6 +238,7 @@ def _get_xyz_quat_from_pose_or_odometry_msg(
         msg.pose.orientation.z
     ]
     return xyz, quat
+
 
 def _get_xyz_quat_from_point_msg(
         msg) -> typing.Tuple[typing.List[float], typing.List[float]]:
@@ -382,7 +385,7 @@ def write_bag_trajectory(writer, traj: PoseTrajectory3D, topic_name: str,
     logger.info("Saved geometry_msgs/PoseStamped topic: " + topic_name)
 
 
-def save_res_file(zip_path, result_obj: result.Result,
+def save_res_file(zip_path: PathStrHandle, result_obj: result.Result,
                   confirm_overwrite: bool = False) -> None:
     """
     save results to a zip file that can be deserialized with load_res_file()
@@ -391,10 +394,11 @@ def save_res_file(zip_path, result_obj: result.Result,
     :param confirm_overwrite: whether to require user interaction
            to overwrite existing files
     """
-    if isinstance(zip_path, str):
-        logger.debug("Saving results to " + zip_path + "...")
-    if confirm_overwrite and not user.check_and_confirm_overwrite(zip_path):
-        return
+    if isinstance(zip_path, (str, Path)):
+        logger.debug("Saving results to %s...", zip_path)
+        if confirm_overwrite and not user.check_and_confirm_overwrite(
+                zip_path):
+            return
     with zipfile.ZipFile(zip_path, 'w') as archive:
         archive.writestr("info.json", json.dumps(result_obj.info))
         archive.writestr("stats.json", json.dumps(result_obj.stats))
@@ -421,7 +425,8 @@ def save_res_file(zip_path, result_obj: result.Result,
             traj_buffer.close()
 
 
-def load_res_file(zip_path, load_trajectories: bool = False) -> result.Result:
+def load_res_file(zip_path: PathStrHandle,
+                  load_trajectories: bool = False) -> result.Result:
     """
     load contents of a result .zip file saved with save_res_file(...)
     :param zip_path: path to zip file
@@ -465,7 +470,7 @@ def load_res_file(zip_path, load_trajectories: bool = False) -> result.Result:
     return result_obj
 
 
-def load_transform_json(json_path) -> np.ndarray:
+def load_transform_json(json_path: PathStrHandle) -> np.ndarray:
     """
     load a transformation stored in xyz + quaternion format in a .json file,
     optionally with a "scale" field.
@@ -488,7 +493,7 @@ def load_transform_json(json_path) -> np.ndarray:
     return t
 
 
-def load_transform(file_path) -> np.ndarray:
+def load_transform(file_path: PathStr) -> np.ndarray:
     """
     Load a SE(3) or Sim(3) transformation from either
     - a binary .npy or a text file containing a 4x4 matrix,

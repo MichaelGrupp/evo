@@ -105,7 +105,7 @@ def main() -> None:
             pkg_parser.print_help()
             sys.exit(1)
         if args.license:
-            print(open(os.path.join(PACKAGE_BASE_PATH, "LICENSE")).read())
+            print(open(PACKAGE_BASE_PATH / "LICENSE").read())
         if args.info:
             main_parser.print_usage()
             print(DESC)

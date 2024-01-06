@@ -26,6 +26,7 @@ import os
 import shutil
 import subprocess as sp
 import sys
+from pathlib import Path
 
 from evo import PACKAGE_BASE_PATH
 
@@ -61,11 +62,11 @@ def main() -> None:
     except sp.CalledProcessError:
         print("IPython profile for evo is not installed", file=sys.stderr)
         sp.call([ipython, "profile", "create", "evo"])
-        config = os.path.join(PACKAGE_BASE_PATH, "ipython_config.py")
+        config = PACKAGE_BASE_PATH / "ipython_config.py"
         profile_dir = sp.check_output([ipython, "profile", "locate",
                                        "evo"]).decode("utf-8")
         profile_dir = profile_dir.rstrip()
-        shutil.copy(config, os.path.join(profile_dir, "ipython_config.py"))
+        shutil.copy(config, Path(profile_dir) / "ipython_config.py")
     try:
         sp.check_call([python, "-m", "IPython", "--profile", "evo"] +
                       other_args)

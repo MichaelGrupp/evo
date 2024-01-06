@@ -102,15 +102,15 @@ class Viewport(Enum):
 
 class PlotCollection:
     def __init__(self, title: str = "",
-                 deserialize: typing.Optional[str] = None):
+                 deserialize: typing.Optional[PathStr] = None):
         self.title = " ".join(title.splitlines())  # one line title
         self.figures = collections.OrderedDict()  # remember placement order
         # hack to avoid premature garbage collection when serializing with Qt
         # initialized later in tabbed_{qt, tk}_window
         self.root_window: typing.Optional[typing.Any] = None
         if deserialize is not None:
-            logger.debug("Deserializing PlotCollection from " + deserialize +
-                         "...")
+            logger.debug("Deserializing PlotCollection from %s ...",
+                         deserialize)
             self.figures = pickle.load(open(deserialize, 'rb'))
 
     def __str__(self) -> str:

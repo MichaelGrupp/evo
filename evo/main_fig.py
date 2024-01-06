@@ -21,8 +21,8 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import os
 import logging
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +58,7 @@ def main() -> None:
     log.configure_logging(verbose=True)
 
     if not args.title:
-        title = os.path.basename(args.in_file)
+        title = Path(args.in_file).name
     else:
         title = args.title
     if not args.no_warnings:

@@ -27,7 +27,6 @@ import logging
 import os
 import sys
 import typing
-from pathlib import Path
 
 import colorama
 from colorama import Style
@@ -314,7 +313,7 @@ def main() -> None:
 
     elif args.subcommand == "set":
         if not os.access(config, os.W_OK):
-            logger.error(f"No permission to modify {config}")
+            logger.error("No permission to modify %s", config)
             sys.exit(1)
         if other_args or args.merge:
             logger.info("{0}\nOld configuration:\n{0}".format(SEP))

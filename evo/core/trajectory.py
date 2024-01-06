@@ -298,6 +298,21 @@ class PosePath3D(object):
         if hasattr(self, "_poses_se3"):
             self._poses_se3 = [self._poses_se3[idx] for idx in ids]
 
+    def downsample(self, num_poses: int):
+        """
+        Downsample the trajectory to the specified number of poses
+        with a simple evenly spaced sampling.
+        Does nothing if the trajectory already has less or equal poses.
+        :param num_poses: number of poses to keep
+        """
+        if self.num_poses <= num_poses:
+            return
+        if self.num_poses < 2 or num_poses < 2:
+            raise TrajectoryException("can't downsample to less than 2 poses")
+        ids = np.linspace(0, self.num_poses - 1, num_poses, dtype=int)
+        self.reduce_to_ids(ids)
+
+
     def check(self) -> typing.Tuple[bool, dict]:
         """
         checks if the data is valid

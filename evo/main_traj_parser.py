@@ -60,6 +60,8 @@ def parser() -> argparse.ArgumentParser:
         "--project_to_plane", type=str, choices=["xy", "xz", "yz"],
         help="Projects the trajectories to 2D in the desired plane. "
         "This is done after potential 3D alignment & transformation steps.")
+    algo_opts.add_argument("--downsample", type=int,
+                           help="Downsample trajectories to max N poses.")
     output_opts.add_argument("-p", "--plot", help="show plot window",
                              action="store_true")
     output_opts.add_argument(

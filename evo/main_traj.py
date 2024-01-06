@@ -193,6 +193,14 @@ def run(args):
 
     trajectories, ref_traj = load_trajectories(args)
 
+    if args.downsample:
+        logger.info("Downsampling trajectories to max %s poses.",
+                    args.downsample)
+        for traj in trajectories.values():
+            traj.downsample(args.downsample)
+        if ref_traj:
+            ref_traj.downsample(args.downsample)
+
     if args.merge:
         if args.subcommand == "kitti":
             die("Can't merge KITTI files.")

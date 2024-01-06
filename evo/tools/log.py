@@ -27,6 +27,7 @@ import colorama
 from colorama import Fore
 
 from evo.tools.settings import SETTINGS, GLOBAL_LOGFILE_PATH
+from evo.tools._typing import PathStr
 
 colorama.init()
 
@@ -67,7 +68,7 @@ def configure_logging(verbose: bool = False, silent: bool = False,
                       debug: bool = False,
                       console_fmt: typing.Optional[str] = None,
                       file_fmt: str = DEFAULT_LONG_FMT,
-                      local_logfile: typing.Optional[str] = None) -> None:
+                      local_logfile: typing.Optional[PathStr] = None) -> None:
 
     logger = logging.getLogger("evo")
     logger.setLevel(logging.DEBUG)
@@ -76,7 +77,7 @@ def configure_logging(verbose: bool = False, silent: bool = False,
     if len(logger.handlers) > 0:
         logger.removeHandler(logger.handlers[0])
 
-    logfiles = []
+    logfiles: typing.List[PathStr] = []
     if SETTINGS.global_logfile_enabled:
         logfiles.append(GLOBAL_LOGFILE_PATH)
     if local_logfile is not None:

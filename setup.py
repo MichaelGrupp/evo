@@ -5,12 +5,13 @@ import os
 import sys
 import shutil
 import subprocess as sp
+from pathlib import Path
 
 # monkey patch because setuptools entry_points are slow as fuck
 # https://github.com/ninjaaron/fast-entry_points
 import fastentrypoints  # pylint: disable=unused-import
 
-HERE = os.path.abspath(os.path.dirname(__file__))
+HERE = Path(__file__).absolute().parent
 
 
 def activate_argcomplete():
@@ -49,7 +50,7 @@ class UploadCommand(Command):
     def run(self):
         try:
             print("Removing previous dist/ ...")
-            shutil.rmtree(os.path.join(HERE, "dist"))
+            shutil.rmtree(HERE / "dist")
         except OSError:
             pass
         print("Building source distribution...")
@@ -68,7 +69,7 @@ setup(
     author_email="michael.grupp@tum.de",
     url="https://github.com/MichaelGrupp/evo",
     license="GPLv3",
-    long_description=open(os.path.join(HERE, "README.md")).read(),
+    long_description=open(HERE / "README.md").read(),
     long_description_content_type="text/markdown",
     keywords=[
         "SLAM", "odometry", "trajectory", "evaluation", "metric",

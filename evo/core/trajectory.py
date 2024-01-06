@@ -29,6 +29,7 @@ from evo import EvoException
 import evo.core.transformations as tr
 import evo.core.geometry as geometry
 from evo.core import lie_algebra as lie
+from evo.core import filters
 
 logger = logging.getLogger(__name__)
 
@@ -298,7 +299,7 @@ class PosePath3D(object):
         if hasattr(self, "_poses_se3"):
             self._poses_se3 = [self._poses_se3[idx] for idx in ids]
 
-    def downsample(self, num_poses: int):
+    def downsample(self, num_poses: int) -> None:
         """
         Downsample the trajectory to the specified number of poses
         with a simple evenly spaced sampling.
@@ -312,6 +313,20 @@ class PosePath3D(object):
         ids = np.linspace(0, self.num_poses - 1, num_poses, dtype=int)
         self.reduce_to_ids(ids)
 
+    def motion_filter(self, distance_threshold: float, angle_threshold: float,
+                      degrees: bool = False) -> None:
+        """
+        Filters the trajectory by its motion if either the accumulated distance
+        or rotation angle is exceeded.
+        :param distance_threshold: the distance threshold in meters
+        :param angle_threshold: the angle threshold in radians
+                                (or degrees if degrees=True)
+        :param degrees: set to True if angle_threshold is in degrees
+        """
+        filtered_ids = filters.filter_by_motion(self.poses_se3,
+                                                distance_threshold,
+                                                angle_threshold, degrees)
+        self.reduce_to_ids(filtered_ids)
 
     def check(self) -> typing.Tuple[bool, dict]:
         """

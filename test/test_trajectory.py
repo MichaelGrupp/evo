@@ -99,6 +99,18 @@ class TestPosePath3D(unittest.TestCase):
         len_reduced = path_reduced.path_length
         self.assertAlmostEqual(len_initial_segment, len_reduced)
 
+    def test_downsample(self):
+        path = helpers.fake_path(100)
+        path_downsampled = copy.deepcopy(path)
+        path_downsampled.downsample(10)
+        self.assertEqual(path_downsampled.num_poses, 10)
+        self.assertTrue(
+            np.equal(path.positions_xyz[0],
+                     path_downsampled.positions_xyz[0]).all())
+        self.assertTrue(
+            np.equal(path.positions_xyz[-1],
+                     path_downsampled.positions_xyz[-1]).all())
+
     def test_transform(self):
         path = helpers.fake_path(10)
         path_transformed = copy.deepcopy(path)

@@ -21,6 +21,7 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 import argparse
 import logging
 import typing
+from pathlib import Path
 
 from evo.core.metrics import PoseRelation, Unit
 from evo.core.result import Result
@@ -52,9 +53,8 @@ def load_trajectories(
         traj_est = file_interface.read_tum_trajectory_file(args.est_file)
         ref_name, est_name = args.state_gt_csv, args.est_file
     elif args.subcommand in ("bag", "bag2"):
-        import os
         logger.debug("Opening bag file " + args.bag)
-        if not os.path.exists(args.bag):
+        if not Path(args.bag).exists():
             raise file_interface.FileInterfaceException(
                 "File doesn't exist: {}".format(args.bag))
         if args.subcommand == "bag2":

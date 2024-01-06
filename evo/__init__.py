@@ -1,15 +1,14 @@
 import logging
-import os
+from pathlib import Path
 
 # https://docs.python.org/3/howto/logging.html#library-config
 from logging import NullHandler
 
 logging.getLogger(__name__).addHandler(NullHandler())
 
-PACKAGE_BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+PACKAGE_BASE_PATH = Path(__file__).absolute().parent
 
-__version__ = open(os.path.join(PACKAGE_BASE_PATH,
-                                "version")).read().splitlines()[0]
+__version__ = open(PACKAGE_BASE_PATH / "version").read().splitlines()[0]
 
 
 class EvoException(Exception):

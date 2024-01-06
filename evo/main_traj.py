@@ -25,7 +25,7 @@ import argparse
 import datetime
 import itertools
 import logging
-import os
+from pathlib import Path
 
 from natsort import natsorted
 
@@ -76,7 +76,7 @@ def load_trajectories(args):
     elif args.subcommand in ("bag", "bag2"):
         if not (args.topics or args.all_topics):
             die("No topics used - specify topics or set --all_topics.")
-        if not os.path.exists(args.bag):
+        if not Path(args.bag).exists():
             raise file_interface.FileInterfaceException(
                 "File doesn't exist: {}".format(args.bag))
         logger.debug("Opening bag file " + args.bag)
@@ -154,28 +154,26 @@ def to_filestem(name: str, args: argparse.Namespace) -> str:
             name = name[1:]
         name = name.replace(':', '/')  # TF ID
         return name.replace('/', '_')
-    return os.path.splitext(os.path.basename(name))[0]
+    return Path(name).stem
 
 
 def to_topic_name(name: str, args: argparse.Namespace) -> str:
     if args.subcommand in ("bag", "bag2"):
         return name.replace(':', '/')
-    return '/' + os.path.splitext(os.path.basename(name))[0].replace(' ', '_')
+    return '/' + Path(name).stem.replace(' ', '_')
 
 
 def to_compact_name(name: str, args: argparse.Namespace,
                     latex_friendly=False) -> str:
     if not args.show_full_names and args.subcommand not in ("bag", "bag2"):
         # /some/super/long/path/that/nobody/cares/about/traj.txt  ->  traj
-        name = os.path.splitext(os.path.basename(name))[0]
+        name = Path(name).stem
     if latex_friendly:
         name = name.replace("_", "\\_")
     return name
 
 
 def run(args):
-    import sys
-
     import numpy as np
 
     import evo.core.lie_algebra as lie

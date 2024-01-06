@@ -28,6 +28,7 @@ import logging
 import pickle
 import typing
 from enum import Enum, unique
+from pathlib import Path
 
 import numpy as np
 import matplotlib as mpl
@@ -44,6 +45,7 @@ from matplotlib.transforms import Affine2D, Bbox
 
 from evo import EvoException
 from evo.tools import user
+from evo.tools._typing import PathStr
 from evo.tools.settings import SETTINGS, SettingsContainer
 from evo.core import trajectory
 from evo.core.units import Unit, LENGTH_UNITS, METER_SCALE_FACTORS
@@ -100,15 +102,15 @@ class Viewport(Enum):
 
 class PlotCollection:
     def __init__(self, title: str = "",
-                 deserialize: typing.Optional[str] = None):
+                 deserialize: typing.Optional[PathStr] = None):
         self.title = " ".join(title.splitlines())  # one line title
         self.figures = collections.OrderedDict()  # remember placement order
         # hack to avoid premature garbage collection when serializing with Qt
         # initialized later in tabbed_{qt, tk}_window
         self.root_window: typing.Optional[typing.Any] = None
         if deserialize is not None:
-            logger.debug("Deserializing PlotCollection from " + deserialize +
-                         "...")
+            logger.debug("Deserializing PlotCollection from %s ...",
+                         deserialize)
             self.figures = pickle.load(open(deserialize, 'rb'))
 
     def __str__(self) -> str:
@@ -754,7 +756,7 @@ def error_array(ax: Axes, err_array: ListOrArray,
 
 
 def ros_map(
-    ax: Axes, yaml_path: str, plot_mode: PlotMode,
+    ax: Axes, yaml_path: PathStr, plot_mode: PlotMode,
     cmap: str = SETTINGS.ros_map_cmap,
     mask_unknown_value: typing.Optional[int] = (
         SETTINGS.ros_map_unknown_cell_value if SETTINGS.ros_map_enable_masking
@@ -783,13 +785,14 @@ def ros_map(
         return
     x_idx, y_idx, _ = plot_mode_to_idx(plot_mode)
 
+    yaml_path = Path(yaml_path)
     with open(yaml_path) as f:
         metadata = yaml.safe_load(f)
 
     # Load map image, mask unknown cells if desired.
-    image_path = metadata["image"]
-    if not os.path.isabs(image_path):
-        image_path = os.path.join(os.path.dirname(yaml_path), image_path)
+    image_path = Path(metadata["image"])
+    if not image_path.is_absolute():
+        image_path = yaml_path.parent / image_path
     image = plt.imread(image_path)
 
     if mask_unknown_value:

@@ -200,7 +200,7 @@ def filter_by_motion(poses: typing.Sequence[np.ndarray],
         if current_angle >= angle_threshold:
             filtered_ids.append(i)
             previous_angle_id = i
-            current_distance = distances[i]
+            previous_distance = distances[i]
             continue
 
     return filtered_ids

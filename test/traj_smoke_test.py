@@ -4,10 +4,11 @@ import os
 import glob
 import shutil
 import subprocess as sp
+from pathlib import Path
 
-tmp_dir = "tmp"
-common_cfg_dir = "cfg/traj/common"
-here = os.path.dirname(os.path.abspath(__file__))
+tmp_dir = Path("tmp")
+common_cfg_dir = Path("cfg/traj/common")
+here = Path(__file__).absolute().parent
 
 # always run in script location
 os.chdir(here)
@@ -23,10 +24,9 @@ data = {
 
 try:
     for d in data.keys():
-        for cfg_dir in (common_cfg_dir, data[d]):
-            for cfg in os.listdir(cfg_dir):
-                os.mkdir(tmp_dir)
-                cfg = os.path.join(cfg_dir, cfg)
+        for cfg_dir in (common_cfg_dir, Path(data[d])):
+            for cfg in cfg_dir.iterdir():
+                tmp_dir.mkdir(exist_ok=True)
                 cmd = "{} -c {}".format(d, cfg)
                 print("[smoke test] {}".format(cmd))
                 output = sp.check_output(cmd.split(" "), cwd=here)
@@ -39,5 +39,5 @@ finally:
         "./*.tum")
     for traj_file in traj_files:
         os.remove(traj_file)
-    if os.path.exists(tmp_dir):
+    if tmp_dir.exists():
         shutil.rmtree(tmp_dir)

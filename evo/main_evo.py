@@ -118,14 +118,14 @@ def main() -> None:
             print(PACKAGE_BASE_PATH, end=line_end)
         if args.logfile or args.open_log:
             print(settings.GLOBAL_LOGFILE_PATH, end=line_end)
-            if not os.path.exists(settings.GLOBAL_LOGFILE_PATH):
+            if not settings.GLOBAL_LOGFILE_PATH.exists():
                 print(
                     "no logfile found - run: "
                     "evo_config set global_logfile_enabled", end=line_end)
                 sys.exit(1)
             if args.open_log:
                 import webbrowser
-                webbrowser.open(settings.GLOBAL_LOGFILE_PATH)
+                webbrowser.open(str(settings.GLOBAL_LOGFILE_PATH))
         if args.clear_log:
             from evo.tools import user
             if user.confirm("clear logfile? (y/n)"):
@@ -136,7 +136,7 @@ def main() -> None:
             print("cat_log feature not available on Windows")
             sys.exit(1)
         if not args.message and sys.stdin.isatty():
-            if not os.path.exists(settings.GLOBAL_LOGFILE_PATH):
+            if not settings.GLOBAL_LOGFILE_PATH.exists():
                 print(
                     "no logfile found - run: "
                     "evo_config set global_logfile_enabled", end=line_end)

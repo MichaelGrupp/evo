@@ -18,10 +18,10 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import os
 import json
 import logging
 import typing
+from pathlib import Path
 
 from colorama import Fore
 
@@ -29,10 +29,10 @@ from evo import EvoException, __version__
 
 logger = logging.getLogger(__name__)
 
-USER_ASSETS_PATH = os.path.join(os.path.expanduser('~'), ".evo")
-USER_ASSETS_VERSION_PATH = os.path.join(USER_ASSETS_PATH, "assets_version")
-DEFAULT_PATH = os.path.join(USER_ASSETS_PATH, "settings.json")
-GLOBAL_LOGFILE_PATH = os.path.join(USER_ASSETS_PATH, "evo.log")
+USER_ASSETS_PATH = Path.home() / ".evo"
+USER_ASSETS_VERSION_PATH = USER_ASSETS_PATH / "assets_version"
+DEFAULT_PATH = USER_ASSETS_PATH / "settings.json"
+GLOBAL_LOGFILE_PATH = USER_ASSETS_PATH / "evo.log"
 
 
 class SettingsException(EvoException):
@@ -47,7 +47,7 @@ class SettingsContainer(dict):
         setattr(self, "__locked__", lock)
 
     @classmethod
-    def from_json_file(cls, settings_path: str) -> 'SettingsContainer':
+    def from_json_file(cls, settings_path: Path) -> 'SettingsContainer':
         with open(settings_path) as settings_file:
             data = json.load(settings_file)
         return SettingsContainer(data)
@@ -83,15 +83,15 @@ def merge_dicts(first: dict, second: dict, soft: bool = False) -> dict:
     return first
 
 
-def write_to_json_file(json_path: str, dictionary: dict) -> None:
+def write_to_json_file(json_path: Path, dictionary: dict) -> None:
     with open(json_path, 'w') as json_file:
         json_file.write(json.dumps(dictionary, indent=4, sort_keys=True))
 
 
-def reset(destination: str = DEFAULT_PATH,
+def reset(destination: Path = DEFAULT_PATH,
           parameter_subset: typing.Optional[typing.Sequence] = None) -> None:
     from evo.tools.settings_template import DEFAULT_SETTINGS_DICT
-    if not os.path.exists(destination) or parameter_subset is None:
+    if not destination.exists() or parameter_subset is None:
         write_to_json_file(destination, DEFAULT_SETTINGS_DICT)
     elif parameter_subset:
         reset_settings = json.load(open(destination))
@@ -107,13 +107,13 @@ def initialize_if_needed() -> None:
     Initialize evo user folder after first installation
     (or if it was deleted).
     """
-    if not os.path.isdir(USER_ASSETS_PATH):
-        os.makedirs(USER_ASSETS_PATH)
+    if not USER_ASSETS_PATH.exists():
+        USER_ASSETS_PATH.mkdir()
 
-    if not os.path.exists(USER_ASSETS_VERSION_PATH):
+    if not USER_ASSETS_VERSION_PATH.exists():
         open(USER_ASSETS_VERSION_PATH, 'w').write(__version__)
 
-    if not os.path.exists(DEFAULT_PATH):
+    if not DEFAULT_PATH.exists():
         try:
             reset(destination=DEFAULT_PATH)
             print("{}Initialized new {}{}".format(Fore.LIGHTYELLOW_EX,

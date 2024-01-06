@@ -113,7 +113,7 @@ def launch(main_module, parser: argparse.ArgumentParser) -> None:
         err_msg = "evo module " + main_module.__name__ + " crashed"
         from evo.tools import settings
         if settings.SETTINGS.global_logfile_enabled:
-            err_msg += " - see " + settings.GLOBAL_LOGFILE_PATH
+            err_msg += f" - see {settings.GLOBAL_LOGFILE_PATH}"
         else:
             err_msg += " - no logfile written (disabled)"
         logger.error(err_msg)
@@ -122,5 +122,5 @@ def launch(main_module, parser: argparse.ArgumentParser) -> None:
             if settings.SETTINGS.global_logfile_enabled and user.confirm(
                     "Open logfile? (y/n)"):
                 import webbrowser
-                webbrowser.open(settings.GLOBAL_LOGFILE_PATH)
+                webbrowser.open(str(settings.GLOBAL_LOGFILE_PATH))
         sys.exit(1)

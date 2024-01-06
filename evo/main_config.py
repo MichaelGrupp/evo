@@ -27,6 +27,7 @@ import logging
 import os
 import sys
 import typing
+from pathlib import Path
 
 import colorama
 from colorama import Style
@@ -34,6 +35,7 @@ from pygments import highlight, lexers, formatters
 
 from evo import EvoException
 from evo.tools import log, user, settings
+from evo.tools._typing import PathStr
 from evo.tools.settings_template import DEFAULT_SETTINGS_DICT_DOC
 from evo.tools.settings_template import DEFAULT_SETTINGS_DICT
 
@@ -65,14 +67,14 @@ def log_info_dict_json(
 
 
 def show(
-    config_path: str, colored: bool = True,
+    config_path: PathStr, colored: bool = True,
     parameter_subset: typing.Optional[typing.Sequence[str]] = None
 ) -> None:
     with open(config_path) as config_file:
         log_info_dict_json(json.load(config_file), colored, parameter_subset)
 
 
-def merge_json_union(first_file: str, second_file: str,
+def merge_json_union(first_file: PathStr, second_file: PathStr,
                      soft: bool = False) -> None:
     with open(first_file, 'r+') as f_1:
         config_1 = json.loads(f_1.read())
@@ -126,7 +128,7 @@ def finalize_values(config: dict, key: str,
     return values
 
 
-def set_config(config_path: str, arg_list: typing.Sequence[str]) -> None:
+def set_config(config_path: PathStr, arg_list: typing.Sequence[str]) -> None:
     with open(config_path) as config_file:
         config = json.load(config_file)
     max_idx = len(arg_list) - 1
@@ -348,7 +350,7 @@ def main() -> None:
 
     elif args.subcommand == "reset":
         if not os.access(config, os.W_OK):
-            logger.error("No permission to modify" + config)
+            logger.error("No permission to modify %s", config)
             sys.exit(1)
         if args.params:
             settings.reset(settings.DEFAULT_PATH, parameter_subset=args.params)

@@ -166,5 +166,21 @@ class TestFilterPairsByAngle(unittest.TestCase):
             self.assertEqual(id_pairs, expected_result)
 
 
+class TestFilterByMotion(unittest.TestCase):
+    def test_angle_threshold_only(self):
+        poses = POSES_5
+        angle_threshold = math.pi
+        expected_result = [0, 1, 2, 4]
+        filtered_ids = filters.filter_by_motion(poses, 999, angle_threshold)
+        self.assertEqual(filtered_ids, expected_result)
+
+    def test_distance_threshold_only(self):
+        poses = POSES_2
+        distance_threshold = 0.5
+        expected_result = [0, 1, 3]
+        filtered_ids = filters.filter_by_motion(poses, distance_threshold, 99)
+        self.assertEqual(filtered_ids, expected_result)
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

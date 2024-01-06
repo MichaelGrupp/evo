@@ -158,3 +158,49 @@ def filter_pairs_by_angle(poses: typing.Sequence[np.ndarray], delta: float,
                 accumulated_delta = 0.0
                 current_start_index = end_index
     return id_pairs
+
+
+def filter_by_motion(poses: typing.Sequence[np.ndarray],
+                     distance_threshold: float, angle_threshold: float,
+                     degrees: bool = False):
+    """
+    Filters a list of SE(3) poses by their motion if either the
+    distance or rotation angle is exceeded.
+    :param poses: list of SE(3) poses
+    :param distance_threshold: the distance threshold in meters
+    :param angle_threshold: the angle threshold in radians
+                            (or degrees if degrees=True)
+    :param degrees: set to True if angle_threshold is in degrees
+    :return: list of indices of the filtered poses
+    """
+    if len(poses) < 2:
+        raise FilterException("poses must contain at least two poses")
+    if distance_threshold < 0.0:
+        raise FilterException("distance threshold must be >= 0.0")
+    if angle_threshold < 0.0:
+        raise FilterException("angle threshold must be >= 0.0")
+    if degrees:
+        angle_threshold = np.deg2rad(angle_threshold)
+
+    positions = np.array([pose[:3, 3] for pose in poses])
+    distances = geometry.accumulated_distances(positions)
+    previous_angle_id = 0
+    previous_distance = 0.
+
+    filtered_ids = [0]
+    for i in range(1, len(poses)):
+        if distances[i] - previous_distance >= distance_threshold:
+            filtered_ids.append(i)
+            previous_angle_id = i
+            previous_distance = distances[i]
+            continue
+        current_angle = lie.so3_log_angle(
+            lie.relative_so3(poses[previous_angle_id][:3, :3],
+                             poses[i][:3, :3]))
+        if current_angle >= angle_threshold:
+            filtered_ids.append(i)
+            previous_angle_id = i
+            previous_distance = distances[i]
+            continue
+
+    return filtered_ids

@@ -193,6 +193,27 @@ def run(args):
 
     trajectories, ref_traj = load_trajectories(args)
 
+    if args.downsample:
+        logger.debug(SEP)
+        logger.info("Downsampling trajectories to max %s poses.",
+                    args.downsample)
+        for traj in trajectories.values():
+            traj.downsample(args.downsample)
+        if ref_traj:
+            ref_traj.downsample(args.downsample)
+
+    if args.motion_filter:
+        logger.debug(SEP)
+        distance_threshold = args.motion_filter[0]
+        angle_threshold = args.motion_filter[1]
+        logger.info(
+            "Filtering trajectories with motion filter "
+            "thresholds: %f m, %f deg", distance_threshold, angle_threshold)
+        for traj in trajectories.values():
+            traj.motion_filter(distance_threshold, angle_threshold, True)
+        if ref_traj:
+            ref_traj.motion_filter(distance_threshold, angle_threshold, True)
+
     if args.merge:
         if args.subcommand == "kitti":
             die("Can't merge KITTI files.")

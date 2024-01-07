@@ -154,6 +154,10 @@ def run(args: argparse.Namespace) -> None:
         import copy
         traj_ref_full = copy.deepcopy(traj_ref)
 
+    # Downsample or filtering has to be done before synchronization.
+    # Otherwise filtering might mess up the sync.
+    common.downsample_or_filter(args, traj_ref, traj_est)
+
     if isinstance(traj_ref, PoseTrajectory3D) and isinstance(
             traj_est, PoseTrajectory3D):
         logger.debug(SEP)

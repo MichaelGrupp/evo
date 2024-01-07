@@ -125,11 +125,18 @@ def run(args: argparse.Namespace) -> None:
     logger.debug(SEP)
 
     traj_ref, traj_est, ref_name, est_name = common.load_trajectories(args)
+    pose_relation = common.get_pose_relation(args)
+    change_unit = metrics.Unit(args.change_unit) if args.change_unit else None
+    plane = Plane(args.project_to_plane) if args.project_to_plane else None
 
     traj_ref_full = None
     if args.plot_full_ref:
         import copy
         traj_ref_full = copy.deepcopy(traj_ref)
+
+    # Downsample or filtering has to be done before synchronization.
+    # Otherwise filtering might mess up the sync.
+    common.downsample_or_filter(args, traj_ref, traj_est)
 
     if isinstance(traj_ref, PoseTrajectory3D) and isinstance(
             traj_est, PoseTrajectory3D):
@@ -144,10 +151,6 @@ def run(args: argparse.Namespace) -> None:
         traj_ref, traj_est = sync.associate_trajectories(
             traj_ref, traj_est, args.t_max_diff, args.t_offset,
             first_name=ref_name, snd_name=est_name)
-
-    pose_relation = common.get_pose_relation(args)
-    change_unit = metrics.Unit(args.change_unit) if args.change_unit else None
-    plane = Plane(args.project_to_plane) if args.project_to_plane else None
 
     result = ape(traj_ref=traj_ref, traj_est=traj_est,
                  pose_relation=pose_relation, align=args.align,

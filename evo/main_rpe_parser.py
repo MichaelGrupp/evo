@@ -55,6 +55,14 @@ def parser() -> argparse.ArgumentParser:
     algo_opts.add_argument(
         "--project_to_plane", type=str, choices=["xy", "xz", "yz"],
         help="Projects the trajectories to 2D in the desired plane.")
+    algo_opts.add_argument("--downsample", type=int,
+                           help="Downsample trajectories to max N poses.")
+    algo_opts.add_argument(
+        "--motion_filter", type=float, nargs=2,
+        metavar=("DISTANCE", "ANGLE_DEGREES"),
+        help="Filters out poses if the distance or angle to the previous one "
+        " is below the threshold distance or angle. "
+        "Angle is expected in degrees.")
 
     output_opts.add_argument(
         "-p",

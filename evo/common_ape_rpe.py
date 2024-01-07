@@ -23,6 +23,7 @@ import logging
 import typing
 from pathlib import Path
 
+from evo.core.filters import FilterException
 from evo.core.metrics import PoseRelation, Unit
 from evo.core.result import Result
 from evo.core.trajectory import PosePath3D, PoseTrajectory3D
@@ -107,6 +108,35 @@ def get_delta_unit(args: argparse.Namespace) -> Unit:
     elif args.delta_unit == "m":
         delta_unit = Unit.meters
     return delta_unit
+
+
+def downsample_or_filter(args: argparse.Namespace, traj_ref: PosePath3D,
+                         traj_est: PosePath3D) -> None:
+    logger.debug(SEP)
+    old_num_poses_ref = traj_ref.num_poses
+    old_num_poses_est = traj_est.num_poses
+    if args.downsample:
+        logger.debug("Downsampling trajectories to max %d poses.",
+                     args.downsample)
+        traj_ref.downsample(args.downsample)
+        traj_est.downsample(args.downsample)
+    if args.motion_filter:
+        if not all(
+                isinstance(t, PoseTrajectory3D) for t in (traj_ref, traj_est)):
+            raise FilterException("trajectories without timestamps can't be "
+                                  "motion filtered in metrics because it "
+                                  "could break the required synchronization")
+        distance_threshold = args.motion_filter[0]
+        angle_threshold = args.motion_filter[1]
+        logger.debug(
+            "Filtering trajectories with motion filter "
+            "thresholds: %f m, %f deg", distance_threshold, angle_threshold)
+        traj_ref.motion_filter(distance_threshold, angle_threshold, True)
+        traj_est.motion_filter(distance_threshold, angle_threshold, True)
+    logger.debug("Number of poses in reference was reduced from %d to %d.",
+                 old_num_poses_ref, traj_ref.num_poses)
+    logger.debug("Number of poses in estimate was reduced from %d to %d.",
+                 old_num_poses_est, traj_est.num_poses)
 
 
 def plot_result(args: argparse.Namespace, result: Result, traj_ref: PosePath3D,

@@ -124,6 +124,11 @@ DEFAULT_SETTINGS_DICT_DOC = {
         "Scaling parameter of pose coordinate frame markers of reference trajectories. "
         + "0 will draw nothing."
     ),
+    "plot_seaborn_enabled": (
+        True,
+        "Enables / disables seaborn's styling for plots.\n"
+        "Setting this to false will use the classic matplotlib style."
+    ),
     "plot_seaborn_palette": (
         "deep6",
         "Default color cycle, taken from a palette of the seaborn package.\n"

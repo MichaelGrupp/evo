@@ -1,0 +1,3 @@
+[submodule "doc/evo.wiki"]
+	path = doc/evo.wiki
+	url = git@github.com:MichaelGrupp/evo.wiki

@@ -61,11 +61,13 @@ def apply_settings(settings: SettingsContainer = SETTINGS):
     """
     mpl.use(settings.plot_backend)
 
-    # TODO: 'color_codes=False' to work around this bug:
-    # https://github.com/mwaskom/seaborn/issues/1546
-    sns.set(style=settings.plot_seaborn_style, font=settings.plot_fontfamily,
-            font_scale=settings.plot_fontscale, color_codes=False,
-            palette=settings.plot_seaborn_palette)
+    if settings.plot_seaborn_enabled:
+        # TODO: 'color_codes=False' to work around this bug:
+        # https://github.com/mwaskom/seaborn/issues/1546
+        sns.set(style=settings.plot_seaborn_style,
+                font=settings.plot_fontfamily,
+                font_scale=settings.plot_fontscale, color_codes=False,
+                palette=settings.plot_seaborn_palette)
 
     mpl.rcParams.update({
         "lines.linewidth": settings.plot_linewidth,
@@ -73,6 +75,8 @@ def apply_settings(settings: SettingsContainer = SETTINGS):
         "font.family": settings.plot_fontfamily,
         "pgf.texsystem": settings.plot_texsystem
     })
+    if "xkcd" in settings:
+        plt.xkcd()
 
 
 apply_settings(SETTINGS)

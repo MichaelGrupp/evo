@@ -45,14 +45,14 @@ jobs:
       Python-3.8-ubuntu:
         python.version: '3.8'
         imageName: 'ubuntu-latest'
-      Python-3.11-ubuntu:
-        python.version: '3.11'
+      Python-3.12-ubuntu:
+        python.version: '3.12'
         imageName: 'ubuntu-latest'
-      Python-3.11-mac:
-        python.version: '3.11'
+      Python-3.12-mac:
+        python.version: '3.12'
         imageName: 'macOS-latest'
-      Python-3.11-windows:
-        python.version: '3.11'
+      Python-3.12-windows:
+        python.version: '3.12'
         imageName: 'windows-latest'
     maxParallel: 10
   pool:

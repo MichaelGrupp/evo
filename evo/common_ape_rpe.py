@@ -112,6 +112,9 @@ def get_delta_unit(args: argparse.Namespace) -> Unit:
 
 def downsample_or_filter(args: argparse.Namespace, traj_ref: PosePath3D,
                          traj_est: PosePath3D) -> None:
+    if not (args.downsample or args.motion_filter):
+        return
+
     logger.debug(SEP)
     old_num_poses_ref = traj_ref.num_poses
     old_num_poses_est = traj_est.num_poses

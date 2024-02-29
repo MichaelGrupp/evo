@@ -26,11 +26,11 @@ from functools import cached_property
 
 import numpy as np
 
-from evo import EvoException
-import evo.core.transformations as tr
 import evo.core.geometry as geometry
-from evo.core import lie_algebra as lie
+import evo.core.transformations as tr
+from evo import EvoException
 from evo.core import filters
+from evo.core import lie_algebra as lie
 from evo.core.pose_cache import PoseCache
 from evo.core.sync_method import SyncMethod
 
@@ -721,6 +721,28 @@ class PoseTrajectory3D(PosePath3D, object):
         except TrajectoryException as error:
             logger.warning(f"Failed to compute all trajectory stats: {error}")
         return stats
+
+
+class StateTrajectory3D(PoseTrajectory3D, object):
+    """
+    A PosePath with temporal and velocity information
+    """
+
+    def __init__(
+            self, positions_xyz: typing.Optional[np.ndarray] = None,
+            orientations_quat_wxyz: typing.Optional[np.ndarray] = None,
+            velocities_xyz: typing.Optional[np.ndarray] = None,
+            timestamps: typing.Optional[np.ndarray] = None,
+            poses_se3: typing.Optional[typing.Sequence[np.ndarray]] = None,
+            meta: typing.Optional[dict] = None):
+        """
+        :param timestamps: optional nx1 list of timestamps
+        """
+        super(StateTrajectory3D,
+              self).__init__(positions_xyz, orientations_quat_wxyz, timestamps,
+                             poses_se3, meta)
+
+        self.velocities_xyz = np.array(velocities_xyz)
 
 
 class Trajectory(PoseTrajectory3D):

@@ -607,7 +607,7 @@ def traj_xyz(axarr: np.ndarray, traj: trajectory.PosePath3D, style: str = '-',
                       label=label, alpha=alpha)
         axarr[i].set_ylabel(ylabels[i])
     axarr[2].set_xlabel(xlabel)
-    if label:
+    if label and SETTINGS.plot_show_legend:
         axarr[0].legend(frameon=True)
 
 
@@ -645,7 +645,7 @@ def traj_rpy(axarr: np.ndarray, traj: trajectory.PosePath3D, style: str = '-',
                       label=label, alpha=alpha)
         axarr[i].set_ylabel(ylabels[i])
     axarr[2].set_xlabel(xlabel)
-    if label:
+    if label and SETTINGS.plot_show_legend:
         axarr[0].legend(frameon=True)
 
 

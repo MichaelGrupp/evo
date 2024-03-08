@@ -54,10 +54,10 @@ class PosePath3D(object):
     also: base class for real trajectory
     """
     def __init__(
-            self, positions_xyz: typing.Optional[np.ndarray] = None,
-            orientations_quat_wxyz: typing.Optional[np.ndarray] = None,
-            poses_se3: typing.Optional[typing.Sequence[np.ndarray]] = None,
-            meta: typing.Optional[dict] = None):
+        self, positions_xyz: typing.Optional[np.ndarray] = None,
+        orientations_quat_wxyz: typing.Optional[np.ndarray] = None,
+        poses_se3: typing.Optional[typing.Sequence[np.ndarray]] = None,
+        meta: typing.Optional[dict] = None):
         """
         :param positions_xyz: nx3 list of x,y,z positions
         :param orientations_quat_wxyz: nx4 list of quaternions (w,x,y,z format)
@@ -374,11 +374,11 @@ class PoseTrajectory3D(PosePath3D, object):
     a PosePath with temporal information
     """
     def __init__(
-            self, positions_xyz: typing.Optional[np.ndarray] = None,
-            orientations_quat_wxyz: typing.Optional[np.ndarray] = None,
-            timestamps: typing.Optional[np.ndarray] = None,
-            poses_se3: typing.Optional[typing.Sequence[np.ndarray]] = None,
-            meta: typing.Optional[dict] = None):
+        self, positions_xyz: typing.Optional[np.ndarray] = None,
+        orientations_quat_wxyz: typing.Optional[np.ndarray] = None,
+        timestamps: typing.Optional[np.ndarray] = None,
+        poses_se3: typing.Optional[typing.Sequence[np.ndarray]] = None,
+        meta: typing.Optional[dict] = None):
         """
         :param timestamps: optional nx1 list of timestamps
         """
@@ -489,13 +489,17 @@ class PoseTrajectory3D(PosePath3D, object):
         vmax = speeds.max()
         vmin = speeds.min()
         vmean = speeds.mean()
+        delta_ts = self.timestamps[1:] - self.timestamps[:-1]
         stats.update({
             "v_max (m/s)": vmax,
             "v_min (m/s)": vmin,
             "v_avg (m/s)": vmean,
             "v_max (km/h)": vmax * 3.6,
             "v_min (km/h)": vmin * 3.6,
-            "v_avg (km/h)": vmean * 3.6
+            "v_avg (km/h)": vmean * 3.6,
+            "dt_max (s)": delta_ts.max(),
+            "dt_min (s)": delta_ts.min(),
+            "dt_avg (s)": delta_ts.mean(),
         })
         return stats
 

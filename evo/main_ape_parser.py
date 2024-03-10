@@ -16,8 +16,8 @@ def parser() -> argparse.ArgumentParser:
     algo_opts.add_argument(
         "-r", "--pose_relation", default="trans_part",
         help="pose relation on which the APE is based", choices=[
-            "full", "trans_part", "rot_part", "angle_deg", "angle_rad",
-            "point_distance"
+            "full", "trans_part", "xy_trans_part", "rot_part", "angle_deg",
+            "angle_rad", "point_distance"
         ])
     algo_opts.add_argument("-a", "--align",
                            help="alignment with Umeyama's method (no scale)",

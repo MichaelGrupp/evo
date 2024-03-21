@@ -33,4 +33,8 @@ RUN evo_config show --brief --no_color
 
 # Run tests.
 RUN pip3 install pytest --upgrade
+# ROS2 globally registers pytest plugins for ament, launch_testing and other crap.
+# Don't load them because they can be not compatible with recent pytest versions.
+# https://github.com/ros2/launch/issues/765
+ENV PYTEST_DISABLE_PLUGIN_AUTOLOAD=1
 RUN /container-local/.ci/ros_run_tests.sh /container-local

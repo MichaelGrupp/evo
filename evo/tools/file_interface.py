@@ -32,8 +32,7 @@ from pathlib import Path
 import numpy as np
 from rosbags.rosbag1 import (Reader as Rosbag1Reader, Writer as Rosbag1Writer)
 from rosbags.rosbag2 import (Reader as Rosbag2Reader, Writer as Rosbag2Writer)
-from rosbags.serde import deserialize_cdr, ros1_to_cdr, serialize_cdr
-from rosbags.serde.serdes import cdr_to_ros1
+from rosbags.typesys import get_typestore, Stores
 
 from evo import EvoException
 import evo.core.lie_algebra as lie
@@ -312,17 +311,17 @@ def read_bag_trajectory(reader: typing.Union[Rosbag1Reader,
 
     stamps, xyz, quat = [], [], []
 
+    typestore = get_typestore(Stores.LATEST)
     connections = [c for c in reader.connections if c.topic == topic]
     for connection, _, rawdata in reader.messages(
             connections=connections):  # type: ignore
         if isinstance(reader, Rosbag1Reader):
-            msg = deserialize_cdr(ros1_to_cdr(rawdata, connection.msgtype),
-                                  connection.msgtype)
+            msg = typestore.deserialize_ros1(rawdata, connection.msgtype)
         else:
-            msg = deserialize_cdr(rawdata, connection.msgtype)
+            msg = typestore.deserialize_cdr(rawdata, connection.msgtype)
         # Use the header timestamps (converted to seconds).
         # Note: msg/stamp is a rosbags type here, not native ROS.
-        t = msg.header.stamp
+        t = msg.header.stamp  # type: ignore
         stamps.append(t.sec + (t.nanosec * 1e-9))
         xyz_t, quat_t = get_xyz_quat(msg)
         xyz.append(xyz_t)
@@ -335,11 +334,10 @@ def read_bag_trajectory(reader: typing.Union[Rosbag1Reader,
     (connection, _, rawdata) = list(reader.messages(connections=connections))[0]  # type: ignore
     # yapf: enable
     if isinstance(reader, Rosbag1Reader):
-        first_msg = deserialize_cdr(ros1_to_cdr(rawdata, connection.msgtype),
-                                    connection.msgtype)
+        first_msg = typestore.deserialize_ros1(rawdata, connection.msgtype)
     else:
-        first_msg = deserialize_cdr(rawdata, connection.msgtype)
-    frame_id = first_msg.header.frame_id
+        first_msg = typestore.deserialize_cdr(rawdata, connection.msgtype)
+    frame_id = first_msg.header.frame_id  # type: ignore
     return PoseTrajectory3D(np.array(xyz), np.array(quat), np.array(stamps),
                             meta={"frame_id": frame_id})
 
@@ -352,11 +350,6 @@ def write_bag_trajectory(writer, traj: PoseTrajectory3D, topic_name: str,
     :param topic_name: the desired topic name for the trajectory
     :param frame_id: optional ROS frame_id
     """
-    from rosbags.typesys.types import (
-        geometry_msgs__msg__PoseStamped as PoseStamped, std_msgs__msg__Header
-        as Header, geometry_msgs__msg__Pose as Pose, geometry_msgs__msg__Point
-        as Position, geometry_msgs__msg__Quaternion as Quaternion,
-        builtin_interfaces__msg__Time as Time)
     if not isinstance(traj, PoseTrajectory3D):
         raise FileInterfaceException(
             "trajectory must be a PoseTrajectory3D object")
@@ -366,8 +359,18 @@ def write_bag_trajectory(writer, traj: PoseTrajectory3D, topic_name: str,
             "or rosbags.rosbags2.writer.Writer - "
             "rosbag.Bag() is not supported by evo anymore")
 
-    msgtype = PoseStamped.__msgtype__
-    connection = writer.add_connection(topic_name, msgtype)
+    typestore = get_typestore(Stores.LATEST)
+    Time = typestore.types["builtin_interfaces/msg/Time"]
+    Header = typestore.types["std_msgs/msg/Header"]
+    Position = typestore.types["geometry_msgs/msg/Point"]
+    Quaternion = typestore.types["geometry_msgs/msg/Quaternion"]
+    Pose = typestore.types["geometry_msgs/msg/Pose"]
+    PoseStamped = typestore.types["geometry_msgs/msg/PoseStamped"]
+
+    msgtype = PoseStamped.__msgtype__  # type: ignore
+    connection = writer.add_connection(topic_name, msgtype,
+                                       typestore=typestore)
+
     for stamp, xyz, quat in zip(traj.timestamps, traj.positions_xyz,
                                 traj.orientations_quat_wxyz):
         sec = int(stamp // 1)
@@ -377,10 +380,11 @@ def write_bag_trajectory(writer, traj: PoseTrajectory3D, topic_name: str,
         position = Position(x=xyz[0], y=xyz[1], z=xyz[2])
         quaternion = Quaternion(w=quat[0], x=quat[1], y=quat[2], z=quat[3])
         pose = Pose(position, quaternion)
-        p = PoseStamped(header, pose)
-        serialized_msg = serialize_cdr(p, msgtype)
+        pose_stamped = PoseStamped(header, pose)
         if isinstance(writer, Rosbag1Writer):
-            serialized_msg = cdr_to_ros1(serialized_msg, msgtype)
+            serialized_msg = typestore.serialize_ros1(pose_stamped, msgtype)
+        else:
+            serialized_msg = typestore.serialize_cdr(pose_stamped, msgtype)
         writer.write(connection, int(stamp * 1e9), serialized_msg)
     logger.info("Saved geometry_msgs/PoseStamped topic: " + topic_name)
 

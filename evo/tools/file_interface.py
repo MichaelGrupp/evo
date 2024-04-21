@@ -311,7 +311,10 @@ def read_bag_trajectory(reader: typing.Union[Rosbag1Reader,
 
     stamps, xyz, quat = [], [], []
 
-    typestore = get_typestore(Stores.LATEST)
+    if isinstance(reader, Rosbag1Reader):
+        typestore = get_typestore(Stores.ROS1_NOETIC)
+    else:
+        typestore = get_typestore(Stores.LATEST)
     connections = [c for c in reader.connections if c.topic == topic]
     for connection, _, rawdata in reader.messages(
             connections=connections):  # type: ignore
@@ -359,7 +362,10 @@ def write_bag_trajectory(writer, traj: PoseTrajectory3D, topic_name: str,
             "or rosbags.rosbags2.writer.Writer - "
             "rosbag.Bag() is not supported by evo anymore")
 
-    typestore = get_typestore(Stores.LATEST)
+    if isinstance(writer, Rosbag1Writer):
+        typestore = get_typestore(Stores.ROS1_NOETIC)
+    else:
+        typestore = get_typestore(Stores.LATEST)
     Time = typestore.types["builtin_interfaces/msg/Time"]
     Header = typestore.types["std_msgs/msg/Header"]
     Position = typestore.types["geometry_msgs/msg/Point"]

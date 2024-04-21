@@ -80,7 +80,7 @@ class TfCache(object):
         if static_topic in reader.topics:
             tf_topics.append(static_topic)
 
-        typestore = get_typestore(Stores.LATEST)
+        typestore = get_typestore(Stores.ROS1_NOETIC)
 
         # Add TF data to buffer if this bag/topic pair is not already cached.
         for tf_topic in tf_topics:

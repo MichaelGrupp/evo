@@ -377,12 +377,17 @@ def write_bag_trajectory(writer, traj: PoseTrajectory3D, topic_name: str,
     connection = writer.add_connection(topic_name, msgtype,
                                        typestore=typestore)
 
+    seq = 0
     for stamp, xyz, quat in zip(traj.timestamps, traj.positions_xyz,
                                 traj.orientations_quat_wxyz):
         sec = int(stamp // 1)
         nanosec = int((stamp - sec) * 1e9)
         time = Time(sec, nanosec)
-        header = Header(time, frame_id)
+        if isinstance(writer, Rosbag1Writer):
+            header = Header(seq, time, frame_id)
+            seq += 1
+        else:
+            header = Header(time, frame_id)
         position = Position(x=xyz[0], y=xyz[1], z=xyz[2])
         quaternion = Quaternion(w=quat[0], x=quat[1], y=quat[2], z=quat[3])
         pose = Pose(position, quaternion)

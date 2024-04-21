@@ -41,6 +41,7 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.backend_bases import FigureCanvasBase
 from matplotlib.collections import LineCollection
+from matplotlib.ticker import FuncFormatter
 from matplotlib.transforms import Affine2D, Bbox
 
 from evo import EvoException
@@ -273,11 +274,11 @@ def set_aspect_equal(ax: Axes) -> None:
     ax.set_zlim3d([zmean - plot_radius, zmean + plot_radius])
 
 
-def _get_length_formatter(length_unit: Unit) -> typing.Callable:
+def _get_length_formatter(length_unit: Unit) -> FuncFormatter:
     def formatter(x, _):
         return "{0:g}".format(x / METER_SCALE_FACTORS[length_unit])
 
-    return formatter
+    return FuncFormatter(formatter)
 
 
 def prepare_axis(fig: Figure, plot_mode: PlotMode = PlotMode.xy,

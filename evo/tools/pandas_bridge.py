@@ -66,7 +66,7 @@ def df_to_trajectory(
     """
     quat_wxyz = df[["qw", "qx", "qy", "qz"]].to_numpy()
     positions_xyz = df[["x", "y", "z"]].to_numpy()
-    if as_type is PosePath3D or df.index.dtype == np.dtype("int64"):
+    if as_type is PosePath3D or df.index.dtype == np.int_:
         return PosePath3D(positions_xyz, quat_wxyz)
     timestamps = df.index.to_numpy()
     return PoseTrajectory3D(positions_xyz, quat_wxyz, timestamps)

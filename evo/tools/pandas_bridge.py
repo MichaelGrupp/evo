@@ -26,15 +26,19 @@ import typing
 import numpy as np
 import pandas as pd
 
-from evo.core import trajectory, result
+from evo.core import result
+from evo.core.trajectory import PosePath3D, PoseTrajectory3D
 from evo.tools import file_interface, user
 from evo.tools.settings import SETTINGS
 
 logger = logging.getLogger(__name__)
 
+PathOrTrajectory = typing.Union[PosePath3D, PoseTrajectory3D]
+PathOrTrajectoryType = typing.Type[PathOrTrajectory]
 
-def trajectory_to_df(traj: trajectory.PosePath3D) -> pd.DataFrame:
-    if not isinstance(traj, trajectory.PosePath3D):
+
+def trajectory_to_df(traj: PosePath3D) -> pd.DataFrame:
+    if not isinstance(traj, PosePath3D):
         raise TypeError("trajectory.PosePath3D or derived required")
     poses_dict = {
         "x": traj.positions_xyz[:, 0],
@@ -45,17 +49,33 @@ def trajectory_to_df(traj: trajectory.PosePath3D) -> pd.DataFrame:
         "qy": traj.orientations_quat_wxyz[:, 2],
         "qz": traj.orientations_quat_wxyz[:, 3],
     }
-    if isinstance(traj, trajectory.PoseTrajectory3D):
+    if isinstance(traj, PoseTrajectory3D):
         index = traj.timestamps
     else:
         index = np.arange(0, traj.num_poses)
     return pd.DataFrame(data=poses_dict, index=index)
 
 
-def trajectory_stats_to_df(traj: trajectory.PosePath3D,
+def df_to_trajectory(
+    df: pd.DataFrame, as_type: typing.Optional[PathOrTrajectoryType] = None
+) -> PathOrTrajectory:
+    """
+    :param df: DataFrame created with trajectory_to_df()
+    :param as_type: Explicit output type, otherwise derived from the data.
+                    Either PosePath3D or PoseTrajectory3D.
+    """
+    quat_wxyz = df[["qw", "qx", "qy", "qz"]].to_numpy()
+    positions_xyz = df[["x", "y", "z"]].to_numpy()
+    if as_type is PosePath3D or df.index.dtype == np.int_:
+        return PosePath3D(positions_xyz, quat_wxyz)
+    timestamps = df.index.to_numpy()
+    return PoseTrajectory3D(positions_xyz, quat_wxyz, timestamps)
+
+
+def trajectory_stats_to_df(traj: PosePath3D,
                            name: typing.Optional[str] = None) -> pd.DataFrame:
-    if not isinstance(traj, trajectory.PosePath3D):
-        raise TypeError("trajectory.PosePath3D or derived required")
+    if not isinstance(traj, PosePath3D):
+        raise TypeError("PosePath3D or derived required")
     data_dict = {k: v for k, v in traj.get_infos().items() if np.isscalar(v)}
     data_dict.update(traj.get_statistics())
     index = [name] if name else ['0']
@@ -63,7 +83,7 @@ def trajectory_stats_to_df(traj: trajectory.PosePath3D,
 
 
 def trajectories_stats_to_df(
-        trajectories: typing.Dict[str, trajectory.PosePath3D]) -> pd.DataFrame:
+        trajectories: typing.Dict[str, PosePath3D]) -> pd.DataFrame:
     df = pd.DataFrame()
     for name, traj in trajectories.items():
         df = pd.concat((df, trajectory_stats_to_df(traj, name)))

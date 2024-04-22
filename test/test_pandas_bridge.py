@@ -31,11 +31,11 @@ class TrajectoryDataframeTest(unittest.TestCase):
         self.trajectory = helpers.fake_trajectory(100, 0.1)
 
     def test_back_and_forth(self):
-        for input in (self.path, self.trajectory):
-            df = pandas_bridge.trajectory_to_df(input)
-            output = pandas_bridge.df_to_trajectory(df)
-            self.assertIsInstance(output, type(input))
-            self.assertEqual(input, output)
+        for input_traj in (self.path, self.trajectory):
+            df = pandas_bridge.trajectory_to_df(input_traj)
+            output_traj = pandas_bridge.df_to_trajectory(df)
+            self.assertIsInstance(output_traj, type(input_traj))
+            self.assertEqual(input_traj, output_traj)
 
     def test_explicit_type(self):
         df = pandas_bridge.trajectory_to_df(self.trajectory)

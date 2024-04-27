@@ -29,7 +29,7 @@ import rospy
 import tf2_py
 from geometry_msgs.msg import TransformStamped
 from rosbags.rosbag1 import Reader as Rosbag1Reader
-from rosbags.serde.serdes import deserialize_cdr, ros1_to_cdr
+from rosbags.typesys import get_typestore, Stores
 from std_msgs.msg import Header
 
 from evo import EvoException
@@ -80,6 +80,8 @@ class TfCache(object):
         if static_topic in reader.topics:
             tf_topics.append(static_topic)
 
+        typestore = get_typestore(Stores.ROS1_NOETIC)
+
         # Add TF data to buffer if this bag/topic pair is not already cached.
         for tf_topic in tf_topics:
             if tf_topic in self.topics and reader.path.name in self.bags:
@@ -97,9 +99,8 @@ class TfCache(object):
                     raise TfCacheException(
                         f"Expected {SUPPORTED_TF_MSG} message type for topic "
                         f"{tf_topic}, got: {connection.msgtype}")
-                msg = deserialize_cdr(ros1_to_cdr(rawdata, connection.msgtype),
-                                      connection.msgtype)
-                for tf in msg.transforms:
+                msg = typestore.deserialize_ros1(rawdata, connection.msgtype)
+                for tf in msg.transforms:  # type: ignore
                     # Convert from rosbags.typesys.types to native ROS.
                     # Related: https://gitlab.com/ternaris/rosbags/-/issues/13
                     stamp = rospy.Time()

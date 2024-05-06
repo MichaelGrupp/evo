@@ -30,7 +30,7 @@ import tf2_py
 from geometry_msgs.msg import TransformStamped
 from rosbags.rosbag1 import Reader as Rosbag1Reader
 from rosbags.typesys import get_typestore, get_types_from_msg, Stores
-from rosbags.interfaces.typing import Typestore
+from rosbags.typesys.store import Typestore
 from std_msgs.msg import Header
 
 from evo import EvoException

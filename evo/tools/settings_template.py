@@ -19,7 +19,7 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os
-import pkgutil
+import importlib.util
 
 
 def get_default_plot_backend() -> str:
@@ -28,7 +28,7 @@ def get_default_plot_backend() -> str:
 
     backends = {"PyQt5": "Qt5Agg"}
     for pkg in backends:
-        if pkgutil.find_loader(pkg) is not None:
+        if importlib.util.find_spec(pkg) is not None:
             return backends[pkg]
     return "TkAgg"
 

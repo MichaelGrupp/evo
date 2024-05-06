@@ -22,6 +22,11 @@ data = {
     "evo_traj bag data/ROS_example.bag groundtruth S-PTAM ORB-SLAM --ref groundtruth": "cfg/traj/bag"
 }
 
+if os.getenv("ROS_DISTRO", "") == "noetic":
+    data.update({
+        "evo_traj bag data/tf_example.bag /tf:odom.base_link --ref /tf:odom.base_footprint": "cfg/traj/bag",
+    })
+
 try:
     for d in data.keys():
         for cfg_dir in (common_cfg_dir, Path(data[d])):

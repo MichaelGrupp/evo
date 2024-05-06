@@ -29,7 +29,8 @@ import rospy
 import tf2_py
 from geometry_msgs.msg import TransformStamped
 from rosbags.rosbag1 import Reader as Rosbag1Reader
-from rosbags.typesys import get_typestore, Stores
+from rosbags.typesys import get_typestore, get_types_from_msg, Stores
+from rosbags.interfaces.typing import Typestore
 from std_msgs.msg import Header
 
 from evo import EvoException
@@ -63,6 +64,19 @@ class TfCache(object):
         self.topics = []
         self.bags = []
 
+    # tf2_msgs/TFMessage is not included in default rosbags typestore,
+    # update the ROS1 typestore with the interface definition from the bag.
+    # https://ternaris.gitlab.io/rosbags/examples/register_types.html
+    @staticmethod
+    def _setup_typestore(reader: Rosbag1Reader) -> Typestore:
+        typestore = get_typestore(Stores.ROS1_NOETIC)
+        for connection in reader.connections:
+            if connection.msgtype == SUPPORTED_TF_MSG:
+                typestore.register(
+                    get_types_from_msg(connection.msgdef, connection.msgtype))
+                break
+        return typestore
+
     # TODO: support also ROS2 bag reader.
     def from_bag(self, reader: Rosbag1Reader, topic: str = "/tf",
                  static_topic: str = "/tf_static") -> None:
@@ -80,7 +94,7 @@ class TfCache(object):
         if static_topic in reader.topics:
             tf_topics.append(static_topic)
 
-        typestore = get_typestore(Stores.ROS1_NOETIC)
+        typestore = self._setup_typestore(reader)
 
         # Add TF data to buffer if this bag/topic pair is not already cached.
         for tf_topic in tf_topics:

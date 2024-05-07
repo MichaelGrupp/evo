@@ -351,11 +351,15 @@ def run(args):
                           alpha=SETTINGS.plot_reference_alpha,
                           start_timestamp=start_time)
             if isinstance(ref_traj, trajectory.PoseTrajectory3D):
-                plot.speeds(fig_speed.gca(), ref_traj,
-                            style=SETTINGS.plot_reference_linestyle,
-                            color=SETTINGS.plot_reference_color,
-                            alpha=SETTINGS.plot_reference_alpha,
-                            label=short_traj_name)
+                try:
+                    plot.speeds(fig_speed.gca(), ref_traj,
+                                style=SETTINGS.plot_reference_linestyle,
+                                color=SETTINGS.plot_reference_color,
+                                alpha=SETTINGS.plot_reference_alpha,
+                                label=short_traj_name)
+                except trajectory.TrajectoryException as error:
+                    logger.error(
+                        f"Can't plot speeds of {short_traj_name}: {error}")
         elif args.plot_relative_time:
             # Use lower bound timestamp as the 0 time if there's no reference.
             if len(trajectories) > 1:
@@ -398,10 +402,15 @@ def run(args):
                           alpha=SETTINGS.plot_trajectory_alpha,
                           start_timestamp=start_time)
             if isinstance(traj, trajectory.PoseTrajectory3D):
-                plot.speeds(fig_speed.gca(), traj,
-                            style=SETTINGS.plot_trajectory_linestyle,
-                            color=color, alpha=SETTINGS.plot_trajectory_alpha,
-                            label=short_traj_name)
+                try:
+                    plot.speeds(fig_speed.gca(), traj,
+                                style=SETTINGS.plot_trajectory_linestyle,
+                                color=color,
+                                alpha=SETTINGS.plot_trajectory_alpha,
+                                label=short_traj_name)
+                except trajectory.TrajectoryException as error:
+                    logger.error(
+                        f"Can't plot speeds of {short_traj_name}: {error}")
             if not SETTINGS.plot_usetex:
                 fig_rpy.text(
                     0., 0.005, "euler_angle_sequence: {}".format(

@@ -66,7 +66,7 @@ jobs:
 
   - script: |
       python -m pip install --upgrade pip
-      pip install . --no-binary evo
+      pip install .
       evo_config show --brief --no_color
     displayName: 'Install and configure package and dependencies'
 
@@ -99,8 +99,8 @@ jobs:
       architecture: 'x64'
 
   - script: |
-      pip install --upgrade setuptools
-      python setup.py sdist
-    displayName: 'Build sdist'
+      pip install hatch
+      hatch build
+    displayName: 'Build sdist and wheel'
 
 # Currently, that's it. No actual deployment.

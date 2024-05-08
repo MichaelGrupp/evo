@@ -13,12 +13,16 @@ build-backend = "hatchling.build"
 path = "evo/__init__.py"
 
 
+[tool.magformat]
+formatters = ["yapf"]
+
+
 [project]
 name = "evo"
 dynamic = ["version"]
 description = "Python package for the evaluation of odometry and SLAM"
 authors = [
-    { name="Michael Grupp", email="michael.grupp@tum.de"},
+    { name="Michael Grupp", email="michael.grupp@tum.de" },
 ]
 readme = "README.md"
 

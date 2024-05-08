@@ -1,8 +1,0 @@
-# fastentrypoints for setup
-include fastentrypoints.py
-
-# documentation
-include LICENSE
-
-# test folder
-# recursive-include test *

@@ -33,5 +33,5 @@ RUN pip3 install /container-local
 RUN evo_config show --brief --no_color
 
 # Run tests.
-RUN pip3 install pytest
+RUN pip3 install pytest --upgrade
 RUN /container-local/.ci/ros_run_tests.sh /container-local

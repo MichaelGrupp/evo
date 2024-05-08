@@ -19,12 +19,13 @@ formatters = ["yapf"]
 
 [project]
 name = "evo"
-dynamic = ["version"]
 description = "Python package for the evaluation of odometry and SLAM"
 authors = [
     { name="Michael Grupp", email="michael.grupp@tum.de" },
 ]
+license = { text = "GNU General Public License v3 (GPLv3)" }
 readme = "README.md"
+dynamic = ["version"]
 
 classifiers = [
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",

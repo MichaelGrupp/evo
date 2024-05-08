@@ -2,7 +2,7 @@
 
 set -e
 
-if [ ! -f setup.py ]; then
+if [ ! -f pyproject.toml ]; then
   echo "Error: please execute it in the base directory of the repository."
   exit 1
 fi

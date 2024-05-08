@@ -57,22 +57,26 @@ You might also want to use a [virtual environment](https://github.com/MichaelGru
 ### From PyPi
 If you just want to use the executables of the latest release version, the easiest way is to run:
 ```bash
-pip install evo --upgrade --no-binary evo
+pip install evo
 ```
-This will download the package and its dependencies from [PyPI](https://pypi.org/project/evo/) and install or upgrade them. Depending on your OS, you might be able to use `pip2` or `pip3` to specify the Python version you want. Tab completion for Bash terminals is supported via the [argcomplete](https://github.com/kislyuk/argcomplete/) package on most UNIX systems - open a new shell after the installation to use it (without `--no-binary evo` the tab completion might not be installed properly). If you want, you can subscribe to new releases via https://libraries.io/pypi/evo.
+This will download the package and its dependencies from [PyPI](https://pypi.org/project/evo/) and install or upgrade them. If you want, you can subscribe to new releases via https://libraries.io/pypi/evo.
 
 ### From Source
 Run this in the repository's base folder:
 ```bash
-pip install --editable . --upgrade --no-binary evo
+pip install --editable .
 ```
+
+### Tab completion
+
+Tab completion is supported via the [argcomplete](https://github.com/kislyuk/argcomplete/) package. Run `activate-global-python-argcomplete` after the installation to use it.
 
 ### Dependencies
 
 **Python packages**
 
 evo has some required dependencies that are ***automatically resolved*** during installation with pip.
-They are specified in the `install_requires` part of the `setup.py` file.
+See the `pyproject.toml` file for all details.
 
 **PyQt5 (optional)**
 
@@ -88,7 +92,7 @@ Some ROS-related features require a ROS installation, see [here](http://www.ros.
 
 ## Command Line Interface
 
-After installation with setup.py or from pip, the following executables can be called globally from your command-line:
+After installation with pip, the following executables can be called globally from your command-line:
 
 **Metrics:**
 

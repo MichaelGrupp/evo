@@ -20,10 +20,10 @@ echo "Current version: $PREVIOUS_VERSION"
 read -p "Enter new version: " NEW_VERSION
 read -p "Enter tag message: " TAG_MESSAGE
 
-hatch version $NEW_VERSION
+hatch version "$NEW_VERSION"
 
 git commit -aem "Bump version to $NEW_VERSION"
-git tag -a $NEW_VERSION -m "Release $NEW_VERSION: $TAG_MESSAGE"
+git tag -a "$NEW_VERSION" -m "Release $NEW_VERSION: $TAG_MESSAGE"
 git push
 git push --tags
 

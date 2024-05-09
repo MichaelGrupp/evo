@@ -29,7 +29,7 @@ RUN apt-get update && apt-get -y install ros-noetic-tf2-ros
 RUN container-local/.ci/debian_install_pip3.sh
 
 # Build and install.
-RUN pip3 install --ignore-installed /container-local --upgrade --no-binary evo
+RUN pip3 install /container-local
 RUN evo_config show --brief --no_color
 
 # Run tests.

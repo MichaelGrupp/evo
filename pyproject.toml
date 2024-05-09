@@ -1,7 +1,7 @@
 [project.urls]
 Homepage = "https://github.com/MichaelGrupp/evo"
 Wiki = "https://github.com/MichaelGrupp/evo/wiki"
-Issues = "https://github.com/MichaelGrupp/evo/issues"
+Bugtracker = "https://github.com/MichaelGrupp/evo/issues"
 
 
 [build-system]

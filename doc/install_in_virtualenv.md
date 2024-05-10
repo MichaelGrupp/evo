@@ -46,11 +46,11 @@ workon evaluation
 
 Install evo and its dependencies inside the virtual environment:
 ```shell
-pip install evo
+pip install --ignore-installed evo
 
 # or alternatively from source:
 cd <evo>  # go to evo base source folder that contains pyproject.toml
-pip install --editable .
+pip install --ignore-installed --editable .
 ```
 Now, the package should be installed in the virtualenv and you can use it.
 

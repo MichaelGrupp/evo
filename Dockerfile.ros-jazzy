@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
-FROM ros:iron
+FROM ros:jazzy
 
 # Copy the whole tree into the container.
 COPY . container-local/
@@ -23,16 +23,18 @@ COPY . container-local/
 ENTRYPOINT ["container-local/.ci/ros_entrypoint.sh"]
 
 # Install tf2
-RUN apt-get update && apt-get -y install ros-iron-tf2-ros
+RUN apt-get update && apt-get -y install ros-jazzy-tf2-ros
 
 RUN container-local/.ci/debian_install_pip3.sh
 
 # Build and install.
-RUN pip3 install /container-local
+# NOTE: --break-system-packages is added to force installation without venv.
+# This is purely for the CI, as we want to test the installation process.
+RUN pip3 install /container-local --break-system-packages
 RUN evo_config show --brief --no_color
 
 # Run tests.
-RUN pip3 install pytest --upgrade
+RUN pip3 install pytest --break-system-packages
 # ROS2 globally registers pytest plugins for ament, launch_testing and other crap.
 # Don't load them because they can be not compatible with recent pytest versions.
 # https://github.com/ros2/launch/issues/765

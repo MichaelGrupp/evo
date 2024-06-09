@@ -278,15 +278,11 @@ def read_bag_trajectory(reader: typing.Union[Rosbag1Reader,
 
     # TODO: Support TF also with ROS2 bags.
     if tf_id.check_id(topic):
-        if isinstance(reader, Rosbag1Reader):
-            # Use TfCache instead if it's a TF transform ID.
-            from evo.tools import tf_cache
-            tf_tree_cache = (tf_cache.instance(reader.__hash__())
-                             if cache_tf_tree else tf_cache.TfCache())
-            return tf_tree_cache.get_trajectory(reader, identifier=topic)
-        else:
-            raise FileInterfaceException(
-                "TF support for ROS2 bags is not implemented")
+        # Use TfCache instead if it's a TF transform ID.
+        from evo.tools import tf_cache
+        tf_tree_cache = (tf_cache.instance(reader.__hash__())
+                         if cache_tf_tree else tf_cache.TfCache())
+        return tf_tree_cache.get_trajectory(reader, identifier=topic)
 
     if topic not in reader.topics:
         raise FileInterfaceException("no messages for topic '" + topic +

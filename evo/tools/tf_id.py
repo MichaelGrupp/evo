@@ -22,7 +22,8 @@ import re
 
 from evo import EvoException
 
-ROS_NAME_REGEX = re.compile(r"([\/|_|0-9|a-z|A-Z]+)")
+
+ROS_NAME_REGEX = re.compile(r"[\/|a-z|A-Z][\/|_|0-9|a-z|A-Z]+")
 
 
 class TfIdException(EvoException):
@@ -30,13 +31,37 @@ class TfIdException(EvoException):
 
 
 def split_id(identifier: str) -> tuple:
-    match = ROS_NAME_REGEX.findall(identifier)
-    # If a fourth component exists, it's interpreted as the static TF name.
-    if not len(match) in (3, 4):
+    tf_topic, _, identifier = identifier.partition(":")
+    if ":" in identifier:
+        identifier, _, tf_static_topic = identifier.rpartition(":")
+    else:
+        tf_static_topic = None
+    parent_frame_id, _, child_frame_id = identifier.partition(".")
+
+    if ROS_NAME_REGEX.match(tf_topic) is None:
         raise TfIdException(
-            "ID string malformed, it should look similar to this: "
-            "/tf:map.base_footprint")
-    return tuple(match)
+            f"ID string malformed, {tf_topic} is not a valid topic name, "
+            "ID string should look like /tf:map.base_footprint(:/tf_static)")
+
+    if not parent_frame_id:
+        raise TfIdException(
+            "ID string malformed, parent frame ID is missing, ID string "
+            "should look like /tf:map.base_footprint(:/tf_static)")
+
+    if not child_frame_id:
+        raise TfIdException(
+            "ID string malformed, child frame ID is missing, ID string "
+            "should look like /tf:map.base_footprint(:/tf_static)")
+
+    if tf_static_topic:
+        if ROS_NAME_REGEX.match(tf_static_topic) is None:
+            raise TfIdException(
+                f"ID string malformed, {tf_static_topic} is not a valid topic name, "
+                "ID string should look like /tf:map.base_footprint(:/tf_static)")
+
+        return (tf_topic, parent_frame_id, child_frame_id, tf_static_topic)
+
+    return (tf_topic, parent_frame_id, child_frame_id)
 
 
 def check_id(identifier: str) -> bool:

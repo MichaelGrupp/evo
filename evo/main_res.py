@@ -106,6 +106,7 @@ def run(args: argparse.Namespace) -> None:
                     "keeping only first occurrence of duplicates".format(key))
                 new_error_df = new_error_df[~duplicates]  # type: ignore
             error_df = pd.concat([error_df, new_error_df], axis=1)
+        error_df.sort_index(inplace=True)
 
     # check titles
     if args.ignore_title:

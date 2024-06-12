@@ -133,8 +133,8 @@ def run(args: argparse.Namespace) -> None:
                     sys.exit()
 
     logger.debug(SEP)
-    logger.debug("Aggregated dataframe:\n{}".format(
-        df.to_string(line_width=80)))
+    logger.debug("Aggregated dataframe:\n%s",
+                 df.to_string(line_width=80, max_colwidth=40))
 
     # show a statistics overview
     logger.debug(SEP)

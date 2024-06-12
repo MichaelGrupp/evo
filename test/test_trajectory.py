@@ -111,6 +111,13 @@ class TestPosePath3D(unittest.TestCase):
             np.equal(path.positions_xyz[-1],
                      path_downsampled.positions_xyz[-1]).all())
 
+        # Downsampling to 1 should reduce to the start pose.
+        path_downsampled.downsample(1)
+        self.assertEqual(path_downsampled.num_poses, 1)
+        self.assertTrue(
+            np.equal(path.positions_xyz[0],
+                     path_downsampled.positions_xyz[0]).all())
+
     def test_transform(self):
         path = helpers.fake_path(10)
         path_transformed = copy.deepcopy(path)

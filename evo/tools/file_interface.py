@@ -276,7 +276,6 @@ def read_bag_trajectory(reader: typing.Union[Rosbag1Reader,
             "or rosbags.rosbags2.reader.Reader - "
             "rosbag.Bag() is not supported by evo anymore")
 
-    # TODO: Support TF also with ROS2 bags.
     if tf_id.check_id(topic):
         # Use TfCache instead if it's a TF transform ID.
         from evo.tools import tf_cache

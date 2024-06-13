@@ -38,7 +38,7 @@ try:
             TMP_DIR.mkdir(exist_ok=True)
             full_command = f"{command} -c {config_file}"
             print(f"[smoke test] {full_command}")
-            output = sp.check_output(shlex.split(full_command), cwd=HERE)
+            output = sp.check_output(full_command.split(), cwd=HERE)
             shutil.rmtree(TMP_DIR)
 except sp.CalledProcessError as e:
     print(e.output.decode("utf-8"))

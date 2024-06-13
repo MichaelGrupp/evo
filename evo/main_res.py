@@ -106,6 +106,7 @@ def run(args: argparse.Namespace) -> None:
                     "keeping only first occurrence of duplicates".format(key))
                 new_error_df = new_error_df[~duplicates]  # type: ignore
             error_df = pd.concat([error_df, new_error_df], axis=1)
+        error_df.sort_index(inplace=True)
 
     # check titles
     if args.ignore_title:
@@ -132,8 +133,8 @@ def run(args: argparse.Namespace) -> None:
                     sys.exit()
 
     logger.debug(SEP)
-    logger.debug("Aggregated dataframe:\n{}".format(
-        df.to_string(line_width=80)))
+    logger.debug("Aggregated dataframe:\n%s",
+                 df.to_string(line_width=80, max_colwidth=40))
 
     # show a statistics overview
     logger.debug(SEP)

@@ -308,8 +308,8 @@ class PosePath3D(object):
         """
         if self.num_poses <= num_poses:
             return
-        if self.num_poses < 2 or num_poses < 2:
-            raise TrajectoryException("can't downsample to less than 2 poses")
+        if num_poses < 1:
+            raise TrajectoryException("can't downsample to less than one pose")
         ids = np.linspace(0, self.num_poses - 1, num_poses, dtype=int)
         self.reduce_to_ids(ids)
 

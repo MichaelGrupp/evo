@@ -22,6 +22,7 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 import dataclasses
 import logging
 import math
+import os
 import warnings
 from collections import defaultdict
 from typing import DefaultDict, List, Optional, Protocol, Union, runtime_checkable
@@ -51,19 +52,33 @@ class TfCacheException(EvoException):
 
 @runtime_checkable
 class Ros1TimeLike(Protocol):
+    """
+    Basic ROS 1 compatible time instance protocol.
+    """
 
-    def to_sec(self) -> float: ...
-
+    def to_sec(self) -> float:
+        """
+        Gets scalar time, in seconds.
+        """
+        ...
 
 @runtime_checkable
-class Ros2TimeLike(Protocol):
+class Ros2TimeLike(Protocol):  # pylint: disable=too-few-public-methods
+    """
+    Basic ROS 2 compatible time instance protocol.
+    """
 
     @property
-    def nanoseconds(self) -> int: ...
+    def nanoseconds(self) -> int:
+        """Gets underlying scalar timestamp, in nanoseconds."""
+        ...
 
 
 @runtime_checkable
-class Ros2StampLike(Protocol):
+class Ros2StampLike(Protocol):  # pylint: disable=too-few-public-methods
+    """
+    Basic ROS 2 compatible message stamp protocol.
+    """
     sec: int
     nanosec: int
 
@@ -78,6 +93,7 @@ class TfDuration(Ros1TimeLike, Ros2TimeLike, Ros2StampLike):
 
     @classmethod
     def from_sec(cls, sec: float) -> "TfDuration":
+        """Instantiates a duration given a number of seconds."""
         frac, whole = math.modf(sec)
         return cls(sec=int(whole), nanosec=int(frac * 1e9))
 
@@ -90,6 +106,7 @@ class TfDuration(Ros1TimeLike, Ros2TimeLike, Ros2StampLike):
 
 
 def to_sec(timestamp: Union[Ros1TimeLike, Ros2TimeLike, Ros2StampLike]) -> float:
+    """Converts any given `timestamp` to a scalar time, in seconds."""
     if isinstance(timestamp, Ros1TimeLike):
         return timestamp.to_sec()
     if isinstance(timestamp, Ros2TimeLike):
@@ -172,7 +189,7 @@ class TfCache(object):
                     # Convert from rosbags.typesys.types to native ROS.
                     # Related: https://gitlab.com/ternaris/rosbags/-/issues/13
                     native_msg = TransformStamped()
-                    if isinstance(reader, Rosbag1Reader):
+                    if hasattr(native_msg.header.stamp, "nsecs"):
                         native_msg.header.stamp.secs = tf.header.stamp.sec
                         native_msg.header.stamp.nsecs = tf.header.stamp.nanosec
                     else:
@@ -185,8 +202,8 @@ class TfCache(object):
                     native_msg.transform.translation.z = tf.transform.translation.z
                     native_msg.transform.rotation.x = tf.transform.rotation.x
                     native_msg.transform.rotation.y = tf.transform.rotation.y
-                    native_msg.transform.rotation.z = tf.transform.rotation.w
-                    native_msg.transform.rotation.w = tf.transform.rotation.z
+                    native_msg.transform.rotation.z = tf.transform.rotation.z
+                    native_msg.transform.rotation.w = tf.transform.rotation.w
                     if tf_topic == static_topic:
                         self.buffer.set_transform_static(native_msg, __name__)
                     else:
@@ -246,24 +263,24 @@ class TfCache(object):
         if timestamps is None:
             timestamps = []
 
-            if isinstance(reader, Rosbag1Reader):
-                from rospy import Time, Duration
+            try:
+                latest_time = self.buffer.get_latest_common_time(parent, child)
+            except (tf2_py.LookupException, tf2_py.TransformException) as e:
+                raise TfCacheException("Could not load trajectory: " + str(e))
+
+            if hasattr(latest_time, "nsecs"):
+                from rospy import Time, Duration  # pylint: disable=import-outside-toplevel
 
                 # rosbags Reader start_time is in nanoseconds.
                 start_time = Time.from_sec(reader.start_time * 1e-9)
                 step = Duration.from_sec(1. / SETTINGS.tf_cache_lookup_frequency)
             else:
-                from rclpy.time import Time
-                from rclpy.duration import Duration
+                from rclpy.time import Time  # pylint: disable=import-outside-toplevel
+                from rclpy.duration import Duration  # pylint: disable=import-outside-toplevel
 
                 # rosbags Reader start_time is in nanoseconds.
                 start_time = Time(nanoseconds=reader.start_time)
                 step = Duration(seconds=1. / SETTINGS.tf_cache_lookup_frequency)
-
-            try:
-                latest_time = self.buffer.get_latest_common_time(parent, child)
-            except (tf2_py.LookupException, tf2_py.TransformException) as e:
-                raise TfCacheException("Could not load trajectory: " + str(e))
 
             # Static TF have zero timestamp in the buffer, which will be lower
             # than the bag start time. Looking up a static TF is a valid request,

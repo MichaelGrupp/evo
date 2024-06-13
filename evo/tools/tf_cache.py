@@ -24,7 +24,8 @@ import logging
 import math
 import warnings
 from collections import defaultdict
-from typing import DefaultDict, List, Optional, Protocol, Union, runtime_checkable
+from typing import (DefaultDict, List, Optional, Protocol, Union,
+                    runtime_checkable)
 
 import numpy as np
 import tf2_py

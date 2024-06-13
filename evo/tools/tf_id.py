@@ -22,7 +22,6 @@ import re
 
 from evo import EvoException
 
-
 ROS_NAME_REGEX = re.compile(r"[\/|a-z|A-Z][\/|_|0-9|a-z|A-Z]+")
 
 
@@ -57,7 +56,8 @@ def split_id(identifier: str) -> tuple:
         if ROS_NAME_REGEX.match(tf_static_topic) is None:
             raise TfIdException(
                 f"ID string malformed, {tf_static_topic} is not a valid topic name, "
-                "ID string should look like /tf:map.base_footprint(:/tf_static)")
+                "ID string should look like /tf:map.base_footprint(:/tf_static)"
+            )
 
         return (tf_topic, parent_frame_id, child_frame_id, tf_static_topic)
 

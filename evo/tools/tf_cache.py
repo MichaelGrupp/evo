@@ -54,18 +54,17 @@ class Ros1TimeLike(Protocol):  # pylint: disable=too-few-public-methods
     """
     Basic ROS 1 compatible time instance protocol.
     """
-
     def to_sec(self) -> float:
         """
         Gets scalar time, in seconds.
         """
+
 
 @runtime_checkable
 class Ros2TimeLike(Protocol):  # pylint: disable=too-few-public-methods
     """
     Basic ROS 2 compatible time instance protocol.
     """
-
     @property
     def nanoseconds(self) -> int:
         """
@@ -104,7 +103,8 @@ class TfDuration(Ros1TimeLike, Ros2TimeLike, Ros2StampLike):
         return self.sec + self.nanosec * 1e-9
 
 
-def to_sec(timestamp: Union[Ros1TimeLike, Ros2TimeLike, Ros2StampLike]) -> float:
+def to_sec(
+        timestamp: Union[Ros1TimeLike, Ros2TimeLike, Ros2StampLike]) -> float:
     """Converts any given `timestamp` to a scalar time, in seconds."""
     if isinstance(timestamp, Ros1TimeLike):
         return timestamp.to_sec()
@@ -133,13 +133,15 @@ class TfCache(object):
     # update the ROS1 typestore with the interface definition from the bag.
     # https://ternaris.gitlab.io/rosbags/examples/register_types.html
     @staticmethod
-    def _setup_typestore(reader: Union[Rosbag1Reader, Rosbag2Reader]) -> Typestore:
+    def _setup_typestore(
+            reader: Union[Rosbag1Reader, Rosbag2Reader]) -> Typestore:
         if isinstance(reader, Rosbag1Reader):
             typestore = get_typestore(Stores.ROS1_NOETIC)
             for connection in reader.connections:
                 if connection.msgtype == SUPPORTED_TF_MSG:
                     typestore.register(
-                        get_types_from_msg(connection.msgdef, connection.msgtype))
+                        get_types_from_msg(connection.msgdef,
+                                           connection.msgtype))
                     break
         else:
             typestore = get_typestore(Stores.LATEST)
@@ -181,9 +183,11 @@ class TfCache(object):
                         f"Expected {SUPPORTED_TF_MSG} message type for topic "
                         f"{tf_topic}, got: {connection.msgtype}")
                 if isinstance(reader, Rosbag1Reader):
-                    msg = typestore.deserialize_ros1(rawdata, connection.msgtype)
+                    msg = typestore.deserialize_ros1(rawdata,
+                                                     connection.msgtype)
                 else:
-                    msg = typestore.deserialize_cdr(rawdata, connection.msgtype)
+                    msg = typestore.deserialize_cdr(rawdata,
+                                                    connection.msgtype)
                 for tf in msg.transforms:  # type: ignore
                     # Convert from rosbags.typesys.types to native ROS.
                     # Related: https://gitlab.com/ternaris/rosbags/-/issues/13
@@ -210,9 +214,10 @@ class TfCache(object):
             self.topics.append(tf_topic)
         self.bags.append(reader.path.name)
 
-    def lookup_trajectory(self, parent_frame: str, child_frame: str,
-                          timestamps: Union[List[Ros1TimeLike],
-                                            List[Ros2TimeLike]]) -> PoseTrajectory3D:
+    def lookup_trajectory(
+        self, parent_frame: str, child_frame: str,
+        timestamps: Union[List[Ros1TimeLike], List[Ros2TimeLike]]
+    ) -> PoseTrajectory3D:
         """
         Look up the trajectory of a transform chain from the cache's TF buffer.
         :param parent_frame, child_frame: TF transform frame IDs
@@ -243,7 +248,8 @@ class TfCache(object):
 
     def get_trajectory(
         self, reader: Union[Rosbag1Reader, Rosbag2Reader], identifier: str,
-        timestamps: Optional[Union[List[Ros1TimeLike], List[Ros2TimeLike]]] = None
+        timestamps: Optional[Union[List[Ros1TimeLike],
+                                   List[Ros2TimeLike]]] = None
     ) -> PoseTrajectory3D:
         """
         Get a TF trajectory from a bag file. Updates or uses the cache.
@@ -272,14 +278,16 @@ class TfCache(object):
 
                 # rosbags Reader start_time is in nanoseconds.
                 start_time = Time.from_sec(reader.start_time * 1e-9)
-                step = Duration.from_sec(1. / SETTINGS.tf_cache_lookup_frequency)
+                step = Duration.from_sec(1. /
+                                         SETTINGS.tf_cache_lookup_frequency)
             else:
                 from rclpy.time import Time  # pylint: disable=import-outside-toplevel
                 from rclpy.duration import Duration  # pylint: disable=import-outside-toplevel
 
                 # rosbags Reader start_time is in nanoseconds.
                 start_time = Time(nanoseconds=reader.start_time)
-                step = Duration(seconds=1. / SETTINGS.tf_cache_lookup_frequency)
+                step = Duration(seconds=1. /
+                                SETTINGS.tf_cache_lookup_frequency)
 
             # Static TF have zero timestamp in the buffer, which will be lower
             # than the bag start time. Looking up a static TF is a valid request,

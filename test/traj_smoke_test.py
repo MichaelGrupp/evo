@@ -2,7 +2,6 @@
 
 import os
 import glob
-import shlex
 import shutil
 import subprocess as sp
 from itertools import chain

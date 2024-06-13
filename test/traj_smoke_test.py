@@ -2,8 +2,10 @@
 
 import os
 import glob
+import shlex
 import shutil
 import subprocess as sp
+from itertools import chain
 from pathlib import Path
 
 TMP_DIR = Path("tmp")
@@ -30,15 +32,14 @@ if os.getenv("ROS_DISTRO") is not None:
     })
 
 try:
-    for command in commands_with_config_dir.keys():
-        for config_dir in (COMMON_CONFIG_DIR,
-                           Path(commands_with_config_dir[command])):
-            for config_file in config_dir.iterdir():
-                TMP_DIR.mkdir(exist_ok=True)
-                full_command = f"{command} -c {config_file}"
-                print("[smoke test] {}".format(full_command))
-                output = sp.check_output(full_command.split(" "), cwd=HERE)
-                shutil.rmtree(TMP_DIR)
+    for command, config_dir in commands_with_config_dir.items():
+        for config_file in chain(
+                Path(config_dir).iterdir(), COMMON_CONFIG_DIR.iterdir()):
+            TMP_DIR.mkdir(exist_ok=True)
+            full_command = f"{command} -c {config_file}"
+            print(f"[smoke test] {full_command}")
+            output = sp.check_output(shlex.split(full_command), cwd=HERE)
+            shutil.rmtree(TMP_DIR)
 except sp.CalledProcessError as e:
     print(e.output.decode("utf-8"))
     raise

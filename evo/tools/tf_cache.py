@@ -22,7 +22,6 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 import dataclasses
 import logging
 import math
-import os
 import warnings
 from collections import defaultdict
 from typing import DefaultDict, List, Optional, Protocol, Union, runtime_checkable
@@ -51,7 +50,7 @@ class TfCacheException(EvoException):
 
 
 @runtime_checkable
-class Ros1TimeLike(Protocol):
+class Ros1TimeLike(Protocol):  # pylint: disable=too-few-public-methods
     """
     Basic ROS 1 compatible time instance protocol.
     """
@@ -60,7 +59,6 @@ class Ros1TimeLike(Protocol):
         """
         Gets scalar time, in seconds.
         """
-        ...
 
 @runtime_checkable
 class Ros2TimeLike(Protocol):  # pylint: disable=too-few-public-methods
@@ -70,8 +68,9 @@ class Ros2TimeLike(Protocol):  # pylint: disable=too-few-public-methods
 
     @property
     def nanoseconds(self) -> int:
-        """Gets underlying scalar timestamp, in nanoseconds."""
-        ...
+        """
+        Gets underlying scalar timestamp, in nanoseconds.
+        """
 
 
 @runtime_checkable

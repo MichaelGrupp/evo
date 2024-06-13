@@ -10,7 +10,8 @@ fi
 git diff --quiet || { echo "Unstaged changes"; exit 1; }
 git diff --quiet --cached || { echo "Uncommitted staged changes"; exit 1; }
 
-if [ -n "$(git fetch --dry-run)" ]; then
+git fetch
+if [[ "$(git rev-list HEAD...origin/master --count)" != "0" ]]; then
     echo "Branch is not up to date"
     exit 1
 fi

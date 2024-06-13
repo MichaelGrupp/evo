@@ -1,4 +1,4 @@
 [MASTER]
 
 ignore=fastentrypoints.py,transformations.py
-
+max-branches=13

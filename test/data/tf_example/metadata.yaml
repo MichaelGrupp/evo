@@ -1,0 +1,36 @@
+rosbag2_bagfile_information:
+  compression_format: ''
+  compression_mode: ''
+  custom_data: {}
+  duration:
+    nanoseconds: 51684723334
+  files:
+  - duration:
+      nanoseconds: 51684723334
+    message_count: 518
+    path: tf_example.db3
+    starting_time:
+      nanoseconds_since_epoch: 1714741164111822142
+  message_count: 518
+  relative_file_paths:
+  - tf_example.db3
+  ros_distro: rosbags
+  starting_time:
+    nanoseconds_since_epoch: 1714741164111822142
+  storage_identifier: sqlite3
+  topics_with_message_count:
+  - message_count: 1
+    topic_metadata:
+      name: /tf_static
+      offered_qos_profiles: ''
+      serialization_format: cdr
+      type: tf2_msgs/msg/TFMessage
+      type_description_hash: RIHS01_e369d0f05a23ae52508854b66f6aa0437f3449d652e8cbf22d5abe85d020f087
+  - message_count: 517
+    topic_metadata:
+      name: /tf
+      offered_qos_profiles: ''
+      serialization_format: cdr
+      type: tf2_msgs/msg/TFMessage
+      type_description_hash: RIHS01_e369d0f05a23ae52508854b66f6aa0437f3449d652e8cbf22d5abe85d020f087
+  version: 8

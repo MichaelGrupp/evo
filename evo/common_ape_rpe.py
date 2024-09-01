@@ -206,6 +206,9 @@ def plot_result(args: argparse.Namespace, result: Result, traj_ref: PosePath3D,
                        plot_start_end_markers=SETTINGS.plot_start_end_markers)
     plot.draw_coordinate_axes(ax, traj_est, plot_mode,
                               SETTINGS.plot_axis_marker_scale)
+    if args.map_tile:
+        plot.map_tile(ax, crs=args.map_tile,
+                      provider=SETTINGS.map_tile_provider)
     if args.ros_map_yaml:
         plot.ros_map(ax, args.ros_map_yaml, plot_mode)
     if SETTINGS.plot_pose_correspondences:

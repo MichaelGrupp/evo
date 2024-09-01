@@ -80,6 +80,9 @@ def parser() -> argparse.ArgumentParser:
     output_opts.add_argument(
         "--ros_map_yaml", help="yaml file of an ROS 2D map image (.pgm/.png)"
         " that will be drawn into the plot", default=None)
+    output_opts.add_argument(
+        "--map_tile", help="CRS code of a map tile layer to add to the plot. "
+        "Requires geo-referenced poses and the contextily package installed.")
     output_opts.add_argument("--save_plot", help="path to save plot",
                              default=None)
     output_opts.add_argument("--save_table",

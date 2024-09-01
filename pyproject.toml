@@ -62,6 +62,10 @@ dependencies = [
     "rosbags>=0.9.20",
 ]
 
+[project.optional-dependencies]
+gui = ["PyQt5"]
+geo = ["contextily"]
+
 
 [project.scripts]
 evo_ape = "evo.entry_points:ape"

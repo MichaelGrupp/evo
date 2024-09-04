@@ -417,8 +417,7 @@ def run(args):
                         SETTINGS.euler_angle_sequence), fontsize=6)
 
         if args.map_tile:
-            plot.map_tile(ax_traj, crs=args.map_tile,
-                          provider=SETTINGS.map_tile_provider)
+            plot.map_tile(ax_traj, crs=args.map_tile)
         if args.ros_map_yaml:
             plot.ros_map(ax_traj, args.ros_map_yaml, plot_mode)
 

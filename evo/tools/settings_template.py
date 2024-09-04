@@ -57,6 +57,10 @@ DEFAULT_SETTINGS_DICT_DOC = {
          "Requires the contextily package to be installed.\n"
          "See: https://contextily.readthedocs.io/en/latest/providers_deepdive.html")
     ),
+    "map_tile_api_token": (
+        "",
+        "API token for the map_tile_provider, if required."
+    ),
     "plot_axis_marker_scale": (
         0.,
         "Scaling parameter of pose coordinate frame markers. 0 will draw nothing."

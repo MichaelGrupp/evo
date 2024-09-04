@@ -901,31 +901,19 @@ def map_tile(ax: Axes, crs: str, provider: str = SETTINGS.map_tile_provider):
     Note: requires the optional contextily package to be installed.
     :param ax: matplotlib axes
     :param crs: coordinate reference system (e.g. "EPSG:4326")
-    :param provider: tile provider (e.g. "OpenStreetMap.Mapnik")
+    :param provider: tile provider, either as str (e.g. "OpenStreetMap.Mapnik")
+                     or directly as a TileProvider object
     """
     if isinstance(ax, Axes3D):
         raise PlotException("map_tile can't be drawn into a 3D axis")
 
     try:
         import contextily as cx
+        from evo.tools import contextily_helper
     except ImportError as error:
         raise PlotException(
             f"contextily package is required for plotting map tiles: {error}")
 
-    # Retrieve the tile provider from the contextily provider dictionary.
-    parts = provider.split(".")
-    if len(parts) == 1:
-        # e.g. "MapBox"
-        provider = getattr(cx.providers, parts[0])
-    elif len(parts) == 2:
-        # e.g. "OpenStreetMap.Mapnik"
-        provider = getattr(getattr(cx.providers, parts[0]), parts[1])
-    else:
-        raise PlotException("Expected tile provider in a format "
-                            "like 'OpenStreetMap.Mapnik' or 'MapBox'.")
-
-    # TODO: add support for providers that require an API key?
-    # API key attribute is however different across providers
-    # (e.g. "access_token", "apiKey", "api_key")
-
+    if isinstance(provider, str):
+        provider = contextily_helper.get_provider(provider_str=provider)
     cx.add_basemap(ax, crs=crs, source=provider)

@@ -893,3 +893,27 @@ def ros_map(
         ax.invert_xaxis()
     if SETTINGS.plot_invert_yaxis:
         ax.invert_yaxis()
+
+
+def map_tile(ax: Axes, crs: str, provider: str = SETTINGS.map_tile_provider):
+    """
+    Downloads and inserts a map tile into the plot axis.
+    Note: requires the optional contextily package to be installed.
+    :param ax: matplotlib axes
+    :param crs: coordinate reference system (e.g. "EPSG:4326")
+    :param provider: tile provider, either as str (e.g. "OpenStreetMap.Mapnik")
+                     or directly as a TileProvider object
+    """
+    if isinstance(ax, Axes3D):
+        raise PlotException("map_tile can't be drawn into a 3D axis")
+
+    try:
+        import contextily as cx
+        from evo.tools import contextily_helper
+    except ImportError as error:
+        raise PlotException(
+            f"contextily package is required for plotting map tiles: {error}")
+
+    if isinstance(provider, str):
+        provider = contextily_helper.get_provider(provider_str=provider)
+    cx.add_basemap(ax, crs=crs, source=provider)

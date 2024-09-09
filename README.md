@@ -27,7 +27,7 @@ See [here](https://github.com/MichaelGrupp/evo/wiki/Formats) for more infos abou
   <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/markers.png" alt="evo" height="175" border="5" />
 </a>
 <a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/map_tile_osm.png" target="_blank">
-  <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assetmap_tile_osm.png" alt="evo" height="175" border="5" />
+  <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/map_tile_osm.png" alt="evo" height="175" border="5" />
 </a>
 
 ---
@@ -87,6 +87,10 @@ PyQt5 will give you the enhanced GUI for plot figures from the "*Qt5Agg*" matplo
 Some ROS-related features require a ROS installation, see [here](http://www.ros.org/). We are testing this package with ROS Noetic and Iron. Previous versions (`<= 1.12.0`) work with Melodic, Kinetic and Indigo.
 
 *Note:* reading ROS bag files works also without a ROS installation thanks to the great [rosbags](https://pypi.org/project/rosbags/) package that is installed together with evo. This allows you also to read ROS 1 & 2 bags even if you don't have one of those ROS distros installed. (except for reading `/tf` topics, because there we need the buffer implementation from ROS)
+
+**contextily (optional)**
+
+[contextily](https://contextily.readthedocs.io/en/latest/index.html) is required for [adding map tiles](https://github.com/MichaelGrupp/evo/wiki/Plotting#geographic-map-tiles) to plots of geo-referenced data.
 
 ---
 
@@ -210,7 +214,7 @@ A few "inoffical" scripts for special use-cases are collected  in the `contrib/`
 ---
 
 ## Trouble
-*":scream:, this piece of :shit: software doesn't do what I want!!1!1!!"*
+*"😱, this piece of 💩 software doesn't do what I want!!1!1!!"*
 
 **First aid:**
 * append `-h`/ `--help` to your command

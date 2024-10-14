@@ -235,6 +235,8 @@ def run(args):
 
     if args.n_to_align != -1 and not (args.align or args.correct_scale):
         die("--n_to_align is useless without --align or/and --correct_scale")
+    if args.align and args.align_origin:
+        die("origin and Umeyama alignment can't be used together")
 
     # TODO: this is fugly, but is a quick solution for remembering each synced
     # reference when plotting pose correspondences later...

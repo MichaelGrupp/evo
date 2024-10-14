@@ -54,7 +54,7 @@ def ape(traj_ref: PosePath3D, traj_est: PosePath3D,
         logger.debug(SEP)
         alignment_transformation = lie_algebra.sim3(
             *traj_est.align(traj_ref, correct_scale, only_scale, n=n_to_align))
-    elif align_origin:
+    if align_origin:
         logger.debug(SEP)
         alignment_transformation = traj_est.align_origin(traj_ref)
 
@@ -82,12 +82,12 @@ def ape(traj_ref: PosePath3D, traj_est: PosePath3D,
         title += "\n(with Sim(3) Umeyama alignment)"
     elif only_scale:
         title += "\n(scale corrected)"
-    elif align_origin:
-        title += "\n(with origin alignment)"
-    else:
+    elif not align_origin:
         title += "\n(not aligned)"
     if (align or correct_scale) and n_to_align != -1:
         title += " (aligned poses: {})".format(n_to_align)
+    if align_origin:
+        title += "\n(with origin alignment)"
 
     if project_to_plane:
         title += f"\n(projected to {project_to_plane.value} plane)"

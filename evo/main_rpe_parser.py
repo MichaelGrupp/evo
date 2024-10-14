@@ -19,19 +19,12 @@ def parser() -> argparse.ArgumentParser:
             "full", "trans_part", "rot_part", "angle_deg", "angle_rad",
             "point_distance", "point_distance_error_ratio"
         ])
-    algo_opts.add_argument("-a", "--align",
-                           help="alignment with Umeyama's method (no scale)",
-                           action="store_true")
     algo_opts.add_argument("-s", "--correct_scale", action="store_true",
                            help="correct scale with Umeyama's method")
     algo_opts.add_argument(
         "--n_to_align",
         help="the number of poses to use for Umeyama alignment, "
         "counted from the start (default: all)", default=-1, type=int)
-    algo_opts.add_argument(
-        "--align_origin",
-        help="align the trajectory origin to the origin of the reference "
-        "trajectory", action="store_true")
     algo_opts.add_argument("-d", "--delta", type=float, default=1,
                            help="delta between relative poses")
     algo_opts.add_argument("-t", "--delta_tol", type=float, default=0.1,
@@ -63,6 +56,15 @@ def parser() -> argparse.ArgumentParser:
         help="Filters out poses if the distance or angle to the previous one "
         " is below the threshold distance or angle. "
         "Angle is expected in degrees.")
+
+    align_opts = algo_opts.add_mutually_exclusive_group()
+    align_opts.add_argument("-a", "--align",
+                            help="alignment with Umeyama's method (no scale)",
+                            action="store_true")
+    align_opts.add_argument(
+        "--align_origin",
+        help="align the trajectory origin to the origin of the reference "
+        "trajectory", action="store_true")
 
     output_opts.add_argument(
         "-p",

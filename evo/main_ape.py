@@ -28,7 +28,6 @@ import typing
 import numpy as np
 
 import evo.common_ape_rpe as common
-from evo import EvoException
 from evo.core import lie_algebra, sync, metrics
 from evo.core.result import Result
 from evo.core.trajectory import PosePath3D, PoseTrajectory3D, Plane
@@ -47,9 +46,6 @@ def ape(traj_ref: PosePath3D, traj_est: PosePath3D,
         est_name: str = "estimate",
         change_unit: typing.Optional[metrics.Unit] = None,
         project_to_plane: typing.Optional[Plane] = None) -> Result:
-    if align_origin and align:
-        raise EvoException(
-            "origin and Umeyama alignment can't be used together")
 
     # Align the trajectories.
     only_scale = correct_scale and not align

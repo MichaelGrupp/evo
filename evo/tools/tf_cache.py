@@ -24,8 +24,14 @@ import logging
 import math
 import warnings
 from collections import defaultdict
-from typing import (DefaultDict, List, Optional, Protocol, Union,
-                    runtime_checkable)
+from typing import (
+    DefaultDict,
+    List,
+    Optional,
+    Protocol,
+    Union,
+    runtime_checkable,
+)
 
 import numpy as np
 import tf2_py
@@ -60,6 +66,9 @@ class Ros1TimeLike(Protocol):  # pylint: disable=too-few-public-methods
         Gets scalar time, in seconds.
         """
 
+    def __lt__(self, other) -> bool:
+        """ less-than comparator, required for sorting """
+
 
 @runtime_checkable
 class Ros2TimeLike(Protocol):  # pylint: disable=too-few-public-methods
@@ -71,6 +80,9 @@ class Ros2TimeLike(Protocol):  # pylint: disable=too-few-public-methods
         """
         Gets underlying scalar timestamp, in nanoseconds.
         """
+
+    def __lt__(self, other) -> bool:
+        """ less-than comparator, required for sorting """
 
 
 @runtime_checkable

@@ -71,6 +71,7 @@ def apply_settings(settings: SettingsContainer = SETTINGS):
                 palette=settings.plot_seaborn_palette)
 
     mpl.rcParams.update({
+        "legend.loc": settings.plot_legend_loc,
         "lines.linewidth": settings.plot_linewidth,
         "text.usetex": settings.plot_usetex,
         "font.family": settings.plot_fontfamily,

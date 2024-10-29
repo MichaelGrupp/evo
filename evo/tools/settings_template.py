@@ -104,6 +104,11 @@ DEFAULT_SETTINGS_DICT_DOC = {
         False,
         "Invert the y-axis of plots."
     ),
+    "plot_legend_loc": (
+        "best",
+        "Plot legend location. See here for the available 'loc' options:\n"
+        "https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.legend.html"
+    ),
     "plot_linewidth": (
         1.5,
         "Line width value supported by matplotlib."

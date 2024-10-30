@@ -74,6 +74,9 @@ def apply_settings(settings: SettingsContainer = SETTINGS):
         "legend.loc": settings.plot_legend_loc,
         "lines.linewidth": settings.plot_linewidth,
         "text.usetex": settings.plot_usetex,
+        # NOTE: don't call tight_layout manually anymore. See warning here:
+        # https://matplotlib.org/stable/users/explain/axes/constrainedlayout_guide.html
+        "figure.constrained_layout.use": True,
         "font.family": settings.plot_fontfamily,
         "pgf.texsystem": settings.plot_texsystem
     })
@@ -123,7 +126,6 @@ class PlotCollection:
         return self.title + " (" + str(len(self.figures)) + " figure(s))"
 
     def add_figure(self, name: str, fig: Figure) -> None:
-        fig.tight_layout()
         self.figures[name] = fig
 
     @staticmethod
@@ -179,7 +181,6 @@ class PlotCollection:
         nb = ttk.Notebook(self.root_window)
         nb.grid(row=1, column=0, sticky='NESW')
         for name, fig in self.figures.items():
-            fig.tight_layout()
             tab = ttk.Frame(nb)
             canvas = FigureCanvasTkAgg(self.figures[name], master=tab)
             canvas.draw()
@@ -231,7 +232,6 @@ class PlotCollection:
             import matplotlib.backends.backend_pdf
             pdf = matplotlib.backends.backend_pdf.PdfPages(file_path)
             for name, fig in self.figures.items():
-                # fig.tight_layout()  # TODO
                 pdf.savefig(fig)
             pdf.close()
             logger.info("Plots saved to " + file_path)
@@ -241,7 +241,6 @@ class PlotCollection:
                 if confirm_overwrite and not user.check_and_confirm_overwrite(
                         dest):
                     return
-                fig.tight_layout()
                 fig.savefig(dest)
                 logger.info("Plot saved to " + dest)
 

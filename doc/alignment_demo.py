@@ -80,5 +80,4 @@ plot.traj(ax, plot_mode, traj_est_aligned_only_scaled, '-', 'blue')
 fig.axes.append(ax)
 plt.title('only scaled')
 
-fig.tight_layout()
 plt.show()

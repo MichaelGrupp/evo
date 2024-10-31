@@ -78,7 +78,8 @@ def apply_settings(settings: SettingsContainer = SETTINGS):
         # https://matplotlib.org/stable/users/explain/axes/constrainedlayout_guide.html
         "figure.constrained_layout.use": True,
         "font.family": settings.plot_fontfamily,
-        "pgf.texsystem": settings.plot_texsystem
+        "pgf.texsystem": settings.plot_texsystem,
+        "savefig.bbox": "tight",
     })
     if "xkcd" in settings:
         plt.xkcd()

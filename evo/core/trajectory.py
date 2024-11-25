@@ -420,6 +420,79 @@ class PoseTrajectory3D(PosePath3D, object):
             for i in range(len(self.positions_xyz) - 1)
         ])
 
+    def align(self, traj_ref: 'PoseTrajectory3D', correct_scale: bool = False,
+              correct_only_scale: bool = False, n: int = -1,
+              start_time: typing.Optional[float] = None,
+              end_time: typing.Optional[float] = None) -> geometry.UmeyamaResult:
+        """
+        align to a reference trajectory using Umeyama alignment
+        :param traj_ref: reference trajectory
+        :param correct_scale: set to True to adjust also the scale
+        :param correct_only_scale: set to True to correct the scale, but not the pose
+        :param n: the number of poses to use, counted from the start (default: all)
+        :param start_time: the time to start the Umeyama alignment window (default: start of the trajectory)
+        :param end_time: the time to end the Umeyama alignment window (default: end of the trajectory)
+        :return: the result parameters of the Umeyama algorithm
+        """
+        with_scale = correct_scale or correct_only_scale
+        if correct_only_scale:
+            logger.debug("Correcting scale...")
+        else:
+            logger.debug("Aligning using Umeyama's method..." +
+                         (" (with scale correction)" if with_scale else ""))
+        if n == -1:
+            relative_timestamps = self.timestamps - np.min(self.timestamps)
+
+            if start_time is None:
+                start_index = 0
+            elif np.all(relative_timestamps < start_time):
+                logger.warning("Align start time ({}s) is after end of trajectory ({}s), ignoring start time"
+                             .format(start_time, np.max(relative_timestamps)))
+                start_index = 0
+            else:
+                # Find first value that is less or equal to start_time
+                start_index = np.flatnonzero(start_time <= relative_timestamps)[0]
+                logger.debug("Start of alignment: in reference {}s, in trajectory {}s"
+                             .format(traj_ref.timestamps[start_index], self.timestamps[start_index]))
+
+            if end_time is None:
+                end_index = self.positions_xyz.shape[0]
+            elif np.all(relative_timestamps < end_time):
+                logger.warning("Align end time ({}s) is after end of trajectory ({}s), ignoring end time"
+                             .format(end_time, np.max(relative_timestamps)))
+                end_index = self.timestamps.shape[0]
+            else:
+                # Find first value that is greater or equal to end_time
+                end_index = np.flatnonzero(end_time <= relative_timestamps)[0]
+                logger.debug("End of alignment: in reference {}s, in trajectory {}s"
+                             .format(traj_ref.timestamps[end_index], self.timestamps[end_index]))
+
+            if end_index <= start_index:
+                raise TrajectoryException("alignment is empty")
+
+            r_a, t_a, s = geometry.umeyama_alignment(self.positions_xyz[start_index:end_index, :].T,
+                                                     traj_ref.positions_xyz[start_index:end_index, :].T,
+                                                     with_scale)
+        else:
+            r_a, t_a, s = geometry.umeyama_alignment(
+                self.positions_xyz[:n, :].T, traj_ref.positions_xyz[:n, :].T,
+                with_scale)
+
+        if not correct_only_scale:
+            logger.debug("Rotation of alignment:\n{}"
+                         "\nTranslation of alignment:\n{}".format(r_a, t_a))
+        logger.debug("Scale correction: {}".format(s))
+
+        if correct_only_scale:
+            self.scale(s)
+        elif correct_scale:
+            self.scale(s)
+            self.transform(lie.se3(r_a, t_a))
+        else:
+            self.transform(lie.se3(r_a, t_a))
+
+        return r_a, t_a, s
+
     def reduce_to_ids(
             self, ids: typing.Union[typing.Sequence[int], np.ndarray]) -> None:
         super(PoseTrajectory3D, self).reduce_to_ids(ids)

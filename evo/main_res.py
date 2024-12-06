@@ -188,10 +188,10 @@ def run(args: argparse.Namespace) -> None:
         # handle NaNs from concat() above
         error_df.interpolate(method="index", limit_area="inside").plot(
             ax=fig_raw.gca(), colormap=colormap, style=linestyles,
-            title=first_title, alpha=SETTINGS.plot_trajectory_alpha)
+            title=first_title, alpha=SETTINGS.plot_trajectory_alpha,
+            legend=SETTINGS.plot_show_legend)
         plt.xlabel(index_label)
         plt.ylabel(metric_label)
-        plt.legend(frameon=True)
         plot_collection.add_figure("raw", fig_raw)
 
         # statistics plot
@@ -200,9 +200,9 @@ def run(args: argparse.Namespace) -> None:
             include = df.loc["stats"].index.isin(SETTINGS.plot_statistics)
             if any(include):
                 df.loc["stats"][include].plot(kind="barh", ax=fig_stats.gca(),
-                                              colormap=colormap, stacked=False)
+                                              colormap=colormap, stacked=False,
+                                              legend=SETTINGS.plot_show_legend)
                 plt.xlabel(metric_label)
-                plt.legend(frameon=True)
                 plot_collection.add_figure("stats", fig_stats)
 
         # grid of distribution plots

@@ -358,7 +358,8 @@ def run(args):
                                 style=SETTINGS.plot_reference_linestyle,
                                 color=SETTINGS.plot_reference_color,
                                 alpha=SETTINGS.plot_reference_alpha,
-                                label=short_traj_name)
+                                label=short_traj_name,
+                                start_timestamp=start_time)
                 except trajectory.TrajectoryException as error:
                     logger.error(
                         f"Can't plot speeds of {short_traj_name}: {error}")
@@ -411,7 +412,8 @@ def run(args):
                                 style=SETTINGS.plot_trajectory_linestyle,
                                 color=color,
                                 alpha=SETTINGS.plot_trajectory_alpha,
-                                label=short_traj_name)
+                                label=short_traj_name,
+                                start_timestamp=start_time)
                 except trajectory.TrajectoryException as error:
                     logger.error(
                         f"Can't plot speeds of {short_traj_name}: {error}")

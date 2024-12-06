@@ -652,7 +652,8 @@ def traj_rpy(axarr: np.ndarray, traj: trajectory.PosePath3D, style: str = '-',
 
 
 def speeds(ax: Axes, traj: trajectory.PoseTrajectory3D, style: str = '-',
-           color="black", label: str = "", alpha: float = 1.):
+           color="black", label: str = "", alpha: float = 1.,
+           start_timestamp: typing.Optional[float] = None):
     """
     Plots the speed between poses of a trajectory.
     Note that a speed value is shown at the timestamp of the newer pose.
@@ -662,10 +663,16 @@ def speeds(ax: Axes, traj: trajectory.PoseTrajectory3D, style: str = '-',
     :param color: matplotlib color
     :param label: label (for legend)
     :param alpha: alpha value for transparency
+    :param start_timestamp: optional start time of the reference
+                            (for x-axis alignment)
     """
     if not isinstance(traj, trajectory.PoseTrajectory3D):
         raise PlotException("speeds can only be plotted with trajectories")
-    ax.plot(traj.timestamps[1:], traj.speeds, style, color=color, alpha=alpha,
+    if start_timestamp:
+        timestamps = traj.timestamps - start_timestamp
+    else:
+        timestamps = traj.timestamps
+    ax.plot(timestamps[1:], traj.speeds, style, color=color, alpha=alpha,
             label=label)
     ax.set_xlabel("$t$ (s)")
     ax.set_ylabel("$v$ (m/s)")

@@ -490,8 +490,9 @@ def traj_colormap(ax: Axes, traj: trajectory.PosePath3D, array: ListOrArray,
         "{0:0.3f}".format(max_map)
     ])
     if title:
-        ax.legend(frameon=True)
         ax.set_title(title)
+    if SETTINGS.plot_show_legend:
+        ax.legend(frameon=True)
     if plot_start_end_markers:
         add_start_end_markers(ax, plot_mode, traj, start_color=colors[0],
                               end_color=colors[-1])
@@ -787,7 +788,8 @@ def error_array(ax: Axes, err_array: ListOrArray,
     plt.ylabel(ylabel if ylabel else name)
     plt.xlabel(xlabel)
     plt.title(title)
-    plt.legend(frameon=True)
+    if SETTINGS.plot_show_legend:
+        plt.legend(frameon=True)
 
 
 def ros_map(

@@ -172,7 +172,7 @@ class PosePath3D(object):
             self._poses_se3 = [np.dot(p, t) for p in self.poses_se3]
         elif right_mul and propagate:
             # Transform each pose and propagate resulting drift to the next.
-            ids = np.arange(0, self.num_poses, 1)
+            ids = np.arange(0, self.num_poses, 1, dtype=int)
             rel_poses = [
                 lie.relative_se3(self.poses_se3[i], self.poses_se3[j]).dot(t)
                 for i, j in zip(ids, ids[1:])

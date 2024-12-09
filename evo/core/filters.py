@@ -47,10 +47,10 @@ def filter_pairs_by_index(poses: typing.Sequence[np.ndarray], delta: int,
     :return: list of index tuples of the filtered pairs
     """
     if all_pairs:
-        ids = np.arange(len(poses))
+        ids = np.arange(len(poses), dtype=int)
         id_pairs = [(i, i + delta) for i in ids if i + delta < len(poses)]
     else:
-        ids = np.arange(0, len(poses), delta)
+        ids = np.arange(0, len(poses), delta, dtype=int)
         id_pairs = [(i, j) for i, j in zip(ids, ids[1:])]
     return id_pairs
 

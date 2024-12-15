@@ -85,7 +85,7 @@ DEFAULT_SETTINGS_DICT_DOC = {
          "Can also be set to 'none'.")
     ),
     "plot_figsize": (
-        [6, 6],
+        [10, 10],
         "The default size of one (sub)plot figure (width, height)."
     ),
     "plot_fontfamily": (

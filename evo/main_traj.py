@@ -235,6 +235,10 @@ def run(args):
 
     if args.n_to_align != -1 and not (args.align or args.correct_scale):
         die("--n_to_align is useless without --align or/and --correct_scale")
+    if args.n_to_align != -1 and (args.start_t_to_align is not None or args.end_t_to_align is not None):
+        die("--start_t_to_align or --end_t_to_align with --n_to_align is not implemented")
+    if (args.start_t_to_align is not None or args.end_t_to_align is not None) and not (args.align or args.correct_scale):
+        die("--start_t_to_align and --end_t_to_align are useless without --align or/and --correct_scale")
 
     # TODO: this is fugly, but is a quick solution for remembering each synced
     # reference when plotting pose correspondences later...
@@ -257,10 +261,11 @@ def run(args):
             if args.align or args.correct_scale:
                 logger.debug(SEP)
                 logger.debug("Aligning {} to reference.".format(name))
-                trajectories[name].align(
+                trajectories[name].align_on_window(
                     ref_traj_tmp, correct_scale=args.correct_scale,
                     correct_only_scale=args.correct_scale and not args.align,
-                    n=args.n_to_align)
+                    n=args.n_to_align, start_time=args.start_t_to_align,
+                    end_time=args.end_t_to_align)
             if args.align_origin:
                 logger.debug(SEP)
                 logger.debug("Aligning {}'s origin to reference.".format(name))

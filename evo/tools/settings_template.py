@@ -20,11 +20,14 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
 import importlib.util
+import sys
 
 
 def get_default_plot_backend() -> str:
     if os.name == "posix" and os.getenv("DISPLAY", default="") == "":
-        return "Agg"
+        # Expect Quartz as default on Mac, X11 DISPLAY is not there by default.
+        if sys.platform != "darwin":
+            return "Agg"
 
     backends = {"PyQt5": "Qt5Agg"}
     for pkg in backends:

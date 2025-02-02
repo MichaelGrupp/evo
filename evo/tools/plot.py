@@ -298,7 +298,9 @@ def prepare_axis(fig: Figure, plot_mode: PlotMode = PlotMode.xy,
         raise PlotException(f"{length_unit} is not a length unit")
 
     if plot_mode == PlotMode.xyz:
-        ax = fig.add_subplot(subplot_arg, projection="3d")
+        ax: Axes3D = fig.add_subplot(subplot_arg, projection="3d")
+        # Zoom can help against clipping labels. See issue #718.
+        ax.set_box_aspect(None, zoom=SETTINGS.plot_3d_zoom)
     else:
         ax = fig.add_subplot(subplot_arg)
     if plot_mode in {PlotMode.xy, PlotMode.xz, PlotMode.xyz}:

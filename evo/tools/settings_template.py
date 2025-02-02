@@ -64,6 +64,10 @@ DEFAULT_SETTINGS_DICT_DOC = {
         "",
         "API token for the map_tile_provider, if required."
     ),
+    "plot_3d_zoom": (
+        0.9,
+        "Default zoom factor for 3D plots. Can be used to avoid clipping labels."
+    ),
     "plot_axis_marker_scale": (
         0.,
         "Scaling parameter of pose coordinate frame markers. 0 will draw nothing."

@@ -61,6 +61,8 @@ pip install evo
 ```
 This will download the package and its dependencies from [PyPI](https://pypi.org/project/evo/) and install or upgrade them. If you want, you can subscribe to new releases via https://libraries.io/pypi/evo.
 
+To upgrade to a newer version: `pip install --upgrade evo`
+
 ### From Source
 Run this in the repository's base folder:
 ```bash
@@ -86,7 +88,7 @@ PyQt5 will give you the enhanced GUI for plot figures from the "*Qt5Agg*" matplo
 
 Some ROS-related features require a ROS installation, see [here](http://www.ros.org/). We are testing this package with ROS Noetic and Jazzy.
 
-*Note:* reading ROS bag files works also without a ROS installation thanks to the great [rosbags](https://pypi.org/project/rosbags/) package that is installed together with evo. This allows you also to read ROS 1 & 2 bags even if you don't have one of those ROS distros installed. (except for reading `/tf` topics, because there we need the buffer implementation from ROS)
+> Reading ROS bag files works also without a ROS installation thanks to the great [rosbags](https://pypi.org/project/rosbags/) package that is installed together with evo. This allows you also to read ROS 1 & 2 bags even if you don't have one of those ROS distros installed. (except for reading `/tf` topics, because there we need the buffer implementation from ROS)
 
 **contextily (optional)**
 

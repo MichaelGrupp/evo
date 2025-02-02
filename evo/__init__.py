@@ -8,7 +8,7 @@ logging.getLogger(__name__).addHandler(NullHandler())
 
 PACKAGE_BASE_PATH = Path(__file__).absolute().parent
 
-__version__ = "v1.30.5"
+__version__ = "v1.30.6"
 
 
 class EvoException(Exception):

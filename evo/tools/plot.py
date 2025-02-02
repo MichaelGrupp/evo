@@ -299,6 +299,9 @@ def prepare_axis(fig: Figure, plot_mode: PlotMode = PlotMode.xy,
 
     if plot_mode == PlotMode.xyz:
         ax = fig.add_subplot(subplot_arg, projection="3d")
+        # Zoom out a bit. This value is arbitrary, but without it the axis
+        # labels can get cut off due to constrained_layout. See issue #718.
+        ax.set_box_aspect(None, zoom=0.9)
     else:
         ax = fig.add_subplot(subplot_arg)
     if plot_mode in {PlotMode.xy, PlotMode.xz, PlotMode.xyz}:

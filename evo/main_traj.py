@@ -95,8 +95,10 @@ def load_trajectories(args):
                 if args.ref in topics:
                     topics.remove(args.ref)
                 if len(topics) == 0:
-                    die("No topics of supported types: {}".format(" ".join(
-                        file_interface.SUPPORTED_ROS_MSGS)))
+                    die("Found no topics of supported types:\n\n- {}"
+                        "\n\nIf you want to load TF trajectories, "
+                        "specify them like: /tf:map.base_link".format(
+                            "\n- ".join(file_interface.SUPPORTED_ROS_MSGS)))
             else:
                 topics = args.topics
             for topic in topics:

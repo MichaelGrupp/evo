@@ -36,6 +36,10 @@ class TfIdException(EvoException):
 
 @enum.unique
 class HashSource(enum.Enum):
+    """
+    For choosing the source of the hash value when hashing a rosbag reader.
+    See hash_bag() for usage.
+    """
     READER_INSTANCE = "reader_instance"
     BAG_FILENAME = "filename"
 
@@ -46,10 +50,9 @@ def hash_bag(reader: Union[Rosbag1Reader, Rosbag2Reader],
     Convenience function to hash a rosbag reader instance or its filename,
     for using it as a key to tf_cache.instance()
     """
-    if hash_source == HashSource.READER_INSTANCE:
-        return hash(reader)
-    elif hash_source == HashSource.BAG_FILENAME:
+    if hash_source == HashSource.BAG_FILENAME:
         return hash(reader.path)
+    return hash(reader)
 
 
 def split_id(identifier: str) -> tuple:

@@ -18,7 +18,12 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import enum
 import re
+from typing import Union
+
+from rosbags.rosbag1.reader import Reader as Rosbag1Reader
+from rosbags.rosbag2.reader import Reader as Rosbag2Reader
 
 from evo import EvoException
 
@@ -27,6 +32,24 @@ ROS_NAME_REGEX = re.compile(r"[\/|a-z|A-Z][\/|_|0-9|a-z|A-Z]+")
 
 class TfIdException(EvoException):
     pass
+
+
+@enum.unique
+class HashSource(enum.Enum):
+    READER_INSTANCE = "reader_instance"
+    BAG_FILENAME = "filename"
+
+
+def hash_bag(reader: Union[Rosbag1Reader, Rosbag2Reader],
+             hash_source: HashSource) -> int:
+    """
+    Convenience function to hash a rosbag reader instance or its filename,
+    for using it as a key to tf_cache.instance()
+    """
+    if hash_source == HashSource.READER_INSTANCE:
+        return hash(reader)
+    elif hash_source == HashSource.BAG_FILENAME:
+        return hash(reader.path)
 
 
 def split_id(identifier: str) -> tuple:

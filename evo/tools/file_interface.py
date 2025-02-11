@@ -258,9 +258,11 @@ def get_supported_topics(
     ])
 
 
-def read_bag_trajectory(reader: typing.Union[Rosbag1Reader,
-                                             Rosbag2Reader], topic: str,
-                        cache_tf_tree: bool = False) -> PoseTrajectory3D:
+def read_bag_trajectory(
+    reader: typing.Union[Rosbag1Reader, Rosbag2Reader], topic: str,
+    cache_tf_tree: bool = False,
+    cache_hash_source: tf_id.HashSource = tf_id.HashSource.READER_INSTANCE
+) -> PoseTrajectory3D:
     """
     :param reader: opened bag reader (rosbags.rosbag2 or rosbags.rosbag1)
     :param topic: trajectory topic of supported message type,
@@ -268,6 +270,8 @@ def read_bag_trajectory(reader: typing.Union[Rosbag1Reader,
     :param cache_tf_tree: cache the tf tree. This speeds up the trajectory
                   reading in case multiple TF trajectories are loaded from
                   the same reader.
+    :param cache_hash_source: Determines whether to cache per reader instance
+        (default) or per bag filename (e.g. if a bag is opened multiple times).
     :return: trajectory.PoseTrajectory3D
     """
     if not isinstance(reader, (Rosbag1Reader, Rosbag2Reader)):
@@ -279,7 +283,8 @@ def read_bag_trajectory(reader: typing.Union[Rosbag1Reader,
     if tf_id.check_id(topic):
         # Use TfCache instead if it's a TF transform ID.
         from evo.tools import tf_cache
-        tf_tree_cache = (tf_cache.instance(reader.__hash__())
+        tf_tree_cache = (tf_cache.instance(
+            tf_id.hash_bag(reader, cache_hash_source))
                          if cache_tf_tree else tf_cache.TfCache())
         return tf_tree_cache.get_trajectory(reader, identifier=topic)
 

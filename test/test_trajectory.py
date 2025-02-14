@@ -192,6 +192,30 @@ class TestPosePath3D(unittest.TestCase):
                 self.assertAlmostEqual(quat_wxyz[2], 0)  # y
                 self.assertAlmostEqual(quat_wxyz[3], 0)  # z
 
+    def test_split_distance_gaps(self):
+        """
+        Checks if the path can be split correctly at a distance threshold.
+        """
+        path = PosePath3D(poses_se3=[
+            lie.se3(r=np.eye(3), t=np.array([0, 0, 0])),
+            lie.se3(r=np.eye(3), t=np.array([0, 0, 1])),
+            lie.se3(r=np.eye(3), t=np.array([0, 0, 2])),
+            lie.se3(r=np.eye(3), t=np.array([0, 0, 4])),
+            lie.se3(r=np.eye(3), t=np.array([0, 0, 7])),
+            lie.se3(r=np.eye(3), t=np.array([0, 0, 8])),
+        ])
+        splits = path.split_distance_gaps(1.5)
+        self.assertEqual(len(splits), 3)
+        self.assertEqual(splits[0].num_poses, 3)
+        self.assertEqual(splits[0].path_length, 2.)
+        self.assertEqual(splits[1].num_poses, 1)
+        self.assertEqual(splits[1].path_length, 0.)
+        self.assertEqual(splits[2].num_poses, 2)
+        self.assertEqual(splits[2].path_length, 1.)
+        splits = path.split_distance_gaps(999.)
+        self.assertEqual(len(splits), 1)
+        self.assertEqual(splits[0].num_poses, path.num_poses)
+
 
 class TestPoseTrajectory3D(unittest.TestCase):
     def test_equals(self):
@@ -244,6 +268,34 @@ class TestPoseTrajectory3D(unittest.TestCase):
 
     def test_get_statistics(self):
         helpers.fake_trajectory(10, 1).get_statistics()
+
+    def test_split_time_gaps(self):
+        """
+        Checks if the trajectory can be split correctly with a time threshold.
+        """
+        traj = helpers.fake_trajectory(5, 1.)
+        traj.timestamps[2:5] += 10.
+        traj.timestamps[4] += 10.
+        splits = traj.split_time_gaps(5.)
+        self.assertEqual(len(splits), 3)
+        self.assertEqual(splits[0].num_poses, 2)
+        self.assertEqual(splits[1].num_poses, 2)
+        self.assertEqual(splits[2].num_poses, 1)
+
+    def test_split_speed_outliers(self):
+        """
+        Checks if the trajectory can be split correctly with a speed threshold.
+        """
+        traj = PoseTrajectory3D(
+            timestamps=np.array([0, 1, 2]), poses_se3=[
+                lie.se3(r=np.eye(3), t=np.array([0, 0, 0])),
+                lie.se3(r=np.eye(3), t=np.array([0, 0, 1])),
+                lie.se3(r=np.eye(3), t=np.array([0, 0, 4])),
+            ])
+        splits = traj.split_speed_outliers(2.)
+        self.assertEqual(len(splits), 2)
+        self.assertEqual(splits[0].num_poses, 2)
+        self.assertEqual(splits[1].num_poses, 1)
 
 
 class TestTrajectoryAlignment(unittest.TestCase):

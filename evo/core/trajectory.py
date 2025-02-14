@@ -328,6 +328,27 @@ class PosePath3D(object):
                                                 angle_threshold, degrees)
         self.reduce_to_ids(filtered_ids)
 
+    def _jumps(self, dist: float) -> np.ndarray:
+        jumps = np.where(self.distances[1:] - self.distances[:-1] > dist)
+        if len(jumps[0]) == 0:
+            return np.array([0, self.num_poses])
+        return np.concatenate([[0], jumps[0] + 1, [self.num_poses]])
+
+    def split_distance_gaps(self,
+                            dist: float) -> typing.Sequence["PosePath3D"]:
+        """
+        Determines translation gaps in the path and splits it into multiple
+        paths at the gaps.
+        :param dist: distance threshold for gap detection in meters
+        """
+        if self.num_poses < 2:
+            return [self]
+        jumps = self._jumps(dist)
+        return [
+            PosePath3D(poses_se3=self.poses_se3[jumps[i]:jumps[i + 1]])
+            for i in range(len(jumps) - 1)
+        ]
+
     def check(self) -> typing.Tuple[bool, dict]:
         """
         checks if the data is valid
@@ -449,6 +470,62 @@ class PoseTrajectory3D(PosePath3D, object):
             np.logical_and(self.timestamps >= start_timestamp,
                            self.timestamps <= end_timestamp))[0]
         self.reduce_to_ids(ids)
+
+    def split_time_gaps(self,
+                        dt: float) -> typing.Sequence["PoseTrajectory3D"]:
+        """
+        Determines time gaps in the trajectory and splits it into multiple
+        trajectories at the gaps.
+        :param dt: time threshold for gap detection in seconds
+        """
+        if self.num_poses < 2:
+            return [self]
+        gaps = np.where(self.timestamps[1:] - self.timestamps[:-1] > dt)[0]
+        if len(gaps) == 0:
+            return [self]
+        gaps = np.concatenate([[0], gaps + 1, [self.num_poses]])
+        return [
+            PoseTrajectory3D(timestamps=self.timestamps[gaps[i]:gaps[i + 1]],
+                             poses_se3=self.poses_se3[gaps[i]:gaps[i + 1]])
+            for i in range(len(gaps) - 1)
+        ]
+
+    def split_distance_gaps(
+            self, dist: float) -> typing.Sequence["PoseTrajectory3D"]:
+        """
+        Determines translation gaps in the path and splits it into multiple
+        trajectories at the gaps.
+        :param dist: distance threshold for gap detection in meters
+        """
+        if self.num_poses < 2:
+            return [self]
+        jumps = self._jumps(dist)
+        return [
+            PoseTrajectory3D(timestamps=self.timestamps[jumps[i]:jumps[i + 1]],
+                             poses_se3=self.poses_se3[jumps[i]:jumps[i + 1]])
+            for i in range(len(jumps) - 1)
+        ]
+
+    def split_speed_outliers(
+            self, v_max: float) -> typing.Sequence["PoseTrajectory3D"]:
+        """
+        Splits the trajectory into multiple trajectories at speed outliers.
+        Can be used for example to handle jumps due to tracking loss.
+
+        :param v_max: speed threshold for outlier detection in m/s
+        """
+        if self.num_poses < 2:
+            return [self]
+        speeds = self.speeds
+        outliers = np.where(speeds > v_max)[0]
+        if len(outliers) == 0:
+            return [self]
+        jumps = np.concatenate([[0], outliers + 1, [self.num_poses]])
+        return [
+            PoseTrajectory3D(timestamps=self.timestamps[jumps[i]:jumps[i + 1]],
+                             poses_se3=self.poses_se3[jumps[i]:jumps[i + 1]])
+            for i in range(len(jumps) - 1)
+        ]
 
     def check(self) -> typing.Tuple[bool, dict]:
         if self.num_poses == 0:

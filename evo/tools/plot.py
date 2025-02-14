@@ -683,15 +683,17 @@ def speeds(ax: Axes, traj: trajectory.PoseTrajectory3D, style: str = '-',
         ax.legend(frameon=True)
 
 
-def trajectories(fig: Figure, trajectories: typing.Union[
-        trajectory.PosePath3D, typing.Sequence[trajectory.PosePath3D],
-        typing.Dict[str, trajectory.PosePath3D]], plot_mode=PlotMode.xy,
-                 title: str = "", subplot_arg: int = 111,
-                 plot_start_end_markers: bool = False,
+def trajectories(fig_or_ax: typing.Union[Figure, Axes],
+                 trajectories: typing.Union[
+                     trajectory.PosePath3D,
+                     typing.Sequence[trajectory.PosePath3D],
+                     typing.Dict[str, trajectory.PosePath3D]],
+                 plot_mode=PlotMode.xy, title: str = "",
+                 subplot_arg: int = 111, plot_start_end_markers: bool = False,
                  length_unit: Unit = Unit.meters) -> None:
     """
     high-level function for plotting multiple trajectories
-    :param fig: matplotlib figure
+    :param fig: matplotlib figure, or maptplotlib axes
     :param trajectories: instance or container of PosePath3D or derived
     - if it's a dictionary, the keys (names) will be used as labels
     :param plot_mode: e.g. plot.PlotMode.xy
@@ -702,7 +704,10 @@ def trajectories(fig: Figure, trajectories: typing.Union[
     :param length_unit: Set to another length unit than meters to scale plots.
                         Note that trajectory data is still expected in meters.
     """
-    ax = prepare_axis(fig, plot_mode, subplot_arg, length_unit)
+    if isinstance(fig_or_ax, Axes):
+        ax = fig_or_ax
+    else:
+        ax = prepare_axis(fig_or_ax, plot_mode, subplot_arg, length_unit)
     if title:
         ax.set_title(title)
 

@@ -408,13 +408,15 @@ def _validate_csv_format(row: list[str], topic_info, log: bool) -> bool:
         return False
     
     for i in range(len(row)):
-        if not i in topic_info["strpos"]:
-            try:
-                float(row[i])
-            except:
-                logger.warning("Cannot use message of type %s:", topic_info["name"])
-                logger.warning("Expected float at %d, got '%s'", i, row[i])
-                return False
+        try:
+            float(row[i])
+            actuallyfloat = True
+        except:
+            logger.warning("Cannot use message of type %s:", topic_info["name"])
+            logger.warning("Expected float at %d, got '%s'", i, row[i])
+            actuallyfloat = False
+        if actuallyfloat == i in topic_info["strpos"]:
+            return False
     return True
 
 def read_csv_trajectory_file(file_path: PathStrHandle, topic_type: str) -> PoseTrajectory3D:
@@ -434,13 +436,13 @@ def read_csv_trajectory_file(file_path: PathStrHandle, topic_type: str) -> PoseT
         }, {
             "name": "ros1odo",
             "size": 90, "strpos": [3, 4],
-            "secpos": 1, "nsecpos": 2,
+            "secpos": -1, "nsecpos": 2,
             "xpos": 5, "ypos": 6, "zpos": 7,
             "qx": 7, "qy": 8, "qz": 9, "qw": 10,
         }, {
             "name": "ros1pose",
-            "size": 11, "strpos": [4],
-            "secpos": 1, "nsecpos": 2,
+            "size": 11, "strpos": [3],
+            "secpos": -1, "nsecpos": 2,
             "xpos": 4, "ypos": 5, "zpos": 6,
             "qx": 7, "qy": 8, "qz": 9, "qw": 10,
         }, {
@@ -457,7 +459,7 @@ def read_csv_trajectory_file(file_path: PathStrHandle, topic_type: str) -> PoseT
             "qx": 6, "qy": 7, "qz": 8, "qw": 9,
         }, {
             "name": "ros2pose",
-            "size": 10, "strpos": [3],
+            "size": 10, "strpos": [2],
             "secpos": 0, "nsecpos": 1,
             "xpos": 3, "ypos": 4, "zpos": 5,
             "qx": 6, "qy": 7, "qz": 8, "qw": 9,

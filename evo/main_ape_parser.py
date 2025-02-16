@@ -152,9 +152,26 @@ def parser() -> argparse.ArgumentParser:
     bag2_parser.add_argument("ref_topic", help="reference trajectory topic")
     bag2_parser.add_argument("est_topic", help="estimated trajectory topic")
 
+    csv_parser = sub_parsers.add_parser(
+        "csv",
+        description="%s for topic CSV files - %s" % (basic_desc, lic),
+        parents=[shared_parser])
+    csv_parser.add_argument(
+        "--topic_type", type=str, choices=[
+            "ros1odometry",
+            "ros1pose",
+            "ros1tf",
+            "ros2odometry",
+            "ros2pose",
+            "ros2tf",
+        ],
+        help="Explicitely specify the csv file format.")
+    csv_parser.add_argument("ref_file", help="reference trajectory file")
+    csv_parser.add_argument("est_file", help="estimated trajectory file")
+
     # Add time-sync options to parser of trajectory formats.
     for trajectory_parser in {
-            bag_parser, bag2_parser, euroc_parser, tum_parser
+            bag_parser, bag2_parser, euroc_parser, tum_parser, csv_parser
     }:
         trajectory_parser.add_argument(
             "--t_max_diff", type=float, default=0.01,

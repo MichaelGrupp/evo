@@ -170,4 +170,22 @@ def parser() -> argparse.ArgumentParser:
     bag2_parser.add_argument("--all_topics",
                              help="use all compatible topics in the bag",
                              action="store_true")
+
+    csv_parser = sub_parsers.add_parser(
+        "csv",
+        description="%s for topic CSV files - %s" % (basic_desc, lic),
+        parents=[shared_parser])
+    csv_parser.add_argument(
+        "--topic_type", type=str, choices=[
+            "ros1odometry",
+            "ros1pose",
+            "ros1tf",
+            "ros2odometry",
+            "ros2pose",
+            "ros2tf",
+        ],
+        help="Explicitely specify the csv file format.")
+    csv_parser.add_argument("traj_files",
+                            help="one or multiple trajectory files", nargs='+')
+
     return main_parser

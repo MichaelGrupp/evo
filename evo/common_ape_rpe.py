@@ -73,6 +73,10 @@ def load_trajectories(
             ref_name, est_name = args.ref_topic, args.est_topic
         finally:
             bag.close()
+    elif args.subcommand == "csv":
+        traj_ref = file_interface.read_csv_trajectory_file(args.ref_file, args.topic_type)
+        traj_est = file_interface.read_csv_trajectory_file(args.est_file, args.topic_type)
+        ref_name, est_name = args.ref_file, args.est_file
     else:
         raise KeyError("unknown sub-command: {}".format(args.subcommand))
 

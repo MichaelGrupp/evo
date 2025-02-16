@@ -412,10 +412,14 @@ def _validate_csv_format(row: list[str], topic_info, log: bool) -> bool:
             float(row[i])
             actuallyfloat = True
         except:
-            logger.warning("Cannot use message of type %s:", topic_info["name"])
-            logger.warning("Expected float at %d, got '%s'", i, row[i])
             actuallyfloat = False
         if actuallyfloat == i in topic_info["strpos"]:
+            if i in topic_info["strpos"]:
+                logger.warning("Cannot use message of type %s:", topic_info["name"])
+                logger.warning("Expected string at %d, got '%s'", i, row[i])
+            else:
+                logger.warning("Cannot use message of type %s:", topic_info["name"])
+                logger.warning("Expected float at %d, got '%s'", i, row[i])
             return False
     return True
 

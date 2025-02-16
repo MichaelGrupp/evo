@@ -403,8 +403,8 @@ def write_bag_trajectory(writer, traj: PoseTrajectory3D, topic_name: str,
 def _validate_csv_format(row: list[str], topic_info, log: bool) -> bool:
     if len(row) != int(topic_info["size"]):
         if log:
-            logger.warn("Cannot use message of type %s:", topic_info["name"])
-            logger.warn("Wrong record size %d, expected %d", len(row), topic_info["size"])
+            logger.warning("Cannot use message of type %s:", topic_info["name"])
+            logger.warning("Wrong record size %d, expected %d", len(row), topic_info["size"])
         return False
     
     for i in range(len(row)):
@@ -412,8 +412,8 @@ def _validate_csv_format(row: list[str], topic_info, log: bool) -> bool:
             try:
                 float(row[i])
             except:
-                logger.warn("Cannot use message of type %s:", topic_info["name"])
-                logger.warn("Expected float at %d, got '%s'", i, row[i])
+                logger.warning("Cannot use message of type %s:", topic_info["name"])
+                logger.warning("Expected float at %d, got '%s'", i, row[i])
                 return False
     return True
 

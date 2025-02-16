@@ -111,6 +111,14 @@ def load_trajectories(args):
                     bag, args.ref, cache_tf_tree=True)
         finally:
             bag.close()
+    elif args.subcommand == "csv":
+        for traj_file in args.traj_files:
+            if traj_file == args.ref:
+                continue
+            trajectories[traj_file] = file_interface.read_csv_trajectory_file(
+                traj_file, args.topic_type)
+        if args.ref:
+            ref_traj = file_interface.read_csv_trajectory_file(args.ref, args.topic_type)
     return trajectories, ref_traj
 
 

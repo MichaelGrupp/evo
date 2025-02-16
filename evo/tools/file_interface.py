@@ -400,6 +400,132 @@ def write_bag_trajectory(writer, traj: PoseTrajectory3D, topic_name: str,
     logger.info("Saved geometry_msgs/PoseStamped topic: " + topic_name)
 
 
+def _validate_csv_format(row: list[str], topic_info, log: bool) -> bool:
+    if len(row) != int(topic_info["size"]):
+        if log:
+            logger.warn("Cannot use message of type %s:", topic_info["name"])
+            logger.warn("Wrong record size %d, expected %d", len(row), topic_info["size"])
+        return False
+    
+    for i in range(len(row)):
+        if not i in topic_info["strpos"]:
+            try:
+                float(row[i])
+            except:
+                logger.warn("Cannot use message of type %s:", topic_info["name"])
+                logger.warn("Expected float at %d, got '%s'", i, row[i])
+                return False
+    return True
+
+def read_csv_trajectory_file(file_path: PathStrHandle, topic_type: str) -> PoseTrajectory3D:
+    """
+    parses csv recording of a topic
+    :param file_path: the trajectory file path (or file handle)
+    :param topic_type: the topic type to use (optional)
+    :return: trajectory.PoseTrajectory3D object
+    """
+    TOPIC_INFOS = [
+        {
+            "name": "ros1tf",
+            "size": 12, "strpos": [3, 4],
+            "secpos": -1, "nsecpos": 2,
+            "xpos": 5, "ypos": 6, "zpos": 7,
+            "qx": 8, "qy": 9, "qz": 10, "qw": 11,
+        }, {
+            "name": "ros1odo",
+            "size": 90, "strpos": [3, 4],
+            "secpos": 1, "nsecpos": 2,
+            "xpos": 5, "ypos": 6, "zpos": 7,
+            "qx": 7, "qy": 8, "qz": 9, "qw": 10,
+        }, {
+            "name": "ros1pose",
+            "size": 11, "strpos": [4],
+            "secpos": 1, "nsecpos": 2,
+            "xpos": 4, "ypos": 5, "zpos": 6,
+            "qx": 7, "qy": 8, "qz": 9, "qw": 10,
+        }, {
+            "name": "ros2tf",
+            "size": 11, "strpos": [2, 3],
+            "secpos": 0, "nsecpos": 1,
+            "xpos": 4, "ypos": 5, "zpos": 6,
+            "qx": 7, "qy": 8, "qz": 9, "qw": 10,
+        }, {
+            "name": "ros2odo",
+            "size": 89, "strpos": [2, 3],
+            "secpos": 0, "nsecpos": 1,
+            "xpos": 4, "ypos": 5, "zpos": 6,
+            "qx": 6, "qy": 7, "qz": 8, "qw": 9,
+        }, {
+            "name": "ros2pose",
+            "size": 10, "strpos": [3],
+            "secpos": 0, "nsecpos": 1,
+            "xpos": 3, "ypos": 4, "zpos": 5,
+            "qx": 6, "qy": 7, "qz": 8, "qw": 9,
+        },
+    ]
+
+
+    raw_mat = csv_read_matrix(file_path, delim=",", comment_str="%")
+    error_msg = ("Error reading csv file")
+    if not raw_mat:
+        raise FileInterfaceException(error_msg)
+
+    the_info = None
+    if topic_type == None:
+        # Guess topic info:
+        for info in TOPIC_INFOS:
+            if _validate_csv_format(raw_mat[0], info, False):
+                the_info = info
+                logger.debug("Guessing csv format %s", the_info["name"])
+
+        if the_info == None:
+            logger.error("Cannot read csv as any known topic type:")
+            for info in TOPIC_INFOS:
+                _validate_csv_format(raw_mat[0], info, True)
+            return
+    else:
+        #  Find topic info using name:
+        the_info = next((item for item in TOPIC_INFOS if item["name"] == topic_type), None)
+        if the_info == None:
+            logger.error("Unknown topic type " + topic_type)
+            return
+
+        if not _validate_csv_format(raw_mat[0], the_info, True):
+            logger.error("Cannot read csv as specified topic type.")
+            return
+
+    # Replace the contents in the string columns with 0:
+    for row in raw_mat:
+        for i in the_info["strpos"]:
+            row[i] = 0
+    
+    try:
+        mat = np.array(raw_mat).astype(float)
+
+        if the_info["secpos"] == -1:
+            stamps = np.array(mat[:, the_info["nsecpos"]]).astype(float) / 1e9
+        else:
+            msecs = np.array(mat[:, the_info["secpos"]]).astype(float)
+            mnsecs = np.array(mat[:, the_info["nsecpos"]]).astype(float)
+            stamps = msecs + mnsecs / 1e9  # n x 1
+
+        mx = np.array(mat[:, the_info["xpos"]]).astype(float)
+        my = np.array(mat[:, the_info["ypos"]]).astype(float)
+        mz = np.array(mat[:, the_info["zpos"]]).astype(float)
+        mqx = np.array(mat[:, the_info["qx"]]).astype(float)
+        mqy = np.array(mat[:, the_info["qy"]]).astype(float)
+        mqz = np.array(mat[:, the_info["qz"]]).astype(float)
+        mqw = np.array(mat[:, the_info["qw"]]).astype(float)
+    except ValueError:
+        raise FileInterfaceException(error_msg)
+    xyz = np.column_stack((mx, my, mz))  # n x 3
+    quat = np.column_stack((mqw, mqx, mqy, mqz))  # -> w in front column
+    if not hasattr(file_path, 'read'):  # if not file handle
+        logger.debug("Loaded {} stamps and poses from: {}".format(
+            len(stamps), file_path))
+    return PoseTrajectory3D(xyz, quat, stamps)
+
+
 def save_res_file(zip_path: PathStrHandle, result_obj: result.Result,
                   confirm_overwrite: bool = False) -> None:
     """

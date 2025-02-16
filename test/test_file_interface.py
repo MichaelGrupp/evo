@@ -174,6 +174,25 @@ class TestBagFile(MockFileTestCase):
             self.assertTrue(traj_out == traj_in)
             self.assertEqual(traj_in.meta["frame_id"], "map")
 
+class TestCsvFile(MockFileTestCase):
+    def __init__(self, *args, **kwargs):
+        super(TestCsvFile, self).__init__(io.StringIO(), *args, **kwargs)
+
+        # The reference trajectory:
+        stamps = [1739641583.660682927]
+        xyz = [[-5.662295808104799e-05,0.00016827168702906548,3.5524415470101045e-05]]
+        quat = [[1.9329304695625015e-06,1.3492393190741297e-05,-0.0005278167789287769,0.9999998606118238]]
+        self.ref = PoseTrajectory3D(xyz, quat, stamps)
+    
+    @MockFileTestCase.run_and_clear
+    def test_read_ros1tf(self):
+        self.mock_file.write(u"%time,field.transforms0.header.seq,field.transforms0.header.stamp,field.transforms0.header.frame_id,field.transforms0.child_frame_id,field.transforms0.transform.translation.x,field.transforms0.transform.translation.y,field.transforms0.transform.translation.z,field.transforms0.transform.rotation.x,field.transforms0.transform.rotation.y,field.transforms0.transform.rotation.z,field.transforms0.transform.rotation.w\n")
+        self.mock_file.write(u"1739641583661579370,0,1739641583660682927,camera_init,aft_mapped,-5.662295808104799e-05,0.00016827168702906548,3.5524415470101045e-05,1.9329304695625015e-06,1.3492393190741297e-05,-0.0005278167789287769,0.9999998606118238")
+        self.mock_file.seek(0)
+        traj = file_interface.read_csv_trajectory_file(self.mock_file, None)
+        self.assertEqual(traj.positions_xyz.all(), self.ref.positions_xyz.all())
+        self.assertEqual(traj.orientations_quat_wxyz.all(), self.ref.orientations_quat_wxyz.all())
+        self.assertEqual(traj.timestamps.all(), self.ref.timestamps.all())
 
 class TestResultFile(MockFileTestCase):
     def __init__(self, *args, **kwargs):

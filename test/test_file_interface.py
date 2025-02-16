@@ -187,7 +187,7 @@ class TestCsvFile(MockFileTestCase):
     @MockFileTestCase.run_and_clear
     def test_read_ros1tf(self):
         self.mock_file.write(u"%time,field.transforms0.header.seq,field.transforms0.header.stamp,field.transforms0.header.frame_id,field.transforms0.child_frame_id,field.transforms0.transform.translation.x,field.transforms0.transform.translation.y,field.transforms0.transform.translation.z,field.transforms0.transform.rotation.x,field.transforms0.transform.rotation.y,field.transforms0.transform.rotation.z,field.transforms0.transform.rotation.w\n")
-        self.mock_file.write(u"1739641583661579370,0,1739641583660682927,camera_init,aft_mapped,-5.662295808104799e-05,0.00016827168702906548,3.5524415470101045e-05,1.9329304695625015e-06,1.3492393190741297e-05,-0.0005278167789287769,0.9999998606118238")
+        self.mock_file.write(u"1739641583661579370,5,1739641583660682927,camera_init,aft_mapped,-5.662295808104799e-05,0.00016827168702906548,3.5524415470101045e-05,1.9329304695625015e-06,1.3492393190741297e-05,-0.0005278167789287769,0.9999998606118238")
         for topic_type in [None, "ros1tf"]:
             self.mock_file.seek(0)
             traj = file_interface.read_csv_trajectory_file(self.mock_file, topic_type)
@@ -198,13 +198,58 @@ class TestCsvFile(MockFileTestCase):
     @MockFileTestCase.run_and_clear
     def test_read_ros1odo(self):
         self.mock_file.write(u"%time,field.header.seq,field.header.stamp,field.header.frame_id,field.child_frame_id,field.pose.pose.position.x,field.pose.pose.position.y,field.pose.pose.position.z,field.pose.pose.orientation.x,field.pose.pose.orientation.y,field.pose.pose.orientation.z,field.pose.pose.orientation.w,field.pose.covariance0,field.pose.covariance1,field.pose.covariance2,field.pose.covariance3,field.pose.covariance4,field.pose.covariance5,field.pose.covariance6,field.pose.covariance7,field.pose.covariance8,field.pose.covariance9,field.pose.covariance10,field.pose.covariance11,field.pose.covariance12,field.pose.covariance13,field.pose.covariance14,field.pose.covariance15,field.pose.covariance16,field.pose.covariance17,field.pose.covariance18,field.pose.covariance19,field.pose.covariance20,field.pose.covariance21,field.pose.covariance22,field.pose.covariance23,field.pose.covariance24,field.pose.covariance25,field.pose.covariance26,field.pose.covariance27,field.pose.covariance28,field.pose.covariance29,field.pose.covariance30,field.pose.covariance31,field.pose.covariance32,field.pose.covariance33,field.pose.covariance34,field.pose.covariance35,field.twist.twist.linear.x,field.twist.twist.linear.y,field.twist.twist.linear.z,field.twist.twist.angular.x,field.twist.twist.angular.y,field.twist.twist.angular.z,field.twist.covariance0,field.twist.covariance1,field.twist.covariance2,field.twist.covariance3,field.twist.covariance4,field.twist.covariance5,field.twist.covariance6,field.twist.covariance7,field.twist.covariance8,field.twist.covariance9,field.twist.covariance10,field.twist.covariance11,field.twist.covariance12,field.twist.covariance13,field.twist.covariance14,field.twist.covariance15,field.twist.covariance16,field.twist.covariance17,field.twist.covariance18,field.twist.covariance19,field.twist.covariance20,field.twist.covariance21,field.twist.covariance22,field.twist.covariance23,field.twist.covariance24,field.twist.covariance25,field.twist.covariance26,field.twist.covariance27,field.twist.covariance28,field.twist.covariance29,field.twist.covariance30,field.twist.covariance31,field.twist.covariance32,field.twist.covariance33,field.twist.covariance34,field.twist.covariance35\n")
-        self.mock_file.write(u"1664948325587996960,0,1739641583660682927,/camera_init,/laser_odom,-5.662295808104799e-05,0.00016827168702906548,3.5524415470101045e-05,1.9329304695625015e-06,1.3492393190741297e-05,-0.0005278167789287769,0.9999998606118238,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0")
+        self.mock_file.write(u"1664948325587996960,5,1739641583660682927,/camera_init,/laser_odom,-5.662295808104799e-05,0.00016827168702906548,3.5524415470101045e-05,1.9329304695625015e-06,1.3492393190741297e-05,-0.0005278167789287769,0.9999998606118238,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0")
         for topic_type in [None, "ros1odo"]:
             self.mock_file.seek(0)
             traj = file_interface.read_csv_trajectory_file(self.mock_file, topic_type)
             self.assertEqual(traj.positions_xyz.all(), self.ref.positions_xyz.all())
             self.assertEqual(traj.orientations_quat_wxyz.all(), self.ref.orientations_quat_wxyz.all())
             self.assertEqual(traj.timestamps.all(), self.ref.timestamps.all())
+    
+    @MockFileTestCase.run_and_clear
+    def test_read_ros1pose(self):
+        self.mock_file.write(u"%time,field.header.seq,field.header.stamp,field.header.frame_id,field.pose.position.x,field.pose.position.y,field.pose.position.z,field.pose.orientation.x,field.pose.orientation.y,field.pose.orientation.z,field.pose.orientation.w\n")
+        self.mock_file.write(u"1664948329218966007,5,1739641583660682927,gt,-5.662295808104799e-05,0.00016827168702906548,3.5524415470101045e-05,1.9329304695625015e-06,1.3492393190741297e-05,-0.0005278167789287769,0.9999998606118238")
+        for topic_type in [None, "ros1pose"]:
+            self.mock_file.seek(0)
+            traj = file_interface.read_csv_trajectory_file(self.mock_file, topic_type)
+            self.assertEqual(traj.positions_xyz.all(), self.ref.positions_xyz.all())
+            self.assertEqual(traj.orientations_quat_wxyz.all(), self.ref.orientations_quat_wxyz.all())
+            self.assertEqual(traj.timestamps.all(), self.ref.timestamps.all())
+    
+    @MockFileTestCase.run_and_clear
+    def test_read_ros2tf(self):
+        #header.stamp.sec,header.stamp.nanosec,header.frame_id,header.child_frame_id,field.pose.position.x,field.pose.position.y,field.pose.position.z,field.pose.orientation.x,field.pose.orientation.y,field.pose.orientation.z,field.pose.orientation.w
+        self.mock_file.write(u"1739641583,660682927,map,gt,-5.662295808104799e-05,0.00016827168702906548,3.5524415470101045e-05,1.9329304695625015e-06,1.3492393190741297e-05,-0.0005278167789287769,0.9999998606118238")
+        for topic_type in [None, "ros2tf"]:
+            self.mock_file.seek(0)
+            traj = file_interface.read_csv_trajectory_file(self.mock_file, topic_type)
+            self.assertEqual(traj.positions_xyz.all(), self.ref.positions_xyz.all())
+            self.assertEqual(traj.orientations_quat_wxyz.all(), self.ref.orientations_quat_wxyz.all())
+            self.assertEqual(traj.timestamps.all(), self.ref.timestamps.all())
+    
+    @MockFileTestCase.run_and_clear
+    def test_read_ros2pose(self):
+        #stamp.sec,stamp.nanosec,field.header.frame_id,field.pose.position.x,field.pose.position.y,field.pose.position.z,field.pose.orientation.x,field.pose.orientation.y,field.pose.orientation.z,field.pose.orientation.w
+        self.mock_file.write(u"1739641583,660682927,gt,-5.662295808104799e-05,0.00016827168702906548,3.5524415470101045e-05,1.9329304695625015e-06,1.3492393190741297e-05,-0.0005278167789287769,0.9999998606118238")
+        for topic_type in [None, "ros2pose"]:
+            self.mock_file.seek(0)
+            traj = file_interface.read_csv_trajectory_file(self.mock_file, topic_type)
+            self.assertEqual(traj.positions_xyz.all(), self.ref.positions_xyz.all())
+            self.assertEqual(traj.orientations_quat_wxyz.all(), self.ref.orientations_quat_wxyz.all())
+            self.assertEqual(traj.timestamps.all(), self.ref.timestamps.all())
+    
+    @MockFileTestCase.run_and_clear
+    def test_read_ros2odo(self):
+        #header.stamp.sec,header.stamp.nanosec,header.frame_id,child_frame_id,pose.pose.position.x,pose.pose.position.y,pose.pose.position.z,pose.pose.orientation.x,pose.pose.orientation.y,pose.pose.orientation.z,pose.pose.orientation.w,pose.covariance0,pose.covariance1,pose.covariance2,pose.covariance3,pose.covariance4,pose.covariance5,pose.covariance6,pose.covariance7,pose.covariance8,pose.covariance9,pose.covariance10,pose.covariance11,pose.covariance12,pose.covariance13,pose.covariance14,pose.covariance15,pose.covariance16,pose.covariance17,pose.covariance18,pose.covariance19,pose.covariance20,pose.covariance21,pose.covariance22,pose.covariance23,pose.covariance24,pose.covariance25,pose.covariance26,pose.covariance27,pose.covariance28,pose.covariance29,pose.covariance30,pose.covariance31,pose.covariance32,pose.covariance33,pose.covariance34,pose.covariance35,twist.twist.linear.x,twist.twist.linear.y,twist.twist.linear.z,twist.twist.angular.x,twist.twist.angular.y,twist.twist.angular.z,twist.covariance0,twist.covariance1,twist.covariance2,twist.covariance3,twist.covariance4,twist.covariance5,twist.covariance6,twist.covariance7,twist.covariance8,twist.covariance9,twist.covariance10,twist.covariance11,twist.covariance12,twist.covariance13,twist.covariance14,twist.covariance15,twist.covariance16,twist.covariance17,twist.covariance18,twist.covariance19,twist.covariance20,twist.covariance21,twist.covariance22,twist.covariance23,twist.covariance24,twist.covariance25,twist.covariance26,twist.covariance27,twist.covariance28,twist.covariance29,twist.covariance30,twist.covariance31,twist.covariance32,twist.covariance33,twist.covariance34,twist.covariance35\n")
+        self.mock_file.write(u"1739641583,660682927,/camera_init,/laser_odom,-5.662295808104799e-05,0.00016827168702906548,3.5524415470101045e-05,1.9329304695625015e-06,1.3492393190741297e-05,-0.0005278167789287769,0.9999998606118238,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0")
+        for topic_type in [None, "ros2odo"]:
+            self.mock_file.seek(0)
+            traj = file_interface.read_csv_trajectory_file(self.mock_file, topic_type)
+            self.assertEqual(traj.positions_xyz.all(), self.ref.positions_xyz.all())
+            self.assertEqual(traj.orientations_quat_wxyz.all(), self.ref.orientations_quat_wxyz.all())
+            self.assertEqual(traj.timestamps.all(), self.ref.timestamps.all())
+
 
 class TestResultFile(MockFileTestCase):
     def __init__(self, *args, **kwargs):

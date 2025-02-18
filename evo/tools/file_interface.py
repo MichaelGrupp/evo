@@ -472,7 +472,7 @@ def read_csv_trajectory_file(file_path: PathStrHandle, topic_type: str) -> PoseT
 
 
     raw_mat = csv_read_matrix(file_path, delim=",", comment_str="%")
-    error_msg = ("Error reading csv file")
+    error_msg = ("Error reading csv file " + str(file_path))
     if not raw_mat:
         raise FileInterfaceException(error_msg)
 

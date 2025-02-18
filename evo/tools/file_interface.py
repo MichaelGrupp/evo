@@ -500,10 +500,22 @@ def read_csv_trajectory_file(file_path: PathStrHandle, topic_type: str) -> PoseT
             logger.error("Cannot read csv as specified topic type.")
             return
 
+    bad_rows = []
     # Replace the contents in the string columns with 0:
-    for row in raw_mat:
+    for line_number in range(len(raw_mat)):
+        row = raw_mat[line_number]
+        if len(row) != the_info["size"]:
+            logger.warn("Mismatching csv row size %d at %s:%d, expected %d. Ignoring this line.",
+                len(row), file_path, line_number, the_info["size"])
+            bad_rows.append(line_number)
+            continue
         for i in the_info["strpos"]:
             row[i] = 0
+    
+    # Remove the bad rows, but in reverse to avoid changing indices when removing rows:
+    bad_rows.reverse()
+    for line_number in bad_rows:
+        del raw_mat[line_number]
     
     try:
         mat = np.array(raw_mat).astype(float)

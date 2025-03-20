@@ -152,9 +152,12 @@ class TfCache(object):
             typestore = get_typestore(Stores.ROS1_NOETIC)
             for connection in reader.connections:
                 if connection.msgtype == SUPPORTED_TF_MSG:
+                    # Handle msgdef type change in rosbags 0.10.9 (Python 3.10+)
+                    # Remove this once support for Noetic / 3.8 gets dropped.
+                    msgdef = connection.msgdef
+                    msgdef = msgdef if isinstance(msgdef, str) else msgdef.data # type: ignore
                     typestore.register(
-                        get_types_from_msg(connection.msgdef,
-                                           connection.msgtype))
+                        get_types_from_msg(msgdef, connection.msgtype)) # type: ignore
                     break
         else:
             typestore = get_typestore(Stores.LATEST)

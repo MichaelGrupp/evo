@@ -84,6 +84,8 @@ See the `pyproject.toml` file for all details.
 
 PyQt5 will give you the enhanced GUI for plot figures from the "*Qt5Agg*" matplotlib backend (otherwise: "*TkAgg*"). If PyQt5 is already installed when installing this package, it will be used as a default (see `evo_config show`). To change the plot backend afterwards, run `evo_config set plot_backend Qt5Agg`.
 
+If you run into issues with installing tkinter, trying PyQt5 is a good idea. 
+
 **ROS (optional)**
 
 Some ROS-related features require a ROS installation, see [here](http://www.ros.org/). We are testing this package with ROS Noetic and Jazzy.

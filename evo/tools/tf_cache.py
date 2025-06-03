@@ -148,19 +148,17 @@ class TfCache(object):
     @staticmethod
     def _setup_typestore(
             reader: Union[Rosbag1Reader, Rosbag2Reader]) -> Typestore:
-        if isinstance(reader, Rosbag1Reader):
-            typestore = get_typestore(Stores.ROS1_NOETIC)
-            for connection in reader.connections:
-                if connection.msgtype == SUPPORTED_TF_MSG:
-                    # Handle msgdef type change in rosbags 0.10.9 (Python 3.10+)
-                    # Remove this once support for Noetic / 3.8 gets dropped.
-                    msgdef = connection.msgdef
-                    msgdef = msgdef if isinstance(msgdef, str) else msgdef.data # type: ignore
-                    typestore.register(
-                        get_types_from_msg(msgdef, connection.msgtype)) # type: ignore
-                    break
-        else:
-            typestore = get_typestore(Stores.LATEST)
+        if isinstance(reader, Rosbag2Reader):
+            return get_typestore(Stores.LATEST)
+
+        typestore = get_typestore(Stores.ROS1_NOETIC)
+        for connection in reader.connections:
+            if connection.msgtype == SUPPORTED_TF_MSG:
+                typestore.register(
+                    get_types_from_msg(connection.msgdef.data,
+                                       connection.msgtype))
+                break
+
         return typestore
 
     def from_bag(self, reader: Union[Rosbag1Reader, Rosbag2Reader],

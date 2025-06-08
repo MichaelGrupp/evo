@@ -3,7 +3,7 @@ Functions for easier logging of evo data into rerun.
 """
 
 from dataclasses import dataclass
-from typing import Optional, Iterable
+from typing import Optional, Sequence
 
 import rerun as rr
 from rerun.datatypes import Float64ArrayLike, Float32ArrayLike, Rgba32ArrayLike
@@ -28,7 +28,7 @@ class Color:
     # <Archetype>.columns(..., colors= ) only works with int32 colors,
     # not RGBA tuples that e.g. from_fields supports (otherwise: Arrow error).
     # TODO: this should be documented/checked clearer in rerun?
-    sequential: Optional[Iterable[int]] = None  # [0xffaabbcc, ...]
+    sequential: Optional[Sequence[int]] = None  # [0xffaabbcc, ...]
 
     def __post_init__(self):
         if self.sequential is not None and self.static is not None:
@@ -43,7 +43,7 @@ def _to_time_column(timestamps: np.ndarray) -> rr.TimeColumn:
     return rr.TimeColumn(TIMELINE, timestamp=list(timestamps))
 
 
-def mapped_colors(cmap_name: str, values: np.ndarray) -> Iterable[int]:
+def mapped_colors(cmap_name: str, values: np.ndarray) -> Sequence[int]:
     """
     Creates a color sequence from scalar values using a matplotlib colormap.
     """
@@ -55,7 +55,10 @@ def mapped_colors(cmap_name: str, values: np.ndarray) -> Iterable[int]:
     # not RGBA tuples that e.g. from_fields supports?
     # TODO: this should be clearer checked in rerun?
     return [
-        int(f"0x{rgb2hex(mapper.to_rgba(v), keep_alpha=True).strip('#')}", base=16)
+        int(
+            f"0x{rgb2hex(tuple(mapper.to_rgba(v)), keep_alpha=True).strip('#')}",
+            base=16,
+        )
         for v in values
     ]
 

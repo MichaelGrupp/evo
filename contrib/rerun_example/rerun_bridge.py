@@ -159,7 +159,7 @@ def log_correspondence_strips(
     Logs LineStrips3D connecting corresponding poses of two synced trajectories to rerun.
     """
     if not traj_1.num_poses == traj_2.num_poses:
-        ValueError("trajectories must be synced")
+        raise ValueError("trajectories must be synced")
 
     correspondences = [
         [p1, p2] for p1, p2 in zip(traj_1.positions_xyz, traj_2.positions_xyz)

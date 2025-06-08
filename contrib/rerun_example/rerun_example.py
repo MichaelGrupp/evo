@@ -76,7 +76,7 @@ def configure_blueprint() -> rr.BlueprintLike:
     )
 
 
-if __name__ == "__main__":
+def run_demo() -> None:
     print("Loading data and computing metrics.")
     groundtruth, estimate, ape = example_data()
 
@@ -131,3 +131,7 @@ if __name__ == "__main__":
     )
 
     print("Done, use the rerun viewer window to view and replay the data.")
+
+
+if __name__ == "__main__":
+    run_demo()

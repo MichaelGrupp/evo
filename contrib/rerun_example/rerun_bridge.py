@@ -32,7 +32,8 @@ class Color:
 
     def __post_init__(self):
         if self.sequential is not None and self.static is not None:
-            raise ValueError("can't use sequential and static colors simultaneously")
+            raise ValueError(
+                "can't use sequential and static colors simultaneously")
 
 
 def _to_time_column(timestamps: np.ndarray) -> rr.TimeColumn:
@@ -58,14 +59,12 @@ def mapped_colors(cmap_name: str, values: np.ndarray) -> Sequence[int]:
         int(
             f"0x{rgb2hex(tuple(mapper.to_rgba(v)), keep_alpha=True).strip('#')}",
             base=16,
-        )
-        for v in values
+        ) for v in values
     ]
 
 
-def log_transforms(
-    entity_path: str, traj: PoseTrajectory3D, axis_length: float
-) -> None:
+def log_transforms(entity_path: str, traj: PoseTrajectory3D,
+                   axis_length: float) -> None:
     """
     Logs the trajectory poses as Transform3D to rerun.
     """
@@ -73,9 +72,8 @@ def log_transforms(
     rr.send_columns(
         entity_path,
         indexes=[_to_time_column(traj.timestamps)],
-        columns=rr.Transform3D.columns(
-            translation=traj.positions_xyz, quaternion=quaternions_xyzw
-        ),
+        columns=rr.Transform3D.columns(translation=traj.positions_xyz,
+                                       quaternion=quaternions_xyzw),
     )
     rr.log(
         entity_path,
@@ -93,13 +91,16 @@ def log_line_strips(
     """
     Logs connections between trajectory poses as LineStrips3D to rerun.
     """
-    strips = [[a, b] for a, b in zip(traj.positions_xyz, traj.positions_xyz[1:])]
+    strips = [[a, b]
+              for a, b in zip(traj.positions_xyz, traj.positions_xyz[1:])]
     strip_timestamps = traj.timestamps[1:]
 
     rr.send_columns(
         entity_path,
         indexes=[_to_time_column(strip_timestamps)],
-        columns=[*rr.LineStrips3D.columns(strips=strips, colors=color.sequential)],
+        columns=[
+            *rr.LineStrips3D.columns(strips=strips, colors=color.sequential)
+        ],
     )
     rr.log(
         entity_path,
@@ -121,7 +122,8 @@ def log_points(
         entity_path,
         indexes=[_to_time_column(traj.timestamps)],
         columns=[
-            *rr.Points3D.columns(positions=traj.positions_xyz, colors=color.sequential)
+            *rr.Points3D.columns(positions=traj.positions_xyz,
+                                 colors=color.sequential)
         ],
     )
     rr.log(
@@ -146,9 +148,8 @@ def log_scalars(
         indexes=[_to_time_column(timestamps)],
         columns=rr.Scalars.columns(scalars=scalars),
     )
-    rr.log(
-        entity_path, rr.SeriesLines(colors=color.static, names=labelname), static=True
-    )
+    rr.log(entity_path, rr.SeriesLines(colors=color.static, names=labelname),
+           static=True)
 
 
 def log_correspondence_strips(
@@ -171,7 +172,8 @@ def log_correspondence_strips(
         entity_path,
         indexes=[_to_time_column(traj_1.timestamps)],
         columns=[
-            *rr.LineStrips3D.columns(strips=correspondences, colors=color.sequential)
+            *rr.LineStrips3D.columns(strips=correspondences,
+                                     colors=color.sequential)
         ],
     )
     rr.log(

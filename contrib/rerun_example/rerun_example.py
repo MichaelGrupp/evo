@@ -57,7 +57,8 @@ def configure_blueprint() -> rr.BlueprintLike:
     # instead of "latest" for better visibility. Can be changed also in the viewer.
     time_range = rrb.VisibleTimeRange(
         timeline=revo.TIMELINE,
-        start=rrb.TimeRangeBoundary.cursor_relative(seconds=-VISIBLE_TIME_WINDOW),
+        start=rrb.TimeRangeBoundary.cursor_relative(
+            seconds=-VISIBLE_TIME_WINDOW),
         end=rrb.TimeRangeBoundary.cursor_relative(seconds=0.0),
     )
 
@@ -102,9 +103,8 @@ if __name__ == "__main__":
         POINT_RADIUS,
         revo.Color(static=to_rgba("grey")),
     )
-    revo.log_points(
-        "/estimate/points", estimate, POINT_RADIUS, revo.Color(static=to_rgba("orange"))
-    )
+    revo.log_points("/estimate/points", estimate, POINT_RADIUS,
+                    revo.Color(static=to_rgba("orange")))
 
     revo.log_line_strips(
         "/groundtruth/lines",
@@ -119,7 +119,9 @@ if __name__ == "__main__":
         revo.Color(static=to_rgba("orange")),
     )
 
-    print("Logging pose correspondence lines colormapped by the error magnitude.")
+    print(
+        "Logging pose correspondence lines colormapped by the error magnitude."
+    )
     revo.log_correspondence_strips(
         "/error/correspondences",
         estimate,

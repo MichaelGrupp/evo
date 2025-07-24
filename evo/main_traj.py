@@ -63,6 +63,14 @@ def load_trajectories(args):
                 pose_file)
         if args.ref:
             ref_traj = file_interface.read_kitti_poses_file(args.ref)
+    elif args.subcommand == "colmap":
+        for colmap_file in args.colmap_files:
+            if colmap_file == args.ref:
+                continue
+            trajectories[colmap_file] = file_interface.read_colmap_trajectory_file(
+                colmap_file)
+        if args.ref:
+            ref_traj = file_interface.read_colmap_trajectory_file(args.ref)
     elif args.subcommand == "euroc":
         for csv_file in args.state_gt_csv:
             if csv_file == args.ref:

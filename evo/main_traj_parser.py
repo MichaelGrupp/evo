@@ -142,6 +142,13 @@ def parser() -> argparse.ArgumentParser:
         parents=[shared_parser])
     tum_parser.add_argument("traj_files",
                             help="one or multiple trajectory files", nargs='+')
+    
+    colmap_parser = sub_parsers.add_parser(
+        "colmap",
+        description="%s for COLMAP trajectory files - %s" % (basic_desc, lic),
+        parents=[shared_parser])
+    colmap_parser.add_argument("colmap_files",
+                            help="one or multiple trajectory files", nargs='+')
 
     euroc_parser = sub_parsers.add_parser(
         "euroc",

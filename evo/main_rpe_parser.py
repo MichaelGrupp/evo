@@ -144,6 +144,12 @@ def parser() -> argparse.ArgumentParser:
     tum_parser.add_argument("ref_file", help="reference trajectory file")
     tum_parser.add_argument("est_file", help="estimated trajectory file")
 
+    colmap_parser = sub_parsers.add_parser(
+        "colmap", parents=[shared_parser],
+        description="{} for COLMAP trajectory files - {}".format(basic_desc, lic))
+    colmap_parser.add_argument("ref_file", help="reference trajectory file")
+    colmap_parser.add_argument("est_file", help="estimated trajectory file")
+
     euroc_parser = sub_parsers.add_parser(
         "euroc", parents=[shared_parser],
         description="{} for EuRoC MAV files - {}".format(basic_desc, lic))

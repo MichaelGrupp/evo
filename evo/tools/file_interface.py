@@ -571,4 +571,5 @@ def read_colmap_trajectory_file(file_path: PathStrHandle) -> PosePath3D:
     logger.debug("Loaded {} poses from COLMAP: {}".format(
         len(positions_xyz), file_path))
     
-    return PosePath3D(positions_xyz, orientations_quat_wxyz)
+    # Use image ids as timestamps so that we can plot compare with evo_traj
+    return PoseTrajectory3D(positions_xyz, orientations_quat_wxyz, np.arange(len(positions_xyz), dtype=float))

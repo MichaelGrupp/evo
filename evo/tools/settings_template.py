@@ -214,6 +214,11 @@ DEFAULT_SETTINGS_DICT_DOC = {
         "Style used for the syntax highlighting in evo_config.\n"
         "See here for available styles: https://pygments.org/styles/"
     ),
+    "rerun_spawn": (
+        True,
+        "Spawn a viewer window when logging data to rerun.\n"
+        "If set to False, the viewer must be started manually."
+    ),
     "ros_map_alpha_value": (
         1.0,
         "Alpha value for blending ROS map image slices."

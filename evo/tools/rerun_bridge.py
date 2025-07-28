@@ -44,6 +44,13 @@ def _to_time_column(timestamps: np.ndarray) -> rr.TimeColumn:
     return rr.TimeColumn(TIMELINE, timestamp=list(timestamps))
 
 
+def ui_points_radii(value: Float32ArrayLike) -> Float32ArrayLike:
+    """
+    rerun interprets negative radii as points in screen space.
+    """
+    return -np.abs(value)
+
+
 def mapped_colors(cmap_name: str, values: np.ndarray) -> Sequence[int]:
     """
     Creates a color sequence from scalar values using a matplotlib colormap.

@@ -23,10 +23,14 @@ import logging
 import typing
 from pathlib import Path
 
+import numpy as np
+
+from evo import EvoException
 from evo.core.filters import FilterException
 from evo.core.metrics import PoseRelation, Unit
 from evo.core.result import Result
 from evo.core.trajectory import PosePath3D, PoseTrajectory3D
+from evo.tools.settings import SETTINGS
 
 logger = logging.getLogger(__name__)
 
@@ -231,3 +235,109 @@ def plot_result(args: argparse.Namespace, result: Result, traj_ref: PosePath3D,
         plot_collection.serialize(args.serialize_plot,
                                   confirm_overwrite=not args.no_warnings)
     plot_collection.close()
+
+
+def log_result_to_rerun(entity_parent: str, result: Result,
+                        traj_ref: PoseTrajectory3D,
+                        traj_est: PoseTrajectory3D) -> None:
+    if not isinstance(traj_ref, PoseTrajectory3D) and not isinstance(
+            traj_est, PoseTrajectory3D):
+        raise EvoException(
+            "Logging to rerun requires trajectories with timestamps.")
+
+    import rerun as rr
+    import rerun.blueprint as rrb
+    from matplotlib.colors import to_rgba
+
+    from evo.tools import rerun_bridge as revo
+    from evo.tools.rerun_bridge import mapped_colors
+
+    # TODO application ID
+    rr.init("evo", spawn=SETTINGS.rerun_spawn)
+
+    time_range = rrb.VisibleTimeRange(
+        timeline=revo.TIMELINE,
+        start=rrb.TimeRangeBoundary.infinite(),
+        end=rrb.TimeRangeBoundary.cursor_relative(seconds=0.0),
+    )
+
+    # Show a 3D view and a plot.
+    rr.send_blueprint(
+        rrb.Blueprint(
+            rrb.Grid(
+                contents=[
+                    rrb.Spatial3DView(time_ranges=time_range),
+                    rrb.TimeSeriesView(time_ranges=time_range),
+                ],
+                column_shares=None,
+                row_shares=[2.5, 1.],
+                grid_columns=1,
+            ),
+            # Expand/collapse the selection and detailed time panels by default?
+            rrb.SelectionPanel(expanded=False),
+            rrb.TimePanel(expanded=False),
+        ))
+
+    revo.log_transforms(entity_path=f"{entity_parent}/reference/transforms",
+                        traj=traj_ref,
+                        axis_length=SETTINGS.plot_axis_marker_scale)
+    revo.log_transforms(entity_path=f"{entity_parent}/estimate/transforms",
+                        traj=traj_est,
+                        axis_length=SETTINGS.plot_axis_marker_scale)
+
+    error_array = result.np_arrays["error_array"]
+    if entity_parent == "evo_rpe":
+        # Pad RPE with 0. at the start to match the length of APE error arrays.
+        error_array = np.insert(error_array, 0, 0.0)
+    error_colors = mapped_colors(SETTINGS.plot_trajectory_cmap, error_array)
+
+    # Log the estimate's trajectory with colors mapped to the error.
+    revo.log_points(
+        entity_path=f"{entity_parent}/estimate/points",
+        traj=traj_est,
+        radii=revo.ui_points_radii(SETTINGS.plot_linewidth * 1.25),
+        color=revo.Color(sequential=error_colors),
+    )
+    revo.log_line_strips(
+        entity_path=f"{entity_parent}/estimate/lines",
+        traj=traj_est,
+        radii=revo.ui_points_radii(SETTINGS.plot_linewidth),
+        color=revo.Color(sequential=error_colors[1:]),
+    )
+
+    # Log the reference trajectory.
+    revo.log_points(
+        entity_path=f"{entity_parent}/reference/points",
+        traj=traj_ref,
+        radii=revo.ui_points_radii(SETTINGS.plot_linewidth * 1.25),
+        color=revo.Color(static=to_rgba(SETTINGS.plot_reference_color,
+                                        alpha=SETTINGS.plot_reference_alpha)),
+    )
+    revo.log_line_strips(
+        entity_path=f"{entity_parent}/reference/lines",
+        traj=traj_ref,
+        radii=revo.ui_points_radii(SETTINGS.plot_linewidth),
+        color=revo.Color(static=to_rgba(SETTINGS.plot_reference_color,
+                                        alpha=SETTINGS.plot_reference_alpha)),
+    )
+
+    # Log the correspondence edges if enabled.
+    if SETTINGS.plot_pose_correspondences:
+        revo.log_correspondence_strips(
+            entity_path=f"{entity_parent}/error/correspondences",
+            traj_1=traj_est,
+            traj_2=traj_ref,
+            color=revo.Color(
+                static=to_rgba(SETTINGS.plot_reference_color,
+                               alpha=SETTINGS.plot_reference_alpha)),
+            radii=revo.ui_points_radii(SETTINGS.plot_linewidth / 2.),
+        )
+
+    # Log the error scalars.
+    revo.log_scalars(
+        entity_path=f"{entity_parent}/error/scalars",
+        scalars=error_array,
+        timestamps=traj_est.timestamps,
+        color=revo.Color(static=to_rgba("red")),
+        labelname=str(result.info["title"]),
+    )

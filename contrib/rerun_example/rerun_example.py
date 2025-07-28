@@ -21,8 +21,7 @@ from matplotlib.colors import to_rgba
 from evo.core.trajectory import PoseTrajectory3D
 from evo.core import metrics, sync
 from evo.tools import file_interface
-
-import rerun_bridge as revo
+from evo.tools import rerun_bridge as revo
 
 # The script assumes that it sits in the contrib/rerun_example directory of the evo repo.
 TEST_DATA_DIR = Path(__file__).parent.parent.parent / "test/data"

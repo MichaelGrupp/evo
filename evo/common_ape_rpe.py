@@ -289,13 +289,6 @@ def log_result_to_rerun(app_id: str, result: Result,
             rrb.TimePanel(expanded=False),
         ))
 
-    revo.log_transforms(entity_path=f"{app_id}/reference/transforms",
-                        traj=traj_ref,
-                        axis_length=SETTINGS.plot_axis_marker_scale)
-    revo.log_transforms(entity_path=f"{app_id}/estimate/transforms",
-                        traj=traj_est,
-                        axis_length=SETTINGS.plot_axis_marker_scale)
-
     error_array = result.np_arrays["error_array"]
     if app_id == "evo_rpe":
         # Pad RPE with 0. at the start to match the length of APE error arrays.
@@ -303,6 +296,9 @@ def log_result_to_rerun(app_id: str, result: Result,
     error_colors = mapped_colors(SETTINGS.plot_trajectory_cmap, error_array)
 
     # Log the estimate's trajectory with colors mapped to the error.
+    revo.log_transforms(entity_path=f"{app_id}/estimate/transforms",
+                        traj=traj_est,
+                        axis_length=SETTINGS.plot_axis_marker_scale)
     revo.log_points(
         entity_path=f"{app_id}/estimate/points",
         traj=traj_est,
@@ -317,6 +313,9 @@ def log_result_to_rerun(app_id: str, result: Result,
     )
 
     # Log the reference trajectory.
+    revo.log_transforms(entity_path=f"{app_id}/reference/transforms",
+                        traj=traj_ref,
+                        axis_length=SETTINGS.plot_axis_marker_scale)
     revo.log_points(
         entity_path=f"{app_id}/reference/points",
         traj=traj_ref,

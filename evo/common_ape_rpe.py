@@ -261,18 +261,29 @@ def log_result_to_rerun(entity_parent: str, result: Result,
         end=rrb.TimeRangeBoundary.cursor_relative(seconds=0.0),
     )
 
-    # Show a 3D view and a plot.
+    # Configure the blueprint (3D view, plot, etc.).
     rr.send_blueprint(
         rrb.Blueprint(
-            rrb.Grid(
-                contents=[
-                    rrb.Spatial3DView(time_ranges=time_range),
-                    rrb.TimeSeriesView(time_ranges=time_range),
-                ],
-                column_shares=None,
-                row_shares=[2.5, 1.],
-                grid_columns=1,
-            ),
+            rrb.Tabs(contents=[
+                rrb.Grid(
+                    name="Visualization",
+                    contents=[
+                        rrb.Spatial3DView(name="Trajectories",
+                                          time_ranges=time_range),
+                        rrb.TimeSeriesView(name="Error",
+                                           time_ranges=time_range),
+                    ],
+                    column_shares=None,
+                    row_shares=[2.5, 1.],
+                    grid_columns=1,
+                ),
+                rrb.DataframeView(
+                    name="Raw Data", origin=f"/{entity_parent}", contents=[
+                        "$origin/reference/transforms",
+                        "$origin/estimate/transforms",
+                        "$origin/error/scalars",
+                    ]),
+            ]),
             # Expand/collapse the selection and detailed time panels by default?
             rrb.SelectionPanel(expanded=False),
             rrb.TimePanel(expanded=False),

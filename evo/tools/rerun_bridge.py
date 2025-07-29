@@ -13,6 +13,7 @@ import matplotlib.cm
 from matplotlib.colors import Normalize, rgb2hex
 
 from evo.core.trajectory import PoseTrajectory3D
+from evo.tools.settings import SETTINGS
 
 TIMELINE = "time"
 
@@ -191,4 +192,26 @@ def log_correspondence_strips(
         entity_path,
         rr.LineStrips3D.from_fields(colors=color.static, radii=radii),
         static=True,
+    )
+
+
+def log_trajectory(entity_path: str, traj: PoseTrajectory3D,
+                   color: Color) -> None:
+    """
+    Convenience function to log transforms, points, and lines to rerun.
+    """
+    log_transforms(entity_path=f"{entity_path}/transforms", traj=traj,
+                   axis_length=SETTINGS.plot_axis_marker_scale)
+    log_points(
+        entity_path=f"{entity_path}/points",
+        traj=traj,
+        radii=ui_points_radii(SETTINGS.plot_linewidth * 1.25),
+        color=color,
+    )
+    log_line_strips(
+        entity_path=f"{entity_path}/lines",
+        traj=traj,
+        radii=ui_points_radii(SETTINGS.plot_linewidth),
+        color=color if color.static is not None else Color(
+            sequential=color.sequential[1:]),
     )

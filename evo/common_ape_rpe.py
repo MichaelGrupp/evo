@@ -295,41 +295,12 @@ def log_result_to_rerun(app_id: str, result: Result,
         error_array = np.insert(error_array, 0, 0.0)
     error_colors = mapped_colors(SETTINGS.plot_trajectory_cmap, error_array)
 
-    # Log the estimate's trajectory with colors mapped to the error.
-    revo.log_transforms(entity_path=f"{app_id}/estimate/transforms",
-                        traj=traj_est,
-                        axis_length=SETTINGS.plot_axis_marker_scale)
-    revo.log_points(
-        entity_path=f"{app_id}/estimate/points",
-        traj=traj_est,
-        radii=revo.ui_points_radii(SETTINGS.plot_linewidth * 1.25),
-        color=revo.Color(sequential=error_colors),
-    )
-    revo.log_line_strips(
-        entity_path=f"{app_id}/estimate/lines",
-        traj=traj_est,
-        radii=revo.ui_points_radii(SETTINGS.plot_linewidth),
-        color=revo.Color(sequential=error_colors[1:]),
-    )
-
-    # Log the reference trajectory.
-    revo.log_transforms(entity_path=f"{app_id}/reference/transforms",
-                        traj=traj_ref,
-                        axis_length=SETTINGS.plot_axis_marker_scale)
-    revo.log_points(
-        entity_path=f"{app_id}/reference/points",
-        traj=traj_ref,
-        radii=revo.ui_points_radii(SETTINGS.plot_linewidth * 1.25),
+    revo.log_trajectory(entity_path=f"{app_id}/estimate", traj=traj_est,
+                        color=revo.Color(sequential=error_colors))
+    revo.log_trajectory(
+        entity_path=f"{app_id}/reference", traj=traj_ref,
         color=revo.Color(static=to_rgba(SETTINGS.plot_reference_color,
-                                        alpha=SETTINGS.plot_reference_alpha)),
-    )
-    revo.log_line_strips(
-        entity_path=f"{app_id}/reference/lines",
-        traj=traj_ref,
-        radii=revo.ui_points_radii(SETTINGS.plot_linewidth),
-        color=revo.Color(static=to_rgba(SETTINGS.plot_reference_color,
-                                        alpha=SETTINGS.plot_reference_alpha)),
-    )
+                                        alpha=SETTINGS.plot_reference_alpha)))
 
     # Log the correspondence edges if enabled.
     if SETTINGS.plot_pose_correspondences:

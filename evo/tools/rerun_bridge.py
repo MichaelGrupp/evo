@@ -16,6 +16,14 @@ from evo.core.trajectory import PoseTrajectory3D
 
 TIMELINE = "time"
 
+# Ensure that rerun is at least version 0.24.0,
+# which has the fix for timestamps columns.
+# https://github.com/rerun-io/rerun/issues/10167
+from packaging import version
+if version.parse(rr.__version__) < version.parse("0.24.0"):
+    raise ImportError(
+        f"rerun >= 0.24.0 is required, installed version: {rr.__version__}")
+
 
 @dataclass
 class Color:
@@ -27,7 +35,7 @@ class Color:
     static: Optional[Rgba32ArrayLike] = None
     # <Archetype>.columns(..., colors= ) only works with int32 colors,
     # not RGBA tuples that e.g. from_fields supports (otherwise: Arrow error).
-    # TODO: this should be documented/checked clearer in rerun?
+    # TODO: https://github.com/rerun-io/rerun/issues/10170
     sequential: Optional[Sequence[int]] = None  # [0xffaabbcc, ...]
 
     def __post_init__(self):
@@ -37,11 +45,7 @@ class Color:
 
 
 def _to_time_column(timestamps: np.ndarray) -> rr.TimeColumn:
-    # TimeColumn interprets any numpy timestamp array as nanoseconds...?
-    # Make sure to use a list instead.
-    # TODO: check why TimeColumn.__init__() only likes float epoch seconds only
-    # from non-numpy iterables.
-    return rr.TimeColumn(TIMELINE, timestamp=list(timestamps))
+    return rr.TimeColumn(TIMELINE, timestamp=timestamps)
 
 
 def ui_points_radii(value: Float32ArrayLike) -> Float32ArrayLike:
@@ -61,7 +65,7 @@ def mapped_colors(cmap_name: str, values: np.ndarray) -> Sequence[int]:
     mapper.set_array(values)
     # <Archetype>.columns(..., colors= ) only works with int colors,
     # not RGBA tuples that e.g. from_fields supports?
-    # TODO: this should be clearer checked in rerun?
+    # TODO: https://github.com/rerun-io/rerun/issues/10170
     return [
         int(
             f"0x{rgb2hex(tuple(mapper.to_rgba(v)), keep_alpha=True).strip('#')}",

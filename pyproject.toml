@@ -59,6 +59,7 @@ dependencies = [
     "pyyaml",
     "pillow",
     "rosbags>=0.10.9",
+    "packaging",
 ]
 
 [project.optional-dependencies]

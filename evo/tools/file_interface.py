@@ -532,3 +532,44 @@ def load_transform(file_path: PathStr) -> np.ndarray:
         raise FileInterfaceException(
             f"{file_path} doesn't contain a valid Sim(3) or SE(3) matrix")
     return matrix
+
+
+def read_colmap_trajectory_file(file_path: PathStrHandle) -> PosePath3D:
+    """
+    parses camera trajectory from COLMAP images file
+    :param file_path: path to COLMAP images.txt or images.bin file
+    :return: trajectory.PosePath3D object
+    """
+    from evo.tools import read_write_model
+    
+    # Determine if it's binary or text format based on extension
+    file_path = str(file_path)
+    if file_path.endswith('.bin'):
+        images = read_write_model.read_images_binary(file_path)
+    elif file_path.endswith('.txt'):
+        images = read_write_model.read_images_text(file_path)
+    else:
+        raise FileInterfaceException("Unsupported file extension for COLMAP trajectory reader (not .bin or .txt)")
+    
+    # Sort images by ID to ensure consistent ordering
+    sorted_images = sorted(images.values(), key=lambda img: img.id)
+    
+    # Extract positions and orientations
+    positions_xyz = []
+    orientations_quat_wxyz = []
+    
+    for image in sorted_images:
+        # COLMAP stores camera-to-world transformation
+        # qvec is in (qw, qx, qy, qz) format, which matches evo's expected format
+        # tvec is the camera center in world coordinates
+        positions_xyz.append(image.tvec)
+        orientations_quat_wxyz.append(image.qvec)
+    
+    positions_xyz = np.array(positions_xyz)
+    orientations_quat_wxyz = np.array(orientations_quat_wxyz)
+    
+    logger.debug("Loaded {} poses from COLMAP: {}".format(
+        len(positions_xyz), file_path))
+    
+    # Use image ids as timestamps so that we can plot compare with evo_traj
+    return PoseTrajectory3D(positions_xyz, orientations_quat_wxyz, np.arange(len(positions_xyz), dtype=float))

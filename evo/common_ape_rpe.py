@@ -240,11 +240,6 @@ def plot_result(args: argparse.Namespace, result: Result, traj_ref: PosePath3D,
 def log_result_to_rerun(app_id: str, result: Result,
                         traj_ref: PoseTrajectory3D,
                         traj_est: PoseTrajectory3D) -> None:
-    if not isinstance(traj_ref, PoseTrajectory3D) and not isinstance(
-            traj_est, PoseTrajectory3D):
-        raise EvoException(
-            "Logging to rerun requires trajectories with timestamps.")
-
     import rerun as rr
     import rerun.blueprint as rrb
     from matplotlib.colors import to_rgba
@@ -252,6 +247,8 @@ def log_result_to_rerun(app_id: str, result: Result,
     from evo.tools import rerun_bridge as revo
     from evo.tools.rerun_bridge import mapped_colors
 
+    logger.debug(SEP)
+    logger.debug("Logging data to rerun.")
     rr.init(app_id, spawn=SETTINGS.rerun_spawn)
 
     time_range = rrb.VisibleTimeRange(

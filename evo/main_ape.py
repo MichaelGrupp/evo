@@ -138,9 +138,8 @@ def run(args: argparse.Namespace) -> None:
     # Otherwise filtering might mess up the sync.
     common.downsample_or_filter(args, traj_ref, traj_est)
 
-    has_timestamps = isinstance(traj_ref, PoseTrajectory3D) and isinstance(
-        traj_est, PoseTrajectory3D)
-    if has_timestamps:
+    if isinstance(traj_ref, PoseTrajectory3D) and isinstance(
+            traj_est, PoseTrajectory3D):
         logger.debug(SEP)
         if args.t_start or args.t_end:
             if args.t_start:
@@ -160,7 +159,8 @@ def run(args: argparse.Namespace) -> None:
                  est_name=est_name, change_unit=change_unit,
                  project_to_plane=plane)
 
-    if args.rerun and has_timestamps:
+    if args.rerun and isinstance(traj_ref, PoseTrajectory3D) and isinstance(
+            traj_est, PoseTrajectory3D):
         common.log_result_to_rerun("evo_ape", result, traj_ref, traj_est)
     elif args.rerun:
         logger.warning(

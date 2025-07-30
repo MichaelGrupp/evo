@@ -53,7 +53,7 @@ def ui_points_radii(value: Float32ArrayLike) -> Float32ArrayLike:
     """
     rerun interprets negative radii as points in screen space.
     """
-    return -np.abs(value)
+    return -np.abs(value)  # type: ignore
 
 
 def mapped_colors(cmap_name: str, values: np.ndarray) -> Sequence[int]:
@@ -168,7 +168,7 @@ def log_correspondence_strips(
     entity_path: str,
     traj_1: PoseTrajectory3D,
     traj_2: PoseTrajectory3D,
-    radii: float,
+    radii: Float32ArrayLike,
     color: Color,
 ):
     """
@@ -215,6 +215,5 @@ def log_trajectory(entity_path: str, traj: PoseTrajectory3D,
         entity_path=f"{entity_path}/lines",
         traj=traj,
         radii=ui_points_radii(SETTINGS.plot_linewidth),
-        color=color if color.static is not None else Color(
-            sequential=color.sequential[1:]),
+        color=Color(color.sequential[1:]) if color.sequential else color,
     )

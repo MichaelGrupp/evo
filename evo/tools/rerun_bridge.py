@@ -200,6 +200,9 @@ def log_trajectory(entity_path: str, traj: PoseTrajectory3D,
     """
     Convenience function to log transforms, points, and lines to rerun.
     """
+    # Note: in contrast to plot.py, we always log transform axes here.
+    # If the scale is 0., you can still make it visible in the rerun
+    # viewer by changing the length in the entity settings after logging.
     log_transforms(entity_path=f"{entity_path}/transforms", traj=traj,
                    axis_length=SETTINGS.plot_axis_marker_scale)
     log_points(

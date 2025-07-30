@@ -23,10 +23,14 @@ import logging
 import typing
 from pathlib import Path
 
+import numpy as np
+
+from evo import EvoException
 from evo.core.filters import FilterException
 from evo.core.metrics import PoseRelation, Unit
 from evo.core.result import Result
 from evo.core.trajectory import PosePath3D, PoseTrajectory3D
+from evo.tools.settings import SETTINGS
 
 logger = logging.getLogger(__name__)
 
@@ -231,3 +235,88 @@ def plot_result(args: argparse.Namespace, result: Result, traj_ref: PosePath3D,
         plot_collection.serialize(args.serialize_plot,
                                   confirm_overwrite=not args.no_warnings)
     plot_collection.close()
+
+
+def log_result_to_rerun(app_id: str, result: Result,
+                        traj_ref: PoseTrajectory3D,
+                        traj_est: PoseTrajectory3D) -> None:
+    import rerun as rr
+    import rerun.blueprint as rrb
+    from matplotlib.colors import to_rgba
+
+    from evo.tools import rerun_bridge as revo
+    from evo.tools.rerun_bridge import mapped_colors
+
+    logger.debug(SEP)
+    logger.debug("Logging data to rerun.")
+    rr.init(app_id, spawn=SETTINGS.rerun_spawn)
+
+    time_range = rrb.VisibleTimeRange(
+        timeline=revo.TIMELINE,
+        start=rrb.TimeRangeBoundary.infinite(),
+        end=rrb.TimeRangeBoundary.cursor_relative(seconds=0.0),
+    )
+
+    # Configure the blueprint (3D view, plot, etc.).
+    rr.send_blueprint(
+        rrb.Blueprint(
+            rrb.Tabs(contents=[
+                rrb.Grid(
+                    name="Visualization",
+                    contents=[
+                        rrb.Spatial3DView(name="Trajectories",
+                                          time_ranges=time_range),
+                        rrb.TimeSeriesView(name="Error",
+                                           time_ranges=time_range,
+                                           plot_legend=rrb.Corner2D.RightTop),
+                    ],
+                    column_shares=None,
+                    row_shares=[2.5, 1.],
+                    grid_columns=1,
+                ),
+                rrb.DataframeView(
+                    name="Raw Data", origin=f"/{app_id}", contents=[
+                        "$origin/reference/transforms",
+                        "$origin/estimate/transforms",
+                        "$origin/error/scalars",
+                    ]),
+            ]),
+            # Expand/collapse the selection and detailed time panels by default?
+            rrb.SelectionPanel(expanded=False),
+            rrb.TimePanel(expanded=False),
+        ))
+
+    error_array = result.np_arrays["error_array"]
+    if app_id == "evo_rpe":
+        # Pad RPE with 0. at the start to match the length of APE error arrays.
+        error_array = np.insert(error_array, 0, 0.0)
+    error_colors = mapped_colors(SETTINGS.plot_trajectory_cmap, error_array)
+
+    revo.log_trajectory(entity_path=f"{app_id}/estimate", traj=traj_est,
+                        color=revo.Color(sequential=error_colors))
+    revo.log_trajectory(
+        entity_path=f"{app_id}/reference", traj=traj_ref,
+        color=revo.Color(static=to_rgba(SETTINGS.plot_reference_color,
+                                        alpha=SETTINGS.plot_reference_alpha)))
+
+    # Log the correspondence edges.
+    # In contrast to the matplotlib plot, we always do this here independent of
+    # SETTINGS.plot_pose_correspondences.
+    # It can be toggled in the rerun viewer and the logging is lightweight.
+    revo.log_correspondence_strips(
+        entity_path=f"{app_id}/error/correspondences",
+        traj_1=traj_est,
+        traj_2=traj_ref,
+        color=revo.Color(static=to_rgba(SETTINGS.plot_reference_color,
+                                        alpha=SETTINGS.plot_reference_alpha)),
+        radii=revo.ui_points_radii(SETTINGS.plot_linewidth / 2.),
+    )
+
+    # Log the error scalars.
+    revo.log_scalars(
+        entity_path=f"{app_id}/error/scalars",
+        scalars=error_array,
+        timestamps=traj_est.timestamps,
+        color=revo.Color(static=to_rgba("red")),
+        labelname=str(result.info["title"]),
+    )

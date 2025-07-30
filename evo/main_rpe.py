@@ -182,6 +182,14 @@ def run(args: argparse.Namespace) -> None:
                  ref_name=ref_name, est_name=est_name, change_unit=change_unit,
                  project_to_plane=plane)
 
+    if args.rerun and isinstance(traj_ref, PoseTrajectory3D) and isinstance(
+            traj_est, PoseTrajectory3D):
+        common.log_result_to_rerun("evo_rpe", result, traj_ref, traj_est)
+    elif args.rerun:
+        logger.warning(
+            "Rerun logging is only supported for trajectories with timestamps."
+        )
+
     if args.plot or args.save_plot or args.serialize_plot:
         common.plot_result(args, result, traj_ref,
                            result.trajectories[est_name],

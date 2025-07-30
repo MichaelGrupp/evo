@@ -109,6 +109,8 @@ def parser() -> argparse.ArgumentParser:
                              help="path to save plot")
     output_opts.add_argument("--serialize_plot", default=None,
                              help="path to serialize plot (experimental)")
+    output_opts.add_argument("--rerun", action="store_true",
+                             help="Log visualization data to rerun.")
     output_opts.add_argument("--save_results",
                              help=".zip file path to store results")
     output_opts.add_argument("--logfile", help="Local logfile path.",

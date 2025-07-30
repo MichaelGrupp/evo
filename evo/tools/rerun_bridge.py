@@ -13,8 +13,17 @@ import matplotlib.cm
 from matplotlib.colors import Normalize, rgb2hex
 
 from evo.core.trajectory import PoseTrajectory3D
+from evo.tools.settings import SETTINGS
 
 TIMELINE = "time"
+
+# Ensure that rerun is at least version 0.24.0,
+# which has the fix for timestamps columns.
+# https://github.com/rerun-io/rerun/issues/10167
+from packaging import version
+if version.parse(rr.__version__) < version.parse("0.24.0"):
+    raise ImportError(
+        f"rerun >= 0.24.0 is required, installed version: {rr.__version__}")
 
 
 @dataclass
@@ -27,7 +36,7 @@ class Color:
     static: Optional[Rgba32ArrayLike] = None
     # <Archetype>.columns(..., colors= ) only works with int32 colors,
     # not RGBA tuples that e.g. from_fields supports (otherwise: Arrow error).
-    # TODO: this should be documented/checked clearer in rerun?
+    # TODO: https://github.com/rerun-io/rerun/issues/10170
     sequential: Optional[Sequence[int]] = None  # [0xffaabbcc, ...]
 
     def __post_init__(self):
@@ -37,11 +46,14 @@ class Color:
 
 
 def _to_time_column(timestamps: np.ndarray) -> rr.TimeColumn:
-    # TimeColumn interprets any numpy timestamp array as nanoseconds...?
-    # Make sure to use a list instead.
-    # TODO: check why TimeColumn.__init__() only likes float epoch seconds only
-    # from non-numpy iterables.
-    return rr.TimeColumn(TIMELINE, timestamp=list(timestamps))
+    return rr.TimeColumn(TIMELINE, timestamp=timestamps)
+
+
+def ui_points_radii(value: Float32ArrayLike) -> Float32ArrayLike:
+    """
+    rerun interprets negative radii as points in screen space.
+    """
+    return -np.abs(value)  # type: ignore
 
 
 def mapped_colors(cmap_name: str, values: np.ndarray) -> Sequence[int]:
@@ -54,7 +66,7 @@ def mapped_colors(cmap_name: str, values: np.ndarray) -> Sequence[int]:
     mapper.set_array(values)
     # <Archetype>.columns(..., colors= ) only works with int colors,
     # not RGBA tuples that e.g. from_fields supports?
-    # TODO: this should be clearer checked in rerun?
+    # TODO: https://github.com/rerun-io/rerun/issues/10170
     return [
         int(
             f"0x{rgb2hex(tuple(mapper.to_rgba(v)), keep_alpha=True).strip('#')}",
@@ -156,7 +168,7 @@ def log_correspondence_strips(
     entity_path: str,
     traj_1: PoseTrajectory3D,
     traj_2: PoseTrajectory3D,
-    radii: float,
+    radii: Float32ArrayLike,
     color: Color,
 ):
     """
@@ -180,4 +192,29 @@ def log_correspondence_strips(
         entity_path,
         rr.LineStrips3D.from_fields(colors=color.static, radii=radii),
         static=True,
+    )
+
+
+def log_trajectory(entity_path: str, traj: PoseTrajectory3D,
+                   color: Color) -> None:
+    """
+    Convenience function to log transforms, points, and lines to rerun.
+    """
+    # Note: in contrast to plot.py, we always log transform axes here.
+    # If the scale is 0., you can still make it visible in the rerun
+    # viewer by changing the length in the entity settings after logging.
+    log_transforms(entity_path=f"{entity_path}/transforms", traj=traj,
+                   axis_length=SETTINGS.plot_axis_marker_scale)
+    log_points(
+        entity_path=f"{entity_path}/points",
+        traj=traj,
+        radii=ui_points_radii(SETTINGS.plot_linewidth * 1.25),
+        color=color,
+    )
+    log_line_strips(
+        entity_path=f"{entity_path}/lines",
+        traj=traj,
+        radii=ui_points_radii(SETTINGS.plot_linewidth),
+        color=Color(
+            sequential=color.sequential[1:]) if color.sequential else color,
     )

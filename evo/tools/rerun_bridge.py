@@ -215,5 +215,6 @@ def log_trajectory(entity_path: str, traj: PoseTrajectory3D,
         entity_path=f"{entity_path}/lines",
         traj=traj,
         radii=ui_points_radii(SETTINGS.plot_linewidth),
-        color=Color(color.sequential[1:]) if color.sequential else color,
+        color=Color(
+            sequential=color.sequential[1:]) if color.sequential else color,
     )

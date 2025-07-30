@@ -302,17 +302,18 @@ def log_result_to_rerun(app_id: str, result: Result,
         color=revo.Color(static=to_rgba(SETTINGS.plot_reference_color,
                                         alpha=SETTINGS.plot_reference_alpha)))
 
-    # Log the correspondence edges if enabled.
-    if SETTINGS.plot_pose_correspondences:
-        revo.log_correspondence_strips(
-            entity_path=f"{app_id}/error/correspondences",
-            traj_1=traj_est,
-            traj_2=traj_ref,
-            color=revo.Color(
-                static=to_rgba(SETTINGS.plot_reference_color,
-                               alpha=SETTINGS.plot_reference_alpha)),
-            radii=revo.ui_points_radii(SETTINGS.plot_linewidth / 2.),
-        )
+    # Log the correspondence edges.
+    # In contrast to the matplotlib plot, we always do this here independent of
+    # SETTINGS.plot_pose_correspondences.
+    # It can be toggled in the rerun viewer and the logging is lightweight.
+    revo.log_correspondence_strips(
+        entity_path=f"{app_id}/error/correspondences",
+        traj_1=traj_est,
+        traj_2=traj_ref,
+        color=revo.Color(static=to_rgba(SETTINGS.plot_reference_color,
+                                        alpha=SETTINGS.plot_reference_alpha)),
+        radii=revo.ui_points_radii(SETTINGS.plot_linewidth / 2.),
+    )
 
     # Log the error scalars.
     revo.log_scalars(

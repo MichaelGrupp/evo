@@ -25,8 +25,11 @@ jobs:
 - job: 'Docker'
   strategy:
     matrix:
-      ROS-kilted:
-        dockerfile: 'Dockerfile.ros-kilted'
+      ROS-noetic:
+        dockerfile: 'Dockerfile.rosnoetic'
+        imageName: 'ubuntu-latest'
+      ROS-jazzy:
+        dockerfile: 'Dockerfile.ros-jazzy'
         imageName: 'ubuntu-latest'
   pool:
     vmImage: $(imageName)
@@ -39,8 +42,8 @@ jobs:
 - job: 'Test'
   strategy:
     matrix:
-      Python-3.10-ubuntu:
-        python.version: '3.10'
+      Python-3.8-ubuntu:
+        python.version: '3.8'
         imageName: 'ubuntu-latest'
       Python-3.13-ubuntu:
         python.version: '3.13'

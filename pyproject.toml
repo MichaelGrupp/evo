@@ -32,6 +32,8 @@ classifiers = [
     "Topic :: Scientific/Engineering",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -43,7 +45,7 @@ keywords = [
     "vision", "laser", "visual", "robotics"
 ]
 
-requires-python = ">=3.10"
+requires-python = ">=3.8"
 
 dependencies = [
     "numpy>=1.18.5",
@@ -58,7 +60,7 @@ dependencies = [
     "pygments",
     "pyyaml",
     "pillow",
-    "rosbags>=0.10.9",
+    "rosbags>=0.9.20",
     "packaging",
 ]
 

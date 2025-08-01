@@ -26,6 +26,25 @@ if version.parse(rr.__version__) < version.parse("0.24.0"):
         f"rerun >= 0.24.0 is required, installed version: {rr.__version__}")
 
 
+def initialize_view_coordinates() -> None:
+    """
+    Initializes the view coordinates in rerun with XYZ - Z-up
+    and an origin marker.
+    """
+    # Initialize at the root of the entity tree.
+    # TODO: better document this?
+    rr.log("/", rr.ViewCoordinates.RIGHT_HAND_Z_UP, static=True)
+    rr.log(
+        f"origin",
+        rr.Arrows3D(
+            vectors=[[1., 0, 0], [0, 1., 0], [0, 0, 1.]],
+            colors=[[255, 0, 0], [0, 255, 0], [0, 0, 255]],
+        ),
+        static=
+        True,  # TODO: missing from documentation? https://rerun.io/docs/reference/types/archetypes/view_coordinates
+    )
+
+
 @dataclass
 class Color:
     """
@@ -95,10 +114,10 @@ def log_transforms(entity_path: str, traj: PoseTrajectory3D,
 
 
 def log_line_strips(
-    entity_path: str,
-    traj: PoseTrajectory3D,
-    radii: Float32ArrayLike,
-    color: Color,
+        entity_path: str,
+        traj: PoseTrajectory3D,
+        radii: Float32ArrayLike,
+        color: Color,
 ) -> None:
     """
     Logs connections between trajectory poses as LineStrips3D to rerun.
@@ -122,10 +141,10 @@ def log_line_strips(
 
 
 def log_points(
-    entity_path: str,
-    traj: PoseTrajectory3D,
-    radii: Float32ArrayLike,
-    color: Color,
+        entity_path: str,
+        traj: PoseTrajectory3D,
+        radii: Float32ArrayLike,
+        color: Color,
 ) -> None:
     """
     Logs the trajectory positions as Points3D to rerun.
@@ -146,11 +165,11 @@ def log_points(
 
 
 def log_scalars(
-    entity_path: str,
-    scalars: Float64ArrayLike,
-    timestamps: np.ndarray,
-    color: Color,
-    labelname: Optional[str] = None,
+        entity_path: str,
+        scalars: Float64ArrayLike,
+        timestamps: np.ndarray,
+        color: Color,
+        labelname: Optional[str] = None,
 ) -> None:
     """
     Logs a batch of scalars with timestamps to rerun, e.g. for plotting.

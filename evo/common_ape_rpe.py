@@ -250,6 +250,7 @@ def log_result_to_rerun(app_id: str, result: Result,
     logger.debug(SEP)
     logger.debug("Logging data to rerun.")
     rr.init(app_id, spawn=SETTINGS.rerun_spawn)
+    revo.initialize_view_coordinates()
 
     time_range = rrb.VisibleTimeRange(
         timeline=revo.TIMELINE,
@@ -265,7 +266,8 @@ def log_result_to_rerun(app_id: str, result: Result,
                     name="Visualization",
                     contents=[
                         rrb.Spatial3DView(name="Trajectories",
-                                          time_ranges=time_range),
+                                          time_ranges=time_range,
+                                          eye_controls=rrb.EyeControls3D(kind=rrb.Eye3DKind.FirstPerson)),
                         rrb.TimeSeriesView(name="Error",
                                            time_ranges=time_range,
                                            plot_legend=rrb.Corner2D.RightTop),

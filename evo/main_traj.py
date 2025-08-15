@@ -262,7 +262,7 @@ def run(args):
                 trajectories[name].align(
                     ref_traj_tmp, correct_scale=args.correct_scale,
                     correct_only_scale=args.correct_scale and not args.align,
-                    n=args.n_to_align)
+                    n=args.n_to_align, yaw_only=args.yaw_only)
             if args.align_origin:
                 logger.debug(SEP)
                 logger.debug("Aligning {}'s origin to reference.".format(name))

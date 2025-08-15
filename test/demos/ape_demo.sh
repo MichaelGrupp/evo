@@ -35,3 +35,6 @@ log "first..."
 echo_and_run evo_ape kitti ../data/KITTI_00_gt.txt ../data/KITTI_00_ORB.txt -a --save_results ORB_ape.zip
 log "second..."
 echo_and_run evo_ape kitti ../data/KITTI_00_gt.txt ../data/KITTI_00_SPTAM.txt -a --save_results SPTAM_ape.zip
+
+log "perform yaw-only alignment for visual-inertial trajectory"
+echo_and_run evo_ape tum ../data/V101_gt.txt ../data/V101_openvins.txt -a --yaw_only -v $p

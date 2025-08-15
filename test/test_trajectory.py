@@ -28,7 +28,7 @@ import helpers
 from evo.core import trajectory
 from evo.core import lie_algebra as lie
 from evo.core.trajectory import PosePath3D, PoseTrajectory3D
-from evo.core.geometry import GeometryException
+from evo.core.geometry import GeometryException, rot_z
 
 
 class TestPosePath3D(unittest.TestCase):
@@ -314,6 +314,15 @@ class TestTrajectoryAlignment(unittest.TestCase):
         traj_transformed.scale(1.234)
         self.assertNotEqual(traj, traj_transformed)
         traj_transformed.align(traj, correct_scale=True)
+        self.assertEqual(traj_transformed, traj)
+
+    def test_yaw_only_alignment(self):
+        traj = helpers.fake_trajectory(1000, 1)
+        traj_transformed = copy.deepcopy(traj)
+        t = lie.se3(r=rot_z(np.random.rand()), t=np.random.randn(3))
+        traj_transformed.transform(t)
+        self.assertNotEqual(traj, traj_transformed)
+        traj_transformed.align(traj, yaw_only=True)
         self.assertEqual(traj_transformed, traj)
 
     def test_scale_correction(self):

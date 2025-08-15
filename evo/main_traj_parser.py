@@ -25,6 +25,10 @@ def parser() -> argparse.ArgumentParser:
         help="associate trajectories via matching timestamps - requires --ref",
         action="store_true")
     algo_opts.add_argument(
+        "--yaw_only", help="align yaw (z-axis) only",
+        action="store_true"
+    )
+    algo_opts.add_argument(
         "--transform_left", help="path to a file with a transformation"
         " to apply to the trajectories (left multiplicative)")
     algo_opts.add_argument(

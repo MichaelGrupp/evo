@@ -25,6 +25,10 @@ def parser() -> argparse.ArgumentParser:
         "--n_to_align",
         help="the number of poses to use for Umeyama alignment, "
         "counted from the start (default: all)", default=-1, type=int)
+    algo_opts.add_argument(
+        "--yaw_only", help="align yaw (z-axis) only",
+        action="store_true"
+    )
     algo_opts.add_argument("-d", "--delta", type=float, default=1,
                            help="delta between relative poses")
     algo_opts.add_argument("-t", "--delta_tol", type=float, default=0.1,

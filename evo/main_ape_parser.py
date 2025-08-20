@@ -26,6 +26,10 @@ def parser() -> argparse.ArgumentParser:
         help="the number of poses to use for Umeyama alignment, "
         "counted from the start (default: all)", default=-1, type=int)
     algo_opts.add_argument(
+        "--yaw_only", help="align yaw (z-axis) only",
+        action="store_true"
+    )
+    algo_opts.add_argument(
         "--change_unit", default=None,
         choices=[u.value for u in (units.ANGLE_UNITS + units.LENGTH_UNITS)],
         help="Changes the output unit of the metric, if possible.")

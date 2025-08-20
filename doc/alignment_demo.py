@@ -53,6 +53,10 @@ logger.info("\nUmeyama alignment with scaling only")
 traj_est_aligned_only_scaled = copy.deepcopy(traj_est)
 traj_est_aligned_only_scaled.align(traj_ref, correct_only_scale=True)
 
+logger.info("\nUmeyama alignment with yaw-only rotation")
+traj_est_aligned_only_yaw = copy.deepcopy(traj_est)
+traj_est_aligned_only_yaw.align(traj_ref, yaw_only=True)
+
 fig = plt.figure(figsize=(8, 8))
 plot_mode = plot.PlotMode.xz
 

@@ -35,3 +35,6 @@ log "first..."
 echo_and_run evo_rpe kitti ../data/KITTI_00_gt.txt ../data/KITTI_00_ORB.txt -d 10 -u m --save_results ORB_rpe.zip
 log "second..."
 echo_and_run evo_rpe kitti ../data/KITTI_00_gt.txt ../data/KITTI_00_SPTAM.txt -d 10 -u m --save_results SPTAM_rpe.zip
+
+log "perform yaw-only alignment for visual-inertial trajectory"
+echo_and_run evo_rpe tum ../data/V101_gt.txt ../data/V101_openvins.txt -a --yaw_only -v $p -d 1 -u m

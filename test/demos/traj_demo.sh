@@ -42,3 +42,6 @@ echo_and_run evo_traj tum ../data/fr2_desk_* --ref=../data/fr2_desk_groundtruth.
 log "plot bag contents"
 echo_and_run evo_traj bag *.bag --all_topics --ref=fr2_desk_groundtruth $p
 
+log "yaw-only alignment"
+echo_and_run evo_traj tum ../data/V101_openvins.txt --ref=../data/V101_gt.txt -a --yaw_only $p -v
+

@@ -41,7 +41,7 @@ SEP = "-" * 80  # separator line
 
 def ape(traj_ref: PosePath3D, traj_est: PosePath3D,
         pose_relation: metrics.PoseRelation, align: bool = False,
-        correct_scale: bool = False, n_to_align: int = -1,
+        correct_scale: bool = False, yaw_only: bool = False, n_to_align: int = -1,
         align_origin: bool = False, ref_name: str = "reference",
         est_name: str = "estimate",
         change_unit: typing.Optional[metrics.Unit] = None,
@@ -53,7 +53,8 @@ def ape(traj_ref: PosePath3D, traj_est: PosePath3D,
     if align or correct_scale:
         logger.debug(SEP)
         alignment_transformation = lie_algebra.sim3(
-            *traj_est.align(traj_ref, correct_scale, only_scale, n=n_to_align))
+            *traj_est.align(traj_ref, correct_scale, only_scale, 
+                            n=n_to_align, yaw_only=yaw_only))
     if align_origin:
         logger.debug(SEP)
         alignment_transformation = traj_est.align_origin(traj_ref)
@@ -76,10 +77,12 @@ def ape(traj_ref: PosePath3D, traj_est: PosePath3D,
         ape_metric.change_unit(change_unit)
 
     title = str(ape_metric)
-    if align and not correct_scale:
+    if align and not correct_scale and not yaw_only:
         title += "\n(with SE(3) Umeyama alignment)"
     elif align and correct_scale:
         title += "\n(with Sim(3) Umeyama alignment)"
+    elif align and yaw_only:
+        title += "\n(with position-yaw alignment)"
     elif only_scale:
         title += "\n(scale corrected)"
     elif not align_origin:
@@ -155,7 +158,7 @@ def run(args: argparse.Namespace) -> None:
     result = ape(traj_ref=traj_ref, traj_est=traj_est,
                  pose_relation=pose_relation, align=args.align,
                  correct_scale=args.correct_scale, n_to_align=args.n_to_align,
-                 align_origin=args.align_origin, ref_name=ref_name,
+                 yaw_only=args.yaw_only, align_origin=args.align_origin, ref_name=ref_name,
                  est_name=est_name, change_unit=change_unit,
                  project_to_plane=plane)
 

@@ -31,9 +31,8 @@ class GeometryException(EvoException):
 
 UmeyamaResult = typing.Tuple[np.ndarray, np.ndarray, float]
 
-
 def umeyama_alignment(x: np.ndarray, y: np.ndarray,
-                      with_scale: bool = False) -> UmeyamaResult:
+                      with_scale: bool = False, yaw_only: bool = False) -> UmeyamaResult:
     """
     Computes the least squares solution parameters of an Sim(m) matrix
     that minimizes the distance between a set of registered points.
@@ -76,8 +75,15 @@ def umeyama_alignment(x: np.ndarray, y: np.ndarray,
         # Ensure a RHS coordinate system (Kabsch algorithm).
         s[m - 1, m - 1] = -1
 
-    # rotation, eq. 40
-    r = u.dot(s).dot(v)
+    if yaw_only:
+        # See equations (15)-(17) in A Tutorial on Quantitative Trajectory Evaluation
+        # for Visual(-Inertial) Odometry, by Zhang and Scaramuzza
+        rot_C = (x - mean_x[:, np.newaxis]).dot((y - mean_y[:, np.newaxis]).T)
+        theta = get_best_yaw(rot_C)
+        r = rot_z(theta)
+    else:
+        # rotation, eq. 40
+        r = u.dot(s).dot(v)
 
     # scale & translation, eq. 42 and 41
     c = 1 / sigma_x * np.trace(np.diag(d).dot(s)) if with_scale else 1.0
@@ -101,3 +107,31 @@ def accumulated_distances(x: np.ndarray) -> np.ndarray:
     """
     return np.concatenate(
         (np.array([0]), np.cumsum(np.linalg.norm(x[:-1] - x[1:], axis=1))))
+
+def get_best_yaw(C: np.ndarray) -> float:
+    """Maximizes trace(Rz(theta) * C)
+    :param C: 3x3 rotation matrix
+    :return: yaw angle in radians
+    """
+    if C.shape != (3, 3):
+        raise GeometryException("C must be a 3x3 matrix")
+
+    A = C[0, 1] - C[1, 0]
+    B = C[0, 0] + C[1, 1]
+    theta = np.pi / 2.0 - np.arctan2(B, A)
+    return theta
+
+def rot_z(theta: float) -> np.ndarray:
+    """
+    Creates a rotation about the z-axis by an angle theta.
+    :param theta: rotation angle in radians
+    :return: 3x3 rotation matrix
+    """
+    cos_theta = np.cos(theta)
+    sin_theta = np.sin(theta)
+    
+    return np.array([
+        [cos_theta, -sin_theta, 0],
+        [sin_theta,  cos_theta, 0],
+        [0,          0,         1]
+    ])

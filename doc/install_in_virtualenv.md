@@ -7,6 +7,7 @@ Additionally, you can have multiple environments in parallel that don't interfer
 ## virtualenv & virtualenvwrapper
 
 `virtualenvwrapper` is highly recommended, it makes using virtual environments much more comfortable.
+But other solutions like `venv`, `pyenv` etc can also be used if you prefer.
 
 Below are installation instructions for Ubuntu.
 If you use any other OS, see the documentation for how to install it on your system:
@@ -46,11 +47,13 @@ workon evaluation
 
 Install evo and its dependencies inside the virtual environment:
 ```shell
-pip install --ignore-installed evo
+pip install evo
+
+# or to force newest dependency versions from pypi: pip install --ignore-installed evo (might lead to incompatibities with system packages)
 
 # or alternatively from source:
 cd <evo>  # go to evo base source folder that contains pyproject.toml
-pip install --ignore-installed --editable .
+pip install --editable .
 ```
 Now, the package should be installed in the virtualenv and you can use it.
 

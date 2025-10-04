@@ -63,7 +63,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-gui = ["PyQt5"]
+gui = ["PyQt6"]
 geo = ["contextily"]
 rerun = ["rerun-sdk>=0.24.0"]
 

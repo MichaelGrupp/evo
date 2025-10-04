@@ -80,11 +80,11 @@ Tab completion is supported via the [argcomplete](https://github.com/kislyuk/arg
 evo has some required dependencies that are ***automatically resolved*** during installation with pip.
 See the `pyproject.toml` file for all details.
 
-**PyQt5 (optional)**
+**PyQt6 (optional)**
 
-PyQt5 will give you the enhanced GUI for plot figures from the "*Qt5Agg*" matplotlib backend (otherwise: "*TkAgg*"). If PyQt5 is already installed when installing this package, it will be used as a default (see `evo_config show`). To change the plot backend afterwards, run `evo_config set plot_backend Qt5Agg`.
+[PyQt6](https://pypi.org/project/PyQt6/) will give you the enhanced GUI for plot figures from the "*qtagg*" matplotlib backend (otherwise: "*TkAgg*"). If PyQt6 is already installed when installing this package, it will be used as a default (see `evo_config show`). To change the plot backend afterwards, run `evo_config set plot_backend qtagg`.
 
-If you run into issues with installing tkinter, trying PyQt5 is a good idea. 
+If you run into issues with installing tkinter, trying PyQt6 is a good idea. 
 
 **ROS (optional)**
 

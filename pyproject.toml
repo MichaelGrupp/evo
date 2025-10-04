@@ -43,6 +43,7 @@ keywords = [
     "vision", "laser", "visual", "robotics"
 ]
 
+# Adapt also the extra check in __init__.py when changing this:
 requires-python = ">=3.10"
 
 dependencies = [

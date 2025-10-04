@@ -96,6 +96,10 @@ Some ROS-related features require a ROS installation, see [here](http://www.ros.
 
 [contextily](https://contextily.readthedocs.io/en/latest/index.html) is required for [adding map tiles](https://github.com/MichaelGrupp/evo/wiki/Plotting#geographic-map-tiles) to plots of geo-referenced data.
 
+**Rerun**
+
+You can log data also to the [rerun](https://rerun.io/) viewer. See the related [Wiki page](https://github.com/MichaelGrupp/evo/wiki/Rerun-integration) for more details.
+
 ---
 
 ## Command Line Interface

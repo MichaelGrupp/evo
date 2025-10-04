@@ -139,10 +139,19 @@ class PlotCollection:
             canvas.mpl_connect("button_release_event", axes._button_release)
             canvas.mpl_connect("motion_notify_event", axes._on_move)
 
-    def tabbed_qt5_window(self) -> None:
-        from PyQt5 import QtGui, QtWidgets
-        from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg,
-                                                        NavigationToolbar2QT)
+    def tabbed_qt_window(self) -> None:
+        pyqt_5_compat = False
+        if SETTINGS.plot_backend.lower() == "qt5agg":
+            logger.warning("PyQt5 support is deprecated and will be removed "
+                           "in a later evo version. Please install PyQt6 "
+                           "and then change the backend using: "
+                           "evo_config set plot_backend qtagg")
+            from PyQt5 import QtGui, QtWidgets
+            pyqt_5_compat = True
+        else:
+            from PyQt6 import QtGui, QtWidgets
+        from matplotlib.backends.backend_qtagg import (FigureCanvasQTAgg,
+                                                       NavigationToolbar2QT)
         # mpl backend can already create instance
         # https://stackoverflow.com/a/40031190
         app = QtGui.QGuiApplication.instance()
@@ -153,22 +162,25 @@ class PlotCollection:
         sizes = [(0, 0)]
         for name, fig in self.figures.items():
             tab = QtWidgets.QWidget(self.root_window)
-            tab.canvas = FigureCanvasQTAgg(fig)
+            canvas = FigureCanvasQTAgg(fig)
             vbox = QtWidgets.QVBoxLayout(tab)
-            vbox.addWidget(tab.canvas)
-            toolbar = NavigationToolbar2QT(tab.canvas, tab)
+            vbox.addWidget(canvas)
+            toolbar = NavigationToolbar2QT(canvas, tab)
             vbox.addWidget(toolbar)
             tab.setLayout(vbox)
             for axes in fig.get_axes():
                 if isinstance(axes, Axes3D):
                     # must explicitly allow mouse dragging for 3D plots
-                    self._bind_mouse_events_to_canvas(axes, tab.canvas)
+                    self._bind_mouse_events_to_canvas(axes, canvas)
             self.root_window.addTab(tab, name)
-            sizes.append(tab.canvas.get_width_height())
+            sizes.append(canvas.get_width_height())
         # Resize window to avoid clipped axes.
         self.root_window.resize(*max(sizes))
         self.root_window.show()
-        app.exec_()
+        if pyqt_5_compat:
+            app.exec_()
+        else:
+            app.exec()
 
     def tabbed_tk_window(self) -> None:
         from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,
@@ -204,8 +216,8 @@ class PlotCollection:
         if len(self.figures.keys()) == 0:
             return
         if not SETTINGS.plot_split:
-            if SETTINGS.plot_backend.lower() == "qt5agg":
-                self.tabbed_qt5_window()
+            if "qt" in SETTINGS.plot_backend.lower():
+                self.tabbed_qt_window()
             elif SETTINGS.plot_backend.lower() == "tkagg":
                 self.tabbed_tk_window()
             else:

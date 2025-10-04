@@ -29,7 +29,7 @@ def get_default_plot_backend() -> str:
         if sys.platform != "darwin":
             return "Agg"
 
-    backends = {"PyQt5": "Qt5Agg"}
+    backends = {"PyQt5": "qtagg", "PyQt6": "qtagg"}
     for pkg in backends:
         if importlib.util.find_spec(pkg) is not None:
             return backends[pkg]
@@ -74,7 +74,7 @@ DEFAULT_SETTINGS_DICT_DOC = {
     ),
     "plot_backend": (
         get_default_plot_backend(),
-        "matplotlib backend - default is 'Qt5Agg' (if PyQt is installed) or 'TkAgg'."
+        "matplotlib backend - default is 'qtagg' (if PyQt5/PyQt6 is installed) or 'TkAgg'."
     ),
     "plot_pose_correspondences": (
         False,

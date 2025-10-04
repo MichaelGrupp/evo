@@ -51,7 +51,7 @@ def example_data() -> Tuple[PoseTrajectory3D, PoseTrajectory3D, metrics.APE]:
     return groundtruth, estimate, ape
 
 
-def configure_blueprint() -> rr.BlueprintLike:
+def configure_blueprint() -> rrb.BlueprintLike:
     # Adapt the blueprint's visible time range to include a sliding window
     # instead of "latest" for better visibility. Can be changed also in the viewer.
     time_range = rrb.VisibleTimeRange(

@@ -21,6 +21,14 @@ def parser() -> argparse.ArgumentParser:
         help="the number of poses to use for Umeyama alignment, "
         "counted from the start (default: all)", default=-1, type=int)
     algo_opts.add_argument(
+        "--start_t_to_align",
+        help="the start of the time window to use for Umeyama alignment, "
+        "in seconds relative to the first timestamp of the file", default=None, type=float)
+    algo_opts.add_argument(
+        "--end_t_to_align",
+        help="the end of the time window to use for Umeyama alignment, "
+        "in seconds relative to the first timestamp of the file", default=None, type=float)
+    algo_opts.add_argument(
         "--sync",
         help="associate trajectories via matching timestamps - requires --ref",
         action="store_true")

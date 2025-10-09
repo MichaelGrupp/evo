@@ -38,7 +38,7 @@ evo has several advantages over other public benchmarking tools:
 
 * common tools for different formats
 * algorithmic options for association, alignment, scale adjustment for monocular SLAM etc.
-* flexible options for output, [plotting](https://github.com/MichaelGrupp/evo/wiki/Plotting) or export (e.g. LaTeX plots or Excel tables)
+* flexible options for output, [plotting](https://github.com/MichaelGrupp/evo/wiki/Plotting), [visualization](https://github.com/MichaelGrupp/evo/wiki/Rerun-integration) or export (e.g. LaTeX plots or Excel tables)
 * a powerful, configurable CLI that can cover many use cases
 * modular `core` and `tools` libraries for custom extensions
 * faster than other established Python-based tools ([see here](https://github.com/MichaelGrupp/evo/blob/master/doc/performance.md))
@@ -96,7 +96,7 @@ Some ROS-related features require a ROS installation, see [here](http://www.ros.
 
 [contextily](https://contextily.readthedocs.io/en/latest/index.html) is required for [adding map tiles](https://github.com/MichaelGrupp/evo/wiki/Plotting#geographic-map-tiles) to plots of geo-referenced data.
 
-**Rerun**
+**Rerun (optional)**
 
 You can log data also to the [rerun](https://rerun.io/) viewer. See the related [Wiki page](https://github.com/MichaelGrupp/evo/wiki/Rerun-integration) for more details.
 

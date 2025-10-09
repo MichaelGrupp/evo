@@ -43,8 +43,8 @@ def rpe(traj_ref: PosePath3D, traj_est: PosePath3D,
         pose_relation: metrics.PoseRelation, delta: float,
         delta_unit: metrics.Unit, rel_delta_tol: float = 0.1,
         all_pairs: bool = False, pairs_from_reference: bool = False,
-        align: bool = False, correct_scale: bool = False, n_to_align: int = -1,
-        align_origin: bool = False, ref_name: str = "reference",
+        align: bool = False, correct_scale: bool = False, yaw_only: bool = False, 
+        n_to_align: int = -1, align_origin: bool = False, ref_name: str = "reference",
         est_name: str = "estimate", support_loop: bool = False,
         change_unit: typing.Optional[metrics.Unit] = None,
         project_to_plane: typing.Optional[Plane] = None) -> Result:
@@ -55,7 +55,8 @@ def rpe(traj_ref: PosePath3D, traj_est: PosePath3D,
     if align or correct_scale:
         logger.debug(SEP)
         alignment_transformation = lie_algebra.sim3(
-            *traj_est.align(traj_ref, correct_scale, only_scale, n=n_to_align))
+            *traj_est.align(traj_ref, correct_scale, only_scale, 
+                            n=n_to_align, yaw_only=yaw_only))
     if align_origin:
         logger.debug(SEP)
         alignment_transformation = traj_est.align_origin(traj_ref)
@@ -178,9 +179,9 @@ def run(args: argparse.Namespace) -> None:
                  all_pairs=args.all_pairs,
                  pairs_from_reference=args.pairs_from_reference,
                  align=args.align, correct_scale=args.correct_scale,
-                 n_to_align=args.n_to_align, align_origin=args.align_origin,
-                 ref_name=ref_name, est_name=est_name, change_unit=change_unit,
-                 project_to_plane=plane)
+                 n_to_align=args.n_to_align, align_origin=args.align_origin, 
+                 yaw_only=args.yaw_only, ref_name=ref_name, est_name=est_name, 
+                 change_unit=change_unit, project_to_plane=plane)
 
     if args.rerun and isinstance(traj_ref, PoseTrajectory3D) and isinstance(
             traj_est, PoseTrajectory3D):

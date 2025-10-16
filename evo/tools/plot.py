@@ -51,7 +51,7 @@ from evo.core.units import Unit, LENGTH_UNITS, METER_SCALE_FACTORS
 
 logger = logging.getLogger(__name__)
 
-ListOrArray = typing.Union[typing.Sequence[float], np.ndarray]
+ListOrArray = typing.Sequence[float] | np.ndarray
 
 
 def apply_settings(settings: SettingsContainer = SETTINGS):
@@ -119,7 +119,7 @@ class PlotCollection:
         self.figures: dict[str, Figure] = {}
         # hack to avoid premature garbage collection when serializing with Qt
         # initialized later in tabbed_{qt, tk}_window
-        self.root_window: typing.Optional[typing.Any] = None
+        self.root_window: typing.Any | None = None
 
     def __str__(self) -> str:
         return self.title + " (" + str(len(self.figures)) + " figure(s))"
@@ -361,7 +361,7 @@ def prepare_axis(
 
 def plot_mode_to_idx(
     plot_mode: PlotMode,
-) -> typing.Tuple[int, int, typing.Optional[int]]:
+) -> typing.Tuple[int, int, int | None]:
     if plot_mode == PlotMode.xy or plot_mode == PlotMode.xyz:
         x_idx = 0
         y_idx = 1
@@ -393,7 +393,7 @@ def add_start_end_markers(
     end_symbol: str = "x",
     end_color="black",
     alpha: float = 1.0,
-    traj_name: typing.Optional[str] = None,
+    traj_name: str | None = None,
 ):
     if traj.num_poses == 0:
         return
@@ -476,7 +476,7 @@ def colored_line_collection(
     linestyles: str = "solid",
     step: int = 1,
     alpha: float = 1.0,
-) -> typing.Union[LineCollection, art3d.LineCollection]:
+) -> LineCollection | art3d.LineCollection:
     if step > 1 and len(xyz) / step != len(colors):
         raise PlotException(
             "color values don't have correct length: %d vs. %d"
@@ -516,7 +516,7 @@ def traj_colormap(
     min_map: float,
     max_map: float,
     title: str = "",
-    fig: typing.Optional[mpl.figure.Figure] = None,
+    fig: mpl.figure.Figure | None = None,
     plot_start_end_markers: bool = False,
 ) -> None:
     """
@@ -672,7 +672,7 @@ def traj_xyz(
     color="black",
     label: str = "",
     alpha: float = 1.0,
-    start_timestamp: typing.Optional[float] = None,
+    start_timestamp: float | None = None,
     length_unit: Unit = Unit.meters,
 ) -> None:
     """
@@ -735,7 +735,7 @@ def traj_rpy(
     color="black",
     label: str = "",
     alpha: float = 1.0,
-    start_timestamp: typing.Optional[float] = None,
+    start_timestamp: float | None = None,
 ) -> None:
     """
     plot a path/trajectory's Euler RPY angles into an axis
@@ -786,7 +786,7 @@ def speeds(
     color="black",
     label: str = "",
     alpha: float = 1.0,
-    start_timestamp: typing.Optional[float] = None,
+    start_timestamp: float | None = None,
 ):
     """
     Plots the speed between poses of a trajectory.
@@ -821,12 +821,12 @@ def speeds(
 
 
 def trajectories(
-    fig_or_ax: typing.Union[Figure, Axes],
-    trajectories: typing.Union[
-        trajectory.PosePath3D,
-        typing.Sequence[trajectory.PosePath3D],
-        typing.Dict[str, trajectory.PosePath3D],
-    ],
+    fig_or_ax: Figure | Axes,
+    trajectories: (
+        trajectory.PosePath3D
+        | typing.Sequence[trajectory.PosePath3D]
+        | typing.Dict[str, trajectory.PosePath3D]
+    ),
     plot_mode=PlotMode.xy,
     title: str = "",
     subplot_arg: int = 111,
@@ -893,18 +893,18 @@ def trajectories(
 def error_array(
     ax: Axes,
     err_array: ListOrArray,
-    x_array: typing.Optional[ListOrArray] = None,
-    statistics: typing.Optional[typing.Dict[str, float]] = None,
-    threshold: typing.Optional[float] = None,
+    x_array: ListOrArray | None = None,
+    statistics: typing.Dict[str, float] | None = None,
+    threshold: float | None = None,
     cumulative: bool = False,
     color="grey",
     name: str = "error",
     title: str = "",
     xlabel: str = "index",
-    ylabel: typing.Optional[str] = None,
+    ylabel: str | None = None,
     subplot_arg: int = 111,
     linestyle: str = "-",
-    marker: typing.Optional[str] = None,
+    marker: str | None = None,
 ):
     """
     high-level function for plotting raw error values of a metric
@@ -995,7 +995,7 @@ def ros_map(
     yaml_path: PathStr,
     plot_mode: PlotMode,
     cmap: str = SETTINGS.ros_map_cmap,
-    mask_unknown_value: typing.Optional[int] = (
+    mask_unknown_value: int | None = (
         SETTINGS.ros_map_unknown_cell_value
         if SETTINGS.ros_map_enable_masking
         else None

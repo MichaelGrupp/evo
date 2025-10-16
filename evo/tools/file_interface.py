@@ -276,7 +276,7 @@ def _get_xyz_quat_from_point_msg(
 
 
 def get_supported_topics(
-    reader: typing.Union[Rosbag1Reader, Rosbag2Reader],
+    reader: Rosbag1Reader | Rosbag2Reader,
 ) -> list:
     """
     :param reader: opened bag reader (rosbags.rosbag2 or rosbags.rosbag1)
@@ -292,7 +292,7 @@ def get_supported_topics(
 
 
 def read_bag_trajectory(
-    reader: typing.Union[Rosbag1Reader, Rosbag2Reader],
+    reader: Rosbag1Reader | Rosbag2Reader,
     topic: str,
     cache_tf_tree: bool = False,
     cache_hash_source: tf_id.HashSource = tf_id.HashSource.READER_INSTANCE,

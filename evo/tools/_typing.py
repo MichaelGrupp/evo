@@ -21,5 +21,5 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 import typing
 from pathlib import Path
 
-PathStr = typing.Union[Path, str]
-PathStrHandle = typing.Union[PathStr, typing.IO[typing.AnyStr]]
+PathStr = Path | str
+PathStrHandle = PathStr | typing.IO[typing.AnyStr]

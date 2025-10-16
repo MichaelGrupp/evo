@@ -49,8 +49,8 @@ def ape(
     align_origin: bool = False,
     ref_name: str = "reference",
     est_name: str = "estimate",
-    change_unit: typing.Optional[metrics.Unit] = None,
-    project_to_plane: typing.Optional[Plane] = None,
+    change_unit: metrics.Unit | None = None,
+    project_to_plane: Plane | None = None,
 ) -> Result:
 
     # Align the trajectories.

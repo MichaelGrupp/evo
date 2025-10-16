@@ -50,7 +50,7 @@ class ConfigError(EvoException):
 def log_info_dict_json(
     data: dict,
     colored: bool = True,
-    parameter_subset: typing.Optional[typing.Sequence[str]] = None,
+    parameter_subset: typing.Sequence[str] | None = None,
 ) -> None:
     if parameter_subset:
         data = {
@@ -73,7 +73,7 @@ def log_info_dict_json(
 def show(
     config_path: PathStr,
     colored: bool = True,
-    parameter_subset: typing.Optional[typing.Sequence[str]] = None,
+    parameter_subset: typing.Sequence[str] | None = None,
 ) -> None:
     with open(config_path) as config_file:
         log_info_dict_json(json.load(config_file), colored, parameter_subset)

@@ -91,7 +91,7 @@ def write_to_json_file(json_path: Path, dictionary: dict) -> None:
 
 def reset(
     destination: Path = DEFAULT_PATH,
-    parameter_subset: typing.Optional[typing.Sequence] = None,
+    parameter_subset: typing.Sequence | None = None,
 ) -> None:
     from evo.tools.settings_template import DEFAULT_SETTINGS_DICT
 

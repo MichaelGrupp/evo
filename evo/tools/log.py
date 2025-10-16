@@ -32,9 +32,11 @@ from evo.tools._typing import PathStr
 colorama.init()
 
 CONSOLE_ERROR_FMT = "{}[%(levelname)s]{} %(message)s".format(
-    Fore.LIGHTRED_EX, Fore.RESET)
+    Fore.LIGHTRED_EX, Fore.RESET
+)
 CONSOLE_WARN_FMT = "{}[%(levelname)s]{} %(message)s".format(
-    Fore.LIGHTYELLOW_EX, Fore.RESET)
+    Fore.LIGHTYELLOW_EX, Fore.RESET
+)
 DEFAULT_LONG_FMT = "[%(levelname)s][%(asctime)s][%(module)s.%(funcName)s():%(lineno)s]\n%(message)s"
 
 
@@ -64,11 +66,14 @@ class ConsoleFormatter(logging.Formatter):
 
 
 # configures the package's root logger (see __init__.py)
-def configure_logging(verbose: bool = False, silent: bool = False,
-                      debug: bool = False,
-                      console_fmt: typing.Optional[str] = None,
-                      file_fmt: str = DEFAULT_LONG_FMT,
-                      local_logfile: typing.Optional[PathStr] = None) -> None:
+def configure_logging(
+    verbose: bool = False,
+    silent: bool = False,
+    debug: bool = False,
+    console_fmt: typing.Optional[str] = None,
+    file_fmt: str = DEFAULT_LONG_FMT,
+    local_logfile: typing.Optional[PathStr] = None,
+) -> None:
 
     logger = logging.getLogger("evo")
     logger.setLevel(logging.DEBUG)
@@ -110,7 +115,11 @@ def configure_logging(verbose: bool = False, silent: bool = False,
     if debug:
         import getpass as gp
         import platform as pf
+
         logger.debug(
             "System info:\nPython {pyversion}\n{platform}\n{user}\n".format(
-                pyversion=pf.python_version(), platform=pf.platform(),
-                user=gp.getuser() + "@" + pf.node()))
+                pyversion=pf.python_version(),
+                platform=pf.platform(),
+                user=gp.getuser() + "@" + pf.node(),
+            )
+        )

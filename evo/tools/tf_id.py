@@ -40,12 +40,14 @@ class HashSource(enum.Enum):
     For choosing the source of the hash value when hashing a rosbag reader.
     See hash_bag() for usage.
     """
+
     READER_INSTANCE = "reader_instance"
     BAG_FILENAME = "filename"
 
 
-def hash_bag(reader: Union[Rosbag1Reader, Rosbag2Reader],
-             hash_source: HashSource) -> int:
+def hash_bag(
+    reader: Union[Rosbag1Reader, Rosbag2Reader], hash_source: HashSource
+) -> int:
     """
     Convenience function to hash a rosbag reader instance or its filename,
     for using it as a key to tf_cache.instance()
@@ -66,17 +68,20 @@ def split_id(identifier: str) -> tuple:
     if ROS_NAME_REGEX.match(tf_topic) is None:
         raise TfIdException(
             f"ID string malformed, {tf_topic} is not a valid topic name, "
-            "ID string should look like /tf:map.base_footprint(:/tf_static)")
+            "ID string should look like /tf:map.base_footprint(:/tf_static)"
+        )
 
     if not parent_frame_id:
         raise TfIdException(
             "ID string malformed, parent frame ID is missing, ID string "
-            "should look like /tf:map.base_footprint(:/tf_static)")
+            "should look like /tf:map.base_footprint(:/tf_static)"
+        )
 
     if not child_frame_id:
         raise TfIdException(
             "ID string malformed, child frame ID is missing, ID string "
-            "should look like /tf:map.base_footprint(:/tf_static)")
+            "should look like /tf:map.base_footprint(:/tf_static)"
+        )
 
     if tf_static_topic:
         if ROS_NAME_REGEX.match(tf_static_topic) is None:

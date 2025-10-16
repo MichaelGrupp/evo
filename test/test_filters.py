@@ -32,14 +32,14 @@ POSES_1 = [
     lie.se3(np.eye(3), np.array([0, 0, 0])),
     lie.se3(np.eye(3), np.array([0, 0, 0.5])),
     lie.se3(np.eye(3), np.array([0, 0, 0])),
-    lie.se3(np.eye(3), np.array([0, 0, 1]))
+    lie.se3(np.eye(3), np.array([0, 0, 1])),
 ]
 
 POSES_2 = [
     lie.se3(np.eye(3), np.array([0, 0, 0])),
     lie.se3(np.eye(3), np.array([0, 0, 0.5])),
     lie.se3(np.eye(3), np.array([0, 0, 0.99])),
-    lie.se3(np.eye(3), np.array([0, 0, 1.0]))
+    lie.se3(np.eye(3), np.array([0, 0, 1.0])),
 ]
 
 POSES_3 = [
@@ -50,14 +50,14 @@ POSES_3 = [
     lie.se3(np.eye(3), np.array([0, 0, 0.9999])),
     lie.se3(np.eye(3), np.array([0, 0, 0.99999])),
     lie.se3(np.eye(3), np.array([0, 0, 0.999999])),
-    lie.se3(np.eye(3), np.array([0, 0, 0.9999999]))
+    lie.se3(np.eye(3), np.array([0, 0, 0.9999999])),
 ]
 
 POSES_4 = [
     lie.se3(np.eye(3), np.array([0, 0, 0])),
     lie.se3(np.eye(3), np.array([0, 0, 1])),
     lie.se3(np.eye(3), np.array([0, 0, 1])),
-    lie.se3(np.eye(3), np.array([0, 0, 1]))
+    lie.se3(np.eye(3), np.array([0, 0, 1])),
 ]
 
 
@@ -65,29 +65,33 @@ class TestFilterPairsByPath(unittest.TestCase):
     def test_poses1_all_pairs(self):
         target_path = 1.0
         tol = 0.0
-        id_pairs = filters.filter_pairs_by_path(POSES_1, target_path, tol,
-                                                all_pairs=True)
+        id_pairs = filters.filter_pairs_by_path(
+            POSES_1, target_path, tol, all_pairs=True
+        )
         self.assertEqual(id_pairs, [(0, 2), (2, 3)])
 
     def test_poses1_wrong_target(self):
         target_path = 2.5
         tol = 0.0
-        id_pairs = filters.filter_pairs_by_path(POSES_1, target_path, tol,
-                                                all_pairs=True)
+        id_pairs = filters.filter_pairs_by_path(
+            POSES_1, target_path, tol, all_pairs=True
+        )
         self.assertEqual(id_pairs, [])
 
     def test_poses2_all_pairs_low_tolerance(self):
         target_path = 1.0
         tol = 0.001
-        id_pairs = filters.filter_pairs_by_path(POSES_2, target_path, tol,
-                                                all_pairs=True)
+        id_pairs = filters.filter_pairs_by_path(
+            POSES_2, target_path, tol, all_pairs=True
+        )
         self.assertEqual(id_pairs, [(0, 3)])
 
     def test_convergence_all_pairs(self):
         target_path = 1.0
         tol = 0.2
-        id_pairs = filters.filter_pairs_by_path(POSES_3, target_path, tol,
-                                                all_pairs=True)
+        id_pairs = filters.filter_pairs_by_path(
+            POSES_3, target_path, tol, all_pairs=True
+        )
         self.assertEqual(id_pairs, [(0, 7)])
 
 
@@ -97,14 +101,14 @@ POSES_5 = [
     lie.se3(lie.so3_exp(axis * math.pi), np.array([0, 0, 0])),
     lie.se3(lie.so3_exp(axis * 0.0), np.array([0, 0, 0])),
     lie.se3(lie.so3_exp(axis * math.pi / 3), np.array([0, 0, 0])),
-    lie.se3(lie.so3_exp(axis * math.pi), np.array([0, 0, 0]))
+    lie.se3(lie.so3_exp(axis * math.pi), np.array([0, 0, 0])),
 ]
 TRANSFORM = lie.random_se3()
 POSES_5_TRANSFORMED = [TRANSFORM.dot(p) for p in POSES_5]
 
 axis = np.array([1, 0, 0])
 p0 = lie.se3(lie.so3_exp(axis * 0.0), np.array([0, 0, 0]))
-pd = lie.se3(lie.so3_exp(axis * (math.pi / 3.)), np.array([1, 2, 3]))
+pd = lie.se3(lie.so3_exp(axis * (math.pi / 3.0)), np.array([1, 2, 3]))
 p1 = np.dot(p0, pd)
 p2 = np.dot(p1, pd)
 p3 = np.dot(p2, pd)
@@ -119,14 +123,15 @@ class TestFilterPairsByAngle(unittest.TestCase):
         # Result should be unaffected by global transformation.
         for poses in (POSES_5, POSES_5_TRANSFORMED):
             target_angle = math.pi - tol
-            id_pairs = filters.filter_pairs_by_angle(poses, target_angle, tol,
-                                                     all_pairs=False)
+            id_pairs = filters.filter_pairs_by_angle(
+                poses, target_angle, tol, all_pairs=False
+            )
             self.assertEqual(id_pairs, expected_result)
             # Check for same result when using degrees:
             target_angle = np.rad2deg(target_angle)
-            id_pairs = filters.filter_pairs_by_angle(poses, target_angle, tol,
-                                                     all_pairs=False,
-                                                     degrees=True)
+            id_pairs = filters.filter_pairs_by_angle(
+                poses, target_angle, tol, all_pairs=False, degrees=True
+            )
             self.assertEqual(id_pairs, expected_result)
 
     def test_poses5_all_pairs(self):
@@ -135,14 +140,15 @@ class TestFilterPairsByAngle(unittest.TestCase):
         # Result should be unaffected by global transformation.
         for poses in (POSES_5, POSES_5_TRANSFORMED):
             target_angle = math.pi
-            id_pairs = filters.filter_pairs_by_angle(poses, target_angle, tol,
-                                                     all_pairs=True)
+            id_pairs = filters.filter_pairs_by_angle(
+                poses, target_angle, tol, all_pairs=True
+            )
             self.assertEqual(id_pairs, expected_result)
             # Check for same result when using degrees:
             target_angle = np.rad2deg(target_angle)
-            id_pairs = filters.filter_pairs_by_angle(poses, target_angle, tol,
-                                                     all_pairs=True,
-                                                     degrees=True)
+            id_pairs = filters.filter_pairs_by_angle(
+                poses, target_angle, tol, all_pairs=True, degrees=True
+            )
             self.assertEqual(id_pairs, expected_result)
 
     def test_poses6(self):
@@ -151,8 +157,9 @@ class TestFilterPairsByAngle(unittest.TestCase):
         expected_result = [(0, 3)]
         # Result should be unaffected by global transformation.
         for poses in (POSES_6, POSES_6_TRANSFORMED):
-            id_pairs = filters.filter_pairs_by_angle(poses, target_angle, tol,
-                                                     all_pairs=False)
+            id_pairs = filters.filter_pairs_by_angle(
+                poses, target_angle, tol, all_pairs=False
+            )
             self.assertEqual(id_pairs, expected_result)
 
     def test_poses6_all_pairs(self):
@@ -161,8 +168,9 @@ class TestFilterPairsByAngle(unittest.TestCase):
         expected_result = [(0, 3), (0, 4)]
         # Result should be unaffected by global transformation.
         for poses in (POSES_6, POSES_6_TRANSFORMED):
-            id_pairs = filters.filter_pairs_by_angle(poses, target_angle, tol,
-                                                     all_pairs=True)
+            id_pairs = filters.filter_pairs_by_angle(
+                poses, target_angle, tol, all_pairs=True
+            )
             self.assertEqual(id_pairs, expected_result)
 
 
@@ -182,5 +190,5 @@ class TestFilterByMotion(unittest.TestCase):
         self.assertEqual(filtered_ids, expected_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(verbosity=2)

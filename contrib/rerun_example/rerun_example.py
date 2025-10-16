@@ -57,7 +57,8 @@ def configure_blueprint() -> rrb.BlueprintLike:
     time_range = rrb.VisibleTimeRange(
         timeline=revo.TIMELINE,
         start=rrb.TimeRangeBoundary.cursor_relative(
-            seconds=-VISIBLE_TIME_WINDOW),
+            seconds=-VISIBLE_TIME_WINDOW
+        ),
         end=rrb.TimeRangeBoundary.cursor_relative(seconds=0.0),
     )
 
@@ -102,8 +103,12 @@ def run_demo() -> None:
         POINT_RADIUS,
         revo.Color(static=to_rgba("grey")),
     )
-    revo.log_points("/estimate/points", estimate, POINT_RADIUS,
-                    revo.Color(static=to_rgba("orange")))
+    revo.log_points(
+        "/estimate/points",
+        estimate,
+        POINT_RADIUS,
+        revo.Color(static=to_rgba("orange")),
+    )
 
     revo.log_line_strips(
         "/groundtruth/lines",

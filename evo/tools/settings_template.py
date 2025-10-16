@@ -37,7 +37,7 @@ def get_default_plot_backend() -> str:
 
 
 # default settings with documentation
-# yapf: disable
+# fmt: off
 DEFAULT_SETTINGS_DICT_DOC = {
     "global_logfile_enabled": (
         False,
@@ -275,7 +275,7 @@ DEFAULT_SETTINGS_DICT_DOC = {
         "TF transform cache time in seconds."
     ),
 }
-# yapf: enable
+# fmt: on
 
 # without documentation
 DEFAULT_SETTINGS_DICT = {k: v[0] for k, v in DEFAULT_SETTINGS_DICT_DOC.items()}

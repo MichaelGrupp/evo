@@ -47,7 +47,7 @@ class SettingsContainer(dict):
         setattr(self, "__locked__", lock)
 
     @classmethod
-    def from_json_file(cls, settings_path: Path) -> 'SettingsContainer':
+    def from_json_file(cls, settings_path: Path) -> "SettingsContainer":
         with open(settings_path) as settings_file:
             data = json.load(settings_file)
         return SettingsContainer(data)
@@ -67,7 +67,8 @@ class SettingsContainer(dict):
         # allow dot access
         if self.locked() and attr not in self:
             raise SettingsException(
-                "write-access locked, can't add new parameter {}".format(attr))
+                "write-access locked, can't add new parameter {}".format(attr)
+            )
         else:
             self[attr] = value
 
@@ -84,13 +85,16 @@ def merge_dicts(first: dict, second: dict, soft: bool = False) -> dict:
 
 
 def write_to_json_file(json_path: Path, dictionary: dict) -> None:
-    with open(json_path, 'w') as json_file:
+    with open(json_path, "w") as json_file:
         json_file.write(json.dumps(dictionary, indent=4, sort_keys=True))
 
 
-def reset(destination: Path = DEFAULT_PATH,
-          parameter_subset: typing.Optional[typing.Sequence] = None) -> None:
+def reset(
+    destination: Path = DEFAULT_PATH,
+    parameter_subset: typing.Optional[typing.Sequence] = None,
+) -> None:
     from evo.tools.settings_template import DEFAULT_SETTINGS_DICT
+
     if not destination.exists() or parameter_subset is None:
         write_to_json_file(destination, DEFAULT_SETTINGS_DICT)
     elif parameter_subset:
@@ -111,17 +115,22 @@ def initialize_if_needed() -> None:
         USER_ASSETS_PATH.mkdir()
 
     if not USER_ASSETS_VERSION_PATH.exists():
-        open(USER_ASSETS_VERSION_PATH, 'w').write(__version__)
+        open(USER_ASSETS_VERSION_PATH, "w").write(__version__)
 
     if not DEFAULT_PATH.exists():
         try:
             reset(destination=DEFAULT_PATH)
-            print("{}Initialized new {}{}".format(Fore.LIGHTYELLOW_EX,
-                                                  DEFAULT_PATH, Fore.RESET))
+            print(
+                "{}Initialized new {}{}".format(
+                    Fore.LIGHTYELLOW_EX, DEFAULT_PATH, Fore.RESET
+                )
+            )
         except:
             logger.error(
                 "Fatal: failed to write package settings file {}".format(
-                    DEFAULT_PATH))
+                    DEFAULT_PATH
+                )
+            )
             raise
 
 
@@ -132,13 +141,18 @@ def update_if_outdated() -> None:
     if open(USER_ASSETS_VERSION_PATH).read() == __version__:
         return
     from evo.tools.settings_template import DEFAULT_SETTINGS_DICT
+
     old_settings = json.loads(open(DEFAULT_PATH).read())
-    updated_settings = merge_dicts(old_settings, DEFAULT_SETTINGS_DICT,
-                                   soft=True)
+    updated_settings = merge_dicts(
+        old_settings, DEFAULT_SETTINGS_DICT, soft=True
+    )
     write_to_json_file(DEFAULT_PATH, updated_settings)
-    open(USER_ASSETS_VERSION_PATH, 'w').write(__version__)
-    print("{}Updated outdated {}{}".format(Fore.LIGHTYELLOW_EX, DEFAULT_PATH,
-                                           Fore.RESET))
+    open(USER_ASSETS_VERSION_PATH, "w").write(__version__)
+    print(
+        "{}Updated outdated {}{}".format(
+            Fore.LIGHTYELLOW_EX, DEFAULT_PATH, Fore.RESET
+        )
+    )
 
 
 # Load the user settings into this container.

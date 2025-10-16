@@ -24,8 +24,8 @@ import tempfile
 import unittest
 
 import numpy as np
-from rosbags.rosbag1 import (Reader as Rosbag1Reader, Writer as Rosbag1Writer)
-from rosbags.rosbag2 import (Reader as Rosbag2Reader, Writer as Rosbag2Writer)
+from rosbags.rosbag1 import Reader as Rosbag1Reader, Writer as Rosbag1Writer
+from rosbags.rosbag2 import Reader as Rosbag2Reader, Writer as Rosbag2Writer
 
 import helpers
 import evo.core.lie_algebra as lie
@@ -33,6 +33,7 @@ from evo.core.result import Result
 from evo.core.trajectory import PosePath3D, PoseTrajectory3D
 from evo.tools import file_interface
 from evo.tools.settings import SETTINGS
+
 
 class MockFileTestCase(unittest.TestCase):
     def __init__(self, in_memory_buffer, *args, **kwargs):
@@ -78,28 +79,28 @@ class TestTumFile(MockFileTestCase):
 
     @MockFileTestCase.run_and_clear
     def test_trailing_delim(self):
-        self.mock_file.write(u"0 0 0 0 0 0 0 1 ")
+        self.mock_file.write("0 0 0 0 0 0 0 1 ")
         self.mock_file.seek(0)
         with self.assertRaises(file_interface.FileInterfaceException):
             file_interface.read_tum_trajectory_file(self.mock_file)
 
     @MockFileTestCase.run_and_clear
     def test_too_many_columns(self):
-        self.mock_file.write(u"1 2 3 4 5 6 7 8 9")
+        self.mock_file.write("1 2 3 4 5 6 7 8 9")
         self.mock_file.seek(0)
         with self.assertRaises(file_interface.FileInterfaceException):
             file_interface.read_tum_trajectory_file(self.mock_file)
 
     @MockFileTestCase.run_and_clear
     def test_too_few_columns(self):
-        self.mock_file.write(u"1 2 3 4 5 6 7")
+        self.mock_file.write("1 2 3 4 5 6 7")
         self.mock_file.seek(0)
         with self.assertRaises(file_interface.FileInterfaceException):
             file_interface.read_tum_trajectory_file(self.mock_file)
 
     @MockFileTestCase.run_and_clear
     def test_too_few_columns_with_trailing_delim(self):
-        self.mock_file.write(u"1 2 3 4 5 6 7 ")
+        self.mock_file.write("1 2 3 4 5 6 7 ")
         self.mock_file.seek(0)
         with self.assertRaises(file_interface.FileInterfaceException):
             file_interface.read_tum_trajectory_file(self.mock_file)
@@ -122,28 +123,28 @@ class TestKittiFile(MockFileTestCase):
 
     @MockFileTestCase.run_and_clear
     def test_trailing_delim(self):
-        self.mock_file.write(u"1 0 0 0.1 0 1 0 0.2 0 0 1 0.3 ")
+        self.mock_file.write("1 0 0 0.1 0 1 0 0.2 0 0 1 0.3 ")
         self.mock_file.seek(0)
         with self.assertRaises(file_interface.FileInterfaceException):
             file_interface.read_kitti_poses_file(self.mock_file)
 
     @MockFileTestCase.run_and_clear
     def test_too_many_columns(self):
-        self.mock_file.write(u"1 2 3 4 5 6 7 8 9 10 11 12 13")
+        self.mock_file.write("1 2 3 4 5 6 7 8 9 10 11 12 13")
         self.mock_file.seek(0)
         with self.assertRaises(file_interface.FileInterfaceException):
             file_interface.read_kitti_poses_file(self.mock_file)
 
     @MockFileTestCase.run_and_clear
     def test_too_few_columns(self):
-        self.mock_file.write(u"1 2 3 4 5 6 7 8 9 10 11")
+        self.mock_file.write("1 2 3 4 5 6 7 8 9 10 11")
         self.mock_file.seek(0)
         with self.assertRaises(file_interface.FileInterfaceException):
             file_interface.read_kitti_poses_file(self.mock_file)
 
     @MockFileTestCase.run_and_clear
     def test_too_few_columns_with_trailing_delim(self):
-        self.mock_file.write(u"1 2 3 4 5 6 7 8 9 10 11 ")
+        self.mock_file.write("1 2 3 4 5 6 7 8 9 10 11 ")
         self.mock_file.seek(0)
         with self.assertRaises(file_interface.FileInterfaceException):
             file_interface.read_kitti_poses_file(self.mock_file)
@@ -162,12 +163,14 @@ class TestBagFile(MockFileTestCase):
                 bag_out = Rosbag1Writer(tmp_filename)
             else:
                 bag_out = Rosbag2Writer(
-                    tmp_filename, version=SETTINGS.ros2_bag_format_version)
+                    tmp_filename, version=SETTINGS.ros2_bag_format_version
+                )
             bag_out.open()
             traj_out = helpers.fake_trajectory(1000, 0.1)
             self.assertTrue(traj_out.check())
-            file_interface.write_bag_trajectory(bag_out, traj_out, "/test",
-                                                frame_id="map")
+            file_interface.write_bag_trajectory(
+                bag_out, traj_out, "/test", frame_id="map"
+            )
             bag_out.close()
             bag_in = reader_t(tmp_filename)
             bag_in.open()
@@ -189,21 +192,22 @@ class TestResultFile(MockFileTestCase):
         result_out.add_info({"name": "test", "number": 666})
         result_out.add_trajectory("traj", helpers.fake_trajectory(1000, 0.1))
         file_interface.save_res_file(self.mock_file, result_out)
-        result_in = file_interface.load_res_file(self.mock_file,
-                                                 load_trajectories=True)
+        result_in = file_interface.load_res_file(
+            self.mock_file, load_trajectories=True
+        )
         self.assertEqual(result_in, result_out)
 
 
 class TestHasUtf8Bom(unittest.TestCase):
     def test_no_bom(self):
         tmp_file = tempfile.NamedTemporaryFile(delete=False)
-        with open(tmp_file.name, 'w') as f:
+        with open(tmp_file.name, "w") as f:
             f.write("foo")
         self.assertFalse(file_interface.has_utf8_bom(tmp_file.name))
 
     def test_with_bom(self):
         tmp_file = tempfile.NamedTemporaryFile(delete=False)
-        with open(tmp_file.name, 'wb') as f:
+        with open(tmp_file.name, "wb") as f:
             f.write(b"\xef\xbb\xbf")
         self.assertTrue(file_interface.has_utf8_bom(tmp_file.name))
 
@@ -211,8 +215,9 @@ class TestHasUtf8Bom(unittest.TestCase):
 class TestLoadTransform(unittest.TestCase):
     def test_json(self):
         tmp_file = tempfile.NamedTemporaryFile(delete=False)
-        with open(tmp_file.name, 'w') as f:
-            f.write(""" {
+        with open(tmp_file.name, "w") as f:
+            f.write(
+                """ {
                 "x": 1.0,
                 "y": 2.5,
                 "z": 3.0,
@@ -222,7 +227,8 @@ class TestLoadTransform(unittest.TestCase):
                 "qw": 1.0,
                 "scale": 0.5
             }
-            """)
+            """
+            )
         transform = file_interface.load_transform(tmp_file.name)
         self.assertTrue(lie.is_sim3(transform))
         self.assertTrue(np.allclose(transform[:3, :3], np.eye(3) * 0.5))
@@ -230,8 +236,9 @@ class TestLoadTransform(unittest.TestCase):
         self.assertAlmostEqual(lie.sim3_scale(transform), 0.5)
 
     def test_npy(self):
-        transform_out = lie.sim3(lie.random_so3(), np.random.random(3),
-                                 np.random.random_sample())
+        transform_out = lie.sim3(
+            lie.random_so3(), np.random.random(3), np.random.random_sample()
+        )
         tmp_file = tempfile.NamedTemporaryFile(delete=False)
         np.save(tmp_file.name, transform_out)
         # np.save automatically adds ".npy" to the file name
@@ -239,13 +246,14 @@ class TestLoadTransform(unittest.TestCase):
         self.assertTrue(np.allclose(transform_out, transform_in))
 
     def test_txt(self):
-        transform_out = lie.sim3(lie.random_so3(), np.random.random(3),
-                                 np.random.random_sample())
+        transform_out = lie.sim3(
+            lie.random_so3(), np.random.random(3), np.random.random_sample()
+        )
         tmp_file = tempfile.NamedTemporaryFile(delete=False)
         np.savetxt(tmp_file.name, transform_out)
         transform_in = file_interface.load_transform(tmp_file.name)
         self.assertTrue(np.allclose(transform_out, transform_in))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(verbosity=2)

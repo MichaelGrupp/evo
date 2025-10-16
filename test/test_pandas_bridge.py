@@ -39,6 +39,7 @@ class TrajectoryDataframeTest(unittest.TestCase):
 
     def test_explicit_type(self):
         df = pandas_bridge.trajectory_to_df(self.trajectory)
-        output = pandas_bridge.df_to_trajectory(df,
-                                                as_type=trajectory.PosePath3D)
+        output = pandas_bridge.df_to_trajectory(
+            df, as_type=trajectory.PosePath3D
+        )
         self.assertIsInstance(output, trajectory.PosePath3D)

@@ -38,7 +38,8 @@ API_TOKEN_PLACEHOLDER = "<insert your "
 
 
 def add_api_token(
-        provider: xyzservices.TileProvider) -> xyzservices.TileProvider:
+    provider: xyzservices.TileProvider,
+) -> xyzservices.TileProvider:
     """
     Adds the API token stored in the settings, if the provider requires one.
     No-op if the provider requires none.
@@ -51,7 +52,8 @@ def add_api_token(
     if SETTINGS.map_tile_api_token == "":
         raise ContextilyHelperException(
             f"Map tile provider {provider.name} requires an API token. "
-            "Please set it with: evo_config set map_tile_api_token <token>")
+            "Please set it with: evo_config set map_tile_api_token <token>"
+        )
 
     # Attribute name of API token varies, search it using the placeholder
     # defined by the xyzservices documentation and corresponding to:
@@ -59,15 +61,18 @@ def add_api_token(
     # TODO: can this be solved smarter in the xyzservices lib?
     api_key = None
     for key, value in provider.items():
-        if isinstance(
-                value, str
-        ) and API_TOKEN_PLACEHOLDER in value and key in provider.url:
+        if (
+            isinstance(value, str)
+            and API_TOKEN_PLACEHOLDER in value
+            and key in provider.url
+        ):
             api_key = key
             break
     if not api_key:
         raise ContextilyHelperException(
             "Failed to find API key attribute "
-            f"in map tile provider {provider.name}")
+            f"in map tile provider {provider.name}"
+        )
 
     provider[api_key] = SETTINGS.map_tile_api_token
     return provider
@@ -93,11 +98,13 @@ def get_provider(provider_str: str) -> xyzservices.TileProvider:
     else:
         raise ContextilyHelperException(
             "Expected tile provider in a format "
-            "like: 'OpenStreetMap.Mapnik' or 'MapBox'.")
+            "like: 'OpenStreetMap.Mapnik' or 'MapBox'."
+        )
 
     if type(provider) is xyzservices.Bunch:
         raise ContextilyHelperException(
-            f"{provider_str} points to Bunch, not a TileProvider")
+            f"{provider_str} points to Bunch, not a TileProvider"
+        )
 
     provider = add_api_token(provider)
 

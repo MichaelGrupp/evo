@@ -26,7 +26,7 @@ import os
 from evo import PACKAGE_BASE_PATH, __version__
 from evo.tools import settings
 
-DESC = '''
+DESC = """
 (c) evo authors - license: run 'evo pkg --license'
 More docs are available at: github.com/MichaelGrupp/evo/wiki
 
@@ -51,48 +51,67 @@ Tools:
    evo_res - tool for processing multiple result files from the metrics
    evo_ipython - IPython shell with pre-loaded evo modules
    evo_config - tool for global settings and config file manipulation
-'''
+"""
 
 
 def main() -> None:
     import sys
     import argparse
     import argcomplete
+
     main_parser = argparse.ArgumentParser()
     shared_parser = argparse.ArgumentParser(add_help=False)
     sub_parsers = main_parser.add_subparsers(dest="subcommand")
     sub_parsers.required = True
     pkg_parser = sub_parsers.add_parser(
-        "pkg", description="show infos of the package",
-        parents=[shared_parser])
-    pkg_parser.add_argument("--info", help="show the package description",
-                            action="store_true")
-    pkg_parser.add_argument("--version", help="print the package version",
-                            action="store_true")
-    pkg_parser.add_argument("--pyversion", help="print the Python version",
-                            action="store_true")
-    pkg_parser.add_argument("--license", help="print the package license",
-                            action="store_true")
-    pkg_parser.add_argument("--location", help="print the package path",
-                            action="store_true")
-    pkg_parser.add_argument("--logfile", help="print the logfile path",
-                            action="store_true")
-    pkg_parser.add_argument("--open_log", help="open the package logfile",
-                            action="store_true")
-    pkg_parser.add_argument("--clear_log", help="clear package logfile",
-                            action="store_true")
+        "pkg", description="show infos of the package", parents=[shared_parser]
+    )
+    pkg_parser.add_argument(
+        "--info", help="show the package description", action="store_true"
+    )
+    pkg_parser.add_argument(
+        "--version", help="print the package version", action="store_true"
+    )
+    pkg_parser.add_argument(
+        "--pyversion", help="print the Python version", action="store_true"
+    )
+    pkg_parser.add_argument(
+        "--license", help="print the package license", action="store_true"
+    )
+    pkg_parser.add_argument(
+        "--location", help="print the package path", action="store_true"
+    )
+    pkg_parser.add_argument(
+        "--logfile", help="print the logfile path", action="store_true"
+    )
+    pkg_parser.add_argument(
+        "--open_log", help="open the package logfile", action="store_true"
+    )
+    pkg_parser.add_argument(
+        "--clear_log", help="clear package logfile", action="store_true"
+    )
     cat_parser = sub_parsers.add_parser(
-        "cat_log", description="pipe stdin to global evo logfile"
-        " or print logfile to stdout (if no stdin)", parents=[shared_parser])
-    cat_parser.add_argument("-l", "--loglevel", help="loglevel of the message",
-                            default="info",
-                            choices=["error", "warning", "info", "debug"])
-    cat_parser.add_argument("-m", "--message",
-                            help="explicit message instead of pipe")
-    cat_parser.add_argument("-s", "--source",
-                            help="source name to use for the log message")
-    cat_parser.add_argument("--clear_log", help="clear logfile before exiting",
-                            action="store_true")
+        "cat_log",
+        description="pipe stdin to global evo logfile"
+        " or print logfile to stdout (if no stdin)",
+        parents=[shared_parser],
+    )
+    cat_parser.add_argument(
+        "-l",
+        "--loglevel",
+        help="loglevel of the message",
+        default="info",
+        choices=["error", "warning", "info", "debug"],
+    )
+    cat_parser.add_argument(
+        "-m", "--message", help="explicit message instead of pipe"
+    )
+    cat_parser.add_argument(
+        "-s", "--source", help="source name to use for the log message"
+    )
+    cat_parser.add_argument(
+        "--clear_log", help="clear logfile before exiting", action="store_true"
+    )
     argcomplete.autocomplete(main_parser)
     if len(sys.argv[1:]) == 0:
         sys.argv.extend(["pkg", "--info"])  # cheap trick because YOLO
@@ -112,6 +131,7 @@ def main() -> None:
             print(__version__, end=line_end)
         if args.pyversion:
             import platform as pf
+
             print(pf.python_version(), end=line_end)
         if args.location:
             print(PACKAGE_BASE_PATH, end=line_end)
@@ -120,15 +140,19 @@ def main() -> None:
             if not settings.GLOBAL_LOGFILE_PATH.exists():
                 print(
                     "no logfile found - run: "
-                    "evo_config set global_logfile_enabled", end=line_end)
+                    "evo_config set global_logfile_enabled",
+                    end=line_end,
+                )
                 sys.exit(1)
             if args.open_log:
                 import webbrowser
+
                 webbrowser.open(str(settings.GLOBAL_LOGFILE_PATH))
         if args.clear_log:
             from evo.tools import user
+
             if user.confirm("clear logfile? (y/n)"):
-                open(settings.GLOBAL_LOGFILE_PATH, mode='w')
+                open(settings.GLOBAL_LOGFILE_PATH, mode="w")
 
     elif args.subcommand == "cat_log":
         if os.name == "nt":
@@ -138,7 +162,9 @@ def main() -> None:
             if not settings.GLOBAL_LOGFILE_PATH.exists():
                 print(
                     "no logfile found - run: "
-                    "evo_config set global_logfile_enabled", end=line_end)
+                    "evo_config set global_logfile_enabled",
+                    end=line_end,
+                )
             else:
                 print(open(settings.GLOBAL_LOGFILE_PATH).read(), end="")
         elif not settings.SETTINGS.global_logfile_enabled:
@@ -146,12 +172,15 @@ def main() -> None:
             sys.exit(1)
         else:
             import logging
+
             logger = logging.getLogger(__name__)
             from evo.tools import log
+
             file_fmt = log.DEFAULT_LONG_FMT
             if args.source:
                 file_fmt = file_fmt.replace(
-                    "%(module)s.%(funcName)s():%(lineno)s", args.source)
+                    "%(module)s.%(funcName)s():%(lineno)s", args.source
+                )
             log.configure_logging(silent=True, file_fmt=file_fmt)
             if not args.message:
                 msg = sys.stdin.read()
@@ -159,8 +188,8 @@ def main() -> None:
                 msg = args.message
             getattr(logger, args.loglevel)(msg)
         if args.clear_log:
-            open(settings.GLOBAL_LOGFILE_PATH, mode='w')
+            open(settings.GLOBAL_LOGFILE_PATH, mode="w")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

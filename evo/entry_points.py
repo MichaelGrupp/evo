@@ -70,6 +70,7 @@ def merge_config(args: argparse.Namespace) -> argparse.Namespace:
     :return: merged argparse NameSpace object
     """
     import json
+
     if args.config:
         with open(args.config) as config:
             merged_config_dict = vars(args).copy()
@@ -82,6 +83,7 @@ def merge_config(args: argparse.Namespace) -> argparse.Namespace:
             # Override global settings for this session
             # if the config file contains matching keys.
             from evo.tools.settings import SETTINGS
+
             SETTINGS.update_existing_keys(other=config_dict)
 
     return args
@@ -103,15 +105,18 @@ def launch(main_module, parser: argparse.ArgumentParser) -> None:
     except Exception:
         base_logger = logging.getLogger("evo")
         if len(base_logger.handlers) == 0 or isinstance(
-                base_logger.handlers[0], NullHandler):
+            base_logger.handlers[0], NullHandler
+        ):
             # In case logging couldn't be configured, print & exit directly.
             import traceback
+
             traceback.print_exc()
             sys.exit(1)
         logger.exception("Unhandled error in " + main_module.__name__)
         print("")
         err_msg = "evo module " + main_module.__name__ + " crashed"
         from evo.tools import settings
+
         if settings.SETTINGS.global_logfile_enabled:
             err_msg += f" - see {settings.GLOBAL_LOGFILE_PATH}"
         else:

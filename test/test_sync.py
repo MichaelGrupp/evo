@@ -27,22 +27,22 @@ from evo.core import sync
 
 class TestMatchingTimeIndices(unittest.TestCase):
     def test_correct_positive_offset(self):
-        stamps_1 = helpers.fake_timestamps(10, 0.1, start_time=0.)
+        stamps_1 = helpers.fake_timestamps(10, 0.1, start_time=0.0)
         stamps_2 = helpers.fake_timestamps(10, 0.1, start_time=0.5)
         matches = sync.matching_time_indices(stamps_1, stamps_2, offset_2=-0.5)
         self.assertEqual(len(matches[0]), 10)
         self.assertEqual(len(matches[1]), 10)
 
     def test_correct_negative_offset(self):
-        stamps_1 = helpers.fake_timestamps(10, 0.1, start_time=0.)
+        stamps_1 = helpers.fake_timestamps(10, 0.1, start_time=0.0)
         stamps_2 = helpers.fake_timestamps(10, 0.1, start_time=-0.5)
         matches = sync.matching_time_indices(stamps_1, stamps_2, offset_2=0.5)
         self.assertEqual(len(matches[0]), 10)
         self.assertEqual(len(matches[1]), 10)
 
     def test_no_matches_due_to_offset(self):
-        stamps_1 = helpers.fake_timestamps(10, 0.1, start_time=0.)
-        stamps_2 = helpers.fake_timestamps(10, 0.1, start_time=2.)
+        stamps_1 = helpers.fake_timestamps(10, 0.1, start_time=0.0)
+        stamps_2 = helpers.fake_timestamps(10, 0.1, start_time=2.0)
         matches = sync.matching_time_indices(stamps_1, stamps_2)
         self.assertEqual(len(matches[0]), 0)
         self.assertEqual(len(matches[1]), 0)
@@ -67,8 +67,8 @@ class TestAssociateTrajectories(unittest.TestCase):
             sync.associate_trajectories(path_1, path_2)
 
     def test_no_matches_due_to_offset(self):
-        traj_1 = helpers.fake_trajectory(10, 0.1, start_time=0.)
-        traj_2 = helpers.fake_trajectory(10, 0.1, start_time=2.)
+        traj_1 = helpers.fake_trajectory(10, 0.1, start_time=0.0)
+        traj_2 = helpers.fake_trajectory(10, 0.1, start_time=2.0)
         with self.assertRaises(sync.SyncException):
             sync.associate_trajectories(traj_1, traj_2)
 
@@ -81,5 +81,5 @@ class TestAssociateTrajectories(unittest.TestCase):
         self.assertEqual(traj_2_sync.num_poses, 10)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(verbosity=2)

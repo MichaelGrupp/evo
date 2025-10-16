@@ -12,7 +12,7 @@ def main(traj_file, factor):
     file_interface.write_tum_trajectory_file(traj_file, traj)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description=DESC)

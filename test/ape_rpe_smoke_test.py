@@ -18,7 +18,7 @@ data = [
     "euroc data/V102_groundtruth.csv data/V102.txt",
     "kitti data/KITTI_00_gt.txt data/KITTI_00_ORB.txt",
     "tum data/fr2_desk_groundtruth.txt data/fr2_desk_ORB.txt",
-    "bag data/ROS_example.bag groundtruth S-PTAM"
+    "bag data/ROS_example.bag groundtruth S-PTAM",
 ]
 
 try:

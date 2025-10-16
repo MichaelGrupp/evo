@@ -13,10 +13,6 @@ build-backend = "hatchling.build"
 path = "evo/__init__.py"
 
 
-[tool.magformat]
-formatters = ["yapf"]
-
-
 [project]
 name = "evo"
 description = "Python package for the evaluation of odometry and SLAM"
@@ -78,3 +74,7 @@ evo_res = "evo.entry_points:res"
 evo_config = "evo.main_config:main"
 evo_ipython = "evo.main_ipython:main"
 evo = "evo.main_evo:main"
+
+
+[tool.black]
+line-length = 79

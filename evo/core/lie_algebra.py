@@ -57,11 +57,11 @@ def hat(v: np.ndarray) -> np.ndarray:
     :param v: 3x1 vector
     :return: 3x3 skew symmetric matrix
     """
-    # yapf: disable
+    # fmt: off
     return np.array([[0.0, -v[2], v[1]],
                      [v[2], 0.0, -v[0]],
                      [-v[1], v[0], 0.0]])
-    # yapf: enable
+    # fmt: on
 
 
 def vee(m: np.ndarray) -> np.ndarray:
@@ -114,8 +114,9 @@ def so3_log_angle(r: np.ndarray, degrees: bool = False) -> float:
     return float(angle)
 
 
-def se3(r: np.ndarray = np.eye(3),
-        t: np.ndarray = np.array([0, 0, 0])) -> np.ndarray:
+def se3(
+    r: np.ndarray = np.eye(3), t: np.ndarray = np.array([0, 0, 0])
+) -> np.ndarray:
     """
     :param r: SO(3) rotation matrix
     :param t: 3x1 translation vector

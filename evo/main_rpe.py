@@ -39,15 +39,25 @@ logger = logging.getLogger(__name__)
 SEP = "-" * 80  # separator line
 
 
-def rpe(traj_ref: PosePath3D, traj_est: PosePath3D,
-        pose_relation: metrics.PoseRelation, delta: float,
-        delta_unit: metrics.Unit, rel_delta_tol: float = 0.1,
-        all_pairs: bool = False, pairs_from_reference: bool = False,
-        align: bool = False, correct_scale: bool = False, n_to_align: int = -1,
-        align_origin: bool = False, ref_name: str = "reference",
-        est_name: str = "estimate", support_loop: bool = False,
-        change_unit: typing.Optional[metrics.Unit] = None,
-        project_to_plane: typing.Optional[Plane] = None) -> Result:
+def rpe(
+    traj_ref: PosePath3D,
+    traj_est: PosePath3D,
+    pose_relation: metrics.PoseRelation,
+    delta: float,
+    delta_unit: metrics.Unit,
+    rel_delta_tol: float = 0.1,
+    all_pairs: bool = False,
+    pairs_from_reference: bool = False,
+    align: bool = False,
+    correct_scale: bool = False,
+    n_to_align: int = -1,
+    align_origin: bool = False,
+    ref_name: str = "reference",
+    est_name: str = "estimate",
+    support_loop: bool = False,
+    change_unit: typing.Optional[metrics.Unit] = None,
+    project_to_plane: typing.Optional[Plane] = None,
+) -> Result:
 
     # Align the trajectories.
     only_scale = correct_scale and not align
@@ -55,7 +65,8 @@ def rpe(traj_ref: PosePath3D, traj_est: PosePath3D,
     if align or correct_scale:
         logger.debug(SEP)
         alignment_transformation = lie_algebra.sim3(
-            *traj_est.align(traj_ref, correct_scale, only_scale, n=n_to_align))
+            *traj_est.align(traj_ref, correct_scale, only_scale, n=n_to_align)
+        )
     if align_origin:
         logger.debug(SEP)
         alignment_transformation = traj_est.align_origin(traj_ref)
@@ -63,16 +74,23 @@ def rpe(traj_ref: PosePath3D, traj_est: PosePath3D,
     # Projection is done after potential 3D alignment & transformation steps.
     if project_to_plane:
         logger.debug(SEP)
-        logger.debug("Projecting trajectories to %s plane.",
-                     project_to_plane.value)
+        logger.debug(
+            "Projecting trajectories to %s plane.", project_to_plane.value
+        )
         traj_ref.project(project_to_plane)
         traj_est.project(project_to_plane)
 
     # Calculate RPE.
     logger.debug(SEP)
     data = (traj_ref, traj_est)
-    rpe_metric = metrics.RPE(pose_relation, delta, delta_unit, rel_delta_tol,
-                             all_pairs, pairs_from_reference)
+    rpe_metric = metrics.RPE(
+        pose_relation,
+        delta,
+        delta_unit,
+        rel_delta_tol,
+        all_pairs,
+        pairs_from_reference,
+    )
     rpe_metric.process_data(data)
 
     if change_unit:
@@ -104,6 +122,7 @@ def rpe(traj_ref: PosePath3D, traj_est: PosePath3D,
     if support_loop:
         # Avoid overwriting if called repeatedly e.g. in Jupyter notebook.
         import copy
+
         traj_ref = copy.deepcopy(traj_ref)
         traj_est = copy.deepcopy(traj_est)
     # Note: the pose at index 0 is added for plotting purposes, although it has
@@ -117,7 +136,8 @@ def rpe(traj_ref: PosePath3D, traj_est: PosePath3D,
 
     if isinstance(traj_est, PoseTrajectory3D):
         seconds_from_start = np.array(
-            [t - traj_est.timestamps[0] for t in traj_est.timestamps])
+            [t - traj_est.timestamps[0] for t in traj_est.timestamps]
+        )
         # Save times/distances of each calculated value.
         # Note: here the first index needs that was added before needs to be
         # ignored again as it's not relevant for the values (see above).
@@ -127,18 +147,21 @@ def rpe(traj_ref: PosePath3D, traj_est: PosePath3D,
         rpe_result.add_np_array("distances", traj_est.distances[1:])
 
     if alignment_transformation is not None:
-        rpe_result.add_np_array("alignment_transformation_sim3",
-                                alignment_transformation)
+        rpe_result.add_np_array(
+            "alignment_transformation_sim3", alignment_transformation
+        )
 
     return rpe_result
 
 
 def run(args: argparse.Namespace) -> None:
 
-    log.configure_logging(args.verbose, args.silent, args.debug,
-                          local_logfile=args.logfile)
+    log.configure_logging(
+        args.verbose, args.silent, args.debug, local_logfile=args.logfile
+    )
     if args.debug:
         from pprint import pformat
+
         parser_str = pformat({arg: getattr(args, arg) for arg in vars(args)})
         logger.debug("main_parser config:\n{}".format(parser_str))
     logger.debug(SEP)
@@ -152,6 +175,7 @@ def run(args: argparse.Namespace) -> None:
     traj_ref_full = None
     if args.plot_full_ref:
         import copy
+
         traj_ref_full = copy.deepcopy(traj_ref)
 
     # Downsample or filtering has to be done before synchronization.
@@ -159,7 +183,8 @@ def run(args: argparse.Namespace) -> None:
     common.downsample_or_filter(args, traj_ref, traj_est)
 
     if isinstance(traj_ref, PoseTrajectory3D) and isinstance(
-            traj_est, PoseTrajectory3D):
+        traj_est, PoseTrajectory3D
+    ):
         logger.debug(SEP)
         if args.t_start or args.t_end:
             if args.t_start:
@@ -169,21 +194,38 @@ def run(args: argparse.Namespace) -> None:
             traj_ref.reduce_to_time_range(args.t_start, args.t_end)
         logger.debug("Synchronizing trajectories...")
         traj_ref, traj_est = sync.associate_trajectories(
-            traj_ref, traj_est, args.t_max_diff, args.t_offset,
-            first_name=ref_name, snd_name=est_name)
+            traj_ref,
+            traj_est,
+            args.t_max_diff,
+            args.t_offset,
+            first_name=ref_name,
+            snd_name=est_name,
+        )
 
-    result = rpe(traj_ref=traj_ref, traj_est=traj_est,
-                 pose_relation=pose_relation, delta=args.delta,
-                 delta_unit=delta_unit, rel_delta_tol=args.delta_tol,
-                 all_pairs=args.all_pairs,
-                 pairs_from_reference=args.pairs_from_reference,
-                 align=args.align, correct_scale=args.correct_scale,
-                 n_to_align=args.n_to_align, align_origin=args.align_origin,
-                 ref_name=ref_name, est_name=est_name, change_unit=change_unit,
-                 project_to_plane=plane)
+    result = rpe(
+        traj_ref=traj_ref,
+        traj_est=traj_est,
+        pose_relation=pose_relation,
+        delta=args.delta,
+        delta_unit=delta_unit,
+        rel_delta_tol=args.delta_tol,
+        all_pairs=args.all_pairs,
+        pairs_from_reference=args.pairs_from_reference,
+        align=args.align,
+        correct_scale=args.correct_scale,
+        n_to_align=args.n_to_align,
+        align_origin=args.align_origin,
+        ref_name=ref_name,
+        est_name=est_name,
+        change_unit=change_unit,
+        project_to_plane=plane,
+    )
 
-    if args.rerun and isinstance(traj_ref, PoseTrajectory3D) and isinstance(
-            traj_est, PoseTrajectory3D):
+    if (
+        args.rerun
+        and isinstance(traj_ref, PoseTrajectory3D)
+        and isinstance(traj_est, PoseTrajectory3D)
+    ):
         common.log_result_to_rerun("evo_rpe", result, traj_ref, traj_est)
     elif args.rerun:
         logger.warning(
@@ -191,19 +233,25 @@ def run(args: argparse.Namespace) -> None:
         )
 
     if args.plot or args.save_plot:
-        common.plot_result(args, result, traj_ref,
-                           result.trajectories[est_name],
-                           traj_ref_full=traj_ref_full)
+        common.plot_result(
+            args,
+            result,
+            traj_ref,
+            result.trajectories[est_name],
+            traj_ref_full=traj_ref_full,
+        )
 
     if args.save_results:
         logger.debug(SEP)
         if not SETTINGS.save_traj_in_zip:
             del result.trajectories[ref_name]
             del result.trajectories[est_name]
-        file_interface.save_res_file(args.save_results, result,
-                                     confirm_overwrite=not args.no_warnings)
+        file_interface.save_res_file(
+            args.save_results, result, confirm_overwrite=not args.no_warnings
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from evo import entry_points
+
     entry_points.rpe()

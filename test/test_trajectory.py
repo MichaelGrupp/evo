@@ -40,7 +40,8 @@ class TestPosePath3D(unittest.TestCase):
         # only quaternion
         with self.assertRaises(trajectory.TrajectoryException):
             trajectory.PosePath3D(
-                orientations_quat_wxyz=path.orientations_quat_wxyz)
+                orientations_quat_wxyz=path.orientations_quat_wxyz
+            )
         # only xyz
         with self.assertRaises(trajectory.TrajectoryException):
             trajectory.PosePath3D(positions_xyz=path.positions_xyz)
@@ -54,17 +55,20 @@ class TestPosePath3D(unittest.TestCase):
             self.fail("unexpected init failure with only poses_se3")
         # xyz + quaternion
         try:
-            trajectory.PosePath3D(path.positions_xyz,
-                                  path.orientations_quat_wxyz)
+            trajectory.PosePath3D(
+                path.positions_xyz, path.orientations_quat_wxyz
+            )
         except trajectory.TrajectoryException:
             self.fail("unexpected init failure with xyz + quaternion")
         # all
         try:
-            trajectory.PosePath3D(path.positions_xyz,
-                                  path.orientations_quat_wxyz, path.poses_se3)
+            trajectory.PosePath3D(
+                path.positions_xyz, path.orientations_quat_wxyz, path.poses_se3
+            )
         except trajectory.TrajectoryException:
             self.fail(
-                "unexpected init failure with xyz + quaternion + poses_se3")
+                "unexpected init failure with xyz + quaternion + poses_se3"
+            )
 
     def test_equals(self):
         path_1 = helpers.fake_path(10)
@@ -81,11 +85,14 @@ class TestPosePath3D(unittest.TestCase):
         are treated as equal.
         """
         path_1 = helpers.fake_path(10)
-        path_2 = PosePath3D(path_1.positions_xyz,
-                            path_1.orientations_quat_wxyz * -1)
+        path_2 = PosePath3D(
+            path_1.positions_xyz, path_1.orientations_quat_wxyz * -1
+        )
         self.assertFalse(
-            np.allclose(path_1.orientations_quat_wxyz,
-                        path_2.orientations_quat_wxyz))
+            np.allclose(
+                path_1.orientations_quat_wxyz, path_2.orientations_quat_wxyz
+            )
+        )
         self.assertEqual(path_1, path_2)
 
     def test_reduce_to_ids(self):
@@ -94,8 +101,9 @@ class TestPosePath3D(unittest.TestCase):
         path_reduced.reduce_to_ids([0, 2])
         self.assertEqual(path_reduced.num_poses, 2)
         # direct connection from 0 to 2 in initial should be reduced path length
-        len_initial_segment = np.linalg.norm(path.positions_xyz[2] -
-                                             path.positions_xyz[0])
+        len_initial_segment = np.linalg.norm(
+            path.positions_xyz[2] - path.positions_xyz[0]
+        )
         len_reduced = path_reduced.path_length
         self.assertAlmostEqual(len_initial_segment, len_reduced)
 
@@ -105,18 +113,24 @@ class TestPosePath3D(unittest.TestCase):
         path_downsampled.downsample(10)
         self.assertEqual(path_downsampled.num_poses, 10)
         self.assertTrue(
-            np.equal(path.positions_xyz[0],
-                     path_downsampled.positions_xyz[0]).all())
+            np.equal(
+                path.positions_xyz[0], path_downsampled.positions_xyz[0]
+            ).all()
+        )
         self.assertTrue(
-            np.equal(path.positions_xyz[-1],
-                     path_downsampled.positions_xyz[-1]).all())
+            np.equal(
+                path.positions_xyz[-1], path_downsampled.positions_xyz[-1]
+            ).all()
+        )
 
         # Downsampling to 1 should reduce to the start pose.
         path_downsampled.downsample(1)
         self.assertEqual(path_downsampled.num_poses, 1)
         self.assertTrue(
-            np.equal(path.positions_xyz[0],
-                     path_downsampled.positions_xyz[0]).all())
+            np.equal(
+                path.positions_xyz[0], path_downsampled.positions_xyz[0]
+            ).all()
+        )
 
     def test_transform(self):
         path = helpers.fake_path(10)
@@ -131,8 +145,9 @@ class TestPosePath3D(unittest.TestCase):
         path_transformed = copy.deepcopy(path)
         t = lie.sim3(r=lie.random_so3(), t=np.ones(3), s=1.234)
         path_transformed.transform(t)
-        self.assertAlmostEqual(path_transformed.path_length,
-                               path.path_length * 1.234)
+        self.assertAlmostEqual(
+            path_transformed.path_length, path.path_length * 1.234
+        )
 
     def test_scale(self):
         path = helpers.fake_path(10)
@@ -178,8 +193,11 @@ class TestPosePath3D(unittest.TestCase):
             self.assertEqual(path.positions_xyz[0][null_dim], 0)
             # Rotation has to be angle around the nulled dimension's axis.
             self.assertTrue(
-                np.allclose(lie.so3_log(lie.so3_from_se3(path.poses_se3[0])),
-                            angle * axis))
+                np.allclose(
+                    lie.so3_log(lie.so3_from_se3(path.poses_se3[0])),
+                    angle * axis,
+                )
+            )
             # Quaternion has to be zero around the plane's basis vectors.
             quat_wxyz = path.orientations_quat_wxyz[0]
             if plane == trajectory.Plane.XY:
@@ -196,23 +214,25 @@ class TestPosePath3D(unittest.TestCase):
         """
         Checks if the path can be split correctly at a distance threshold.
         """
-        path = PosePath3D(poses_se3=[
-            lie.se3(r=np.eye(3), t=np.array([0, 0, 0])),
-            lie.se3(r=np.eye(3), t=np.array([0, 0, 1])),
-            lie.se3(r=np.eye(3), t=np.array([0, 0, 2])),
-            lie.se3(r=np.eye(3), t=np.array([0, 0, 4])),
-            lie.se3(r=np.eye(3), t=np.array([0, 0, 7])),
-            lie.se3(r=np.eye(3), t=np.array([0, 0, 8])),
-        ])
+        path = PosePath3D(
+            poses_se3=[
+                lie.se3(r=np.eye(3), t=np.array([0, 0, 0])),
+                lie.se3(r=np.eye(3), t=np.array([0, 0, 1])),
+                lie.se3(r=np.eye(3), t=np.array([0, 0, 2])),
+                lie.se3(r=np.eye(3), t=np.array([0, 0, 4])),
+                lie.se3(r=np.eye(3), t=np.array([0, 0, 7])),
+                lie.se3(r=np.eye(3), t=np.array([0, 0, 8])),
+            ]
+        )
         splits = path.split_distance_gaps(1.5)
         self.assertEqual(len(splits), 3)
         self.assertEqual(splits[0].num_poses, 3)
-        self.assertEqual(splits[0].path_length, 2.)
+        self.assertEqual(splits[0].path_length, 2.0)
         self.assertEqual(splits[1].num_poses, 1)
-        self.assertEqual(splits[1].path_length, 0.)
+        self.assertEqual(splits[1].path_length, 0.0)
         self.assertEqual(splits[2].num_poses, 2)
-        self.assertEqual(splits[2].path_length, 1.)
-        splits = path.split_distance_gaps(999.)
+        self.assertEqual(splits[2].path_length, 1.0)
+        splits = path.split_distance_gaps(999.0)
         self.assertEqual(len(splits), 1)
         self.assertEqual(splits[0].num_poses, path.num_poses)
 
@@ -273,10 +293,10 @@ class TestPoseTrajectory3D(unittest.TestCase):
         """
         Checks if the trajectory can be split correctly with a time threshold.
         """
-        traj = helpers.fake_trajectory(5, 1.)
-        traj.timestamps[2:5] += 10.
-        traj.timestamps[4] += 10.
-        splits = traj.split_time_gaps(5.)
+        traj = helpers.fake_trajectory(5, 1.0)
+        traj.timestamps[2:5] += 10.0
+        traj.timestamps[4] += 10.0
+        splits = traj.split_time_gaps(5.0)
         self.assertEqual(len(splits), 3)
         self.assertEqual(splits[0].num_poses, 2)
         self.assertEqual(splits[1].num_poses, 2)
@@ -287,12 +307,14 @@ class TestPoseTrajectory3D(unittest.TestCase):
         Checks if the trajectory can be split correctly with a speed threshold.
         """
         traj = PoseTrajectory3D(
-            timestamps=np.array([0, 1, 2]), poses_se3=[
+            timestamps=np.array([0, 1, 2]),
+            poses_se3=[
                 lie.se3(r=np.eye(3), t=np.array([0, 0, 0])),
                 lie.se3(r=np.eye(3), t=np.array([0, 0, 1])),
                 lie.se3(r=np.eye(3), t=np.array([0, 0, 4])),
-            ])
-        splits = traj.split_speed_outliers(2.)
+            ],
+        )
+        splits = traj.split_speed_outliers(2.0)
         self.assertEqual(len(splits), 2)
         self.assertEqual(splits[0].num_poses, 2)
         self.assertEqual(splits[1].num_poses, 1)
@@ -335,8 +357,8 @@ class TestTrajectoryAlignment(unittest.TestCase):
         length = 100
         poses = [lie.random_se3()] * length
         traj_1 = PoseTrajectory3D(
-            poses_se3=poses,
-            timestamps=helpers.fake_timestamps(length, 1, 0.0))
+            poses_se3=poses, timestamps=helpers.fake_timestamps(length, 1, 0.0)
+        )
         traj_2 = copy.deepcopy(traj_1)
         traj_2.transform(lie.random_se3())
         traj_2.scale(1.234)
@@ -349,5 +371,5 @@ class TestTrajectoryAlignment(unittest.TestCase):
             traj_1.align(traj_2, correct_scale=True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(verbosity=2)

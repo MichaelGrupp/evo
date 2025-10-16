@@ -20,20 +20,23 @@ commands_with_config_dir = {
     "--ref data/KITTI_00_gt.txt": "cfg/traj/kitti",
     "evo_traj tum data/fr2_desk_groundtruth.txt data/fr2_desk_ORB.txt data/fr2_desk_ORB_kf_mono.txt "
     "--ref data/fr2_desk_groundtruth.txt": "cfg/traj/tum",
-    "evo_traj bag data/ROS_example.bag groundtruth S-PTAM ORB-SLAM --ref groundtruth": "cfg/traj/bag"
+    "evo_traj bag data/ROS_example.bag groundtruth S-PTAM ORB-SLAM --ref groundtruth": "cfg/traj/bag",
 }
 
 if os.getenv("ROS_DISTRO") is not None:
     # TF interface is able to load TF from ROS 1 bags in ROS 2 and vice versa.
-    commands_with_config_dir.update({
-        "evo_traj bag data/tf_example.bag /tf:odom.base_link --ref /tf:odom.base_footprint": "cfg/traj/bag",
-        "evo_traj bag2 data/tf_example /tf:odom.base_link --ref /tf:odom.base_footprint": "cfg/traj/bag",
-    })
+    commands_with_config_dir.update(
+        {
+            "evo_traj bag data/tf_example.bag /tf:odom.base_link --ref /tf:odom.base_footprint": "cfg/traj/bag",
+            "evo_traj bag2 data/tf_example /tf:odom.base_link --ref /tf:odom.base_footprint": "cfg/traj/bag",
+        }
+    )
 
 try:
     for command, config_dir in commands_with_config_dir.items():
         for config_file in chain(
-                Path(config_dir).iterdir(), COMMON_CONFIG_DIR.iterdir()):
+            Path(config_dir).iterdir(), COMMON_CONFIG_DIR.iterdir()
+        ):
             TMP_DIR.mkdir(exist_ok=True)
             full_command = f"{command} -c {config_file}"
             print(f"[smoke test] {full_command}")
@@ -43,8 +46,9 @@ except sp.CalledProcessError as e:
     print(e.output.decode("utf-8"))
     raise
 finally:
-    traj_files = glob.glob("./*.bag") + glob.glob("./*.kitti") + glob.glob(
-        "./*.tum")
+    traj_files = (
+        glob.glob("./*.bag") + glob.glob("./*.kitti") + glob.glob("./*.tum")
+    )
     for traj_file in traj_files:
         os.remove(traj_file)
     if TMP_DIR.exists():

@@ -28,7 +28,7 @@ def random_se3_list(length):
     return [lie.random_se3() for _ in range(length)]
 
 
-def fake_timestamps(length, distance, start_time=0.):
+def fake_timestamps(length, distance, start_time=0.0):
     return np.array([start_time + (distance * i) for i in range(length)])
 
 
@@ -36,7 +36,8 @@ def fake_path(length):
     return PosePath3D(poses_se3=random_se3_list(length))
 
 
-def fake_trajectory(length, timestamp_distance, start_time=0.):
+def fake_trajectory(length, timestamp_distance, start_time=0.0):
     return PoseTrajectory3D(
-        poses_se3=random_se3_list(length), timestamps=fake_timestamps(
-            length, timestamp_distance, start_time))
+        poses_se3=random_se3_list(length),
+        timestamps=fake_timestamps(length, timestamp_distance, start_time),
+    )

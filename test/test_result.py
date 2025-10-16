@@ -29,34 +29,37 @@ from evo.core import result
 class TestMergeResult(unittest.TestCase):
     def test_merge_strategy_average(self):
         r1 = result.Result()
-        r1.add_np_array("test", np.array([1., 2., 3.]))
-        r1.add_stats({"bla": 1., "blub": 2.})
+        r1.add_np_array("test", np.array([1.0, 2.0, 3.0]))
+        r1.add_stats({"bla": 1.0, "blub": 2.0})
         r2 = result.Result()
-        r2.add_np_array("test", np.array([1., 0., 0.]))
-        r2.add_stats({"bla": 0., "blub": 1.})
+        r2.add_np_array("test", np.array([1.0, 0.0, 0.0]))
+        r2.add_stats({"bla": 0.0, "blub": 1.0})
         r3 = result.Result()
-        r3.add_np_array("test", np.array([1., 1., 0.]))
-        r3.add_stats({"bla": 2., "blub": 0.})
+        r3.add_np_array("test", np.array([1.0, 1.0, 0.0]))
+        r3.add_stats({"bla": 2.0, "blub": 0.0})
         merged = result.merge_results([r1, r2, r3])
         self.assertTrue(
-            np.array_equal(merged.np_arrays["test"], np.array([1., 1., 1.])))
-        self.assertEqual(merged.stats, {"bla": 1., "blub": 1.})
+            np.array_equal(merged.np_arrays["test"], np.array([1.0, 1.0, 1.0]))
+        )
+        self.assertEqual(merged.stats, {"bla": 1.0, "blub": 1.0})
 
     def test_merge_strategy_append(self):
         r1 = result.Result()
-        r1.add_np_array("test", np.array([1., 2., 3.]))
-        r1.add_stats({"bla": 1., "blub": 2.})
+        r1.add_np_array("test", np.array([1.0, 2.0, 3.0]))
+        r1.add_stats({"bla": 1.0, "blub": 2.0})
         r2 = result.Result()
-        r2.add_np_array("test", np.array([0.]))
-        r2.add_stats({"bla": 0., "blub": 1.})
+        r2.add_np_array("test", np.array([0.0]))
+        r2.add_stats({"bla": 0.0, "blub": 1.0})
         r3 = result.Result()
-        r3.add_np_array("test", np.array([1.]))
-        r3.add_stats({"bla": 2., "blub": 0.})
+        r3.add_np_array("test", np.array([1.0]))
+        r3.add_stats({"bla": 2.0, "blub": 0.0})
         merged = result.merge_results([r1, r2, r3])
         self.assertTrue(
-            np.array_equal(merged.np_arrays["test"],
-                           np.array([1., 2., 3., 0., 1.])))
-        self.assertEqual(merged.stats, {"bla": 1., "blub": 1.})
+            np.array_equal(
+                merged.np_arrays["test"], np.array([1.0, 2.0, 3.0, 0.0, 1.0])
+            )
+        )
+        self.assertEqual(merged.stats, {"bla": 1.0, "blub": 1.0})
 
     def test_non_matching_np_arrays_keys(self):
         r1 = result.Result()
@@ -69,8 +72,8 @@ class TestMergeResult(unittest.TestCase):
 
     def test_non_matching_stats_keys(self):
         r1 = result.Result()
-        r1.add_stats({"bla": 1., "blub": 2.})
+        r1.add_stats({"bla": 1.0, "blub": 2.0})
         r2 = result.Result()
-        r2.add_stats({"foo": 1., "bar": 2.})
+        r2.add_stats({"foo": 1.0, "bar": 2.0})
         with self.assertRaises(result.ResultException):
             result.merge_results([r1, r2])

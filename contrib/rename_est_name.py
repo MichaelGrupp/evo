@@ -12,7 +12,7 @@ def main(res_file, new_name):
     file_interface.save_res_file(res_file, result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description=DESC)

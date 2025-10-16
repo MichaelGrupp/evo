@@ -30,7 +30,7 @@ from evo.core import lie_algebra as lie
 
 class TestSE3(unittest.TestCase):
     def test_is_se3(self):
-        # yapf: disable
+        # fmt: off
         p = np.array([[1, 0, 0, 1],
                       [0, 0, -1, 2],
                       [0, 1, 0, 3],
@@ -41,7 +41,7 @@ class TestSE3(unittest.TestCase):
                             [0, 111, 0, 3],
                             [0, 0, 0, 1]])
         self.assertFalse(lie.is_se3(p_false))
-        # yapf: enable
+        # fmt: on
 
     def test_random_se3(self):
         self.assertTrue(lie.is_se3(lie.random_se3()))
@@ -64,12 +64,12 @@ class TestSE3(unittest.TestCase):
 
 class TestSO3(unittest.TestCase):
     def test_is_so3(self):
-        # yapf: disable
+        # fmt: off
         r = np.array([[1, 0, 0],
                       [0, 0, -1],
                       [0, 1, 0]])
         self.assertTrue(lie.is_so3(r))
-        # yapf: enable
+        # fmt: on
 
     def test_random_so3(self):
         r = lie.random_so3()
@@ -121,8 +121,8 @@ class TestSim3(unittest.TestCase):
         self.assertTrue(lie.is_sim3(p, s))
         x = p.dot(x)  # apply Sim(3) transformation
         self.assertTrue(
-            np.equal(x,
-                     lie.se3(r).dot(np.array([s, 0, 0, 1]))).all())
+            np.equal(x, lie.se3(r).dot(np.array([s, 0, 0, 1]))).all()
+        )
 
     def test_sim3_inverse(self):
         r = lie.random_so3()
@@ -139,36 +139,57 @@ class TestSim3(unittest.TestCase):
         self.assertAlmostEqual(s, lie.sim3_scale(p))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     """
     benchmarks
     """
     print("\ncheck speed of SE(3) inverse:")
-    setup = "from evo.core import lie_algebra as lie; " \
-            "import numpy as np; se3 = lie.random_se3()"
-    print("time for 1000*lie.se3_inverse(se3): ",
-          timeit.timeit("lie.se3_inverse(se3)", setup=setup, number=1000))
-    print("time for 1000*np.linalg.inv(se3): ",
-          timeit.timeit("np.linalg.inv(se3)", setup=setup, number=1000))
+    setup = (
+        "from evo.core import lie_algebra as lie; "
+        "import numpy as np; se3 = lie.random_se3()"
+    )
+    print(
+        "time for 1000*lie.se3_inverse(se3): ",
+        timeit.timeit("lie.se3_inverse(se3)", setup=setup, number=1000),
+    )
+    print(
+        "time for 1000*np.linalg.inv(se3): ",
+        timeit.timeit("np.linalg.inv(se3)", setup=setup, number=1000),
+    )
 
     print("\ncheck speed of  SO(3) log:")
-    setup = "from evo.core import lie_algebra as lie; " \
-            "import numpy as np; so3 = lie.random_so3()"
-    print("time for 1000*lie.so3_log(so3, skew=True): ",
-          timeit.timeit("lie.so3_log(so3, True)", setup=setup, number=1000))
-    print("time for 1000*lie.so3_log(so3): ",
-          timeit.timeit("lie.so3_log(so3)", setup=setup, number=1000))
-    setup = "from evo.core import lie_algebra as lie; import numpy as np; " \
-            "import evo.core.transformations as tr; " \
-            "so3 = lie.se3(lie.random_so3(), [0, 0, 0])"
-    print("time for 1000*tr.rotation_from_matrix(so3): ",
-          timeit.timeit("tr.rotation_from_matrix(so3)", setup=setup,
-                        number=1000))
-    setup = "from evo.core import lie_algebra as lie; " \
-            "import numpy as np; so3 = lie.random_so3(); " \
-            "rotvec = lie.so3_log(so3, False)"
-    print("time for 1000*lie.so3_exp(rotvec): ",
-          timeit.timeit("lie.so3_exp(rotvec)", setup=setup, number=1000))
+    setup = (
+        "from evo.core import lie_algebra as lie; "
+        "import numpy as np; so3 = lie.random_so3()"
+    )
+    print(
+        "time for 1000*lie.so3_log(so3, skew=True): ",
+        timeit.timeit("lie.so3_log(so3, True)", setup=setup, number=1000),
+    )
+    print(
+        "time for 1000*lie.so3_log(so3): ",
+        timeit.timeit("lie.so3_log(so3)", setup=setup, number=1000),
+    )
+    setup = (
+        "from evo.core import lie_algebra as lie; import numpy as np; "
+        "import evo.core.transformations as tr; "
+        "so3 = lie.se3(lie.random_so3(), [0, 0, 0])"
+    )
+    print(
+        "time for 1000*tr.rotation_from_matrix(so3): ",
+        timeit.timeit(
+            "tr.rotation_from_matrix(so3)", setup=setup, number=1000
+        ),
+    )
+    setup = (
+        "from evo.core import lie_algebra as lie; "
+        "import numpy as np; so3 = lie.random_so3(); "
+        "rotvec = lie.so3_log(so3, False)"
+    )
+    print(
+        "time for 1000*lie.so3_exp(rotvec): ",
+        timeit.timeit("lie.so3_exp(rotvec)", setup=setup, number=1000),
+    )
     """
     unit test
     """

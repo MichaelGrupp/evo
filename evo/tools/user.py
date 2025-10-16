@@ -30,8 +30,10 @@ def prompt_val(msg: str = "enter a value:") -> str:
     return input(msg + "\n")
 
 
-def confirm(msg: str = "enter 'y' to confirm or any other key to cancel",
-            key: str = 'y') -> bool:
+def confirm(
+    msg: str = "enter 'y' to confirm or any other key to cancel",
+    key: str = "y",
+) -> bool:
     if input(msg + "\n") != key:
         return False
     else:

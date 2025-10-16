@@ -35,7 +35,8 @@ log.configure_logging(verbose=True)
 
 traj_ref = file_interface.read_kitti_poses_file("../test/data/KITTI_00_gt.txt")
 traj_est = file_interface.read_kitti_poses_file(
-    "../test/data/KITTI_00_ORB.txt")
+    "../test/data/KITTI_00_ORB.txt"
+)
 
 # add artificial Sim(3) transformation
 traj_est.transform(lie.se3(np.eye(3), np.array([0, 0, 0])))
@@ -57,27 +58,27 @@ fig = plt.figure(figsize=(8, 8))
 plot_mode = plot.PlotMode.xz
 
 ax = plot.prepare_axis(fig, plot_mode, subplot_arg=221)
-plot.traj(ax, plot_mode, traj_ref, '--', 'gray')
-plot.traj(ax, plot_mode, traj_est, '-', 'blue')
+plot.traj(ax, plot_mode, traj_ref, "--", "gray")
+plot.traj(ax, plot_mode, traj_est, "-", "blue")
 fig.axes.append(ax)
-plt.title('not aligned')
+plt.title("not aligned")
 
 ax = plot.prepare_axis(fig, plot_mode, subplot_arg=222)
-plot.traj(ax, plot_mode, traj_ref, '--', 'gray')
-plot.traj(ax, plot_mode, traj_est_aligned, '-', 'blue')
+plot.traj(ax, plot_mode, traj_ref, "--", "gray")
+plot.traj(ax, plot_mode, traj_est_aligned, "-", "blue")
 fig.axes.append(ax)
-plt.title('$\mathrm{SE}(3)$ alignment')
+plt.title("$\mathrm{SE}(3)$ alignment")
 
 ax = plot.prepare_axis(fig, plot_mode, subplot_arg=223)
-plot.traj(ax, plot_mode, traj_ref, '--', 'gray')
-plot.traj(ax, plot_mode, traj_est_aligned_scaled, '-', 'blue')
+plot.traj(ax, plot_mode, traj_ref, "--", "gray")
+plot.traj(ax, plot_mode, traj_est_aligned_scaled, "-", "blue")
 fig.axes.append(ax)
-plt.title('$\mathrm{Sim}(3)$ alignment')
+plt.title("$\mathrm{Sim}(3)$ alignment")
 
 ax = plot.prepare_axis(fig, plot_mode, subplot_arg=224)
-plot.traj(ax, plot_mode, traj_ref, '--', 'gray')
-plot.traj(ax, plot_mode, traj_est_aligned_only_scaled, '-', 'blue')
+plot.traj(ax, plot_mode, traj_ref, "--", "gray")
+plot.traj(ax, plot_mode, traj_est_aligned_only_scaled, "-", "blue")
 fig.axes.append(ax)
-plt.title('only scaled')
+plt.title("only scaled")
 
 plt.show()

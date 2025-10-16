@@ -1,6 +1,0 @@
-# https://github.com/google/yapf
-
-[style]
-based_on_style = pep8
-allow_split_before_dict_value = false
-split_before_named_assigns = false

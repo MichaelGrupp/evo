@@ -3,7 +3,7 @@ Functions for easier logging of evo data into rerun.
 """
 
 from dataclasses import dataclass
-from typing import Optional, Sequence
+from typing import Sequence
 
 import rerun as rr
 from rerun.datatypes import Float64ArrayLike, Float32ArrayLike, Rgba32ArrayLike
@@ -35,11 +35,11 @@ class Color:
     Note that sequential colors must have the same length as other data columns when logged.
     """
 
-    static: Optional[Rgba32ArrayLike] = None
+    static: Rgba32ArrayLike | None = None
     # <Archetype>.columns(..., colors= ) only works with int32 colors,
     # not RGBA tuples that e.g. from_fields supports (otherwise: Arrow error).
     # TODO: https://github.com/rerun-io/rerun/issues/10170
-    sequential: Optional[Sequence[int]] = None  # [0xffaabbcc, ...]
+    sequential: Sequence[int] | None = None  # [0xffaabbcc, ...]
 
     def __post_init__(self):
         if self.sequential is not None and self.static is not None:
@@ -158,7 +158,7 @@ def log_scalars(
     scalars: Float64ArrayLike,
     timestamps: np.ndarray,
     color: Color,
-    labelname: Optional[str] = None,
+    labelname: str | None = None,
 ) -> None:
     """
     Logs a batch of scalars with timestamps to rerun, e.g. for plotting.

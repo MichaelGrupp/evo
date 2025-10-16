@@ -33,7 +33,7 @@ from evo.tools.settings import SETTINGS
 
 logger = logging.getLogger(__name__)
 
-PathOrTrajectory = typing.Union[PosePath3D, PoseTrajectory3D]
+PathOrTrajectory = PosePath3D | PoseTrajectory3D
 PathOrTrajectoryType = typing.Type[PathOrTrajectory]
 
 
@@ -57,7 +57,7 @@ def trajectory_to_df(traj: PosePath3D) -> pd.DataFrame:
 
 
 def df_to_trajectory(
-    df: pd.DataFrame, as_type: typing.Optional[PathOrTrajectoryType] = None
+    df: pd.DataFrame, as_type: PathOrTrajectoryType | None = None
 ) -> PathOrTrajectory:
     """
     :param df: DataFrame created with trajectory_to_df()
@@ -73,7 +73,7 @@ def df_to_trajectory(
 
 
 def trajectory_stats_to_df(
-    traj: PosePath3D, name: typing.Optional[str] = None
+    traj: PosePath3D, name: str | None = None
 ) -> pd.DataFrame:
     if not isinstance(traj, PosePath3D):
         raise TypeError("PosePath3D or derived required")
@@ -93,7 +93,7 @@ def trajectories_stats_to_df(
 
 
 def result_to_df(
-    result_obj: result.Result, label: typing.Optional[str] = None
+    result_obj: result.Result, label: str | None = None
 ) -> pd.DataFrame:
     if not isinstance(result_obj, result.Result):
         raise TypeError("result.Result or derived required")

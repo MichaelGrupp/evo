@@ -70,9 +70,9 @@ def configure_logging(
     verbose: bool = False,
     silent: bool = False,
     debug: bool = False,
-    console_fmt: typing.Optional[str] = None,
+    console_fmt: str | None = None,
     file_fmt: str = DEFAULT_LONG_FMT,
-    local_logfile: typing.Optional[PathStr] = None,
+    local_logfile: PathStr | None = None,
 ) -> None:
 
     logger = logging.getLogger("evo")

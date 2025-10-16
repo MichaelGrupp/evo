@@ -27,9 +27,7 @@ from collections import defaultdict
 from typing import (
     DefaultDict,
     List,
-    Optional,
     Protocol,
-    Union,
     runtime_checkable,
 )
 
@@ -121,7 +119,7 @@ class TfDuration(Ros1TimeLike, Ros2TimeLike, Ros2StampLike):
 
 
 def to_sec(
-    timestamp: Union[Ros1TimeLike, Ros2TimeLike, Ros2StampLike],
+    timestamp: Ros1TimeLike | Ros2TimeLike | Ros2StampLike,
 ) -> float:
     """Converts any given `timestamp` to a scalar time, in seconds."""
     if isinstance(timestamp, Ros1TimeLike):
@@ -154,7 +152,7 @@ class TfCache(object):
     # https://ternaris.gitlab.io/rosbags/examples/register_types.html
     @staticmethod
     def _setup_typestore(
-        reader: Union[Rosbag1Reader, Rosbag2Reader],
+        reader: Rosbag1Reader | Rosbag2Reader,
     ) -> Typestore:
         if isinstance(reader, Rosbag2Reader):
             return get_typestore(Stores.LATEST)
@@ -173,7 +171,7 @@ class TfCache(object):
 
     def from_bag(
         self,
-        reader: Union[Rosbag1Reader, Rosbag2Reader],
+        reader: Rosbag1Reader | Rosbag2Reader,
         topic: str = "/tf",
         static_topic: str = "/tf_static",
     ) -> None:
@@ -265,7 +263,7 @@ class TfCache(object):
         self,
         parent_frame: str,
         child_frame: str,
-        timestamps: Union[List[Ros1TimeLike], List[Ros2TimeLike]],
+        timestamps: list[Ros1TimeLike] | list[Ros2TimeLike],
     ) -> PoseTrajectory3D:
         """
         Look up the trajectory of a transform chain from the cache's TF buffer.
@@ -299,11 +297,9 @@ class TfCache(object):
 
     def get_trajectory(
         self,
-        reader: Union[Rosbag1Reader, Rosbag2Reader],
+        reader: Rosbag1Reader | Rosbag2Reader,
         identifier: str,
-        timestamps: Optional[
-            Union[List[Ros1TimeLike], List[Ros2TimeLike]]
-        ] = None,
+        timestamps: list[Ros1TimeLike] | list[Ros2TimeLike] | None = None,
     ) -> PoseTrajectory3D:
         """
         Get a TF trajectory from a bag file. Updates or uses the cache.

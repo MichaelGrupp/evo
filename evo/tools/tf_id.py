@@ -20,7 +20,6 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
 import enum
 import re
-from typing import Union
 
 from rosbags.rosbag1.reader import Reader as Rosbag1Reader
 from rosbags.rosbag2.reader import Reader as Rosbag2Reader
@@ -46,7 +45,7 @@ class HashSource(enum.Enum):
 
 
 def hash_bag(
-    reader: Union[Rosbag1Reader, Rosbag2Reader], hash_source: HashSource
+    reader: Rosbag1Reader | Rosbag2Reader, hash_source: HashSource
 ) -> int:
     """
     Convenience function to hash a rosbag reader instance or its filename,

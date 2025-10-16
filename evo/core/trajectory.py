@@ -57,10 +57,10 @@ class PosePath3D(object):
 
     def __init__(
         self,
-        positions_xyz: typing.Optional[np.ndarray] = None,
-        orientations_quat_wxyz: typing.Optional[np.ndarray] = None,
-        poses_se3: typing.Optional[typing.Sequence[np.ndarray]] = None,
-        meta: typing.Optional[dict] = None,
+        positions_xyz: np.ndarray | None = None,
+        orientations_quat_wxyz: np.ndarray | None = None,
+        poses_se3: typing.Sequence[np.ndarray] | None = None,
+        meta: dict | None = None,
     ):
         """
         :param positions_xyz: nx3 list of x,y,z positions
@@ -314,9 +314,7 @@ class PosePath3D(object):
         self.transform(to_ref_origin)
         return to_ref_origin
 
-    def reduce_to_ids(
-        self, ids: typing.Union[typing.Sequence[int], np.ndarray]
-    ) -> None:
+    def reduce_to_ids(self, ids: typing.Sequence[int] | np.ndarray) -> None:
         """
         reduce the elements to the ones specified in ids
         :param ids: list of integer indices
@@ -438,11 +436,11 @@ class PoseTrajectory3D(PosePath3D, object):
 
     def __init__(
         self,
-        positions_xyz: typing.Optional[np.ndarray] = None,
-        orientations_quat_wxyz: typing.Optional[np.ndarray] = None,
-        timestamps: typing.Optional[np.ndarray] = None,
-        poses_se3: typing.Optional[typing.Sequence[np.ndarray]] = None,
-        meta: typing.Optional[dict] = None,
+        positions_xyz: np.ndarray | None = None,
+        orientations_quat_wxyz: np.ndarray | None = None,
+        timestamps: np.ndarray | None = None,
+        poses_se3: typing.Sequence[np.ndarray] | None = None,
+        meta: dict | None = None,
     ):
         """
         :param timestamps: optional nx1 list of timestamps
@@ -492,16 +490,14 @@ class PoseTrajectory3D(PosePath3D, object):
             ]
         )
 
-    def reduce_to_ids(
-        self, ids: typing.Union[typing.Sequence[int], np.ndarray]
-    ) -> None:
+    def reduce_to_ids(self, ids: typing.Sequence[int] | np.ndarray) -> None:
         super(PoseTrajectory3D, self).reduce_to_ids(ids)
         self.timestamps = self.timestamps[ids]
 
     def reduce_to_time_range(
         self,
-        start_timestamp: typing.Optional[float] = None,
-        end_timestamp: typing.Optional[float] = None,
+        start_timestamp: float | None = None,
+        end_timestamp: float | None = None,
     ):
         """
         Removes elements with timestamps outside of the specified time range.

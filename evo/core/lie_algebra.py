@@ -19,8 +19,6 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import typing
-
 import numpy as np
 import scipy.spatial.transform as sst
 from packaging.version import Version

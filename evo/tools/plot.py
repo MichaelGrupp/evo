@@ -361,7 +361,7 @@ def prepare_axis(
 
 def plot_mode_to_idx(
     plot_mode: PlotMode,
-) -> typing.Tuple[int, int, int | None]:
+) -> tuple[int, int, int | None]:
     if plot_mode == PlotMode.xy or plot_mode == PlotMode.xyz:
         x_idx = 0
         y_idx = 1
@@ -825,7 +825,7 @@ def trajectories(
     trajectories: (
         trajectory.PosePath3D
         | typing.Sequence[trajectory.PosePath3D]
-        | typing.Dict[str, trajectory.PosePath3D]
+        | dict[str, trajectory.PosePath3D]
     ),
     plot_mode=PlotMode.xy,
     title: str = "",
@@ -894,7 +894,7 @@ def error_array(
     ax: Axes,
     err_array: ListOrArray,
     x_array: ListOrArray | None = None,
-    statistics: typing.Dict[str, float] | None = None,
+    statistics: dict[str, float] | None = None,
     threshold: float | None = None,
     cumulative: bool = False,
     color="grey",

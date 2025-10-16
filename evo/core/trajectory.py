@@ -381,7 +381,7 @@ class PosePath3D(object):
             for i in range(len(jumps) - 1)
         ]
 
-    def check(self) -> typing.Tuple[bool, dict]:
+    def check(self) -> tuple[bool, dict]:
         """
         checks if the data is valid
         :return: True/False, dictionary with some detailed infos
@@ -590,7 +590,7 @@ class PoseTrajectory3D(PosePath3D, object):
             for i in range(len(jumps) - 1)
         ]
 
-    def check(self) -> typing.Tuple[bool, dict]:
+    def check(self) -> tuple[bool, dict]:
         if self.num_poses == 0:
             return True, {}
         valid, details = super(PoseTrajectory3D, self).check()
@@ -705,7 +705,7 @@ def xyz_quat_wxyz_to_se3_poses(
 
 def se3_poses_to_xyz_quat_wxyz(
     poses: typing.Sequence[np.ndarray],
-) -> typing.Tuple[np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray]:
     xyz = np.array([pose[:3, 3] for pose in poses])
     quat_wxyz = np.array([tr.quaternion_from_matrix(pose) for pose in poses])
     return xyz, quat_wxyz

@@ -25,7 +25,6 @@ import io
 import json
 import logging
 import os
-import typing
 import zipfile
 from pathlib import Path
 
@@ -233,7 +232,7 @@ def read_euroc_csv_trajectory(file_path: PathStrHandle) -> PoseTrajectory3D:
 
 def _get_xyz_quat_from_transform_stamped(
     msg,
-) -> typing.Tuple[typing.List[float], typing.List[float]]:
+) -> tuple[list[float], list[float]]:
     xyz = [
         msg.transform.translation.x,
         msg.transform.translation.y,
@@ -250,7 +249,7 @@ def _get_xyz_quat_from_transform_stamped(
 
 def _get_xyz_quat_from_pose_or_odometry_msg(
     msg,
-) -> typing.Tuple[typing.List[float], typing.List[float]]:
+) -> tuple[list[float], list[float]]:
     # Make nav_msgs/Odometry behave like geometry_msgs/PoseStamped.
     while not hasattr(msg.pose, "position") and not hasattr(
         msg.pose, "orientation"
@@ -268,7 +267,7 @@ def _get_xyz_quat_from_pose_or_odometry_msg(
 
 def _get_xyz_quat_from_point_msg(
     msg,
-) -> typing.Tuple[typing.List[float], typing.List[float]]:
+) -> tuple[list[float], list[float]]:
     xyz = [msg.point.x, msg.point.y, msg.point.z]
     # geometry_msgs/PointStamped does not have rotation, add unit quaternion.
     quat = [1.0, 0.0, 0.0, 0.0]

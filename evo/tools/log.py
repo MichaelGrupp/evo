@@ -21,7 +21,6 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
 import sys
-import typing
 
 import colorama
 from colorama import Fore
@@ -82,7 +81,7 @@ def configure_logging(
     if len(logger.handlers) > 0:
         logger.removeHandler(logger.handlers[0])
 
-    logfiles: typing.List[PathStr] = []
+    logfiles: list[PathStr] = []
     if SETTINGS.global_logfile_enabled:
         logfiles.append(GLOBAL_LOGFILE_PATH)
     if local_logfile is not None:

@@ -219,6 +219,10 @@ DEFAULT_SETTINGS_DICT_DOC = {
         "Spawn a viewer window when logging data to rerun.\n"
         "If set to False, the viewer must be started manually."
     ),
+    "ros2_bag_format_version": (
+        9,
+        "ROS 2 bag file format version to use when writing files."
+    ),
     "ros_map_alpha_value": (
         1.0,
         "Alpha value for blending ROS map image slices."

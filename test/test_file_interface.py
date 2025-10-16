@@ -32,7 +32,7 @@ import evo.core.lie_algebra as lie
 from evo.core.result import Result
 from evo.core.trajectory import PosePath3D, PoseTrajectory3D
 from evo.tools import file_interface
-
+from evo.tools.settings import SETTINGS
 
 class MockFileTestCase(unittest.TestCase):
     def __init__(self, in_memory_buffer, *args, **kwargs):
@@ -154,12 +154,15 @@ class TestBagFile(MockFileTestCase):
         super(TestBagFile, self).__init__(io.BytesIO(), *args, **kwargs)
 
     def test_write_read_integrity(self):
-        for reader_t, writer_t in zip([Rosbag1Reader, Rosbag2Reader],
-                                      [Rosbag1Writer, Rosbag2Writer]):
+        for reader_t in [Rosbag1Reader, Rosbag2Reader]:
             # TODO: rosbags cannot overwrite existing paths, this forces us
             # to do this here to get only a filepath:
             tmp_filename = tempfile.NamedTemporaryFile(delete=True).name
-            bag_out = writer_t(tmp_filename)
+            if reader_t is Rosbag1Reader:
+                bag_out = Rosbag1Writer(tmp_filename)
+            else:
+                bag_out = Rosbag2Writer(
+                    tmp_filename, version=SETTINGS.ros2_bag_format_version)
             bag_out.open()
             traj_out = helpers.fake_trajectory(1000, 0.1)
             self.assertTrue(traj_out.check())

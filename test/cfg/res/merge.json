@@ -4,7 +4,6 @@
     "plot_markers": false,
     "save_plot": "tmp/plot.pdf",
     "save_table": "tmp/table.csv",
-    "serialize_plot": "tmp/plot.pickle",
     "logfile": "tmp/log.txt",
     "silent": false,
     "use_filenames": false,

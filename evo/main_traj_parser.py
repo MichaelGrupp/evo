@@ -91,9 +91,6 @@ def parser() -> argparse.ArgumentParser:
     output_opts.add_argument("--save_table",
                              help="path to save table with statistics",
                              default=None)
-    output_opts.add_argument("--serialize_plot",
-                             help="path to serialize plot (experimental)",
-                             default=None)
     output_opts.add_argument("--save_as_tum",
                              help="save trajectories in TUM format (as *.tum)",
                              action="store_true")

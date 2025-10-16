@@ -167,7 +167,7 @@ def run(args: argparse.Namespace) -> None:
             "Rerun logging is only supported for trajectories with timestamps."
         )
 
-    if args.plot or args.save_plot or args.serialize_plot:
+    if args.plot or args.save_plot:
         common.plot_result(args, result, traj_ref,
                            result.trajectories[est_name],
                            traj_ref_full=traj_ref_full)

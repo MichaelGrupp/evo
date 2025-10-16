@@ -50,7 +50,6 @@ Tools:
    evo_traj - tool for analyzing, plotting or exporting multiple trajectories
    evo_res - tool for processing multiple result files from the metrics
    evo_ipython - IPython shell with pre-loaded evo modules
-   evo_fig - (experimental) tool for re-opening serialized plots
    evo_config - tool for global settings and config file manipulation
 '''
 

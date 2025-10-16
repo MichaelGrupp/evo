@@ -12,7 +12,6 @@
     "save_as_tum": false, 
     "save_plot": "tmp/plot.pdf",
     "save_table": "tmp/table.csv",
-    "serialize_plot": "tmp/plot.pickle",
     "logfile": "tmp/log.txt", 
     "silent": false, 
     "t_max_diff": 0.01, 

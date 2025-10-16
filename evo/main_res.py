@@ -154,7 +154,7 @@ def run(args: argparse.Namespace) -> None:
         pandas_bridge.save_df_as_table(data, args.save_table,
                                        confirm_overwrite=not args.no_warnings)
 
-    if args.plot or args.save_plot or args.serialize_plot:
+    if args.plot or args.save_plot:
         # check if data has NaN "holes" due to different indices
         inconsistent = error_df.isnull().values.any()
         if inconsistent and common_index != "timestamps" and not args.no_warnings:
@@ -238,10 +238,6 @@ def run(args: argparse.Namespace) -> None:
             logger.debug(SEP)
             plot_collection.export(args.save_plot,
                                    confirm_overwrite=not args.no_warnings)
-        if args.serialize_plot:
-            logger.debug(SEP)
-            plot_collection.serialize(args.serialize_plot,
-                                      confirm_overwrite=not args.no_warnings)
 
 
 if __name__ == '__main__':

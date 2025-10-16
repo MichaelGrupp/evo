@@ -92,8 +92,6 @@ def parser() -> argparse.ArgumentParser:
         "Requires geo-referenced poses and the contextily package installed.")
     output_opts.add_argument("--save_plot", default=None,
                              help="path to save plot")
-    output_opts.add_argument("--serialize_plot", default=None,
-                             help="path to serialize plot (experimental)")
     output_opts.add_argument("--rerun", action="store_true",
                              help="Log visualization data to rerun.")
     output_opts.add_argument("--save_results",

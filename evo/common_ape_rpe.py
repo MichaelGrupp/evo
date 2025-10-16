@@ -230,10 +230,6 @@ def plot_result(args: argparse.Namespace, result: Result, traj_ref: PosePath3D,
     if args.save_plot:
         plot_collection.export(args.save_plot,
                                confirm_overwrite=not args.no_warnings)
-    if args.serialize_plot:
-        logger.debug(SEP)
-        plot_collection.serialize(args.serialize_plot,
-                                  confirm_overwrite=not args.no_warnings)
     plot_collection.close()
 
 

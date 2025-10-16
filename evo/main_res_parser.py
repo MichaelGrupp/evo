@@ -28,9 +28,6 @@ def parser() -> argparse.ArgumentParser:
                              action="store_true")
     output_opts.add_argument("--save_plot", help="path to save plot",
                              default=None)
-    output_opts.add_argument("--serialize_plot",
-                             help="path to serialize plot (experimental)",
-                             default=None)
     output_opts.add_argument(
         "--save_table", help="path to a file to save the results in a table",
         default=None)

@@ -301,7 +301,7 @@ def run(args):
         print_traj_info(to_compact_name(args.ref, args), ref_traj,
                         args.verbose, args.full_check)
 
-    if args.plot or args.save_plot or args.serialize_plot:
+    if args.plot or args.save_plot:
         import numpy as np
         from evo.tools import plot
         import matplotlib.pyplot as plt
@@ -440,10 +440,6 @@ def run(args):
             logger.info(SEP)
             plot_collection.export(args.save_plot,
                                    confirm_overwrite=not args.no_warnings)
-        if args.serialize_plot:
-            logger.info(SEP)
-            plot_collection.serialize(args.serialize_plot,
-                                      confirm_overwrite=not args.no_warnings)
 
     if args.save_as_tum:
         logger.info(SEP)

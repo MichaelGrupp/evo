@@ -115,7 +115,6 @@ After installation with pip, the following executables can be called globally fr
 
 * `evo_traj` - tool for analyzing, plotting or exporting one or more trajectories
 * `evo_res` - tool for comparing one or multiple result files from `evo_ape` or `evo_rpe`
-* `evo_fig` - (experimental) tool for re-opening serialized plots (saved with `--serialize_plot`)
 * `evo_config` - tool for global settings and config file manipulation
 
 Call the commands with `--help` to see the options, e.g. `evo_ape --help`. Tab-completion of command line parameters is available on UNIX-like systems.

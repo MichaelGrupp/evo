@@ -21,11 +21,9 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
 import copy
 import os
-import collections
 import collections.abc
 import itertools
 import logging
-import pickle
 import typing
 from enum import Enum, unique
 from pathlib import Path
@@ -111,17 +109,12 @@ class Viewport(Enum):
 
 
 class PlotCollection:
-    def __init__(self, title: str = "",
-                 deserialize: typing.Optional[PathStr] = None):
+    def __init__(self, title: str = ""):
         self.title = " ".join(title.splitlines())  # one line title
-        self.figures = collections.OrderedDict()  # remember placement order
+        self.figures: dict[str, Figure] = {}
         # hack to avoid premature garbage collection when serializing with Qt
         # initialized later in tabbed_{qt, tk}_window
         self.root_window: typing.Optional[typing.Any] = None
-        if deserialize is not None:
-            logger.debug("Deserializing PlotCollection from %s ...",
-                         deserialize)
-            self.figures = pickle.load(open(deserialize, 'rb'))
 
     def __str__(self) -> str:
         return self.title + " (" + str(len(self.figures)) + " figure(s))"
@@ -228,13 +221,6 @@ class PlotCollection:
     def close(self) -> None:
         for name, fig in self.figures.items():
             plt.close(fig)
-
-    def serialize(self, dest: str, confirm_overwrite: bool = True) -> None:
-        logger.debug("Serializing PlotCollection to " + dest + "...")
-        if confirm_overwrite and not user.check_and_confirm_overwrite(dest):
-            return
-        else:
-            pickle.dump(self.figures, open(dest, 'wb'))
 
     def export(self, file_path: str, confirm_overwrite: bool = True) -> None:
         base, ext = os.path.splitext(file_path)

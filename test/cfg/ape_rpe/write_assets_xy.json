@@ -12,7 +12,6 @@
     "pose_relation": "trans_part", 
     "save_plot": "tmp/plot.pdf", 
     "save_results": "tmp/result.zip", 
-    "serialize_plot": "tmp/plot.pickle",
     "logfile": "tmp/log.txt", 
     "silent": false, 
     "t_max_diff": 0.01, 

@@ -4,7 +4,7 @@
 
 | Linux / macOS / Windows / ROS / ROS2 |
 | :---: |
-| [![Build Status](https://dev.azure.com/michl2222/michl2222/_apis/build/status/MichaelGrupp.evo?branchName=master)](https://dev.azure.com/michl2222/michl2222/_build/latest?definitionId=1&branchName=master) |
+| [![CI](https://github.com/MichaelGrupp/evo/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/MichaelGrupp/evo/actions/workflows/ci.yml) |
 
 This package provides executables and a small library for handling, evaluating and comparing the trajectory output of odometry and SLAM algorithms.
 

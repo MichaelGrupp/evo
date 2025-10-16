@@ -476,7 +476,9 @@ def run(args):
         if args.save_as_bag2:
             dest_bag_path = str(
                 datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
-            writers.append(Rosbag2Writer(dest_bag_path))
+            writers.append(
+                Rosbag2Writer(dest_bag_path,
+                              version=SETTINGS.ros2_bag_format_version))
         for writer in writers:
             logger.info(SEP)
             logger.info("Saving trajectories to " + str(writer.path) + "...")

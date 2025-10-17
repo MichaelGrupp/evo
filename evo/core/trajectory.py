@@ -87,9 +87,7 @@ class PosePath3D(object):
         self._projected = False
 
     def __str__(self) -> str:
-        return "{} poses, {:.3f}m path length".format(
-            self.num_poses, self.path_length
-        )
+        return f"{self.num_poses} poses, {self.path_length:.3f}m path length"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, PosePath3D):
@@ -282,10 +280,10 @@ class PosePath3D(object):
 
         if not correct_only_scale:
             logger.debug(
-                "Rotation of alignment:\n{}"
-                "\nTranslation of alignment:\n{}".format(r_a, t_a)
+                f"Rotation of alignment:\n{r_a}"
+                f"\nTranslation of alignment:\n{t_a}"
             )
-        logger.debug("Scale correction: {}".format(s))
+        logger.debug(f"Scale correction: {s}")
 
         if correct_only_scale:
             self.scale(s)
@@ -308,9 +306,7 @@ class PosePath3D(object):
         traj_origin = self.poses_se3[0]
         traj_ref_origin = traj_ref.poses_se3[0]
         to_ref_origin = np.dot(traj_ref_origin, lie.se3_inverse(traj_origin))
-        logger.debug(
-            "Origin alignment transformation:\n{}".format(to_ref_origin)
-        )
+        logger.debug(f"Origin alignment transformation:\n{to_ref_origin}")
         self.transform(to_ref_origin)
         return to_ref_origin
 
@@ -455,8 +451,8 @@ class PoseTrajectory3D(PosePath3D, object):
 
     def __str__(self) -> str:
         s = super(PoseTrajectory3D, self).__str__()
-        return s + ", {:.3f}s duration".format(
-            self.timestamps[-1] - self.timestamps[0]
+        return (
+            s + f", {self.timestamps[-1] - self.timestamps[0]:.3f}s duration"
         )
 
     def __eq__(self, other: object) -> bool:
@@ -515,7 +511,7 @@ class PoseTrajectory3D(PosePath3D, object):
         if start_timestamp > end_timestamp:
             raise TrajectoryException(
                 "start_timestamp is greater than end_timestamp "
-                "({} > {})".format(start_timestamp, end_timestamp)
+                f"({start_timestamp} > {end_timestamp})"
             )
         ids = np.where(
             np.logical_and(

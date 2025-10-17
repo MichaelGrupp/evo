@@ -132,7 +132,7 @@ def save_df_as_table(
             df.to_excel(writer)
     else:
         getattr(df, "to_" + format_str)(path)
-    logger.debug("{} table saved to: {}".format(format_str, path))
+    logger.debug(f"{format_str} table saved to: {path}")
 
 
 def load_results_as_dataframe(

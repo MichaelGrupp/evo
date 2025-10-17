@@ -92,7 +92,7 @@ def ape(
     elif not align_origin:
         title += "\n(not aligned)"
     if (align or correct_scale) and n_to_align != -1:
-        title += " (aligned poses: {})".format(n_to_align)
+        title += f" (aligned poses: {n_to_align})"
     if align_origin:
         title += "\n(with origin alignment)"
 
@@ -132,7 +132,7 @@ def run(args: argparse.Namespace) -> None:
         from pprint import pformat
 
         parser_str = pformat({arg: getattr(args, arg) for arg in vars(args)})
-        logger.debug("main_parser config:\n{}".format(parser_str))
+        logger.debug(f"main_parser config:\n{parser_str}")
     logger.debug(SEP)
 
     traj_ref, traj_est, ref_name, est_name = common.load_trajectories(args)
@@ -156,9 +156,9 @@ def run(args: argparse.Namespace) -> None:
         logger.debug(SEP)
         if args.t_start or args.t_end:
             if args.t_start:
-                logger.info("Using time range start: {}s".format(args.t_start))
+                logger.info(f"Using time range start: {args.t_start}s")
             if args.t_end:
-                logger.info("Using time range end: {}s".format(args.t_end))
+                logger.info(f"Using time range end: {args.t_end}s")
             traj_ref.reduce_to_time_range(args.t_start, args.t_end)
         logger.debug("Synchronizing trajectories...")
         traj_ref, traj_est = sync.associate_trajectories(

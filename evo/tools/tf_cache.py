@@ -182,9 +182,7 @@ class TfCache(object):
         """
         tf_topics = [topic]
         if topic not in reader.topics:
-            raise TfCacheException(
-                "no messages for topic {} in bag".format(topic)
-            )
+            raise TfCacheException(f"no messages for topic {topic} in bag")
         # Implicitly add static TFs to buffer if present.
         if static_topic in reader.topics:
             tf_topics.append(static_topic)
@@ -195,15 +193,11 @@ class TfCache(object):
         for tf_topic in tf_topics:
             if tf_topic in self.topics and reader.path.name in self.bags:
                 logger.debug(
-                    "Using cache for topic {} from {}".format(
-                        tf_topic, reader.path.name
-                    )
+                    f"Using cache for topic {tf_topic} from {reader.path.name}"
                 )
                 continue
             logger.debug(
-                "Caching TF topic {} from {} ...".format(
-                    tf_topic, reader.path.name
-                )
+                f"Caching TF topic {tf_topic} from {reader.path.name} ..."
             )
             connections = [
                 c for c in reader.connections if c.topic == tf_topic

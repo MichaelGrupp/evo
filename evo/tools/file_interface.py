@@ -122,9 +122,7 @@ def read_tum_trajectory_file(file_path: PathStrHandle) -> PoseTrajectory3D:
     quat = np.roll(quat, 1, axis=1)  # shift 1 column -> w in front column
     if not hasattr(file_path, "read"):  # if not file handle
         logger.debug(
-            "Loaded {} stamps and poses from: {}".format(
-                len(stamps), file_path
-            )
+            f"Loaded {len(stamps)} stamps and poses from: {file_path}"
         )
     return PoseTrajectory3D(xyz, quat, stamps)
 
@@ -181,7 +179,7 @@ def read_kitti_poses_file(file_path: PathStrHandle) -> PosePath3D:
                        [0, 0, 0, 1]]) for r in mat]
     # fmt: on
     if not hasattr(file_path, "read"):  # if not file handle
-        logger.debug("Loaded {} poses from: {}".format(len(poses), file_path))
+        logger.debug(f"Loaded {len(poses)} poses from: {file_path}")
     return PosePath3D(poses_se3=poses)
 
 
@@ -224,9 +222,7 @@ def read_euroc_csv_trajectory(file_path: PathStrHandle) -> PoseTrajectory3D:
     stamps = np.divide(mat[:, 0], 1e9)  # n x 1  -  nanoseconds to seconds
     xyz = mat[:, 1:4]  # n x 3
     quat = mat[:, 4:8]  # n x 4
-    logger.debug(
-        "Loaded {} stamps and poses from: {}".format(len(stamps), file_path)
-    )
+    logger.debug(f"Loaded {len(stamps)} stamps and poses from: {file_path}")
     return PoseTrajectory3D(xyz, quat, stamps)
 
 
@@ -332,9 +328,7 @@ def read_bag_trajectory(
 
     msg_type = reader.topics[topic].msgtype
     if msg_type not in SUPPORTED_ROS_MSGS:
-        raise FileInterfaceException(
-            "unsupported message type: {}".format(msg_type)
-        )
+        raise FileInterfaceException(f"unsupported message type: {msg_type}")
 
     # Choose appropriate message conversion.
     if msg_type == "geometry_msgs/msg/TransformStamped":
@@ -371,11 +365,7 @@ def read_bag_trajectory(
         xyz.append(xyz_t)
         quat.append(quat_t)
 
-    logger.debug(
-        "Loaded {} {} messages of topic: {}".format(
-            len(stamps), msg_type, topic
-        )
-    )
+    logger.debug(f"Loaded {len(stamps)} {msg_type} messages of topic: {topic}")
 
     # fmt: off
         # fmt: off
@@ -480,7 +470,7 @@ def save_res_file(
             array_buffer = io.BytesIO()
             np.save(array_buffer, array)
             array_buffer.seek(0)
-            archive.writestr("{}.npy".format(name), array_buffer.read())
+            archive.writestr(f"{name}.npy", array_buffer.read())
             array_buffer.close()
         for name, traj in result_obj.trajectories.items():
             traj_buffer = io.StringIO()
@@ -492,11 +482,11 @@ def save_res_file(
                 write_kitti_poses_file(traj_buffer, traj)
             else:
                 raise FileInterfaceException(
-                    "unknown format of trajectory {}".format(name)
+                    f"unknown format of trajectory {name}"
                 )
             traj_buffer.seek(0)
             archive.writestr(
-                "{}{}".format(name, fmt_suffix),
+                f"{name}{fmt_suffix}",
                 traj_buffer.read().encode("utf-8"),
             )
             traj_buffer.close()
@@ -511,13 +501,13 @@ def load_res_file(
     :param load_trajectories: set to True to load also the (backup) trajectories
     :return: evo.core.result.Result instance
     """
-    logger.debug("Loading result from {} ...".format(zip_path))
+    logger.debug(f"Loading result from {zip_path} ...")
     result_obj = result.Result()
     with zipfile.ZipFile(zip_path, mode="r") as archive:
         file_list = archive.namelist()
         if not {"info.json", "stats.json"} <= set(file_list):
             raise FileInterfaceException(
-                "{} is not a valid result file".format(zip_path)
+                f"{zip_path} is not a valid result file"
             )
         result_obj.info = json.loads(archive.read("info.json").decode("utf-8"))
         result_obj.stats = json.loads(

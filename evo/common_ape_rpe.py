@@ -59,7 +59,7 @@ def load_trajectories(
         logger.debug("Opening bag file " + args.bag)
         if not Path(args.bag).exists():
             raise file_interface.FileInterfaceException(
-                "File doesn't exist: {}".format(args.bag)
+                f"File doesn't exist: {args.bag}"
             )
         if args.subcommand == "bag2":
             from rosbags.rosbag2 import Reader as Rosbag2Reader
@@ -81,7 +81,7 @@ def load_trajectories(
         finally:
             bag.close()
     else:
-        raise KeyError("unknown sub-command: {}".format(args.subcommand))
+        raise KeyError(f"unknown sub-command: {args.subcommand}")
 
     return traj_ref, traj_est, ref_name, est_name
 

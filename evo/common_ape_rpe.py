@@ -23,6 +23,7 @@ import logging
 from pathlib import Path
 
 import numpy as np
+
 from evo.core.filters import FilterException
 from evo.core.metrics import PoseRelation, Unit
 from evo.core.result import Result

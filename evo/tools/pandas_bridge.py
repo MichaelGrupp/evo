@@ -112,8 +112,7 @@ def result_to_df(
     df = pd.DataFrame(data=data)
     if df.empty:
         raise ValueError("cannot create a dataframe from an empty result")
-    stacked_series: pd.Series = df.T.stack()  # type: ignore
-    return stacked_series.to_frame(name=label)
+    return df.T.stack().to_frame(name=label)
 
 
 def save_df_as_table(

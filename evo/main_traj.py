@@ -82,7 +82,7 @@ def load_trajectories(args):
             die("No topics used - specify topics or set --all_topics.")
         if not Path(args.bag).exists():
             raise file_interface.FileInterfaceException(
-                "File doesn't exist: {}".format(args.bag)
+                f"File doesn't exist: {args.bag}"
             )
         logger.debug("Opening bag file " + args.bag)
         if args.subcommand == "bag2":
@@ -102,12 +102,11 @@ def load_trajectories(args):
                 if args.ref in topics:
                     topics.remove(args.ref)
                 if len(topics) == 0:
+                    topics_str = "\n- ".join(file_interface.SUPPORTED_ROS_MSGS)
                     die(
-                        "Found no topics of supported types:\n\n- {}"
-                        "\n\nIf you want to load TF trajectories, "
-                        "specify them like: /tf:map.base_link".format(
-                            "\n- ".join(file_interface.SUPPORTED_ROS_MSGS)
-                        )
+                        f"Found no topics of supported types:\n\n- {topics_str}"
+                        f"\n\nIf you want to load TF trajectories, "
+                        f"specify them like: /tf:map.base_link"
                     )
             else:
                 topics = args.topics
@@ -151,9 +150,7 @@ def print_traj_info(name, traj, verbose=False, full_check=False):
                 stats = traj.get_statistics()
                 for stat, value in sorted(stats.items()):
                     if isinstance(value, float):
-                        stat_str += (
-                            "\n\t" + stat + "\t" + "{0:.6f}".format(value)
-                        )
+                        stat_str += "\n\t" + stat + "\t" + f"{value:.6f}"
                     else:
                         stat_str += value
             except trajectory.TrajectoryException as e:
@@ -253,14 +250,8 @@ def run(args):
         logger.debug(SEP)
         for name, traj in trajectories.items():
             if type(traj) is trajectory.PosePath3D:
-                die(
-                    "{} doesn't have timestamps - can't add time offset.".format(
-                        name
-                    )
-                )
-            logger.info(
-                "Adding time offset to {}: {} (s)".format(name, args.t_offset)
-            )
+                die(f"{name} doesn't have timestamps - can't add time offset.")
+            logger.info(f"Adding time offset to {name}: {args.t_offset} (s)")
             traj.timestamps += args.t_offset
 
     if args.n_to_align != -1 and not (args.align or args.correct_scale):
@@ -292,7 +283,7 @@ def run(args):
                 )
             if args.align or args.correct_scale:
                 logger.debug(SEP)
-                logger.debug("Aligning {} to reference.".format(name))
+                logger.debug(f"Aligning {name} to reference.")
                 trajectories[name].align(
                     ref_traj_tmp,
                     correct_scale=args.correct_scale,
@@ -301,7 +292,7 @@ def run(args):
                 )
             if args.align_origin:
                 logger.debug(SEP)
-                logger.debug("Aligning {}'s origin to reference.".format(name))
+                logger.debug(f"Aligning {name}'s origin to reference.")
                 trajectories[name].align_origin(ref_traj_tmp)
             if SETTINGS.plot_pose_correspondences:
                 synced_refs[name] = ref_traj_tmp
@@ -318,9 +309,7 @@ def run(args):
             transform = lie.se3_inverse(transform)
         logger.debug(SEP)
         logger.debug(
-            "Applying a {}-multiplicative transformation:\n{}".format(
-                tf_type, transform
-            )
+            f"Applying a {tf_type}-multiplicative transformation:\n{transform}"
         )
         for traj in trajectories.values():
             traj.transform(
@@ -527,9 +516,7 @@ def run(args):
                 fig_rpy.text(
                     0.0,
                     0.005,
-                    "euler_angle_sequence: {}".format(
-                        SETTINGS.euler_angle_sequence
-                    ),
+                    f"euler_angle_sequence: {SETTINGS.euler_angle_sequence}",
                     fontsize=6,
                 )
 

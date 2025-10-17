@@ -75,7 +75,7 @@ class Recorder(object):
                 msg_count += 1
                 last_stamp = transform.header.stamp
                 rospy.loginfo_throttle(
-                    10, "Recorded {} PoseStamped messages.".format(msg_count)
+                    10, f"Recorded {msg_count} PoseStamped messages."
                 )
 
         except rospy.ROSInterruptException:

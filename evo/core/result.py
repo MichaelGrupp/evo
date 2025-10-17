@@ -67,13 +67,13 @@ class Result(object):
     def pretty_str(self, title=True, stats=True, info=False) -> str:
         p_str = ""
         if title and "title" in self.info:
-            p_str += "{}\n\n".format(self.info["title"])
+            p_str += f"{self.info['title']}\n\n"
         if stats:
             for name, val in sorted(self.stats.items()):
-                p_str += "{:>10}\t{:.6f}\n".format(name, val)
+                p_str += f"{name:>10}\t{val:.6f}\n"
         if info:
             for name, val in sorted(self.info.items()):
-                p_str += "{:>10}\t{}\n".format(name, val)
+                p_str += f"{name:>10}\t{val}\n"
         return p_str
 
     def add_np_array(self, name: str, array: np.ndarray) -> None:

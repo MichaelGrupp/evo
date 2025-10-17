@@ -67,7 +67,7 @@ class SettingsContainer(dict):
         # allow dot access
         if self.locked() and attr not in self:
             raise SettingsException(
-                "write-access locked, can't add new parameter {}".format(attr)
+                f"write-access locked, can't add new parameter {attr}"
             )
         else:
             self[attr] = value
@@ -121,15 +121,11 @@ def initialize_if_needed() -> None:
         try:
             reset(destination=DEFAULT_PATH)
             print(
-                "{}Initialized new {}{}".format(
-                    Fore.LIGHTYELLOW_EX, DEFAULT_PATH, Fore.RESET
-                )
+                f"{Fore.LIGHTYELLOW_EX}Initialized new {DEFAULT_PATH}{Fore.RESET}"
             )
         except:
             logger.error(
-                "Fatal: failed to write package settings file {}".format(
-                    DEFAULT_PATH
-                )
+                f"Fatal: failed to write package settings file {DEFAULT_PATH}"
             )
             raise
 
@@ -148,11 +144,7 @@ def update_if_outdated() -> None:
     )
     write_to_json_file(DEFAULT_PATH, updated_settings)
     open(USER_ASSETS_VERSION_PATH, "w").write(__version__)
-    print(
-        "{}Updated outdated {}{}".format(
-            Fore.LIGHTYELLOW_EX, DEFAULT_PATH, Fore.RESET
-        )
-    )
+    print(f"{Fore.LIGHTYELLOW_EX}Updated outdated {DEFAULT_PATH}{Fore.RESET}")
 
 
 # Load the user settings into this container.

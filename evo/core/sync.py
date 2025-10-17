@@ -113,18 +113,14 @@ def associate_trajectories(
 
     if num_matches == 0:
         raise SyncException(
-            "found no matching timestamps between {} and {} with max. time "
-            "diff {} (s) and time offset {} (s)".format(
-                first_name, snd_name, max_diff, offset_2
-            )
+            f"found no matching timestamps between {first_name} and {snd_name} with max. time "
+            f"diff {max_diff} (s) and time offset {offset_2} (s)"
         )
 
     logger.debug(
-        "Found {} of max. {} possible matching timestamps between...\n"
-        "\t{}\nand:\t{}\n..with max. time diff.: {} (s) "
-        "and time offset: {} (s).".format(
-            num_matches, max_pairs, first_name, snd_name, max_diff, offset_2
-        )
+        f"Found {num_matches} of max. {max_pairs} possible matching timestamps between...\n"
+        f"\t{first_name}\nand:\t{snd_name}\n..with max. time diff.: {max_diff} (s) "
+        f"and time offset: {offset_2} (s)."
     )
 
     return traj_1, traj_2

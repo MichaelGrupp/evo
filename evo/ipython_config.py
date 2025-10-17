@@ -178,33 +178,27 @@ c.BaseIPythonApplication.profile = "default"
 c.InteractiveShell.banner1 = "Type \"copyright\", \"credits\" or \"license\" for more information.\n\nIPython -- An enhanced Interactive Python.\n?         -> Introduction and overview of IPython's features.\n%quickref -> Quick reference.\nhelp      -> Python's own help system.\nobject?   -> Details about 'object', use 'object??' for extra details.\n"
 
 ## The part of the banner to be printed after the profile
-c.InteractiveShell.banner2 = """
-{bright}{green}Welcome to the evo IPython profile!{fr}{sr}
+c.InteractiveShell.banner2 = f"""
+{Style.BRIGHT}{Fore.GREEN}Welcome to the evo IPython profile!{Fore.RESET}{Style.RESET_ALL}
 
-Pre-loaded modules from {bright}evo.core:{blue}
+Pre-loaded modules from {Style.BRIGHT}evo.core:{Fore.BLUE}
     lie_algebra
     metrics
     result
     sync
     trajectory
-{fr}{sr}
-Pre-loaded modules from {bright}evo.tools:{blue}
+{Fore.RESET}{Style.RESET_ALL}
+Pre-loaded modules from {Style.BRIGHT}evo.tools:{Fore.BLUE}
     file_interface
     pandas_bridge
     plot
-{fr}{sr}
-Pre-loaded high-level functions for metrics:{blue}
+{Fore.RESET}{Style.RESET_ALL}
+Pre-loaded high-level functions for metrics:{Fore.BLUE}
     ape(...)
     rpe(...)
-{fr}
+{Fore.RESET}
 Others: numpy as np, matplotlib.pyplot as plt, pandas as pd, seaborn as sns
-""".format(
-    fr=Fore.RESET,
-    sr=Style.RESET_ALL,
-    bright=Style.BRIGHT,
-    blue=Fore.BLUE,
-    green=Fore.GREEN,
-)
+"""
 
 ## Set the size of the output cache.  The default is 1000, you can change it
 #  permanently in your config file.  Setting it to 0 completely disables the

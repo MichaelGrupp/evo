@@ -26,8 +26,8 @@ try:
         for d in data:
             for cfg in cfg_dir.iterdir():
                 tmp_dir.mkdir(exist_ok=True)
-                cmd = "{} {} -c {}".format(m, d, cfg)
-                print("[smoke test] {}".format(cmd))
+                cmd = f"{m} {d} -c {cfg}"
+                print(f"[smoke test] {cmd}")
                 output = sp.check_output(cmd.split(" "), cwd=here)
                 shutil.rmtree(tmp_dir)
 except sp.CalledProcessError as e:

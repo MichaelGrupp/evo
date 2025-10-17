@@ -297,7 +297,7 @@ def set_aspect_equal(ax: Axes) -> None:
 
 def _get_length_formatter(length_unit: Unit) -> FuncFormatter:
     def formatter(x, _):
-        return "{0:g}".format(x / METER_SCALE_FACTORS[length_unit])
+        return f"{x / METER_SCALE_FACTORS[length_unit]:g}"
 
     return FuncFormatter(formatter)
 
@@ -561,9 +561,9 @@ def traj_colormap(
     )
     cbar.ax.set_yticklabels(
         [
-            "{0:0.3f}".format(min_map),
-            "{0:0.3f}".format(max_map - (max_map - min_map) / 2),
-            "{0:0.3f}".format(max_map),
+            f"{min_map:0.3f}",
+            f"{max_map - (max_map - min_map) / 2:0.3f}",
+            f"{max_map:0.3f}",
         ]
     )
     if title:
@@ -1061,8 +1061,8 @@ def ros_map(
         else:
             # E.g. if there's already an alpha channel it doesn't make sense.
             logger.warning(
-                "masking unknown map cells is not supported "
-                "with {}-channel {} pixels".format(n_channels, image.dtype)
+                f"masking unknown map cells is not supported "
+                f"with {n_channels}-channel {image.dtype} pixels"
             )
 
     original_bbox = copy.deepcopy(ax.dataLim)

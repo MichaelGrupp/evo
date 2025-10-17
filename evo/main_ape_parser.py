@@ -170,16 +170,14 @@ def parser() -> argparse.ArgumentParser:
         help=".json file with parameters (priority over command line args)",
     )
 
-    main_parser = argparse.ArgumentParser(
-        description="{} {}".format(basic_desc, lic)
-    )
+    main_parser = argparse.ArgumentParser(description=f"{basic_desc} {lic}")
     sub_parsers = main_parser.add_subparsers(dest="subcommand")
     sub_parsers.required = True
 
     kitti_parser = sub_parsers.add_parser(
         "kitti",
         parents=[shared_parser],
-        description="{} for KITTI pose files - {}".format(basic_desc, lic),
+        description=f"{basic_desc} for KITTI pose files - {lic}",
     )
     kitti_parser.add_argument(
         "ref_file", help="reference pose file (ground truth)"
@@ -189,7 +187,7 @@ def parser() -> argparse.ArgumentParser:
     tum_parser = sub_parsers.add_parser(
         "tum",
         parents=[shared_parser],
-        description="{} for TUM trajectory files - {}".format(basic_desc, lic),
+        description=f"{basic_desc} for TUM trajectory files - {lic}",
     )
     tum_parser.add_argument("ref_file", help="reference trajectory file")
     tum_parser.add_argument("est_file", help="estimated trajectory file")
@@ -197,7 +195,7 @@ def parser() -> argparse.ArgumentParser:
     euroc_parser = sub_parsers.add_parser(
         "euroc",
         parents=[shared_parser],
-        description="{} for EuRoC MAV files - {}".format(basic_desc, lic),
+        description=f"{basic_desc} for EuRoC MAV files - {lic}",
     )
     euroc_parser.add_argument(
         "state_gt_csv",
@@ -210,7 +208,7 @@ def parser() -> argparse.ArgumentParser:
     bag_parser = sub_parsers.add_parser(
         "bag",
         parents=[shared_parser],
-        description="{} for ROS bag files - {}".format(basic_desc, lic),
+        description=f"{basic_desc} for ROS bag files - {lic}",
     )
     bag_parser.add_argument("bag", help="ROS bag file")
     bag_parser.add_argument("ref_topic", help="reference trajectory topic")
@@ -219,7 +217,7 @@ def parser() -> argparse.ArgumentParser:
     bag2_parser = sub_parsers.add_parser(
         "bag2",
         parents=[shared_parser],
-        description="{} for ROS2 bag files - {}".format(basic_desc, lic),
+        description=f"{basic_desc} for ROS2 bag files - {lic}",
     )
     bag2_parser.add_argument("bag", help="ROS2 bag file")
     bag2_parser.add_argument("ref_topic", help="reference trajectory topic")

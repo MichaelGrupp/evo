@@ -34,7 +34,7 @@ class FilterException(EvoException):
     pass
 
 
-IdPairs = typing.List[typing.Tuple[int, int]]
+IdPairs = list[tuple[int, int]]
 
 
 def filter_pairs_by_index(

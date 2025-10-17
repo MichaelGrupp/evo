@@ -26,7 +26,6 @@ import warnings
 from collections import defaultdict
 from typing import (
     DefaultDict,
-    List,
     Protocol,
     runtime_checkable,
 )

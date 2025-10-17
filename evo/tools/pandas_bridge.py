@@ -34,7 +34,7 @@ from evo.tools.settings import SETTINGS
 logger = logging.getLogger(__name__)
 
 PathOrTrajectory = PosePath3D | PoseTrajectory3D
-PathOrTrajectoryType = typing.Type[PathOrTrajectory]
+PathOrTrajectoryType = type[PathOrTrajectory]
 
 
 def trajectory_to_df(traj: PosePath3D) -> pd.DataFrame:
@@ -84,7 +84,7 @@ def trajectory_stats_to_df(
 
 
 def trajectories_stats_to_df(
-    trajectories: typing.Dict[str, PosePath3D],
+    trajectories: dict[str, PosePath3D],
 ) -> pd.DataFrame:
     df = pd.DataFrame()
     for name, traj in trajectories.items():

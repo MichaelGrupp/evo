@@ -42,7 +42,7 @@ else:
 
 logger = logging.getLogger(__name__)
 
-PathPair = typing.Tuple[trajectory.PosePath3D, trajectory.PosePath3D]
+PathPair = tuple[trajectory.PosePath3D, trajectory.PosePath3D]
 
 
 class MetricsException(EvoException):
@@ -160,7 +160,7 @@ class PE(Metric):
         else:
             raise MetricsException("unsupported statistics_type")
 
-    def get_all_statistics(self) -> typing.Dict[str, float]:
+    def get_all_statistics(self) -> dict[str, float]:
         """
         :return: a dictionary {StatisticsType.value : float}
         """
@@ -231,9 +231,9 @@ class RPE(PE):
         self.pose_relation = pose_relation
         self.all_pairs = all_pairs
         self.pairs_from_reference = pairs_from_reference
-        self.E: typing.List[np.ndarray] = []
+        self.E: list[np.ndarray] = []
         self.error = np.array([])
-        self.delta_ids: typing.List[int] = []
+        self.delta_ids: list[int] = []
         if pose_relation in (
             PoseRelation.translation_part,
             PoseRelation.point_distance,
@@ -429,7 +429,7 @@ class APE(PE):
         self, pose_relation: PoseRelation = PoseRelation.translation_part
     ):
         self.pose_relation = pose_relation
-        self.E: typing.List[np.ndarray] = []
+        self.E: list[np.ndarray] = []
         self.error = np.array([])
         if pose_relation in (
             PoseRelation.translation_part,

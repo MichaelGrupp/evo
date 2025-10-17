@@ -21,7 +21,6 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
 import copy
 import logging
-import typing
 
 import numpy as np
 
@@ -35,8 +34,8 @@ class SyncException(EvoException):
     pass
 
 
-MatchingIndices = typing.Tuple[typing.List[int], typing.List[int]]
-TrajectoryPair = typing.Tuple[PoseTrajectory3D, PoseTrajectory3D]
+MatchingIndices = tuple[list[int], list[int]]
+TrajectoryPair = tuple[PoseTrajectory3D, PoseTrajectory3D]
 
 
 def matching_time_indices(

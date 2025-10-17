@@ -100,9 +100,7 @@ def is_number(token: str) -> bool:
         return False
 
 
-def finalize_values(
-    config: dict, key: str, values: typing.List[str]
-) -> typing.Any:
+def finalize_values(config: dict, key: str, values: list[str]) -> typing.Any:
     """
     Turns parsed values into final value(s) for the config at the given key,
     e.g. based on the previous type of that parameter or other constraints.
@@ -144,7 +142,7 @@ def set_config(config_path: PathStr, arg_list: typing.Sequence[str]) -> None:
         if arg not in config.keys():
             continue
         if i + 1 <= max_idx and arg_list[i + 1] not in config.keys():
-            values: typing.List[typing.Any] = []
+            values: list[typing.Any] = []
             for j in range(i + 1, max_idx + 1):
                 value = arg_list[j]
                 if value in config.keys():
@@ -168,8 +166,8 @@ def set_config(config_path: PathStr, arg_list: typing.Sequence[str]) -> None:
         config_file.write(json.dumps(config, indent=4, sort_keys=True))
 
 
-def generate(arg_list: typing.Sequence[str]) -> typing.Dict[str, typing.Any]:
-    data: typing.Dict[str, typing.Any] = {}
+def generate(arg_list: typing.Sequence[str]) -> dict[str, typing.Any]:
+    data: dict[str, typing.Any] = {}
     max_idx = len(arg_list) - 1
     for i, arg in enumerate(arg_list):
         if arg.startswith("-"):
@@ -179,7 +177,7 @@ def generate(arg_list: typing.Sequence[str]) -> typing.Dict[str, typing.Any]:
             ) or i + 1 > max_idx:
                 data[arg] = True  # just a boolean flag
             else:
-                values: typing.List[typing.Any] = []
+                values: list[typing.Any] = []
                 for j in range(i + 1, max_idx + 1):
                     value = arg_list[j]
                     if value.startswith("-"):

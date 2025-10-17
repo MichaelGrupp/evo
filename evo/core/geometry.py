@@ -18,8 +18,6 @@ You should have received a copy of the GNU General Public License
 along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import typing
-
 import numpy as np
 
 from evo import EvoException
@@ -29,7 +27,7 @@ class GeometryException(EvoException):
     pass
 
 
-UmeyamaResult = typing.Tuple[np.ndarray, np.ndarray, float]
+UmeyamaResult = tuple[np.ndarray, np.ndarray, float]
 
 
 def umeyama_alignment(

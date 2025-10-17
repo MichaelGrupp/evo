@@ -23,7 +23,6 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
 import logging
-import typing
 
 import numpy as np
 

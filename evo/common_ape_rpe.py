@@ -20,12 +20,10 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
 import logging
-import typing
 from pathlib import Path
 
 import numpy as np
 
-from evo import EvoException
 from evo.core.filters import FilterException
 from evo.core.metrics import PoseRelation, Unit
 from evo.core.result import Result
@@ -39,7 +37,7 @@ SEP = "-" * 80  # separator line
 
 def load_trajectories(
     args: argparse.Namespace,
-) -> typing.Tuple[PosePath3D, PosePath3D, str, str]:
+) -> tuple[PosePath3D, PosePath3D, str, str]:
     from evo.tools import file_interface
 
     traj_ref: PosePath3D | PoseTrajectory3D

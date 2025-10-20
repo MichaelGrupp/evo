@@ -248,7 +248,10 @@ class RPE(PE):
             self.unit = Unit.none
 
     def __str__(self) -> str:
-        title = f"RPE w.r.t. {self.pose_relation.value} ({self.unit.value})\nfor delta = {self.delta} ({self.delta_unit.value})"
+        title = (
+            f"RPE w.r.t. {self.pose_relation.value} ({self.unit.value})"
+            "\nfor delta = {self.delta} ({self.delta_unit.value})"
+        )
         if self.all_pairs:
             title += " using all pairs"
         else:
@@ -357,8 +360,9 @@ class RPE(PE):
             ]
 
         logger.debug(
-            f"Compared {len(self.E)} relative pose pairs, delta = {self.delta} ({self.delta_unit.value}) "
-            f"{'with all pairs.' if self.all_pairs else 'with consecutive pairs.'}"
+            f"Compared {len(self.E)} relative pose pairs, "
+            f"delta = {self.delta} ({self.delta_unit.value}) with "
+            f"{'all pairs.' if self.all_pairs else 'consecutive pairs.'}"
         )
 
         logger.debug(

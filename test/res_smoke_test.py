@@ -22,9 +22,9 @@ try:
     for d in data:
         for cfg in cfg_dir.iterdir():
             tmp_dir.mkdir(exist_ok=True)
-            cmd = f"evo_res {d} -c {cfg}"
-            print(f"[smoke test] {cmd}")
-            output = sp.check_output(cmd.split(" "), cwd=here)
+            CMD = f"evo_res {d} -c {cfg}"
+            print(f"[smoke test] {CMD}")
+            output = sp.check_output(CMD.split(" "), cwd=here)
             shutil.rmtree(tmp_dir)
 except sp.CalledProcessError as e:
     print(e.output.decode("utf-8"))

@@ -36,7 +36,10 @@ CONSOLE_ERROR_FMT = (
 CONSOLE_WARN_FMT = (
     f"{Fore.LIGHTYELLOW_EX}[%(levelname)s]{Fore.RESET} %(message)s"
 )
-DEFAULT_LONG_FMT = "[%(levelname)s][%(asctime)s][%(module)s.%(funcName)s():%(lineno)s]\n%(message)s"
+DEFAULT_LONG_FMT = (
+    "[%(levelname)s][%(asctime)s]"
+    "[%(module)s.%(funcName)s():%(lineno)s]\n%(message)s"
+)
 
 
 class ConsoleFormatter(logging.Formatter):

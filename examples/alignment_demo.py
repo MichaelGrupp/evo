@@ -21,10 +21,9 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
 import copy
 import logging
-import sys
+from pathlib import Path
 
 import evo.core.lie_algebra as lie
-from evo.core import trajectory
 from evo.tools import plot, file_interface, log
 
 import numpy as np
@@ -33,9 +32,14 @@ import matplotlib.pyplot as plt
 logger = logging.getLogger("evo")
 log.configure_logging(verbose=True)
 
-traj_ref = file_interface.read_kitti_poses_file("../test/data/KITTI_00_gt.txt")
+# The script assumes that it sits in the examples/ directory of the evo repo.
+TEST_DATA_DIR = Path(__file__).parent.parent / "test/data"
+
+traj_ref = file_interface.read_kitti_poses_file(
+    TEST_DATA_DIR / "KITTI_00_gt.txt"
+)
 traj_est = file_interface.read_kitti_poses_file(
-    "../test/data/KITTI_00_ORB.txt"
+    TEST_DATA_DIR / "KITTI_00_ORB.txt"
 )
 
 # add artificial Sim(3) transformation

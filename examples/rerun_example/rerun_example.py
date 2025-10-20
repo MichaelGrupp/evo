@@ -23,7 +23,7 @@ from evo.core import metrics, sync
 from evo.tools import file_interface
 from evo.tools import rerun_bridge as revo
 
-# The script assumes that it sits in the contrib/rerun_example directory of the evo repo.
+# The script assumes that it sits in the examples/rerun_example directory of the evo repo.
 TEST_DATA_DIR = Path(__file__).parent.parent.parent / "test/data"
 GROUNDTRUTH_FILE = TEST_DATA_DIR / "V102_groundtruth.csv"
 ESTIMATE_FILE = TEST_DATA_DIR / "V102.txt"

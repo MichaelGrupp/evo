@@ -1,15 +1,20 @@
 #!/usr/bin/env python
 
+from pathlib import Path
+
+# The script assumes that it sits in the examples/ directory of the evo repo.
+TEST_DATA_DIR = Path(__file__).parent.parent / "test/data"
+
 print("loading required evo modules")
 from evo.core import trajectory, sync, metrics
 from evo.tools import file_interface
 
 print("loading trajectories")
 traj_ref = file_interface.read_tum_trajectory_file(
-    "../../test/data/fr2_desk_groundtruth.txt"
+    TEST_DATA_DIR / "fr2_desk_groundtruth.txt"
 )
 traj_est = file_interface.read_tum_trajectory_file(
-    "../../test/data/fr2_desk_ORB.txt"
+    TEST_DATA_DIR / "fr2_desk_ORB.txt"
 )
 
 print("registering and aligning trajectories")

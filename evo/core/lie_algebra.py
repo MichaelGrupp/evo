@@ -27,12 +27,6 @@ from scipy import __version__ as scipy_version
 from evo import EvoException
 from evo.core import transformations as tr
 
-# scipy.spatial.transform.Rotation.*_matrix() was introduced in 1.4,
-# which is not available for Python 2.7.
-# Use the legacy direct cosine matrix naming (*_dcm()) if needed.
-# TODO: remove this junk once Python 2.7 is finally dead in ROS.
-_USE_DCM_NAME = Version(scipy_version) < Version("1.4")
-
 
 class LieAlgebraException(EvoException):
     pass
@@ -44,10 +38,7 @@ def sst_rotation_from_matrix(so3_matrices: np.ndarray):
     from 1..n SO(3) matrices.
     :return: scipy.spatial.transform.Rotation
     """
-    if _USE_DCM_NAME:
-        return sst.Rotation.from_dcm(so3_matrices)
-    else:
-        return sst.Rotation.from_matrix(so3_matrices)
+    return sst.Rotation.from_matrix(so3_matrices)
 
 
 def hat(v: np.ndarray) -> np.ndarray:
@@ -76,10 +67,7 @@ def so3_exp(rotation_vector: np.ndarray):
     :param axis: 3x1 rotation vector (axis * angle)
     :return: SO(3) rotation matrix (matrix exponential of so(3))
     """
-    if _USE_DCM_NAME:
-        return sst.Rotation.from_rotvec(rotation_vector).as_dcm()
-    else:
-        return sst.Rotation.from_rotvec(rotation_vector).as_matrix()
+    return sst.Rotation.from_rotvec(rotation_vector).as_matrix()
 
 
 def so3_log(r: np.ndarray, return_skew: bool = False) -> np.ndarray:

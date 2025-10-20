@@ -119,5 +119,6 @@ def configure_logging(
         import platform as pf
 
         logger.debug(
-            f"System info:\nPython {pf.python_version()}\n{pf.platform()}\n{gp.getuser()}@{pf.node()}\n"
+            f"System info:\nPython {pf.python_version()}\n{pf.platform()}"
+            f"\n{gp.getuser()}@{pf.node()}\n"
         )

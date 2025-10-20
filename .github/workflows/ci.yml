@@ -56,7 +56,7 @@ jobs:
       - name: mypy
         run: |
           pip install mypy types-PyYAML
-          mypy --ignore-missing-imports evo/ test/ contrib/ doc/ --exclude test/tum_benchmark_tools/
+          mypy --ignore-missing-imports evo/ test/ contrib/ examples/ --exclude test/tum_benchmark_tools/
           
       - name: pytest
         run: |

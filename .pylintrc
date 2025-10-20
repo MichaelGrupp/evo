@@ -2,3 +2,13 @@
 
 ignore=fastentrypoints.py,transformations.py
 max-branches=13
+
+
+[MESSAGES CONTROL]
+
+# Allow f-strings as valid log formatting in addition to % formatting
+# (still warns about .format(), which we don't want anymore).
+# The performance impact of % is neglectible for this application and
+# f-strings are nicer to maintain.
+disable=logging-fstring-interpolation
+

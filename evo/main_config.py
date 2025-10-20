@@ -351,7 +351,7 @@ def main() -> None:
                 if (not args.params or parameter in args.params)
             )
             logger.info(doc_str)
-            logger.info("{0}\n{1}\n{0}".format(SEP, config))
+            logger.info(f"{SEP}\n{config}\n{SEP}")
         show(config, colored=not args.no_color, parameter_subset=args.params)
         if config == settings.DEFAULT_PATH and not args.brief:
             logger.info(SEP + "\nSee text above for parameter descriptions.")
@@ -361,7 +361,7 @@ def main() -> None:
             logger.error("No permission to modify %s", config)
             sys.exit(1)
         if other_args or args.merge:
-            logger.info("{0}\nOld configuration:\n{0}".format(SEP))
+            logger.info(f"{SEP}\nOld configuration:\n{SEP}")
             show(config, colored=not args.no_color)
             try:
                 set_config(config, other_args)
@@ -378,10 +378,10 @@ def main() -> None:
     elif args.subcommand == "generate":
         if other_args:
             logger.info(
-                "{0}\nParsed by argparse:\n{1}\n"
-                "{0}\nWARNING:\nMake sure you use the 'long-style' -- options "
-                "(e.g. --plot) if possible\nand no combined short '-' flags, "
-                "(e.g. -vp)\n{0}".format(SEP, other_args)
+                f"{SEP}\nParsed by argparse:\n{other_args}\n"
+                f"{SEP}\nWARNING:\nMake sure you use the 'long-style' -- options "
+                f"(e.g. --plot) if possible\nand no combined short '-' flags, "
+                f"(e.g. -vp)\n{SEP}"
             )
             data = generate(other_args)
             log_info_dict_json(data, colored=not args.no_color)
@@ -405,7 +405,7 @@ def main() -> None:
             settings.reset()
         else:
             sys.exit()
-        logger.info("{0}\nPackage settings after reset:\n{0}".format(SEP))
+        logger.info(f"{SEP}\nPackage settings after reset:\n{SEP}")
         show(settings.DEFAULT_PATH, colored=not args.no_color)
 
 

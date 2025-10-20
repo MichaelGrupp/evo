@@ -30,13 +30,16 @@ from evo.tools._typing import PathStr
 
 colorama.init()
 
-CONSOLE_ERROR_FMT = "{}[%(levelname)s]{} %(message)s".format(
-    Fore.LIGHTRED_EX, Fore.RESET
+CONSOLE_ERROR_FMT = (
+    f"{Fore.LIGHTRED_EX}[%(levelname)s]{Fore.RESET} %(message)s"
 )
-CONSOLE_WARN_FMT = "{}[%(levelname)s]{} %(message)s".format(
-    Fore.LIGHTYELLOW_EX, Fore.RESET
+CONSOLE_WARN_FMT = (
+    f"{Fore.LIGHTYELLOW_EX}[%(levelname)s]{Fore.RESET} %(message)s"
 )
-DEFAULT_LONG_FMT = "[%(levelname)s][%(asctime)s][%(module)s.%(funcName)s():%(lineno)s]\n%(message)s"
+DEFAULT_LONG_FMT = (
+    "[%(levelname)s][%(asctime)s]"
+    "[%(module)s.%(funcName)s():%(lineno)s]\n%(message)s"
+)
 
 
 class ConsoleFormatter(logging.Formatter):
@@ -116,9 +119,6 @@ def configure_logging(
         import platform as pf
 
         logger.debug(
-            "System info:\nPython {pyversion}\n{platform}\n{user}\n".format(
-                pyversion=pf.python_version(),
-                platform=pf.platform(),
-                user=gp.getuser() + "@" + pf.node(),
-            )
+            f"System info:\nPython {pf.python_version()}\n{pf.platform()}"
+            f"\n{gp.getuser()}@{pf.node()}\n"
         )

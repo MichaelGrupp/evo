@@ -37,11 +37,11 @@ SEP = "-" * 80  # separator line
 CONFLICT_TEMPLATE = """
 Mismatching titles - risk of aggregating data from different metrics. Conflict:
 
-<<<<<<< {0}
-{1}
+<<<<<<< {first_file}
+{first_title}
 =======
-{2}
->>>>>>> {3}
+{mismatching_title}
+>>>>>>> {mismatching_file}
 
 Only the first one will be used as the title!"""
 
@@ -58,9 +58,7 @@ def run(args: argparse.Namespace) -> None:
         import pprint
 
         arg_dict = {arg: getattr(args, arg) for arg in vars(args)}
-        logger.debug(
-            "main_parser config:\n{}\n".format(pprint.pformat(arg_dict))
-        )
+        logger.debug(f"main_parser config:\n{pprint.pformat(arg_dict)}\n")
 
     df = pandas_bridge.load_results_as_dataframe(
         args.result_files, args.use_filenames, args.merge
@@ -73,9 +71,9 @@ def run(args: argparse.Namespace) -> None:
     duplicates = [x for x in keys if keys.count(x) > 1]
     if duplicates:
         logger.error(
-            "Values of 'est_name' must be unique - duplicates: {}\n"
-            "Try using the --use_filenames option to use filenames "
-            "for labeling instead.".format(", ".join(duplicates))
+            f"Values of 'est_name' must be unique - duplicates: {', '.join(duplicates)}\n"
+            f"Try using the --use_filenames option to use filenames "
+            f"for labeling instead."
         )
         sys.exit(1)
 
@@ -109,8 +107,8 @@ def run(args: argparse.Namespace) -> None:
             duplicates = new_error_df.index.duplicated(keep="first")
             if any(duplicates):
                 logger.warning(
-                    "duplicate indices in error array of {} - "
-                    "keeping only first occurrence of duplicates".format(key)
+                    f"duplicate indices in error array of {key} - "
+                    f"keeping only first occurrence of duplicates"
                 )
                 new_error_df = new_error_df[~duplicates]  # type: ignore
             error_df = pd.concat([error_df, new_error_df], axis=1)
@@ -133,10 +131,10 @@ def run(args: argparse.Namespace) -> None:
                 logger.debug(SEP)
                 logger.warning(
                     CONFLICT_TEMPLATE.format(
-                        first_file,
-                        first_title,
-                        mismatching_title,
-                        mismatching_file,
+                        first_file=first_file,
+                        first_title=first_title,
+                        mismatching_title=mismatching_title,
+                        mismatching_file=mismatching_file,
                     )
                 )
                 if not user.confirm(
@@ -165,9 +163,7 @@ def run(args: argparse.Namespace) -> None:
             data = df.loc[SETTINGS.table_export_data.lower()]
         else:
             raise ValueError(
-                "unsupported export data specifier: {}".format(
-                    SETTINGS.table_export_data
-                )
+                f"unsupported export data specifier: {SETTINGS.table_export_data}"
             )
         pandas_bridge.save_df_as_table(
             data, args.save_table, confirm_overwrite=not args.no_warnings

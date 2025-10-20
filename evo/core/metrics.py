@@ -189,9 +189,7 @@ class PE(Metric):
                 "title": str(self),
                 "ref_name": ref_name,
                 "est_name": est_name,
-                "label": "{} {}".format(
-                    metric_name, "({})".format(self.unit.value)
-                ),
+                "label": f"{metric_name} ({self.unit.value})",
             }
         )
         result.add_stats(self.get_all_statistics())
@@ -223,7 +221,7 @@ class RPE(PE):
             and not delta.is_integer()
         ):
             raise MetricsException(
-                "delta must be integer for delta unit {}".format(delta_unit)
+                f"delta must be integer for delta unit {delta_unit}"
             )
         self.delta = int(delta) if delta_unit == Unit.frames else delta
         self.delta_unit = delta_unit
@@ -250,11 +248,9 @@ class RPE(PE):
             self.unit = Unit.none
 
     def __str__(self) -> str:
-        title = "RPE w.r.t. {} ({})\nfor delta = {} ({})".format(
-            self.pose_relation.value,
-            self.unit.value,
-            self.delta,
-            self.delta_unit.value,
+        title = (
+            f"RPE w.r.t. {self.pose_relation.value} ({self.unit.value})"
+            "\nfor delta = {self.delta} ({self.delta_unit.value})"
         )
         if self.all_pairs:
             title += " using all pairs"
@@ -364,22 +360,13 @@ class RPE(PE):
             ]
 
         logger.debug(
-            "Compared {} relative pose pairs, delta = {} ({}) {}".format(
-                len(self.E),
-                self.delta,
-                self.delta_unit.value,
-                (
-                    "with all pairs."
-                    if self.all_pairs
-                    else "with consecutive pairs."
-                ),
-            )
+            f"Compared {len(self.E)} relative pose pairs, "
+            f"delta = {self.delta} ({self.delta_unit.value}) with "
+            f"{'all pairs.' if self.all_pairs else 'consecutive pairs.'}"
         )
 
         logger.debug(
-            "Calculating RPE for {} pose relation...".format(
-                self.pose_relation.value
-            )
+            f"Calculating RPE for {self.pose_relation.value} pose relation..."
         )
 
         if self.pose_relation in (
@@ -494,11 +481,9 @@ class APE(PE):
                     traj_est.poses_se3, traj_ref.poses_se3
                 )
             ]
-        logger.debug("Compared {} absolute pose pairs.".format(len(self.E)))
+        logger.debug(f"Compared {len(self.E)} absolute pose pairs.")
         logger.debug(
-            "Calculating APE for {} pose relation...".format(
-                (self.pose_relation.value)
-            )
+            f"Calculating APE for {self.pose_relation.value} pose relation..."
         )
 
         if self.pose_relation in (
@@ -559,21 +544,17 @@ def id_pairs_from_delta(
             poses, delta, delta * rel_tol, use_degrees, all_pairs
         )
     else:
-        raise filters.FilterException(
-            "unsupported delta unit: {}".format(delta_unit)
-        )
+        raise filters.FilterException(f"unsupported delta unit: {delta_unit}")
 
     if len(id_pairs) == 0:
         raise filters.FilterException(
-            "delta = {} ({}) produced an empty index list - try lower values "
-            "or a less strict tolerance".format(delta, delta_unit.value)
+            f"delta = {delta} ({delta_unit.value}) produced an empty index list - try lower values "
+            f"or a less strict tolerance"
         )
 
     logger.debug(
-        "Found {} pairs with delta {} ({}) "
-        "among {} poses ".format(
-            len(id_pairs), delta, delta_unit.value, len(poses)
-        )
+        f"Found {len(id_pairs)} pairs with delta {delta} ({delta_unit.value}) "
+        f"among {len(poses)} poses "
         + ("using consecutive pairs." if not all_pairs else "using all pairs.")
     )
 

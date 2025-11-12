@@ -219,9 +219,17 @@ DEFAULT_SETTINGS_DICT_DOC = {
         "Spawn a viewer window when logging data to rerun.\n"
         "If set to False, the viewer must be started manually."
     ),
+    "ros2_bag_storage_plugin": (
+        "mcap",
+        "ROS 2 bag storage plugin to use when writing files ('mcap' or 'sqlite3')."
+    ),
     "ros2_bag_format_version": (
         9,
         "ROS 2 bag file format version to use when writing files."
+    ),
+    "ros_fallback_frame_id": (
+        "world",
+        "frame_id to use when exporting bags from sources without a frame_id."
     ),
     "ros_map_alpha_value": (
         1.0,

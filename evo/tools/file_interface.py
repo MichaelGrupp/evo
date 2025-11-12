@@ -31,6 +31,7 @@ from pathlib import Path
 import numpy as np
 from rosbags.rosbag1 import Reader as Rosbag1Reader, Writer as Rosbag1Writer
 from rosbags.rosbag2 import Reader as Rosbag2Reader, Writer as Rosbag2Writer
+from rosbags.rosbag2 import StoragePlugin
 from rosbags.typesys import get_typestore, Stores
 
 from evo import EvoException
@@ -49,6 +50,11 @@ SUPPORTED_ROS_MSGS = {
     "geometry_msgs/msg/PoseWithCovarianceStamped",
     "geometry_msgs/msg/TransformStamped",
     "nav_msgs/msg/Odometry",
+}
+
+ROS2_STORAGE_PLUGINS = {
+    "mcap": StoragePlugin.MCAP,
+    "sqlite3": StoragePlugin.SQLITE3,
 }
 
 
@@ -284,6 +290,16 @@ def get_supported_topics(
             if c.msgtype in SUPPORTED_ROS_MSGS
         ]
     )
+
+
+def ros2_bag_storage_plugin(key: str) -> StoragePlugin:
+    """
+    Helper to retrieve a rosbags StoragePlugin from a string key.
+    """
+    try:
+        return ROS2_STORAGE_PLUGINS[key.lower()]
+    except KeyError:
+        raise FileInterfaceException(f"Unsupported ROS2 storage plugin: {key}")
 
 
 def read_bag_trajectory(

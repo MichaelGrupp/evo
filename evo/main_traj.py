@@ -579,7 +579,11 @@ def run(args):
             )
             writers.append(
                 Rosbag2Writer(
-                    dest_bag_path, version=SETTINGS.ros2_bag_format_version
+                    dest_bag_path,
+                    version=SETTINGS.ros2_bag_format_version,
+                    storage_plugin=file_interface.ros2_bag_storage_plugin(
+                        SETTINGS.ros2_bag_storage_plugin
+                    ),
                 )
             )
         for writer in writers:
@@ -592,7 +596,7 @@ def run(args):
                     frame_id = (
                         traj.meta["frame_id"]
                         if "frame_id" in traj.meta
-                        else ""
+                        else SETTINGS.ros_fallback_frame_id
                     )
                     file_interface.write_bag_trajectory(
                         writer, traj, dest_topic, frame_id
@@ -602,7 +606,7 @@ def run(args):
                     frame_id = (
                         ref_traj.meta["frame_id"]
                         if "frame_id" in ref_traj.meta
-                        else ""
+                        else SETTINGS.ros_fallback_frame_id
                     )
                     file_interface.write_bag_trajectory(
                         writer, ref_traj, dest_topic, frame_id

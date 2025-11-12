@@ -293,6 +293,9 @@ def get_supported_topics(
 
 
 def ros2_bag_storage_plugin(key: str) -> StoragePlugin:
+    """
+    Helper to retrieve a rosbags StoragePlugin from a string key.
+    """
     try:
         return ROS2_STORAGE_PLUGINS[key.lower()]
     except KeyError:

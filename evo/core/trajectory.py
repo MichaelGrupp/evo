@@ -186,7 +186,9 @@ class PosePath3D(object):
             # Transform each pose and propagate resulting drift to the next.
             ids = np.arange(0, self.num_poses, 1, dtype=int)
             rel_poses = [
-                lie.relative_se3(self.poses_se3[i], self.poses_se3[j]).dot(t)
+                lie.relative_se3(
+                    self.poses_se3[int(i)], self.poses_se3[int(j)]
+                ).dot(t)
                 for i, j in zip(ids, ids[1:])
             ]
             self._poses_se3 = [self.poses_se3[0]]

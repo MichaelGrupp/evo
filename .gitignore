@@ -109,3 +109,6 @@ venv.bak/
 
 # VS Code
 .vscode/
+# pixi environments
+.pixi/*
+!.pixi/config.toml

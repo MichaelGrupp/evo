@@ -56,8 +56,13 @@ jobs:
       - name: mypy
         run: |
           pip install mypy types-PyYAML
-          mypy --ignore-missing-imports evo/ test/ contrib/ examples/ --exclude test/tum_benchmark_tools/
-          
+          mypy .
+
+      - name: black
+        run: |
+          pip install black
+          black --check .
+
       - name: pytest
         run: |
           pip install pytest

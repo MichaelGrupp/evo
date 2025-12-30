@@ -78,3 +78,38 @@ evo = "evo.main_evo:main"
 
 [tool.black]
 line-length = 79
+extend-exclude = "fastentrypoints.py|evo/core/transformations.py|test/tum_benchmark_tools/*"
+
+[tool.mypy]
+ignore_missing_imports = true
+files = ["evo/", "test/", "contrib/", "examples/"]
+exclude = ["test/tum_benchmark_tools/"]
+
+
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["osx-arm64", "linux-64", "linux-aarch64", "win-64"]
+
+[tool.pixi.pypi-dependencies]
+evo = { path = ".", editable = true }
+
+[tool.pixi.environments]
+default = { solve-group = "default" }
+py-310 = ["py-310"]
+py-314 = ["py-314"]
+
+[tool.pixi.feature.py-310.dependencies]
+python = "~=3.10.0"
+[tool.pixi.feature.py-314.dependencies]
+python = "~=3.14.0"
+
+[tool.pixi.tasks]
+fmt = "black ."
+mypy = "mypy ."
+test = "pytest -sv"
+
+[tool.pixi.dependencies]
+pip = ">=25.3,<26"
+mypy = ">=1.19.1,<2"
+black = ">=25.12.0,<26"
+pytest = ">=9.0.2,<10"

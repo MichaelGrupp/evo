@@ -49,10 +49,12 @@ def filter_pairs_by_index(
     """
     if all_pairs:
         ids = np.arange(len(poses), dtype=int)
-        id_pairs = [(i, i + delta) for i in ids if i + delta < len(poses)]
+        id_pairs = [
+            (int(i), int(i + delta)) for i in ids if i + delta < len(poses)
+        ]
     else:
         ids = np.arange(0, len(poses), delta, dtype=int)
-        id_pairs = [(i, j) for i, j in zip(ids, ids[1:])]
+        id_pairs = [(int(i), int(j)) for i, j in zip(ids, ids[1:])]
     return id_pairs
 
 

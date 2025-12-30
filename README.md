@@ -69,6 +69,10 @@ Run this in the repository's base folder:
 pip install --editable .
 ```
 
+### Pixi
+
+[Pixi](https://prefix.dev) is an easy-to-use alternative if you want to have an isolated development environment. Run `pixi add evo` if you have an existing environment, or clone this repository and run `pixi shell` to open a dev shell.
+
 ### Tab completion
 
 Tab completion is supported via the [argcomplete](https://github.com/kislyuk/argcomplete/) package. Run `activate-global-python-argcomplete` after the installation to use it.

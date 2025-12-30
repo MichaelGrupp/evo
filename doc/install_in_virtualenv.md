@@ -7,7 +7,7 @@ Additionally, you can have multiple environments in parallel that don't interfer
 ## virtualenv & virtualenvwrapper
 
 `virtualenvwrapper` is highly recommended, it makes using virtual environments much more comfortable.
-But other solutions like `venv`, `pyenv` etc can also be used if you prefer.
+But other solutions like `venv`, `pyenv`, `uv` etc can also be used if you prefer (not documented here).
 
 Below are installation instructions for Ubuntu.
 If you use any other OS, see the documentation for how to install it on your system:

@@ -3,6 +3,7 @@ Functions for easier logging of evo data into rerun.
 """
 
 from dataclasses import dataclass
+from packaging import version
 from typing import Sequence
 
 import rerun as rr
@@ -17,15 +18,20 @@ from evo.tools.settings import SETTINGS
 
 TIMELINE = "time"
 
-# Ensure that rerun is at least version 0.24.0,
-# which has the fix for timestamps columns.
-# https://github.com/rerun-io/rerun/issues/10167
-from packaging import version
 
-if version.parse(rr.__version__) < version.parse("0.24.0"):
-    raise ImportError(
-        f"rerun >= 0.24.0 is required, installed version: {rr.__version__}"
-    )
+def _check_rerun_version(min_version: str) -> None:
+    """
+    Raises ImportError if the installed Rerun version is less than min_version.
+    """
+    if version.parse(rr.__version__) < version.parse(min_version):
+        raise ImportError(
+            f"rerun-sdk >= {min_version} is required, installed version: {rr.__version__}"
+        )
+
+
+# Ensure that rerun is at least version 0.28.0,
+# which has TransformAxes3D.
+_check_rerun_version("0.28.0")
 
 
 @dataclass
@@ -95,7 +101,7 @@ def log_transforms(
     )
     rr.log(
         entity_path,
-        rr.Transform3D.from_fields(axis_length=axis_length),
+        rr.TransformAxes3D.from_fields(axis_length=axis_length),
         static=True,
     )
 

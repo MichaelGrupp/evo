@@ -250,7 +250,7 @@ class RPE(PE):
     def __str__(self) -> str:
         title = (
             f"RPE w.r.t. {self.pose_relation.value} ({self.unit.value})"
-            "\nfor delta = {self.delta} ({self.delta_unit.value})"
+            f"\nfor delta = {self.delta} ({self.delta_unit.value})"
         )
         if self.all_pairs:
             title += " using all pairs"

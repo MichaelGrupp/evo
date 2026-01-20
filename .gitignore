@@ -112,3 +112,6 @@ venv.bak/
 # pixi environments
 .pixi/*
 !.pixi/config.toml
+
+# MacOS
+.DS_Store

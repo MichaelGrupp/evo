@@ -63,7 +63,7 @@ dependencies = [
 [project.optional-dependencies]
 gui = ["PyQt6"]
 geo = ["contextily"]
-rerun = ["rerun-sdk>=0.24.0"]
+rerun = ["rerun-sdk>=0.28.0"]
 
 
 [project.scripts]
@@ -111,7 +111,7 @@ test = "pytest -sv"
 [tool.pixi.dependencies]
 pip = ">=25.3,<26"
 mypy = ">=1.19.1,<2"
-black = ">=25.12.0,<26"
+black = ">=26.1.0,<27"
 pytest = ">=9.0.2,<10"
 ipython = ">=8.37.0,<10"
 hatch = ">=1.16.2,<2"

@@ -216,8 +216,7 @@ class TestLoadTransform(unittest.TestCase):
     def test_json(self):
         tmp_file = tempfile.NamedTemporaryFile(delete=False)
         with open(tmp_file.name, "w") as f:
-            f.write(
-                """ {
+            f.write(""" {
                 "x": 1.0,
                 "y": 2.5,
                 "z": 3.0,
@@ -227,8 +226,7 @@ class TestLoadTransform(unittest.TestCase):
                 "qw": 1.0,
                 "scale": 0.5
             }
-            """
-            )
+            """)
         transform = file_interface.load_transform(tmp_file.name)
         self.assertTrue(lie.is_sim3(transform))
         self.assertTrue(np.allclose(transform[:3, :3], np.eye(3) * 0.5))

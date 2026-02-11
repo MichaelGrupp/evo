@@ -2324,7 +2324,7 @@ packages:
 - pypi: ./
   name: evo
   version: 1.34.2
-  sha256: 7e617c8a6a22b11a0704460093211bd8006cc6c66492dd238032aa2cc6b12cf8
+  sha256: a4697947ea40c84e9a0aa06d9fd8c499629fb07968cab60570d0d521c9acae72
   requires_dist:
   - argcomplete
   - colorama>=0.3

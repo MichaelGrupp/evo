@@ -107,6 +107,7 @@ python = "~=3.14.0"
 fmt = "black ."
 mypy = "mypy ."
 test = "pytest -sv"
+release = "sh .ci/release.sh"
 
 [tool.pixi.dependencies]
 pip = ">=25.3,<26"

@@ -57,6 +57,8 @@ def rpe(
     change_unit: metrics.Unit | None = None,
     project_to_plane: Plane | None = None,
 ) -> Result:
+    if align and align_origin:
+        raise ValueError("align and align_origin can't be used simultaneously")
 
     # Align the trajectories.
     only_scale = correct_scale and not align

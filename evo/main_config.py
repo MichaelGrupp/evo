@@ -295,6 +295,11 @@ def main() -> None:
         "--brief", help="show only the .json data", action="store_true"
     )
     show_parser.add_argument(
+        "--diff",
+        help="show diff compared to default settings",
+        action="store_true",
+    )
+    show_parser.add_argument(
         "params",
         choices=list(DEFAULT_SETTINGS_DICT.keys()),
         nargs=argparse.REMAINDER,
@@ -369,7 +374,17 @@ def main() -> None:
             config = args.config
 
     if args.subcommand == "show":
-        if not args.brief and not args.config:
+        if args.diff:
+            with open(config) as config_file:
+                current = json.load(config_file)
+            if not args.brief:
+                logger.info(
+                    f"{SEP}\nDiff of {config} vs default settings:\n{SEP}"
+                )
+            show_diff(
+                DEFAULT_SETTINGS_DICT, current, colored=not args.no_color
+            )
+        elif not args.brief and not args.config:
             style = Style.BRIGHT if not args.no_color else Style.NORMAL
             doc_str = "\n".join(
                 f"{style}{parameter}{Style.RESET_ALL}:\n{value_and_doc[1]}\n"
@@ -380,9 +395,14 @@ def main() -> None:
             )
             logger.info(doc_str)
             logger.info(f"{SEP}\n{config}\n{SEP}")
-        show(config, colored=not args.no_color, parameter_subset=args.params)
-        if config == settings.DEFAULT_PATH and not args.brief:
-            logger.info(SEP + "\nSee text above for parameter descriptions.")
+        if not args.diff:
+            show(
+                config, colored=not args.no_color, parameter_subset=args.params
+            )
+            if config == settings.DEFAULT_PATH and not args.brief:
+                logger.info(
+                    SEP + "\nSee text above for parameter descriptions."
+                )
 
     elif args.subcommand == "set":
         if not os.access(config, os.W_OK):

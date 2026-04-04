@@ -27,9 +27,8 @@ Please give also the following information:
 * Python version shown by `evo pkg --pyversion`: 
 * operating system and version (e.g. Ubuntu 16.04 or Windows 10): 
 * did you change the source code? (yes / no): 
-* output of `evo_config show --brief --no_color`: 
+* output of `evo_config show --diff --no_color` (or for older versions: `evo_config show --brief --no_color`): 
 ```
-
 # remove this line and paste your config HERE
 
 ```

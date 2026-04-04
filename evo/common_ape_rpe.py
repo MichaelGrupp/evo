@@ -281,22 +281,14 @@ def plot_result(
     plot_collection.close()
 
 
-def log_result_to_rerun(
-    app_id: str,
-    result: Result,
-    traj_ref: PosePath3D,
+def send_rerun_blueprint(
+    evo_app_name: str,
     traj_est: PosePath3D,
 ) -> None:
     import rerun as rr
     import rerun.blueprint as rrb
-    from matplotlib.colors import to_rgba
 
     from evo.tools import rerun_bridge as revo
-    from evo.tools.rerun_bridge import mapped_colors
-
-    logger.debug(SEP)
-    logger.debug("Logging data to rerun.")
-    rr.init(app_id, spawn=SETTINGS.rerun_spawn)
 
     timeline = (
         revo.TIMELINE
@@ -312,7 +304,6 @@ def log_result_to_rerun(
         ),
     )
 
-    # Configure the blueprint (3D view, plot, etc.).
     rr.send_blueprint(
         rrb.Blueprint(
             rrb.Tabs(
@@ -321,7 +312,9 @@ def log_result_to_rerun(
                         name="Visualization",
                         contents=[
                             rrb.Spatial3DView(
-                                name="Trajectories", time_ranges=time_range
+                                name="Trajectories",
+                                time_ranges=time_range,
+                                contents=["$origin/**"],
                             ),
                             rrb.Grid(
                                 name="Plots",
@@ -333,7 +326,7 @@ def log_result_to_rerun(
                                     ),
                                     rrb.BarChartView(
                                         name="Statistics",
-                                        origin=f"/{app_id}/error",
+                                        origin=f"/{evo_app_name}/error",
                                         plot_legend=rrb.PlotLegend(
                                             None, visible=False
                                         ),
@@ -348,7 +341,7 @@ def log_result_to_rerun(
                     ),
                     rrb.DataframeView(
                         name="Raw Data",
-                        origin=f"/{app_id}",
+                        origin=f"/{evo_app_name}",
                         contents=[
                             "$origin/reference/transforms",
                             "$origin/estimate/transforms",
@@ -357,25 +350,45 @@ def log_result_to_rerun(
                     ),
                 ]
             ),
-            # Expand/collapse the selection and detailed time panels by default?
             rrb.SelectionPanel(expanded=False),
             rrb.TimePanel(expanded=False),
         )
     )
 
+
+def log_result_to_rerun(
+    evo_app_name: str,
+    result: Result,
+    traj_ref: PosePath3D,
+    traj_est: PosePath3D,
+    args: argparse.Namespace,
+) -> None:
+    import rerun as rr
+    from matplotlib.colors import to_rgba
+
+    from evo.tools import rerun_bridge as revo
+    from evo.tools.rerun_bridge import mapped_colors
+
+    logger.debug(SEP)
+    logger.debug("Logging data to rerun.")
+    rr.init(evo_app_name, spawn=SETTINGS.rerun_spawn)
+
+    send_rerun_blueprint(evo_app_name, traj_est)
+    revo.log_view_coordinates(revo.PlotMode(args.plot_mode))
+
     error_array = result.np_arrays["error_array"]
-    if app_id == "evo_rpe":
+    if evo_app_name == "evo_rpe":
         # Pad RPE with 0. at the start to match the length of APE error arrays.
         error_array = np.insert(error_array, 0, 0.0)
     error_colors = mapped_colors(SETTINGS.plot_trajectory_cmap, error_array)
 
     revo.log_trajectory(
-        entity_path=f"{app_id}/estimate",
+        entity_path=f"{evo_app_name}/estimate",
         traj=traj_est,
         color=revo.Color(sequential=error_colors),
     )
     revo.log_trajectory(
-        entity_path=f"{app_id}/reference",
+        entity_path=f"{evo_app_name}/reference",
         traj=traj_ref,
         color=revo.Color(
             static=to_rgba(
@@ -390,7 +403,7 @@ def log_result_to_rerun(
     # SETTINGS.plot_pose_correspondences.
     # It can be toggled in the rerun viewer and the logging is lightweight.
     revo.log_correspondence_strips(
-        entity_path=f"{app_id}/error/correspondences",
+        entity_path=f"{evo_app_name}/error/correspondences",
         traj_1=traj_est,
         traj_2=traj_ref,
         color=revo.Color(
@@ -404,7 +417,7 @@ def log_result_to_rerun(
 
     # Log the error scalars.
     revo.log_scalars(
-        entity_path=f"{app_id}/error/scalars",
+        entity_path=f"{evo_app_name}/error/scalars",
         scalars=error_array,
         timestamps=(
             traj_est.timestamps
@@ -417,6 +430,6 @@ def log_result_to_rerun(
 
     # Log the statistics bar chart.
     revo.log_statistics_bar_chart(
-        entity_path=f"{app_id}/error/statistics",
+        entity_path=f"{evo_app_name}/error/statistics",
         stats=result.stats,
     )

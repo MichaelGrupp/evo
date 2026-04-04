@@ -14,7 +14,7 @@ import matplotlib.cm
 from matplotlib.colors import Normalize, rgb2hex
 
 from evo.core.trajectory import PosePath3D, PoseTrajectory3D
-from evo.tools.plot import color_cycle
+from evo.tools.plot import color_cycle, PlotMode
 from evo.tools.settings import SETTINGS
 
 TIMELINE = "time"
@@ -299,3 +299,26 @@ def log_statistics_bar_chart(
             ),
             static=True,
         )
+
+
+def log_view_coordinates(plot_mode: PlotMode):
+    """
+    Derive and log view coordinates (scene up) from a PlotMode value,
+    for consistency with matplotlib plots.
+
+    Should be called _after_ sending a blueprint.
+    """
+    if plot_mode.value in ("xy", "xyz"):
+        view_coordinates = rr.ViewCoordinates.RIGHT_HAND_Z_UP
+    elif plot_mode.value == "xz":
+        view_coordinates = rr.ViewCoordinates.RIGHT_HAND_Y_DOWN
+    elif plot_mode.value == "yz":
+        view_coordinates = rr.ViewCoordinates.RIGHT_HAND_X_UP
+    elif plot_mode.value == "yx":
+        view_coordinates = rr.ViewCoordinates.RIGHT_HAND_Z_DOWN
+    elif plot_mode.value == "zx":
+        view_coordinates = rr.ViewCoordinates.RIGHT_HAND_Y_UP
+    elif plot_mode.value == "zy":
+        view_coordinates = rr.ViewCoordinates.RIGHT_HAND_X_DOWN
+
+    rr.log("/", view_coordinates, static=True)

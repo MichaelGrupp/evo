@@ -222,7 +222,13 @@ def run(args: argparse.Namespace) -> None:
     )
 
     if args.rerun:
-        common.log_result_to_rerun("evo_rpe", result, traj_ref, traj_est)
+        common.log_result_to_rerun(
+            "evo_rpe",
+            result,
+            traj_ref,
+            traj_est,
+            args,
+        )
 
     if args.plot or args.save_plot:
         common.plot_result(

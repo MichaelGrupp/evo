@@ -67,7 +67,13 @@ def configure_blueprint() -> rrb.BlueprintLike:
         rrb.Grid(
             contents=[
                 rrb.Spatial3DView(time_ranges=time_range),
-                rrb.TimeSeriesView(time_ranges=time_range),
+                rrb.Grid(
+                    contents=[
+                        rrb.TimeSeriesView(time_ranges=time_range),
+                        rrb.BarChartView(origin="/error"),
+                    ],
+                    column_shares=[1, 1],
+                ),
             ],
             column_shares=[2, 1],
         ),
@@ -91,6 +97,12 @@ def run_demo() -> None:
         timestamps=estimate.timestamps,
         color=revo.Color(static=to_rgba("red")),
         labelname=str(ape),
+    )
+
+    print("Logging statistics bar chart.")
+    revo.log_statistics_bar_chart(
+        "/error/statistics",
+        ape.get_all_statistics(),
     )
 
     print("Logging 3D trajectory visualization data.")

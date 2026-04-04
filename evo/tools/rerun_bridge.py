@@ -14,6 +14,7 @@ import matplotlib.cm
 from matplotlib.colors import Normalize, rgb2hex
 
 from evo.core.trajectory import PosePath3D, PoseTrajectory3D
+from evo.tools.plot import color_cycle
 from evo.tools.settings import SETTINGS
 
 TIMELINE = "time"
@@ -270,3 +271,31 @@ def log_trajectory(entity_path: str, traj: PosePath3D, color: Color) -> None:
             else color
         ),
     )
+
+
+def log_statistics_bar_chart(
+    entity_path: str,
+    stats: dict,
+) -> None:
+    """
+    Logs a static bar chart of result statistics (mean, std, etc.) to rerun.
+    Each statistic is logged as a separate single-bar BarChart entity so that
+    the entity path name serves as the label in the BarChartView.
+    Colors follow the evo color cycle (seaborn palette from SETTINGS).
+    Only statistics listed in SETTINGS.plot_statistics are included.
+    """
+    colors = color_cycle()
+    included = [s for s in SETTINGS.plot_statistics if s in stats]
+
+    for i, name in enumerate(included):
+        value = stats[name]
+        color = colors[i % len(colors)]
+        rr.log(
+            f"{entity_path}/{name}",
+            rr.BarChart(
+                values=np.array([value]),
+                abscissa=np.array([i]),
+                color=color,
+            ),
+            static=True,
+        )

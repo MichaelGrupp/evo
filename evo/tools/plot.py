@@ -91,6 +91,14 @@ def apply_settings(settings: SettingsContainer = SETTINGS):
 apply_settings(SETTINGS)
 
 
+def color_cycle() -> list:
+    """
+    Returns the evo color cycle as a list of RGBA tuples,
+    based on the seaborn palette configured in SETTINGS.
+    """
+    return sns.color_palette(SETTINGS.plot_seaborn_palette)
+
+
 class PlotException(EvoException):
     pass
 
@@ -860,7 +868,7 @@ def trajectories(
         cmap = getattr(cm, SETTINGS.plot_multi_cmap)
         cmap_colors = iter(cmap(np.linspace(0, 1, len(trajectories))))
 
-    color_palette = itertools.cycle(sns.color_palette())
+    color_palette = itertools.cycle(color_cycle())
 
     # helper function
     def draw(t, name=""):
@@ -958,7 +966,7 @@ def error_array(
                 color=color,
                 label=name,
             )
-    color_pallete = itertools.cycle(sns.color_palette())
+    color_pallete = itertools.cycle(color_cycle())
     if statistics is not None:
         for stat_name, value in statistics.items():
             color = next(color_pallete)

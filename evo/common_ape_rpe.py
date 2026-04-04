@@ -323,10 +323,23 @@ def log_result_to_rerun(
                             rrb.Spatial3DView(
                                 name="Trajectories", time_ranges=time_range
                             ),
-                            rrb.TimeSeriesView(
-                                name="Error",
-                                time_ranges=time_range,
-                                plot_legend=rrb.Corner2D.RightTop,
+                            rrb.Grid(
+                                name="Plots",
+                                contents=[
+                                    rrb.TimeSeriesView(
+                                        name="Error",
+                                        time_ranges=time_range,
+                                        plot_legend=rrb.Corner2D.RightTop,
+                                    ),
+                                    rrb.BarChartView(
+                                        name="Statistics",
+                                        origin=f"/{app_id}/error",
+                                        plot_legend=rrb.PlotLegend(
+                                            None, visible=False
+                                        ),
+                                    ),
+                                ],
+                                column_shares=[1, 1],
                             ),
                         ],
                         column_shares=None,
@@ -400,4 +413,10 @@ def log_result_to_rerun(
         ),
         color=revo.Color(static=to_rgba("red")),
         labelname=str(result.info["title"]),
+    )
+
+    # Log the statistics bar chart.
+    revo.log_statistics_bar_chart(
+        entity_path=f"{app_id}/error/statistics",
+        stats=result.stats,
     )

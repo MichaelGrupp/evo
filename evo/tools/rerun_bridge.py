@@ -13,10 +13,11 @@ import numpy as np
 import matplotlib.cm
 from matplotlib.colors import Normalize, rgb2hex
 
-from evo.core.trajectory import PoseTrajectory3D
+from evo.core.trajectory import PosePath3D, PoseTrajectory3D
 from evo.tools.settings import SETTINGS
 
 TIMELINE = "time"
+INDEX_TIMELINE = "index"
 
 
 def _check_rerun_version(min_version: str) -> None:
@@ -58,6 +59,16 @@ def _to_time_column(timestamps: np.ndarray) -> rr.TimeColumn:
     return rr.TimeColumn(TIMELINE, timestamp=timestamps)
 
 
+def _to_index_column(num_indices: int) -> rr.TimeColumn:
+    return rr.TimeColumn(INDEX_TIMELINE, sequence=np.arange(num_indices))
+
+
+def _to_timeline_column(traj: PosePath3D) -> rr.TimeColumn:
+    if isinstance(traj, PoseTrajectory3D):
+        return _to_time_column(traj.timestamps)
+    return _to_index_column(traj.num_poses)
+
+
 def ui_points_radii(value: Float32ArrayLike) -> Float32ArrayLike:
     """
     rerun interprets negative radii as points in screen space.
@@ -86,7 +97,7 @@ def mapped_colors(cmap_name: str, values: np.ndarray) -> Sequence[int]:
 
 
 def log_transforms(
-    entity_path: str, traj: PoseTrajectory3D, axis_length: float
+    entity_path: str, traj: PosePath3D, axis_length: float
 ) -> None:
     """
     Logs the trajectory poses as Transform3D to rerun.
@@ -94,7 +105,7 @@ def log_transforms(
     quaternions_xyzw = np.roll(traj.orientations_quat_wxyz, -1)
     rr.send_columns(
         entity_path,
-        indexes=[_to_time_column(traj.timestamps)],
+        indexes=[_to_timeline_column(traj)],
         columns=rr.Transform3D.columns(
             translation=traj.positions_xyz, quaternion=quaternions_xyzw
         ),
@@ -108,7 +119,7 @@ def log_transforms(
 
 def log_line_strips(
     entity_path: str,
-    traj: PoseTrajectory3D,
+    traj: PosePath3D,
     radii: Float32ArrayLike,
     color: Color,
 ) -> None:
@@ -118,11 +129,16 @@ def log_line_strips(
     strips = [
         [a, b] for a, b in zip(traj.positions_xyz, traj.positions_xyz[1:])
     ]
-    strip_timestamps = traj.timestamps[1:]
+
+    if isinstance(traj, PoseTrajectory3D):
+        strip_timestamps = traj.timestamps[1:]
+        index = _to_time_column(strip_timestamps)
+    else:
+        index = _to_index_column(traj.num_poses - 1)
 
     rr.send_columns(
         entity_path,
-        indexes=[_to_time_column(strip_timestamps)],
+        indexes=[index],
         columns=[
             *rr.LineStrips3D.columns(strips=strips, colors=color.sequential)
         ],
@@ -136,7 +152,7 @@ def log_line_strips(
 
 def log_points(
     entity_path: str,
-    traj: PoseTrajectory3D,
+    traj: PosePath3D,
     radii: Float32ArrayLike,
     color: Color,
 ) -> None:
@@ -145,7 +161,7 @@ def log_points(
     """
     rr.send_columns(
         entity_path,
-        indexes=[_to_time_column(traj.timestamps)],
+        indexes=[_to_timeline_column(traj)],
         columns=[
             *rr.Points3D.columns(
                 positions=traj.positions_xyz, colors=color.sequential
@@ -162,16 +178,23 @@ def log_points(
 def log_scalars(
     entity_path: str,
     scalars: Float64ArrayLike,
-    timestamps: np.ndarray,
     color: Color,
+    timestamps: np.ndarray | None = None,
     labelname: str | None = None,
 ) -> None:
     """
-    Logs a batch of scalars with timestamps to rerun, e.g. for plotting.
+    Logs a batch of scalars to rerun, e.g. for plotting.
+    If timestamps are provided, uses the time timeline;
+    otherwise uses the index timeline.
     """
+    if timestamps is not None:
+        index = _to_time_column(timestamps)
+    else:
+        index = _to_index_column(len(scalars))
+
     rr.send_columns(
         entity_path,
-        indexes=[_to_time_column(timestamps)],
+        indexes=[index],
         columns=rr.Scalars.columns(scalars=scalars),
     )
     rr.log(
@@ -183,8 +206,8 @@ def log_scalars(
 
 def log_correspondence_strips(
     entity_path: str,
-    traj_1: PoseTrajectory3D,
-    traj_2: PoseTrajectory3D,
+    traj_1: PosePath3D,
+    traj_2: PosePath3D,
     radii: Float32ArrayLike,
     color: Color,
 ):
@@ -197,9 +220,15 @@ def log_correspondence_strips(
     correspondences = [
         [p1, p2] for p1, p2 in zip(traj_1.positions_xyz, traj_2.positions_xyz)
     ]
+
+    if isinstance(traj_1, PoseTrajectory3D):
+        index = _to_time_column(traj_1.timestamps)
+    else:
+        index = _to_index_column(traj_1.num_poses)
+
     rr.send_columns(
         entity_path,
-        indexes=[_to_time_column(traj_1.timestamps)],
+        indexes=[index],
         columns=[
             *rr.LineStrips3D.columns(
                 strips=correspondences, colors=color.sequential
@@ -213,9 +242,7 @@ def log_correspondence_strips(
     )
 
 
-def log_trajectory(
-    entity_path: str, traj: PoseTrajectory3D, color: Color
-) -> None:
+def log_trajectory(entity_path: str, traj: PosePath3D, color: Color) -> None:
     """
     Convenience function to log transforms, points, and lines to rerun.
     """

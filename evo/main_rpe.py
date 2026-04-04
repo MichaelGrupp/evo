@@ -156,7 +156,6 @@ def rpe(
 
 
 def run(args: argparse.Namespace) -> None:
-
     log.configure_logging(
         args.verbose, args.silent, args.debug, local_logfile=args.logfile
     )
@@ -222,16 +221,8 @@ def run(args: argparse.Namespace) -> None:
         project_to_plane=plane,
     )
 
-    if (
-        args.rerun
-        and isinstance(traj_ref, PoseTrajectory3D)
-        and isinstance(traj_est, PoseTrajectory3D)
-    ):
+    if args.rerun:
         common.log_result_to_rerun("evo_rpe", result, traj_ref, traj_est)
-    elif args.rerun:
-        logger.warning(
-            "Rerun logging is only supported for trajectories with timestamps."
-        )
 
     if args.plot or args.save_plot:
         common.plot_result(

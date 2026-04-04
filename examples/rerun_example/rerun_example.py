@@ -88,7 +88,7 @@ def run_demo() -> None:
     revo.log_scalars(
         "/error/scalars",
         ape.error,
-        estimate.timestamps,
+        timestamps=estimate.timestamps,
         color=revo.Color(static=to_rgba("red")),
         labelname=str(ape),
     )

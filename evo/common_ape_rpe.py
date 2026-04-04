@@ -144,8 +144,7 @@ def downsample_or_filter(
         distance_threshold = args.motion_filter[0]
         angle_threshold = args.motion_filter[1]
         logger.debug(
-            "Filtering trajectories with motion filter "
-            "thresholds: %f m, %f deg",
+            "Filtering trajectories with motion filter thresholds: %f m, %f deg",
             distance_threshold,
             angle_threshold,
         )
@@ -285,8 +284,8 @@ def plot_result(
 def log_result_to_rerun(
     app_id: str,
     result: Result,
-    traj_ref: PoseTrajectory3D,
-    traj_est: PoseTrajectory3D,
+    traj_ref: PosePath3D,
+    traj_est: PosePath3D,
 ) -> None:
     import rerun as rr
     import rerun.blueprint as rrb
@@ -299,10 +298,18 @@ def log_result_to_rerun(
     logger.debug("Logging data to rerun.")
     rr.init(app_id, spawn=SETTINGS.rerun_spawn)
 
+    timeline = (
+        revo.TIMELINE
+        if isinstance(traj_est, PoseTrajectory3D)
+        else revo.INDEX_TIMELINE
+    )
+
     time_range = rrb.VisibleTimeRange(
-        timeline=revo.TIMELINE,
+        timeline=timeline,
         start=rrb.TimeRangeBoundary.infinite(),
-        end=rrb.TimeRangeBoundary.cursor_relative(seconds=0.0),
+        end=rrb.TimeRangeBoundary.cursor_relative(
+            seconds=0.0 if isinstance(traj_est, PoseTrajectory3D) else 0
+        ),
     )
 
     # Configure the blueprint (3D view, plot, etc.).
@@ -386,7 +393,11 @@ def log_result_to_rerun(
     revo.log_scalars(
         entity_path=f"{app_id}/error/scalars",
         scalars=error_array,
-        timestamps=traj_est.timestamps,
+        timestamps=(
+            traj_est.timestamps
+            if isinstance(traj_est, PoseTrajectory3D)
+            else None
+        ),
         color=revo.Color(static=to_rgba("red")),
         labelname=str(result.info["title"]),
     )

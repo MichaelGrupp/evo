@@ -22,6 +22,7 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import argparse
+import difflib
 import json
 import logging
 import os
@@ -29,7 +30,7 @@ import sys
 import typing
 
 import colorama
-from colorama import Style
+from colorama import Fore, Style
 from pygments import highlight, lexers, formatters
 
 from evo import EvoException
@@ -45,6 +46,33 @@ SEP = "-" * 80
 
 class ConfigError(EvoException):
     pass
+
+
+def show_diff(before: dict, after: dict, colored: bool = True) -> None:
+    before_json = json.dumps(before, indent=4, sort_keys=True).splitlines()
+    after_json = json.dumps(after, indent=4, sort_keys=True).splitlines()
+    diff_lines = list(
+        difflib.unified_diff(
+            before_json,
+            after_json,
+            fromfile="before",
+            tofile="after",
+            lineterm="",
+        )
+    )
+    if not diff_lines:
+        logger.info(f"{Style.BRIGHT}No changes.{Style.RESET_ALL}")
+        return
+    diff_str = "\n".join(diff_lines)
+    if colored and os.name != "nt":
+        diff_str = highlight(
+            diff_str,
+            lexers.DiffLexer(),
+            formatters.Terminal256Formatter(
+                style=settings.SETTINGS.pygments_style
+            ),
+        )
+    logger.info(diff_str)
 
 
 def log_info_dict_json(
@@ -361,8 +389,8 @@ def main() -> None:
             logger.error("No permission to modify %s", config)
             sys.exit(1)
         if other_args or args.merge:
-            logger.info(f"{SEP}\nOld configuration:\n{SEP}")
-            show(config, colored=not args.no_color)
+            with open(config) as config_file:
+                before = json.load(config_file)
             try:
                 set_config(config, other_args)
             except ConfigError as e:
@@ -370,8 +398,10 @@ def main() -> None:
                 sys.exit(1)
             if args.merge:
                 merge_json_union(config, args.merge, args.soft)
-            logger.info(SEP + "\nNew configuration:\n" + SEP)
-            show(config, colored=not args.no_color)
+            with open(config) as config_file:
+                after = json.load(config_file)
+            logger.info(f"{SEP}\nChanges in {config}:\n{SEP}")
+            show_diff(before, after, colored=not args.no_color)
         else:
             logger.error("No configuration parameters given (see --help).")
 

@@ -1,6 +1,6 @@
 # rerun_example
 
-Demo / proof-of-concept for logging evo data into the [rerun viewer](https://github.com/rerun-io/rerun)
+Demo / proof-of-concept for sending evo data to the [rerun viewer](https://github.com/rerun-io/rerun)
 
 ***work in progress***, see also: https://github.com/MichaelGrupp/evo/issues/738
 

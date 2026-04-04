@@ -216,7 +216,7 @@ DEFAULT_SETTINGS_DICT_DOC = {
     ),
     "rerun_spawn": (
         True,
-        "Spawn a viewer window when logging data to rerun.\n"
+        "Spawn a viewer window when logging data to Rerun.\n"
         "If set to False, the viewer must be started manually."
     ),
     "ros2_bag_storage_plugin": (

@@ -1,5 +1,5 @@
 """
-Functions for easier logging of evo data into rerun.
+Functions for easier sending of evo data to Rerun.
 """
 
 from dataclasses import dataclass
@@ -31,7 +31,7 @@ def _check_rerun_version(min_version: str) -> None:
         )
 
 
-# Ensure that rerun is at least version 0.28.0,
+# Ensure that Rerun is at least version 0.28.0,
 # which has TransformAxes3D.
 _check_rerun_version("0.28.0")
 
@@ -40,7 +40,7 @@ _check_rerun_version("0.28.0")
 class Color:
     """
     Helper for specifying either a static color, sequential colors, or none.
-    Note that sequential colors must have the same length as other data columns when logged.
+    Note that sequential colors must have the same length as other data columns when sent.
     """
 
     static: Rgba32ArrayLike | None = None
@@ -72,7 +72,7 @@ def _to_timeline_column(traj: PosePath3D) -> rr.TimeColumn:
 
 def ui_points_radii(value: Float32ArrayLike) -> Float32ArrayLike:
     """
-    rerun interprets negative radii as points in screen space.
+    Rerun interprets negative radii as points in screen space.
     """
     return -np.abs(value)  # type: ignore
 
@@ -81,7 +81,7 @@ def mapped_colors(cmap_name: str, values: np.ndarray) -> Sequence[int]:
     """
     Creates a color sequence from scalar values using a matplotlib colormap.
     """
-    # rerun SDK has no colormap implementation? mpl to the rescue...
+    # Rerun SDK has no colormap implementation? mpl to the rescue...
     norm = Normalize(vmin=values.min(), vmax=values.max(), clip=True)
     mapper = matplotlib.cm.ScalarMappable(norm, cmap_name)
     mapper.set_array(values)
@@ -97,11 +97,11 @@ def mapped_colors(cmap_name: str, values: np.ndarray) -> Sequence[int]:
     ]
 
 
-def log_transforms(
+def send_transforms(
     entity_path: str, traj: PosePath3D, axis_length: float
 ) -> None:
     """
-    Logs the trajectory poses as Transform3D to rerun.
+    Sends the trajectory poses as Transform3D to Rerun.
     """
     quaternions_xyzw = np.roll(traj.orientations_quat_wxyz, -1)
     rr.send_columns(
@@ -118,14 +118,14 @@ def log_transforms(
     )
 
 
-def log_line_strips(
+def send_line_strips(
     entity_path: str,
     traj: PosePath3D,
     radii: Float32ArrayLike,
     color: Color,
 ) -> None:
     """
-    Logs connections between trajectory poses as LineStrips3D to rerun.
+    Sends connections between trajectory poses as LineStrips3D to Rerun.
     """
     strips = [
         [a, b] for a, b in zip(traj.positions_xyz, traj.positions_xyz[1:])
@@ -151,14 +151,14 @@ def log_line_strips(
     )
 
 
-def log_points(
+def send_points(
     entity_path: str,
     traj: PosePath3D,
     radii: Float32ArrayLike,
     color: Color,
 ) -> None:
     """
-    Logs the trajectory positions as Points3D to rerun.
+    Sends the trajectory positions as Points3D to Rerun.
     """
     rr.send_columns(
         entity_path,
@@ -176,7 +176,7 @@ def log_points(
     )
 
 
-def log_scalars(
+def send_scalars(
     entity_path: str,
     scalars: Float64ArrayLike,
     color: Color,
@@ -184,14 +184,14 @@ def log_scalars(
     labelname: str | None = None,
 ) -> None:
     """
-    Logs a batch of scalars to rerun, e.g. for plotting.
+    Sends a batch of scalars to Rerun, e.g. for plotting.
     If timestamps are provided, uses the time timeline;
     otherwise uses the index timeline.
     """
     if timestamps is not None:
         index = _to_time_column(timestamps)
     else:
-        index = _to_index_column(len(scalars))
+        index = _to_index_column(len(np.asarray(scalars)))
 
     rr.send_columns(
         entity_path,
@@ -205,7 +205,7 @@ def log_scalars(
     )
 
 
-def log_correspondence_strips(
+def send_correspondence_strips(
     entity_path: str,
     traj_1: PosePath3D,
     traj_2: PosePath3D,
@@ -213,7 +213,7 @@ def log_correspondence_strips(
     color: Color,
 ):
     """
-    Logs LineStrips3D connecting corresponding poses of two synced trajectories to rerun.
+    Sends LineStrips3D connecting corresponding poses of two synced trajectories to Rerun.
     """
     if not traj_1.num_poses == traj_2.num_poses:
         raise ValueError("trajectories must be synced")
@@ -243,25 +243,25 @@ def log_correspondence_strips(
     )
 
 
-def log_trajectory(entity_path: str, traj: PosePath3D, color: Color) -> None:
+def send_trajectory(entity_path: str, traj: PosePath3D, color: Color) -> None:
     """
-    Convenience function to log transforms, points, and lines to rerun.
+    Convenience function to send transforms, points, and lines to Rerun.
     """
-    # Note: in contrast to plot.py, we always log transform axes here.
-    # If the scale is 0., you can still make it visible in the rerun
-    # viewer by changing the length in the entity settings after logging.
-    log_transforms(
+    # Note: in contrast to plot.py, we always send transform axes here.
+    # If the scale is 0., you can still make it visible in the Rerun
+    # viewer by changing the length in the entity settings after sending.
+    send_transforms(
         entity_path=f"{entity_path}/transforms",
         traj=traj,
         axis_length=SETTINGS.plot_axis_marker_scale,
     )
-    log_points(
+    send_points(
         entity_path=f"{entity_path}/points",
         traj=traj,
         radii=ui_points_radii(SETTINGS.plot_linewidth * 1.25),
         color=color,
     )
-    log_line_strips(
+    send_line_strips(
         entity_path=f"{entity_path}/lines",
         traj=traj,
         radii=ui_points_radii(SETTINGS.plot_linewidth),
@@ -273,13 +273,13 @@ def log_trajectory(entity_path: str, traj: PosePath3D, color: Color) -> None:
     )
 
 
-def log_statistics_bar_chart(
+def send_statistics_bar_chart(
     entity_path: str,
     stats: dict,
 ) -> None:
     """
-    Logs a static bar chart of result statistics (mean, std, etc.) to rerun.
-    Each statistic is logged as a separate single-bar BarChart entity so that
+    Sends a static bar chart of result statistics (mean, std, etc.) to Rerun.
+    Each statistic is sent as a separate single-bar BarChart entity so that
     the entity path name serves as the label in the BarChartView.
     Colors follow the evo color cycle (seaborn palette from SETTINGS).
     Only statistics listed in SETTINGS.plot_statistics are included.
@@ -301,9 +301,9 @@ def log_statistics_bar_chart(
         )
 
 
-def log_view_coordinates(plot_mode: PlotMode):
+def send_view_coordinates(plot_mode: PlotMode):
     """
-    Derive and log view coordinates (scene up) from a PlotMode value,
+    Derive and send view coordinates (scene up) from a PlotMode value,
     for consistency with matplotlib plots.
 
     Should be called _after_ sending a blueprint.

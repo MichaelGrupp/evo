@@ -356,7 +356,7 @@ def send_rerun_blueprint(
     )
 
 
-def log_result_to_rerun(
+def send_result_to_rerun(
     evo_app_name: str,
     result: Result,
     traj_ref: PosePath3D,
@@ -370,11 +370,11 @@ def log_result_to_rerun(
     from evo.tools.rerun_bridge import mapped_colors
 
     logger.debug(SEP)
-    logger.debug("Logging data to rerun.")
+    logger.debug("Sending data to Rerun.")
     rr.init(evo_app_name, spawn=SETTINGS.rerun_spawn)
 
     send_rerun_blueprint(evo_app_name, traj_est)
-    revo.log_view_coordinates(revo.PlotMode(args.plot_mode))
+    revo.send_view_coordinates(revo.PlotMode(args.plot_mode))
 
     error_array = result.np_arrays["error_array"]
     if evo_app_name == "evo_rpe":
@@ -382,12 +382,12 @@ def log_result_to_rerun(
         error_array = np.insert(error_array, 0, 0.0)
     error_colors = mapped_colors(SETTINGS.plot_trajectory_cmap, error_array)
 
-    revo.log_trajectory(
+    revo.send_trajectory(
         entity_path=f"{evo_app_name}/estimate",
         traj=traj_est,
         color=revo.Color(sequential=error_colors),
     )
-    revo.log_trajectory(
+    revo.send_trajectory(
         entity_path=f"{evo_app_name}/reference",
         traj=traj_ref,
         color=revo.Color(
@@ -398,11 +398,11 @@ def log_result_to_rerun(
         ),
     )
 
-    # Log the correspondence edges.
+    # Send the correspondence edges.
     # In contrast to the matplotlib plot, we always do this here independent of
     # SETTINGS.plot_pose_correspondences.
-    # It can be toggled in the rerun viewer and the logging is lightweight.
-    revo.log_correspondence_strips(
+    # It can be toggled in the Rerun viewer and the sending is lightweight.
+    revo.send_correspondence_strips(
         entity_path=f"{evo_app_name}/error/correspondences",
         traj_1=traj_est,
         traj_2=traj_ref,
@@ -415,8 +415,8 @@ def log_result_to_rerun(
         radii=revo.ui_points_radii(SETTINGS.plot_linewidth / 2.0),
     )
 
-    # Log the error scalars.
-    revo.log_scalars(
+    # Send the error scalars.
+    revo.send_scalars(
         entity_path=f"{evo_app_name}/error/scalars",
         scalars=error_array,
         timestamps=(
@@ -428,8 +428,8 @@ def log_result_to_rerun(
         labelname=str(result.info["title"]),
     )
 
-    # Log the statistics bar chart.
-    revo.log_statistics_bar_chart(
+    # Send the statistics bar chart.
+    revo.send_statistics_bar_chart(
         entity_path=f"{evo_app_name}/error/statistics",
         stats=result.stats,
     )

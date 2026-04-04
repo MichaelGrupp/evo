@@ -222,7 +222,7 @@ def run(args: argparse.Namespace) -> None:
     )
 
     if args.rerun:
-        common.log_result_to_rerun(
+        common.send_result_to_rerun(
             "evo_rpe",
             result,
             traj_ref,

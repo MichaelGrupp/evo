@@ -287,7 +287,7 @@ def get_supported_topics(
         [
             c.topic
             for c in reader.connections
-            if c.msgtype in SUPPORTED_ROS_MSGS
+            if (c.msgtype in SUPPORTED_ROS_MSGS and c.msgcount > 0)
         ]
     )
 

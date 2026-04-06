@@ -282,8 +282,7 @@ class PosePath3D(object):
 
         if not correct_only_scale:
             logger.debug(
-                f"Rotation of alignment:\n{r_a}"
-                f"\nTranslation of alignment:\n{t_a}"
+                f"Rotation of alignment:\n{r_a}\nTranslation of alignment:\n{t_a}"
             )
         logger.debug(f"Scale correction: {s}")
 
@@ -625,24 +624,27 @@ class PoseTrajectory3D(PosePath3D, object):
         if self.num_poses < 2:
             return {}
         stats = super(PoseTrajectory3D, self).get_statistics()
-        speeds = self.speeds
-        vmax = speeds.max()
-        vmin = speeds.min()
-        vmean = speeds.mean()
-        delta_ts = self.timestamps[1:] - self.timestamps[:-1]
-        stats.update(
-            {
-                "v_max (m/s)": vmax,
-                "v_min (m/s)": vmin,
-                "v_avg (m/s)": vmean,
-                "v_max (km/h)": vmax * 3.6,
-                "v_min (km/h)": vmin * 3.6,
-                "v_avg (km/h)": vmean * 3.6,
-                "dt_max (s)": delta_ts.max(),
-                "dt_min (s)": delta_ts.min(),
-                "dt_avg (s)": delta_ts.mean(),
-            }
-        )
+        try:
+            speeds = self.speeds
+            vmax = speeds.max()
+            vmin = speeds.min()
+            vmean = speeds.mean()
+            delta_ts = self.timestamps[1:] - self.timestamps[:-1]
+            stats.update(
+                {
+                    "v_max (m/s)": vmax,
+                    "v_min (m/s)": vmin,
+                    "v_avg (m/s)": vmean,
+                    "v_max (km/h)": vmax * 3.6,
+                    "v_min (km/h)": vmin * 3.6,
+                    "v_avg (km/h)": vmean * 3.6,
+                    "dt_max (s)": delta_ts.max(),
+                    "dt_min (s)": delta_ts.min(),
+                    "dt_avg (s)": delta_ts.mean(),
+                }
+            )
+        except TrajectoryException as error:
+            logger.error(f"Failed to compute all trajectory stats: {error}")
         return stats
 
 

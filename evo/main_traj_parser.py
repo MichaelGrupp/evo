@@ -19,7 +19,7 @@ def parser() -> argparse.ArgumentParser:
     algo_opts.add_argument(
         "-s",
         "--correct_scale",
-        help="scale correction with Umeyama's method" " - requires --ref",
+        help="scale correction with Umeyama's method - requires --ref",
         action="store_true",
     )
     algo_opts.add_argument(
@@ -106,8 +106,7 @@ def parser() -> argparse.ArgumentParser:
     )
     align_opts.add_argument(
         "--align_origin",
-        help="align the trajectory origin to the origin of the reference "
-        "trajectory",
+        help="align the trajectory origin to the origin of the reference trajectory",
         action="store_true",
     )
 
@@ -138,6 +137,16 @@ def parser() -> argparse.ArgumentParser:
     )
     output_opts.add_argument(
         "--save_plot", help="path to save plot", default=None
+    )
+    output_opts.add_argument(
+        "--rerun",
+        action="store_true",
+        help="Send visualization data to Rerun.",
+    )
+    output_opts.add_argument(
+        "--rerun_rec_id",
+        help="Use a specific recording ID for Rerun. Allows to append to recordings.",
+        default=None,
     )
     output_opts.add_argument(
         "--save_table", help="path to save table with statistics", default=None
@@ -175,8 +184,7 @@ def parser() -> argparse.ArgumentParser:
     )
     usability_opts.add_argument(
         "--show_full_names",
-        help="don't shorten input file paths when "
-        "displaying trajectory names",
+        help="don't shorten input file paths when displaying trajectory names",
         action="store_true",
     )
     usability_opts.add_argument(

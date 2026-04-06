@@ -219,6 +219,10 @@ DEFAULT_SETTINGS_DICT_DOC = {
         "Spawn a viewer window when logging data to Rerun.\n"
         "If set to False, the viewer must be started manually."
     ),
+    "rerun_viewer_port": (
+        9876,
+        "Port for the Rerun viewer gRPC proxy."
+    ),
     "ros2_bag_storage_plugin": (
         "mcap",
         "ROS 2 bag storage plugin to use when writing files ('mcap' or 'sqlite3')."

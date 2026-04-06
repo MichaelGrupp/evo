@@ -16,6 +16,7 @@ from matplotlib.colors import Normalize, rgb2hex
 from evo.core.trajectory import PosePath3D, PoseTrajectory3D
 from evo.tools.plot import color_cycle, PlotMode
 from evo.tools.settings import SETTINGS
+from evo.core.units import Unit, METER_SCALE_FACTORS
 
 TIMELINE = "time"
 INDEX_TIMELINE = "index"
@@ -245,7 +246,7 @@ def send_correspondence_strips(
 
 def send_trajectory(entity_path: str, traj: PosePath3D, color: Color) -> None:
     """
-    Convenience function to send transforms, points, and lines to Rerun.
+    Convenience function to send transforms and lines to Rerun.
     """
     # Note: in contrast to plot.py, we always send transform axes here.
     # If the scale is 0., you can still make it visible in the Rerun
@@ -254,12 +255,6 @@ def send_trajectory(entity_path: str, traj: PosePath3D, color: Color) -> None:
         entity_path=f"{entity_path}/transforms",
         traj=traj,
         axis_length=SETTINGS.plot_axis_marker_scale,
-    )
-    send_points(
-        entity_path=f"{entity_path}/points",
-        traj=traj,
-        radii=ui_points_radii(SETTINGS.plot_linewidth * 1.25),
-        color=color,
     )
     send_line_strips(
         entity_path=f"{entity_path}/lines",
@@ -320,5 +315,64 @@ def send_view_coordinates(plot_mode: PlotMode):
         view_coordinates = rr.ViewCoordinates.RIGHT_HAND_Y_UP
     elif plot_mode.value == "zy":
         view_coordinates = rr.ViewCoordinates.RIGHT_HAND_X_DOWN
+    else:
+        raise ValueError(f"unknown plot mode: {plot_mode}")
 
     rr.log("/", view_coordinates, static=True)
+
+
+def send_xyz_position_scalars(
+    traj: PosePath3D,
+    color: Color,
+    x_entity: str = "x",
+    y_entity: str = "y",
+    z_entity: str = "z",
+) -> None:
+    """
+    Sends x, y, z position as scalar time series to Rerun.
+    """
+    length_unit = Unit(SETTINGS.plot_trajectory_length_unit)
+    scale = METER_SCALE_FACTORS[length_unit]
+    labels = ["x", "y", "z"]
+    entities = [x_entity, y_entity, z_entity]
+    timestamps = (
+        traj.timestamps if isinstance(traj, PoseTrajectory3D) else None
+    )
+
+    for label, entity, col in zip(labels, entities, range(3)):
+        send_scalars(
+            entity_path=entity,
+            scalars=traj.positions_xyz[:, col] * scale,
+            color=color,
+            timestamps=timestamps,
+            labelname=f"{label} ({length_unit.value})",
+        )
+
+
+def send_rpy_scalars(
+    traj: PosePath3D,
+    color: Color,
+    roll_entity: str = "roll",
+    pitch_entity: str = "pitch",
+    yaw_entity: str = "yaw",
+) -> None:
+    """
+    Sends roll, pitch, yaw as scalar time series to Rerun.
+    """
+    import numpy as np
+
+    angles = traj.get_orientations_euler(SETTINGS.euler_angle_sequence)
+    labels = ["roll", "pitch", "yaw"]
+    entities = [roll_entity, pitch_entity, yaw_entity]
+    timestamps = (
+        traj.timestamps if isinstance(traj, PoseTrajectory3D) else None
+    )
+
+    for label, entity, col in zip(labels, entities, range(3)):
+        send_scalars(
+            entity_path=entity,
+            scalars=np.rad2deg(angles[:, col]),
+            color=color,
+            timestamps=timestamps,
+            labelname=f"{label} (deg)",
+        )

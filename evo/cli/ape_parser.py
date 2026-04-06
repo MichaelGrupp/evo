@@ -216,8 +216,9 @@ def parser() -> argparse.ArgumentParser:
 
     bag2_parser = sub_parsers.add_parser(
         "bag2",
+        aliases=["mcap"],
         parents=[shared_parser],
-        description=f"{basic_desc} for ROS2 bag files - {lic}",
+        description=f"{basic_desc} for ROS2 bag / MCAP files - {lic}",
     )
     bag2_parser.add_argument("bag", help="ROS2 bag file")
     bag2_parser.add_argument("ref_topic", help="reference trajectory topic")

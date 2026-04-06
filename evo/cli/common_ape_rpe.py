@@ -55,13 +55,13 @@ def load_trajectories(
         traj_ref = file_interface.read_euroc_csv_trajectory(args.state_gt_csv)
         traj_est = file_interface.read_tum_trajectory_file(args.est_file)
         ref_name, est_name = args.state_gt_csv, args.est_file
-    elif args.subcommand in ("bag", "bag2"):
+    elif args.subcommand in ("bag", "bag2", "mcap"):
         logger.debug("Opening bag file " + args.bag)
         if not Path(args.bag).exists():
             raise file_interface.FileInterfaceException(
                 f"File doesn't exist: {args.bag}"
             )
-        if args.subcommand == "bag2":
+        if args.subcommand in ("bag2", "mcap"):
             from rosbags.rosbag2 import Reader as Rosbag2Reader
 
             bag = Rosbag2Reader(args.bag)  # type: ignore

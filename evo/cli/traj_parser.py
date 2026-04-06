@@ -252,7 +252,8 @@ def parser() -> argparse.ArgumentParser:
 
     bag2_parser = sub_parsers.add_parser(
         "bag2",
-        description="%s for ROS2 bag files - %s" % (basic_desc, lic),
+        aliases=["mcap"],
+        description="%s for ROS2 bag / MCAP files - %s" % (basic_desc, lic),
         parents=[shared_parser],
     )
     bag2_parser.add_argument("bag", help="ROS2 bag file")
@@ -261,6 +262,7 @@ def parser() -> argparse.ArgumentParser:
     )
     bag2_parser.add_argument(
         "--all_topics",
+        "--all_channels",
         help="use all compatible topics in the bag",
         action="store_true",
     )

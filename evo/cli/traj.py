@@ -86,7 +86,7 @@ def load_trajectories(args) -> TrajectoryBundle:
             bundle.add_reference(
                 file_interface.read_euroc_csv_trajectory(args.ref)
             )
-    elif args.subcommand in ("bag", "bag2"):
+    elif args.subcommand in ("bag", "bag2", "mcap"):
         if not (args.topics or args.all_topics):
             die("No topics used - specify topics or set --all_topics.")
         if not Path(args.bag).exists():
@@ -94,7 +94,7 @@ def load_trajectories(args) -> TrajectoryBundle:
                 f"File doesn't exist: {args.bag}"
             )
         logger.debug("Opening bag file " + args.bag)
-        if args.subcommand == "bag2":
+        if args.subcommand in ("bag2", "mcap"):
             from rosbags.rosbag2 import Reader as Rosbag2Reader
 
             bag: Rosbag1Reader | Rosbag2Reader = Rosbag2Reader(args.bag)
@@ -173,7 +173,7 @@ def print_traj_info(name, traj, verbose=False, full_check=False):
 
 
 def to_filestem(name: str, args: argparse.Namespace) -> str:
-    if args.subcommand in ("bag", "bag2"):
+    if args.subcommand in ("bag", "bag2", "mcap"):
         if name.startswith("/"):
             name = name[1:]
         name = name.replace(":", "/")  # TF ID
@@ -182,7 +182,7 @@ def to_filestem(name: str, args: argparse.Namespace) -> str:
 
 
 def to_topic_name(name: str, args: argparse.Namespace) -> str:
-    if args.subcommand in ("bag", "bag2"):
+    if args.subcommand in ("bag", "bag2", "mcap"):
         return name.replace(":", "/")
     return "/" + Path(name).stem.replace(" ", "_")
 
@@ -190,7 +190,11 @@ def to_topic_name(name: str, args: argparse.Namespace) -> str:
 def to_compact_name(
     name: str, args: argparse.Namespace, latex_friendly=False
 ) -> str:
-    if not args.show_full_names and args.subcommand not in ("bag", "bag2"):
+    if not args.show_full_names and args.subcommand not in (
+        "bag",
+        "bag2",
+        "mcap",
+    ):
         # /some/super/long/path/that/nobody/cares/about/traj.txt  ->  traj
         name = Path(name).stem
     if latex_friendly:

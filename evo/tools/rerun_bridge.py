@@ -32,9 +32,8 @@ def _check_rerun_version(min_version: str) -> None:
         )
 
 
-# Ensure that Rerun is at least version 0.28.0,
-# which has TransformAxes3D.
-_check_rerun_version("0.28.0")
+# Minimum required Rerun version:
+_check_rerun_version("0.31.0")
 
 
 @dataclass

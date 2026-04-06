@@ -1,3 +1,4 @@
+# PYTHON_ARGCOMPLETE_OK
 """
 main package executable
 author: Michael Grupp

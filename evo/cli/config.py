@@ -1,3 +1,4 @@
+# PYTHON_ARGCOMPLETE_OK
 """
 simple JSON configuration generator script for executables
 author: Michael Grupp

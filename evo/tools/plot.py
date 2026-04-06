@@ -58,7 +58,16 @@ def apply_settings(settings: SettingsContainer = SETTINGS):
     """
     Configure matplotlib and seaborn according to package settings.
     """
-    mpl.use(settings.plot_backend)
+    # Don't override the backend in interactive IPython/Jupyter sessions,
+    # where the user configures it via %matplotlib magic.
+    try:
+        shell = get_ipython().__class__.__name__  # type: ignore
+        if shell in ("ZMQInteractiveShell", "TerminalInteractiveShell"):
+            logger.debug("IPython/Jupyter detected, skipping mpl.use().")
+        else:
+            mpl.use(settings.plot_backend)
+    except NameError:
+        mpl.use(settings.plot_backend)
 
     if settings.plot_seaborn_enabled:
         # TODO: 'color_codes=False' to work around this bug:
@@ -576,7 +585,8 @@ def traj_colormap(
     )
     if title:
         ax.set_title(title)
-    if SETTINGS.plot_show_legend:
+    # Only show legend if there are labeled artists on the axes.
+    if SETTINGS.plot_show_legend and ax.get_legend_handles_labels()[1]:
         ax.legend(frameon=True)
     if plot_start_end_markers:
         add_start_end_markers(

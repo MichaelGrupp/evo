@@ -134,7 +134,7 @@ DEFAULT_SETTINGS_DICT_DOC = {
         "Alpha value of the reference trajectories in plots."
     ),
     "plot_reference_color": (
-        "black",
+        "#444444",
         "Color of the reference trajectories in plots."
     ),
     "plot_reference_linestyle": (

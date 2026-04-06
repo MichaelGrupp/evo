@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: UTF8 -*-
-# PYTHON_ARGCOMPLETE_OK
 """
 main package executable
 author: Michael Grupp
@@ -189,7 +186,3 @@ def main() -> None:
             getattr(logger, args.loglevel)(msg)
         if args.clear_log:
             open(settings.GLOBAL_LOGFILE_PATH, mode="w")
-
-
-if __name__ == "__main__":
-    main()

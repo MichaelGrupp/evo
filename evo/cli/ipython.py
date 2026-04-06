@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: UTF8 -*-
-# PYTHON_ARGCOMPLETE_OK
 """
 launch a custom IPython shell for evo
 author: Michael Grupp
@@ -77,7 +74,3 @@ def main() -> None:
     except sp.CalledProcessError as e:
         print("IPython error", e.output, file=sys.stderr)
         sys.exit(1)
-
-
-if __name__ == "__main__":
-    main()

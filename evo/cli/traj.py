@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: UTF8 -*-
-# PYTHON_ARGCOMPLETE_OK
 """
 main executable for trajectory analysis
 author: Michael Grupp
@@ -418,9 +415,3 @@ def run(args):
         plot_trajectories(bundle, args, to_compact_name)
 
     export(bundle, args)
-
-
-if __name__ == "__main__":
-    from evo import entry_points
-
-    entry_points.traj()

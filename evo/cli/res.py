@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: UTF8 -*-
-# PYTHON_ARGCOMPLETE_OK
 """
 main executable for viewing result files from the trajectory metric apps
 author: Michael Grupp
@@ -283,9 +280,3 @@ def run(args: argparse.Namespace) -> None:
             plot_collection.export(
                 args.save_plot, confirm_overwrite=not args.no_warnings
             )
-
-
-if __name__ == "__main__":
-    from evo import entry_points
-
-    entry_points.res()

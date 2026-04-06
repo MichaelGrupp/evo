@@ -67,13 +67,13 @@ rerun = ["rerun-sdk>=0.28.0"]
 
 
 [project.scripts]
-evo_ape = "evo.entry_points:ape"
-evo_rpe = "evo.entry_points:rpe"
-evo_traj = "evo.entry_points:traj"
-evo_res = "evo.entry_points:res"
-evo_config = "evo.main_config:main"
-evo_ipython = "evo.main_ipython:main"
-evo = "evo.main_evo:main"
+evo_ape = "evo.cli.entry_points:ape"
+evo_rpe = "evo.cli.entry_points:rpe"
+evo_traj = "evo.cli.entry_points:traj"
+evo_res = "evo.cli.entry_points:res"
+evo_config = "evo.cli.config:main"
+evo_ipython = "evo.cli.ipython:main"
+evo = "evo.cli.evo_main:main"
 
 
 [tool.black]

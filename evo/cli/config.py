@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: UTF8 -*-
-# PYTHON_ARGCOMPLETE_OK
 """
 simple JSON configuration generator script for executables
 author: Michael Grupp
@@ -457,7 +454,3 @@ def main() -> None:
             sys.exit()
         logger.info(f"{SEP}\nPackage settings after reset:\n{SEP}")
         show(settings.DEFAULT_PATH, colored=not args.no_color)
-
-
-if __name__ == "__main__":
-    main()

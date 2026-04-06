@@ -1,4 +1,3 @@
-# -*- coding: UTF8 -*-
 # PYTHON_ARGCOMPLETE_OK
 """
 separate entry points into pieces to allow common error handling and faster argcomplete
@@ -40,10 +39,10 @@ only do required imports in respective module when creating parser
 
 
 def handle_entry_point(app_name: str) -> None:
-    parser_module = import_module(f"evo.main_{app_name}_parser")
+    parser_module = import_module(f"evo.cli.{app_name}_parser")
     parser = parser_module.parser()
     argcomplete.autocomplete(parser)
-    main_module = import_module(f"evo.main_{app_name}")
+    main_module = import_module(f"evo.cli.{app_name}")
     launch(main_module, parser)
 
 

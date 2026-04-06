@@ -20,14 +20,14 @@ See [here](https://github.com/MichaelGrupp/evo/wiki/Formats) for more infos abou
 <a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_demo_ORB_map.png" target="_blank">
   <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_demo_ORB_map.png" alt="evo" height="175" border="5" />
 </a>
-<a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/res_violin.png" target="_blank">
-  <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/res_violin.png" alt="evo" height="175" border="5" />
-</a>
 <a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/markers.png" target="_blank">
   <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/markers.png" alt="evo" height="175" border="5" />
 </a>
 <a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/map_tile_osm.png" target="_blank">
   <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/map_tile_osm.png" alt="evo" height="175" border="5" />
+</a>
+<a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/traj_rerun.gif" target="_blank">
+  <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/traj_rerun.gif" alt="evo" height="175" border="5" />
 </a>
 
 ---
@@ -102,7 +102,14 @@ Some ROS-related features require a ROS installation, see [here](http://www.ros.
 
 **Rerun (optional)**
 
-You can log data also to the [rerun](https://rerun.io/) viewer. See the related [Wiki page](https://github.com/MichaelGrupp/evo/wiki/Rerun-integration) for more details.
+You can send data also to the [rerun](https://rerun.io/) viewer. Just `pip install rerun-sdk` and add `--rerun` to your command. See the related [Wiki page](https://github.com/MichaelGrupp/evo/wiki/Rerun-integration) for more details.
+
+<a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/traj_rerun.gif" target="_blank">
+  <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/traj_rerun.gif" alt="evo" width="350" border="5" />
+</a>
+<a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_rerun.gif" target="_blank">
+  <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_rerun.gif" alt="evo" width="350" border="5" />
+</a>
 
 ---
 

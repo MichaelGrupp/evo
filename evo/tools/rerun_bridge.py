@@ -33,7 +33,7 @@ def _check_rerun_version(min_version: str) -> None:
 
 
 # Minimum required Rerun version:
-_check_rerun_version("0.31.0")
+_check_rerun_version("0.31.2")
 
 
 @dataclass
@@ -254,6 +254,12 @@ def send_trajectory(entity_path: str, traj: PosePath3D, color: Color) -> None:
         entity_path=f"{entity_path}/transforms",
         traj=traj,
         axis_length=SETTINGS.plot_axis_marker_scale,
+    )
+    send_points(
+        entity_path=f"{entity_path}/points",
+        traj=traj,
+        radii=ui_points_radii(SETTINGS.plot_linewidth * 1.25),
+        color=color,
     )
     send_line_strips(
         entity_path=f"{entity_path}/lines",

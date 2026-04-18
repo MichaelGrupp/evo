@@ -152,6 +152,9 @@ def run(args: argparse.Namespace) -> None:
         logger.info("\n" + first_title + "\n\n")
     logger.info(df.loc["stats"].T.to_string(line_width=80) + "\n")
 
+    if args.rerun:
+        send_to_rerun(args, df, keys, common_index, first_title)
+
     if args.save_table:
         logger.debug(SEP)
         if SETTINGS.table_export_data.lower() == "error_array":
@@ -280,3 +283,115 @@ def run(args: argparse.Namespace) -> None:
             plot_collection.export(
                 args.save_plot, confirm_overwrite=not args.no_warnings
             )
+
+
+def send_to_rerun(
+    args: argparse.Namespace,
+    df: pd.DataFrame,
+    keys: list,
+    common_index: str | None,
+    first_title: str,
+) -> None:
+    try:
+        import pyarrow as pa
+        import rerun as rr
+        import rerun.blueprint as rrb
+        from rerun.experimental import ViewerClient
+    except ImportError:
+        logger.error(
+            "Optional dependency rerun-sdk is not installed. "
+            "Install it with: pip install rerun-sdk"
+        )
+        sys.exit(1)
+
+    from evo.tools.plot import color_cycle
+    from evo.tools import rerun_bridge as revo
+
+    evo_app_name = "evo_res"
+
+    logger.debug(SEP)
+    logger.debug("Sending data to Rerun.")
+    rr.init(evo_app_name, recording_id=args.rerun_rec_id)
+    rr.spawn(port=SETTINGS.rerun_viewer_port)
+    client = ViewerClient(
+        addr=f"rerun+http://127.0.0.1:{SETTINGS.rerun_viewer_port}/proxy"
+    )
+
+    # Send a combined stats table.
+    stats_table = df.loc["stats"].T.join(df.loc["info"].T).reset_index()
+    stats_table.rename(columns={"index": "result"}, inplace=True)
+    client.send_table(
+        f"{evo_app_name} stats",
+        pa.RecordBatch.from_pandas(stats_table),
+    )
+
+    # Blueprint layout.
+    has_time_index = common_index is not None
+    timeline = revo.TIMELINE if has_time_index else revo.INDEX_TIMELINE
+    time_range = rrb.VisibleTimeRange(
+        timeline=timeline,
+        start=rrb.TimeRangeBoundary.infinite(),
+        end=rrb.TimeRangeBoundary.cursor_relative(
+            seconds=0.0 if has_time_index else 0
+        ),
+    )
+    rr.send_blueprint(
+        rrb.Blueprint(
+            rrb.Grid(
+                contents=[
+                    rrb.TimeSeriesView(
+                        name="Results",
+                        time_ranges=time_range,
+                        plot_legend=rrb.Corner2D.RightTop,
+                    ),
+                    rrb.Grid(
+                        contents=[
+                            rrb.BarChartView(
+                                name=f"Statistics {key}",
+                                origin=f"/{evo_app_name}/statistics/{key}",
+                                plot_legend=rrb.PlotLegend(
+                                    None, visible=False
+                                ),
+                            )
+                            for key in keys
+                        ],
+                        grid_columns=len(keys),
+                    ),
+                ],
+                grid_columns=1,
+                row_shares=[2.0, 1.0],
+            ),
+            rrb.SelectionPanel(expanded=False),
+            rrb.TimePanel(expanded=False),
+        )
+    )
+
+    # Send error time series and statistics per result.
+    colors = color_cycle()
+    for i, key in enumerate(keys):
+        color_rgba = colors[i % len(colors)]
+        error_array = df.loc["np_arrays", "error_array"][key]
+
+        timestamps = None
+        if common_index == "timestamps":
+            timestamps = df.loc["np_arrays", "timestamps"][key]
+        elif common_index in ("seconds_from_start", "sec_from_start"):
+            timestamps = df.loc["np_arrays", common_index][key]
+
+        revo.send_scalars(
+            entity_path=f"{evo_app_name}/errors/{key}",
+            scalars=error_array,
+            timestamps=timestamps,
+            color=revo.Color(static=color_rgba),
+            labelname=key,
+        )
+
+        stats = {
+            stat: float(df.loc["stats"][key][s])
+            for stat in SETTINGS.plot_statistics
+            if stat in df.loc["stats"].index
+        }
+        revo.send_statistics_bar_chart(
+            entity_path=f"{evo_app_name}/statistics/{key}",
+            stats=stats,
+        )

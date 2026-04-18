@@ -20,6 +20,7 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
 import logging
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -343,6 +344,8 @@ def send_rerun_blueprint(
                         name="Raw Data",
                         origin=f"/{evo_app_name}",
                         contents=[
+                            "$origin/reference",
+                            "$origin/estimate",
                             "$origin/reference/transforms",
                             "$origin/estimate/transforms",
                             "$origin/error/scalars",
@@ -363,19 +366,52 @@ def send_result_to_rerun(
     traj_est: PosePath3D,
     args: argparse.Namespace,
 ) -> None:
-    import rerun as rr
+    try:
+        import pyarrow as pa
+        import rerun as rr
+        from rerun.experimental import ViewerClient
+    except ImportError:
+        logging.getLogger(__name__).error(
+            "Optional dependency rerun-sdk is not installed. "
+            "Install it with: pip install rerun-sdk"
+        )
+        sys.exit(1)
+
     from matplotlib.colors import to_rgba
 
     from evo.tools import rerun_bridge as revo
+    from evo.tools import pandas_bridge
     from evo.tools.rerun_bridge import mapped_colors
 
     logger.debug(SEP)
     logger.debug("Sending data to Rerun.")
-    rr.init(evo_app_name, spawn=SETTINGS.rerun_spawn)
+    rr.init(evo_app_name, recording_id=args.rerun_rec_id)
+    rr.spawn(port=SETTINGS.rerun_viewer_port)
+    client = ViewerClient(
+        addr=f"rerun+http://127.0.0.1:{SETTINGS.rerun_viewer_port}/proxy"
+    )
+
+    result_df = pandas_bridge.result_to_df(result)
+    table_df = (
+        result_df.loc["stats"].T.join(result_df.loc["info"].T).reset_index()
+    )
+    client.send_table(
+        f"{evo_app_name} stats", pa.RecordBatch.from_pandas(table_df)
+    )
 
     send_rerun_blueprint(evo_app_name, traj_est)
     revo.send_view_coordinates(revo.PlotMode(args.plot_mode))
 
+    rr.log(
+        f"{evo_app_name}/estimate",
+        rr.TextDocument(result.info["est_name"]),
+        static=True,
+    )
+    rr.log(
+        f"{evo_app_name}/reference",
+        rr.TextDocument(result.info["ref_name"]),
+        static=True,
+    )
     error_array = result.np_arrays["error_array"]
     if evo_app_name == "evo_rpe":
         # Pad RPE with 0. at the start to match the length of APE error arrays.

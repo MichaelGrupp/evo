@@ -171,7 +171,12 @@ def parser() -> argparse.ArgumentParser:
         "--save_plot", default=None, help="path to save plot"
     )
     output_opts.add_argument(
-        "--rerun", action="store_true", help="Log visualization data to rerun."
+        "--rerun", action="store_true", help="Log visualization data to Rerun."
+    )
+    output_opts.add_argument(
+        "--rerun_rec_id",
+        help="Use a specific recording ID for Rerun. Allows to append to recordings.",
+        default=None,
     )
     output_opts.add_argument(
         "--save_results", help=".zip file path to store results"

@@ -387,7 +387,7 @@ def send_to_rerun(
         )
 
         stats = {
-            stat: float(df.loc["stats"][key][s])
+            stat: float(df.loc["stats"][key][stat])
             for stat in SETTINGS.plot_statistics
             if stat in df.loc["stats"].index
         }

@@ -85,6 +85,12 @@ ignore_missing_imports = true
 files = ["evo/", "test/", "contrib/", "examples/"]
 exclude = ["test/tum_benchmark_tools/"]
 
+[[tool.mypy.overrides]]
+# Workaround for broken apsw pyi (?).
+module = "apsw.*"
+ignore_errors = true
+follow_imports = "skip"
+
 
 [tool.pixi.workspace]
 channels = ["conda-forge"]

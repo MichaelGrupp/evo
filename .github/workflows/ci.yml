@@ -54,6 +54,8 @@ jobs:
           evo_config show --brief --no_color
           
       - name: mypy
+        # TODO: check why apsw (via rosbags) has a broken .pyi on 3.10
+        if: matrix.python-version != '3.10'
         run: |
           pip install mypy types-PyYAML
           mypy .

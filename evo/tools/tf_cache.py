@@ -24,9 +24,11 @@ import logging
 import math
 import warnings
 from collections import defaultdict
+from pathlib import Path
 from typing import (
     DefaultDict,
     Protocol,
+    cast,
     runtime_checkable,
 )
 
@@ -191,13 +193,16 @@ class TfCache(object):
 
         # Add TF data to buffer if this bag/topic pair is not already cached.
         for tf_topic in tf_topics:
-            if tf_topic in self.topics and reader.path.name in self.bags:
+            if (
+                tf_topic in self.topics
+                and cast(Path, reader.path).name in self.bags
+            ):
                 logger.debug(
-                    f"Using cache for topic {tf_topic} from {reader.path.name}"
+                    f"Using cache for topic {tf_topic} from {cast(Path, reader.path).name}"
                 )
                 continue
             logger.debug(
-                f"Caching TF topic {tf_topic} from {reader.path.name} ..."
+                f"Caching TF topic {tf_topic} from {cast(Path, reader.path).name} ..."
             )
             connections = [
                 c for c in reader.connections if c.topic == tf_topic
@@ -250,7 +255,7 @@ class TfCache(object):
                     else:
                         self.buffer.set_transform(native_msg, __name__)
             self.topics.append(tf_topic)
-        self.bags.append(reader.path.name)
+        self.bags.append(cast(Path, reader.path).name)
 
     def lookup_trajectory(
         self,

@@ -396,7 +396,7 @@ def send_result_to_rerun(
         result_df.loc["stats"].T.join(result_df.loc["info"].T).reset_index()
     )
     client.send_table(
-        f"{evo_app_name} stats", pa.RecordBatch.from_pandas(table_df)
+        f"{evo_app_name} stats", pa.Table.from_pandas(table_df).to_batches()
     )
 
     send_rerun_blueprint(evo_app_name, traj_est)

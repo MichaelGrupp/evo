@@ -322,7 +322,7 @@ def send_to_rerun(
     stats_table.rename(columns={"index": "result"}, inplace=True)
     client.send_table(
         f"{evo_app_name} stats",
-        pa.RecordBatch.from_pandas(stats_table),
+        pa.Table.from_pandas(stats_table).to_batches(),
     )
 
     # Blueprint layout.

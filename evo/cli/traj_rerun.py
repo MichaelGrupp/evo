@@ -69,7 +69,9 @@ def send_bundle_to_rerun(
             name_transform=lambda n: to_compact_name(n, args)
         )
     ).reset_index()
-    client.send_table("evo_traj stats", pa.RecordBatch.from_pandas(stats_df))
+    client.send_table(
+        "evo_traj stats", pa.Table.from_pandas(stats_df).to_batches()
+    )
 
     has_speed = any(
         isinstance(t, PoseTrajectory3D)

@@ -56,7 +56,7 @@ dependencies = [
     "pygments",
     "pyyaml",
     "pillow",
-    "rosbags>=0.11.0",
+    "rosbags>=0.11.1",
     "packaging",
 ]
 

@@ -249,13 +249,18 @@ def run(args: argparse.Namespace) -> None:
             if len(args.result_files) <= 2
             else math.ceil(len(args.result_files) / 2.0)
         )
-        dist_grid = sns.FacetGrid(raw_tidy, col="estimate", col_wrap=col_wrap)
-        # TODO: see issue #98
+        # FacetGrid uses tight_layout internally, which clashes with the
+        # constrained_layout we set globally in evo.tools.plot.
         import warnings
 
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            dist_grid.map(sns.distplot, metric_label)  # fits=stats.gamma
+        with plt.rc_context({"figure.constrained_layout.use": False}):
+            dist_grid = sns.FacetGrid(
+                raw_tidy, col="estimate", col_wrap=col_wrap
+            )
+            # TODO: see issue #98
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                dist_grid.map(sns.distplot, metric_label)  # fits=stats.gamma
         plot_collection.add_figure("histogram", dist_grid.fig)
 
         # box plot

@@ -24,11 +24,9 @@ import logging
 import math
 import warnings
 from collections import defaultdict
-from pathlib import Path
 from typing import (
     DefaultDict,
     Protocol,
-    cast,
     runtime_checkable,
 )
 
@@ -132,14 +130,8 @@ def to_sec(
 
 @dataclasses.dataclass
 class TimeSpec:
-    seconds: int
-    nanoseconds: int
-
-    def as_seconds(self) -> float:
-        return float(self.seconds) + self.nanoseconds * 1e-9
-
-    def as_nanoseconds(self) -> int:
-        return int(self.seconds * 1e9) + self.nanoseconds
+    sec: int
+    nanosec: int
 
 
 @dataclasses.dataclass
@@ -352,24 +344,19 @@ class TfCache(object):
             _start_time: TimeSpec = self.cache[CacheKey(reader, topic)]
 
             if hasattr(latest_time, "nsecs"):
-                from rospy import (
-                    Time,
-                    Duration,
-                )  # pylint: disable=import-outside-toplevel
+                from rospy import Time, Duration
 
-                start_time = Time.from_sec(_start_time.as_seconds())
+                start_time = Time(_start_time.sec, _start_time.nanosec)
                 step = Duration.from_sec(
                     1.0 / SETTINGS.tf_cache_lookup_frequency
                 )
             else:
-                from rclpy.time import (
-                    Time,
-                )  # pylint: disable=import-outside-toplevel
-                from rclpy.duration import (
-                    Duration,
-                )  # pylint: disable=import-outside-toplevel
+                from rclpy.time import Time
+                from rclpy.duration import Duration
 
-                start_time = Time(nanoseconds=_start_time.as_nanoseconds())
+                start_time = Time(
+                    seconds=_start_time.sec, nanoseconds=_start_time.nanosec
+                )
                 step = Duration(
                     seconds=1.0 / SETTINGS.tf_cache_lookup_frequency
                 )

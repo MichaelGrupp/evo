@@ -12,3 +12,5 @@ max-branches=13
 # f-strings are nicer to maintain.
 disable=logging-fstring-interpolation
 
+# We do lazy imports in multiple places.
+disable=import-outside-toplevel

@@ -151,12 +151,6 @@ class CacheKey:
         return hash(f"{self.reader.path}+{self.topic}")
 
 
-@dataclasses.dataclass
-class CacheEntry:
-    # Earliest timestamp of a TF message on this topic.
-    start_time: TimeSpec
-
-
 class TfCache(object):
     """
     For caching TF messages and looking up trajectories of specific transforms.
@@ -166,7 +160,8 @@ class TfCache(object):
         self.buffer = tf2_py.BufferCore(
             TfDuration.from_sec(SETTINGS.tf_cache_max_time)
         )
-        self.cache: dict[CacheKey, CacheEntry] = {}
+        # Cache presence is tracked by storing the start time of each TF topic/bag combo.
+        self.cache: dict[CacheKey, TimeSpec] = {}
 
     def clear(self) -> None:
         logger.debug("Clearing TF cache.")
@@ -255,7 +250,7 @@ class TfCache(object):
                         start_time = TimeSpec(
                             tf.header.stamp.sec, tf.header.stamp.nanosec
                         )
-                        self.cache[cache_key] = CacheEntry(start_time)
+                        self.cache[cache_key] = start_time
 
                     # Convert from rosbags.typesys.types to native ROS.
                     # Related: https://gitlab.com/ternaris/rosbags/-/issues/13
@@ -354,9 +349,7 @@ class TfCache(object):
             except (tf2_py.LookupException, tf2_py.TransformException) as e:
                 raise TfCacheException("Could not load trajectory: " + str(e))
 
-            _start_time: TimeSpec = self.cache[
-                CacheKey(reader, topic)
-            ].start_time
+            _start_time: TimeSpec = self.cache[CacheKey(reader, topic)]
 
             if hasattr(latest_time, "nsecs"):
                 from rospy import (

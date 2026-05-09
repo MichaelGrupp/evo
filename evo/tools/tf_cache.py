@@ -174,7 +174,7 @@ class TfCache(object):
         self.buffer = tf2_py.BufferCore(TfDuration.from_sec(max_time_sec))
         # Cache presence is tracked by storing the start time of each TF topic/bag combo.
         self.cache: dict[CacheKey, TimeSpec] = {}
-        self.debug = debug
+        self.debug = debug and logger.isEnabledFor(logging.DEBUG)
 
     def clear(self) -> None:
         logger.debug("Clearing TF cache.")
@@ -296,7 +296,7 @@ class TfCache(object):
                     else:
                         self.buffer.set_transform(native_msg, __name__)
 
-            if self.debug and logger.isEnabledFor(logging.DEBUG):
+            if self.debug:
                 logger.debug("TF buffer:\n" + self.buffer.all_frames_as_yaml())
 
     def lookup_trajectory(

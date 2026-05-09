@@ -48,7 +48,7 @@ logger = logging.getLogger(__name__)
 
 SUPPORTED_TF_MSG = "tf2_msgs/msg/TFMessage"
 DEFAULT_MAX_TIME = SETTINGS.tf_cache_max_time
-DEFAULT_DEBUG = SETTINGS.tf_cache_debug and logger.isEnabledFor(logging.DEBUG)
+DEFAULT_DEBUG = SETTINGS.tf_cache_debug
 
 
 class TfCacheException(EvoException):
@@ -295,7 +295,8 @@ class TfCache(object):
                         self.buffer.set_transform_static(native_msg, __name__)
                     else:
                         self.buffer.set_transform(native_msg, __name__)
-            if self.debug:
+
+            if self.debug and logger.isEnabledFor(logging.DEBUG):
                 logger.debug("TF buffer:\n" + self.buffer.all_frames_as_yaml())
 
     def lookup_trajectory(

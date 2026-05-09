@@ -47,6 +47,8 @@ from evo.tools.settings import SETTINGS
 logger = logging.getLogger(__name__)
 
 SUPPORTED_TF_MSG = "tf2_msgs/msg/TFMessage"
+DEFAULT_MAX_TIME = SETTINGS.tf_cache_max_time
+DEFAULT_DEBUG = SETTINGS.tf_cache_debug and logger.isEnabledFor(logging.DEBUG)
 
 
 class TfCacheException(EvoException):
@@ -130,7 +132,9 @@ def to_sec(
 
 @dataclasses.dataclass
 class TimeSpec:
-    """Internal timespec for time tracking."""
+    """
+    Internal timespec for time tracking.
+    """
 
     sec: int
     nanosec: int
@@ -138,7 +142,9 @@ class TimeSpec:
 
 @dataclasses.dataclass
 class CacheKey:
-    """Key for presence tracking in TfCache"""
+    """
+    Key for presence tracking in TfCache.
+    """
 
     reader: Rosbag1Reader | Rosbag2Reader
     topic: str
@@ -151,17 +157,24 @@ class CacheKey:
 class TfCache(object):
     """
     For caching TF messages and looking up trajectories of specific transforms.
+
+    Allows to use multiple bag files and TF topics.
     """
 
-    def __init__(self) -> None:
-        self.buffer = tf2_py.BufferCore(
-            TfDuration.from_sec(SETTINGS.tf_cache_max_time)
-        )
+    def __init__(
+        self,
+        *,
+        max_time_sec: float = DEFAULT_MAX_TIME,
+        debug: bool = DEFAULT_DEBUG,
+    ) -> None:
+        """
+        :param max_time_sec: Maximum TF buffer size in seconds.
+        :param debug: Whether to emit debug logs with TF buffer details.
+        """
+        self.buffer = tf2_py.BufferCore(TfDuration.from_sec(max_time_sec))
         # Cache presence is tracked by storing the start time of each TF topic/bag combo.
         self.cache: dict[CacheKey, TimeSpec] = {}
-        self.debug = SETTINGS.tf_cache_debug and logger.isEnabledFor(
-            logging.DEBUG
-        )
+        self.debug = debug
 
     def clear(self) -> None:
         logger.debug("Clearing TF cache.")

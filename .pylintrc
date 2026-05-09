@@ -6,11 +6,10 @@ max-branches=13
 
 [MESSAGES CONTROL]
 
-# Allow f-strings as valid log formatting in addition to % formatting
-# (still warns about .format(), which we don't want anymore).
-# The performance impact of % is neglectible for this application and
-# f-strings are nicer to maintain.
-disable=logging-fstring-interpolation
-
-# We do lazy imports in multiple places.
-disable=import-outside-toplevel
+# logging-fstring-interpolation: allow f-strings as valid log formatting in
+#   addition to % formatting (still warns about .format(), which we don't want
+#   anymore). The performance impact of % is neglectible for this application
+#   and f-strings are nicer to maintain.
+# import-outside-toplevel: we do lazy imports in multiple places.
+disable=logging-fstring-interpolation,
+        import-outside-toplevel

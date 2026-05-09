@@ -130,16 +130,21 @@ def to_sec(
 
 @dataclasses.dataclass
 class TimeSpec:
+    """Internal timespec for time tracking."""
+
     sec: int
     nanosec: int
 
 
 @dataclasses.dataclass
 class CacheKey:
+    """Key for presence tracking in TfCache"""
+
     reader: Rosbag1Reader | Rosbag2Reader
     topic: str
 
     def __hash__(self):
+        """Hash for a bag & TF topic pair."""
         return hash(f"{self.reader.path}+{self.topic}")
 
 
@@ -154,7 +159,9 @@ class TfCache(object):
         )
         # Cache presence is tracked by storing the start time of each TF topic/bag combo.
         self.cache: dict[CacheKey, TimeSpec] = {}
-        self.debug = SETTINGS.tf_cache_debug and logger.isEnabledFor(logging.DEBUG)
+        self.debug = SETTINGS.tf_cache_debug and logger.isEnabledFor(
+            logging.DEBUG
+        )
 
     def clear(self) -> None:
         logger.debug("Clearing TF cache.")
@@ -275,9 +282,8 @@ class TfCache(object):
                         self.buffer.set_transform_static(native_msg, __name__)
                     else:
                         self.buffer.set_transform(native_msg, __name__)
-
-        if self.debug:
-            logger.debug("TF buffer:\n" + self.buffer.all_frames_as_yaml())
+            if self.debug:
+                logger.debug("TF buffer:\n" + self.buffer.all_frames_as_yaml())
 
     def lookup_trajectory(
         self,

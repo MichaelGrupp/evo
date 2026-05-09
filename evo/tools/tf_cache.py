@@ -154,6 +154,7 @@ class TfCache(object):
         )
         # Cache presence is tracked by storing the start time of each TF topic/bag combo.
         self.cache: dict[CacheKey, TimeSpec] = {}
+        self.debug = SETTINGS.tf_cache_debug and logger.isEnabledFor(logging.DEBUG)
 
     def clear(self) -> None:
         logger.debug("Clearing TF cache.")
@@ -275,7 +276,7 @@ class TfCache(object):
                     else:
                         self.buffer.set_transform(native_msg, __name__)
 
-        if SETTINGS.tf_cache_debug and logger.isEnabledFor(logging.DEBUG):
+        if self.debug:
             logger.debug("TF buffer:\n" + self.buffer.all_frames_as_yaml())
 
     def lookup_trajectory(
@@ -341,14 +342,17 @@ class TfCache(object):
 
             try:
                 latest_time = self.buffer.get_latest_common_time(parent, child)
-            except (tf2_py.LookupException, tf2_py.TransformException) as e:
-                error = f"Could not load trajectory: {e}"
-                if not SETTINGS.tf_cache_debug:
+            except (
+                tf2_py.LookupException,
+                tf2_py.TransformException,
+            ) as tf_error:
+                error = f"Could not load trajectory: {tf_error}"
+                if not self.debug:
                     error += (
                         "\nEnable 'evo_config set tf_cache_debug true' and "
                         "verbose/debug logging to see TF buffer contents."
                     )
-                raise TfCacheException(error)
+                raise TfCacheException(error) from tf_error
 
             _start_time: TimeSpec = self.cache[CacheKey(reader, topic)]
 

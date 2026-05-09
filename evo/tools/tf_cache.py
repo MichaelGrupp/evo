@@ -297,7 +297,7 @@ class TfCache(object):
                         self.buffer.set_transform(native_msg, __name__)
 
             if self.debug:
-                logger.debug("TF buffer:\n" + self.buffer.all_frames_as_yaml())
+                logger.debug("TF buffer: %s", self.buffer.all_frames_as_yaml())
 
     def lookup_trajectory(
         self,

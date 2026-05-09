@@ -29,6 +29,8 @@ if os.getenv("ROS_DISTRO") is not None:
         {
             "evo_traj bag data/tf_example.bag /tf:odom.base_link --ref /tf:odom.base_footprint": "cfg/traj/bag",
             "evo_traj bag2 data/tf_example /tf:odom.base_link --ref /tf:odom.base_footprint": "cfg/traj/bag",
+            "evo_traj bag2 data/nav2_turtlebot.mcap /tf:odom.base_link "
+            "--ref /tf:map.base_link": "cfg/traj/bag",
         }
     )
 

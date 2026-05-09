@@ -277,6 +277,11 @@ DEFAULT_SETTINGS_DICT_DOC = {
         True,
         "Transpose tables for export."
     ),
+    "tf_cache_debug": (
+        False,
+        "Log debug information about the TF buffer contents.\n"
+        "Potentially very spammy and only shown when debug/verbose logging is enabled."
+    ),
     "tf_cache_lookup_frequency": (
         10,
         "Frequency for looking up transformations when loading trajectories \n"

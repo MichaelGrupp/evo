@@ -24,11 +24,9 @@ import logging
 import math
 import warnings
 from collections import defaultdict
-from pathlib import Path
 from typing import (
     DefaultDict,
     Protocol,
-    cast,
     runtime_checkable,
 )
 
@@ -49,6 +47,8 @@ from evo.tools.settings import SETTINGS
 logger = logging.getLogger(__name__)
 
 SUPPORTED_TF_MSG = "tf2_msgs/msg/TFMessage"
+DEFAULT_MAX_TIME = SETTINGS.tf_cache_max_time
+DEFAULT_DEBUG = SETTINGS.tf_cache_debug
 
 
 class TfCacheException(EvoException):
@@ -130,23 +130,56 @@ def to_sec(
     return timestamp.sec + timestamp.nanosec * 1e-9
 
 
+@dataclasses.dataclass
+class TimeSpec:
+    """
+    Internal timespec for time tracking.
+    """
+
+    sec: int
+    nanosec: int
+
+
+@dataclasses.dataclass
+class CacheKey:
+    """
+    Key for presence tracking in TfCache.
+    """
+
+    reader: Rosbag1Reader | Rosbag2Reader
+    topic: str
+
+    def __hash__(self):
+        """Hash for a bag & TF topic pair."""
+        return hash(f"{self.reader.path}+{self.topic}")
+
+
 class TfCache(object):
     """
     For caching TF messages and looking up trajectories of specific transforms.
+
+    Allows to use multiple bag files and TF topics.
     """
 
-    def __init__(self):
-        self.buffer = tf2_py.BufferCore(
-            TfDuration.from_sec(SETTINGS.tf_cache_max_time)
-        )
-        self.topics = []
-        self.bags = []
+    def __init__(
+        self,
+        *,
+        max_time_sec: float = DEFAULT_MAX_TIME,
+        debug: bool = DEFAULT_DEBUG,
+    ) -> None:
+        """
+        :param max_time_sec: Maximum TF buffer size in seconds.
+        :param debug: Whether to emit debug logs with TF buffer details.
+        """
+        self.buffer = tf2_py.BufferCore(TfDuration.from_sec(max_time_sec))
+        # Cache presence is tracked by storing the start time of each TF topic/bag combo.
+        self.cache: dict[CacheKey, TimeSpec] = {}
+        self.debug = debug and logger.isEnabledFor(logging.DEBUG)
 
     def clear(self) -> None:
         logger.debug("Clearing TF cache.")
         self.buffer.clear()
-        self.topics = []
-        self.bags = []
+        self.cache = {}
 
     # tf2_msgs/TFMessage is not included in default rosbags typestore,
     # update the ROS1 typestore with the interface definition from the bag.
@@ -193,17 +226,15 @@ class TfCache(object):
 
         # Add TF data to buffer if this bag/topic pair is not already cached.
         for tf_topic in tf_topics:
-            if (
-                tf_topic in self.topics
-                and cast(Path, reader.path).name in self.bags
-            ):
+            cache_key = CacheKey(reader, tf_topic)
+            if cache_key in self.cache:
                 logger.debug(
-                    f"Using cache for topic {tf_topic} from {cast(Path, reader.path).name}"
+                    f"Using cache for topic {tf_topic} from {reader.path}"
                 )
                 continue
-            logger.debug(
-                f"Caching TF topic {tf_topic} from {cast(Path, reader.path).name} ..."
-            )
+            logger.debug(f"Caching TF topic {tf_topic} from {reader.path} ...")
+            start_time = None
+
             connections = [
                 c for c in reader.connections if c.topic == tf_topic
             ]
@@ -223,7 +254,17 @@ class TfCache(object):
                     msg = typestore.deserialize_cdr(
                         rawdata, connection.msgtype
                     )
+
                 for tf in msg.transforms:  # type: ignore
+                    # Store the time of the first TF message.
+                    # This is more robust than reader.start_time,
+                    # e.g. when sim time was used (see also: #771)
+                    if start_time is None:
+                        start_time = TimeSpec(
+                            tf.header.stamp.sec, tf.header.stamp.nanosec
+                        )
+                        self.cache[cache_key] = start_time
+
                     # Convert from rosbags.typesys.types to native ROS.
                     # Related: https://gitlab.com/ternaris/rosbags/-/issues/13
                     native_msg = TransformStamped()
@@ -254,8 +295,9 @@ class TfCache(object):
                         self.buffer.set_transform_static(native_msg, __name__)
                     else:
                         self.buffer.set_transform(native_msg, __name__)
-            self.topics.append(tf_topic)
-        self.bags.append(cast(Path, reader.path).name)
+
+            if self.debug:
+                logger.debug("TF buffer: %s", self.buffer.all_frames_as_yaml())
 
     def lookup_trajectory(
         self,
@@ -320,30 +362,34 @@ class TfCache(object):
 
             try:
                 latest_time = self.buffer.get_latest_common_time(parent, child)
-            except (tf2_py.LookupException, tf2_py.TransformException) as e:
-                raise TfCacheException("Could not load trajectory: " + str(e))
+            except (
+                tf2_py.LookupException,
+                tf2_py.TransformException,
+            ) as tf_error:
+                error = f"Could not load trajectory: {tf_error}"
+                if not self.debug:
+                    error += (
+                        "\nEnable 'evo_config set tf_cache_debug true' and "
+                        "verbose/debug logging to see TF buffer contents."
+                    )
+                raise TfCacheException(error) from tf_error
+
+            _start_time: TimeSpec = self.cache[CacheKey(reader, topic)]
 
             if hasattr(latest_time, "nsecs"):
-                from rospy import (
-                    Time,
-                    Duration,
-                )  # pylint: disable=import-outside-toplevel
+                from rospy import Time, Duration
 
-                # rosbags Reader start_time is in nanoseconds.
-                start_time = Time.from_sec(reader.start_time * 1e-9)
+                start_time = Time(_start_time.sec, _start_time.nanosec)
                 step = Duration.from_sec(
                     1.0 / SETTINGS.tf_cache_lookup_frequency
                 )
             else:
-                from rclpy.time import (
-                    Time,
-                )  # pylint: disable=import-outside-toplevel
-                from rclpy.duration import (
-                    Duration,
-                )  # pylint: disable=import-outside-toplevel
+                from rclpy.time import Time
+                from rclpy.duration import Duration
 
-                # rosbags Reader start_time is in nanoseconds.
-                start_time = Time(nanoseconds=reader.start_time)
+                start_time = Time(
+                    seconds=_start_time.sec, nanoseconds=_start_time.nanosec
+                )
                 step = Duration(
                     seconds=1.0 / SETTINGS.tf_cache_lookup_frequency
                 )

@@ -78,7 +78,6 @@ def configure_logging(
 ) -> None:
 
     logger = logging.getLogger("evo")
-    logger.setLevel(logging.DEBUG)
     logger.propagate = False
 
     if len(logger.handlers) > 0:
@@ -112,6 +111,10 @@ def configure_logging(
     console_handler.setLevel(console_level)
     console_handler.setFormatter(ConsoleFormatter(console_fmt))
     logger.addHandler(console_handler)
+
+    # Track the lowest level any handler will accept so isEnabledFor() reflects
+    # whether a record will actually reach a handler, not just the logger.
+    logger.setLevel(min(h.level for h in logger.handlers))
 
     # log header for debug mode
     if debug:

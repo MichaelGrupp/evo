@@ -309,11 +309,8 @@ class TfCache(object):
         Look up the trajectory of a transform chain from the cache's TF buffer.
         :param parent_frame, child_frame: TF transform frame IDs
         :param timestamps: timestamps at which to lookup the trajectory poses.
-        :param lookup_frequency: frequency of TF lookups between start and end
-                                 time, in Hz.
         """
         stamps, xyz, quat = [], [], []
-        # Look up the transforms of the trajectory in reverse order:
         timestamps.sort()
         for timestamp in timestamps:
             try:
@@ -326,7 +323,6 @@ class TfCache(object):
             x, q = _get_xyz_quat_from_transform_stamped(tf)
             xyz.append(x)
             quat.append(q)
-        # Flip the data order again for the final trajectory.
         trajectory = PoseTrajectory3D(
             np.array(xyz),
             np.array(quat),

@@ -58,6 +58,7 @@ dependencies = [
     "pillow",
     "rosbags>=0.11.1",
     "packaging",
+    "PyQt6"
 ]
 
 [project.optional-dependencies]

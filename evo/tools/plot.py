@@ -30,6 +30,13 @@ from pathlib import Path
 
 import numpy as np
 import matplotlib as mpl
+from packaging import version
+
+from evo.tools.matplotlib_compat import use_matplotlib_mplot3d
+
+# Keep this before importing pyplot, which imports matplotlib.projections.
+use_matplotlib_mplot3d(mpl)
+
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.art3d as art3d
@@ -52,6 +59,7 @@ from evo.core.units import Unit, LENGTH_UNITS, METER_SCALE_FACTORS
 logger = logging.getLogger(__name__)
 
 ListOrArray = typing.Sequence[float] | np.ndarray
+_MPL_VERSION = version.parse(mpl.__version__)
 
 
 def apply_settings(settings: SettingsContainer = SETTINGS):
@@ -149,7 +157,7 @@ class PlotCollection:
         axes.mouse_init()
         # Event binding was possible through mouse_init() up to matplotlib 3.2.
         # In 3.3.0 this was moved, so we are forced to do it here.
-        if mpl.__version__ >= "3.3.0":
+        if _MPL_VERSION >= version.parse("3.3.0"):
             canvas.mpl_connect("button_press_event", axes._button_press)
             canvas.mpl_connect("button_release_event", axes._button_release)
             canvas.mpl_connect("motion_notify_event", axes._on_move)

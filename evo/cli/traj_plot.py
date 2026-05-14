@@ -23,6 +23,12 @@ import itertools
 import logging
 from typing import Callable, Tuple
 
+import matplotlib as mpl
+from evo.tools.matplotlib_compat import use_matplotlib_mplot3d
+
+# Keep this before importing pyplot, which imports matplotlib.projections.
+use_matplotlib_mplot3d(mpl)
+
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import numpy as np

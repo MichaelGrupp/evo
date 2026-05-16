@@ -157,7 +157,7 @@ class PlotCollection:
         axes.mouse_init()
         # Event binding was possible through mouse_init() up to matplotlib 3.2.
         # In 3.3.0 this was moved, so we are forced to do it here.
-        if _MPL_VERSION >= version.parse("3.3.0"):
+        if version.parse(mpl.__version__) >= version.parse("3.3.0"):
             canvas.mpl_connect("button_press_event", axes._button_press)
             canvas.mpl_connect("button_release_event", axes._button_release)
             canvas.mpl_connect("motion_notify_event", axes._on_move)

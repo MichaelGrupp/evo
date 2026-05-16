@@ -33,7 +33,6 @@ import matplotlib as mpl
 from packaging import version
 
 
-
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.art3d as art3d

@@ -23,7 +23,6 @@ import itertools
 import logging
 from typing import Callable, Tuple
 
-import matplotlib as mpl
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import numpy as np

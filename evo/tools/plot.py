@@ -32,10 +32,7 @@ import numpy as np
 import matplotlib as mpl
 from packaging import version
 
-from evo.tools.matplotlib_compat import use_matplotlib_mplot3d
 
-# Keep this before importing pyplot, which imports matplotlib.projections.
-use_matplotlib_mplot3d(mpl)
 
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt

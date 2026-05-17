@@ -53,7 +53,6 @@ from evo.core.units import Unit, LENGTH_UNITS, METER_SCALE_FACTORS
 logger = logging.getLogger(__name__)
 
 ListOrArray = typing.Sequence[float] | np.ndarray
-_MPL_VERSION = version.parse(mpl.__version__)
 
 
 def apply_settings(settings: SettingsContainer = SETTINGS):

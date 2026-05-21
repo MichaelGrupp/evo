@@ -29,21 +29,22 @@ from evo.core import trajectory
 from evo.core import lie_algebra as lie
 from evo.core.trajectory import PosePath3D, PoseTrajectory3D
 from evo.core.geometry import GeometryException
+from evo.core.pose_cache import PoseCacheException
 
 
 class TestPosePath3D(unittest.TestCase):
     def test_init_wrong_args(self):
         path = helpers.fake_path(10)
         # no args
-        with self.assertRaises(trajectory.TrajectoryException):
+        with self.assertRaises(PoseCacheException):
             trajectory.PosePath3D()
         # only quaternion
-        with self.assertRaises(trajectory.TrajectoryException):
+        with self.assertRaises(PoseCacheException):
             trajectory.PosePath3D(
                 orientations_quat_wxyz=path.orientations_quat_wxyz
             )
         # only xyz
-        with self.assertRaises(trajectory.TrajectoryException):
+        with self.assertRaises(PoseCacheException):
             trajectory.PosePath3D(positions_xyz=path.positions_xyz)
 
     def test_init_correct(self):
@@ -161,8 +162,7 @@ class TestPosePath3D(unittest.TestCase):
     def test_check(self):
         self.assertTrue(helpers.fake_path(10).check()[0])
         path_wrong = helpers.fake_path(10)
-        _ = path_wrong.orientations_quat_wxyz
-        path_wrong._orientations_quat_wxyz[1][1] = 666
+        path_wrong._cache.orientations_quat_wxyz[1][1] = 666
         self.assertFalse(path_wrong.check()[0])
 
     def test_get_infos(self):

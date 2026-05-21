@@ -6,7 +6,7 @@ from pathlib import Path
 TEST_DATA_DIR = Path(__file__).parent.parent / "test/data"
 
 print("loading required evo modules")
-from evo.core import trajectory, sync, metrics
+from evo.core import sync, metrics
 from evo.tools import file_interface
 
 print("loading trajectories")
@@ -65,16 +65,7 @@ plot_collection.add_figure("traj (error)", fig_2)
 fig_3 = plt.figure(figsize=(8, 8))
 plot_mode = plot.PlotMode.xy
 ax = plot.prepare_axis(fig_3, plot_mode)
-speeds = [
-    trajectory.calc_speed(
-        traj_est.positions_xyz[i],
-        traj_est.positions_xyz[i + 1],
-        traj_est.timestamps[i],
-        traj_est.timestamps[i + 1],
-    )
-    for i in range(len(traj_est.positions_xyz) - 1)
-]
-speeds.append(0)
+speeds = list(traj_est.speeds) + [0]
 plot.traj(ax, plot_mode, traj_ref, "--", "gray", "reference")
 plot.traj_colormap(
     ax,

@@ -22,6 +22,7 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 import typing
 from enum import Enum, unique
+from functools import cached_property
 
 import numpy as np
 
@@ -30,6 +31,7 @@ import evo.core.transformations as tr
 import evo.core.geometry as geometry
 from evo.core import lie_algebra as lie
 from evo.core import filters
+from evo.core.pose_cache import PoseCache
 
 logger = logging.getLogger(__name__)
 
@@ -68,20 +70,12 @@ class PosePath3D(object):
         :param poses_se3: list of SE(3) poses
         :param meta: optional metadata
         """
-        if (
-            positions_xyz is None or orientations_quat_wxyz is None
-        ) and poses_se3 is None:
-            raise TrajectoryException(
-                "must provide at least positions_xyz "
-                "& orientations_quat_wxyz or poses_se3"
-            )
-        if positions_xyz is not None:
-            self._positions_xyz = np.array(positions_xyz)
-        if orientations_quat_wxyz is not None:
-            self._orientations_quat_wxyz = np.array(orientations_quat_wxyz)
-        if poses_se3 is not None:
-            self._poses_se3 = poses_se3
-        if self.num_poses == 0:
+        self._cache = PoseCache(
+            positions_xyz=positions_xyz,
+            orientations_quat_wxyz=orientations_quat_wxyz,
+            poses_se3=poses_se3,
+        )
+        if self._cache.num_poses == 0:
             raise TrajectoryException("pose data is empty")
         self.meta = {} if meta is None else meta
         self._projected = False
@@ -114,53 +108,38 @@ class PosePath3D(object):
 
     @property
     def positions_xyz(self) -> np.ndarray:
-        if not hasattr(self, "_positions_xyz"):
-            assert hasattr(self, "_poses_se3")
-            self._positions_xyz = np.array([p[:3, 3] for p in self._poses_se3])
-        return self._positions_xyz
+        return self._cache.positions_xyz
 
     @property
     def distances(self) -> np.ndarray:
-        return geometry.accumulated_distances(self.positions_xyz)
+        return self._cache.distances
 
     @property
     def orientations_quat_wxyz(self) -> np.ndarray:
-        if not hasattr(self, "_orientations_quat_wxyz"):
-            assert hasattr(self, "_poses_se3")
-            self._orientations_quat_wxyz = np.array(
-                [tr.quaternion_from_matrix(p) for p in self._poses_se3]
-            )
-        return self._orientations_quat_wxyz
+        return self._cache.orientations_quat_wxyz
 
     def get_orientations_euler(self, axes="sxyz") -> np.ndarray:
-        if hasattr(self, "_poses_se3"):
+        if self._cache.has_poses_se3():
             return np.array(
-                [tr.euler_from_matrix(p, axes=axes) for p in self._poses_se3]
+                [
+                    tr.euler_from_matrix(p, axes=axes)
+                    for p in self._cache.poses_se3
+                ]
             )
-        assert hasattr(self, "_orientations_quat_wxyz")
         return np.array(
             [
                 tr.euler_from_quaternion(q, axes=axes)
-                for q in self._orientations_quat_wxyz
+                for q in self._cache.orientations_quat_wxyz
             ]
         )
 
     @property
     def poses_se3(self) -> typing.Sequence[np.ndarray]:
-        if not hasattr(self, "_poses_se3"):
-            assert hasattr(self, "_positions_xyz")
-            assert hasattr(self, "_orientations_quat_wxyz")
-            self._poses_se3 = xyz_quat_wxyz_to_se3_poses(
-                self.positions_xyz, self.orientations_quat_wxyz
-            )
-        return self._poses_se3
+        return self._cache.poses_se3
 
     @property
     def num_poses(self) -> int:
-        if hasattr(self, "_poses_se3"):
-            return len(self._poses_se3)
-        else:
-            return self.positions_xyz.shape[0]
+        return self._cache.num_poses
 
     @property
     def path_length(self) -> float:
@@ -168,7 +147,19 @@ class PosePath3D(object):
         calculates the path length (arc-length)
         :return: path length in meters
         """
-        return float(geometry.arc_len(self.positions_xyz))
+        return self._cache.path_length
+
+    # self.__dict__ keys of caches of derived values.
+    _DERIVED_CACHES: tuple[str, ...] = ()
+
+    def _register_derived(self, name: str) -> None:
+        cls = type(self)
+        if name not in cls._DERIVED_CACHES:
+            cls._DERIVED_CACHES = (*cls._DERIVED_CACHES, name)
+
+    def _drop_derived(self) -> None:
+        for name in self._DERIVED_CACHES:
+            self.__dict__.pop(name, None)
 
     def transform(
         self, t: np.ndarray, right_mul: bool = False, propagate: bool = False
@@ -179,38 +170,32 @@ class PosePath3D(object):
         :param right_mul: whether to apply it right-multiplicative or not
         :param propagate: whether to propagate drift with RHS transformations
         """
+        poses = self._cache.poses_se3
         if right_mul and not propagate:
             # Transform each pose individually.
-            self._poses_se3 = [np.dot(p, t) for p in self.poses_se3]
+            new_poses = [np.dot(p, t) for p in poses]
         elif right_mul and propagate:
             # Transform each pose and propagate resulting drift to the next.
             ids = np.arange(0, self.num_poses, 1, dtype=int)
             rel_poses = [
-                lie.relative_se3(
-                    self.poses_se3[int(i)], self.poses_se3[int(j)]
-                ).dot(t)
+                lie.relative_se3(poses[int(i)], poses[int(j)]).dot(t)
                 for i, j in zip(ids, ids[1:])
             ]
-            self._poses_se3 = [self.poses_se3[0]]
+            new_poses = [poses[0]]
             for i, j in zip(ids[:-1], ids):
-                self._poses_se3.append(self._poses_se3[j].dot(rel_poses[i]))
+                new_poses.append(new_poses[j].dot(rel_poses[i]))
         else:
-            self._poses_se3 = [np.dot(t, p) for p in self.poses_se3]
-        self._positions_xyz, self._orientations_quat_wxyz = (
-            se3_poses_to_xyz_quat_wxyz(self.poses_se3)
-        )
+            new_poses = [np.dot(t, p) for p in poses]
+        self._cache.replace_poses_se3(new_poses)
+        self._drop_derived()
 
     def scale(self, s: float) -> None:
         """
         apply a scaling to the whole path
         :param s: scale factor
         """
-        if hasattr(self, "_poses_se3"):
-            self._poses_se3 = [
-                lie.se3(p[:3, :3], s * p[:3, 3]) for p in self._poses_se3
-            ]
-        if hasattr(self, "_positions_xyz"):
-            self._positions_xyz = s * self._positions_xyz
+        self._cache.scale_translations(s)
+        self._drop_derived()
 
     def project(self, plane: Plane) -> None:
         """
@@ -231,7 +216,7 @@ class PosePath3D(object):
         # Project poses and rotations (forcing to angle around normal).
         rotation_axis = np.zeros(3)
         rotation_axis[null_dim] = 1
-        for pose in self.poses_se3:
+        for pose in self._cache.poses_se3:
             pose[null_dim, 3] = 0
             angle_axis = (
                 rotation_axis
@@ -239,11 +224,9 @@ class PosePath3D(object):
             )
             pose[:3, :3] = lie.so3_exp(angle_axis)
 
-        # Flush cached data that will be regenerated on demand via @property.
-        if hasattr(self, "_positions_xyz"):
-            del self._positions_xyz
-        if hasattr(self, "_orientations_quat_wxyz"):
-            del self._orientations_quat_wxyz
+        # Poses were mutated in place; cached xyz/quat must be re-derived.
+        self._cache.invalidate_xyz_quat()
+        self._drop_derived()
         self._projected = True
 
     def align(
@@ -316,12 +299,8 @@ class PosePath3D(object):
         reduce the elements to the ones specified in ids
         :param ids: list of integer indices
         """
-        if hasattr(self, "_positions_xyz"):
-            self._positions_xyz = self._positions_xyz[ids]
-        if hasattr(self, "_orientations_quat_wxyz"):
-            self._orientations_quat_wxyz = self._orientations_quat_wxyz[ids]
-        if hasattr(self, "_poses_se3"):
-            self._poses_se3 = [self._poses_se3[idx] for idx in ids]
+        self._cache.reduce_to_ids(ids)
+        self._drop_derived()
 
     def downsample(self, num_poses: int) -> None:
         """
@@ -468,11 +447,12 @@ class PoseTrajectory3D(PosePath3D, object):
     def __ne__(self, other: object) -> bool:
         return not self == other
 
-    @property
+    @cached_property
     def speeds(self) -> np.ndarray:
         """
         :return: array with speed of motion between poses
         """
+        self._register_derived("speeds")
         if self.num_poses < 2:
             return np.array([])
         return np.array(

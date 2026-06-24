@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v4
         
       - name: docker build
-        run: docker build . --file Dockerfile.ros-kilted
+        run: docker build . --file Dockerfile.ros-lyrical
 
   test:
     name: Test

@@ -93,27 +93,30 @@ follow_imports = "skip"
 
 
 [tool.pixi.workspace]
-channels = ["conda-forge", "robostack-kilted"]
+channels = ["https://prefix.dev/conda-forge"]
 platforms = ["osx-arm64", "linux-64", "linux-aarch64", "win-64"]
 
 [tool.pixi.pypi-dependencies]
 evo = { path = ".", editable = true }
 
 [tool.pixi.environments]
-default = { solve-group = "default" }
-py-310 = ["py-310"]
-py-314 = ["py-314"]
-ros-kilted = ["ros-kilted"]
+default = { features = ["py-310"], solve-group = "default" }
+py-310 = { features = ["py-310"], solve-group = "py-310" }
+py-314 = { features = ["py-314"], solve-group = "py-314" }
+ros-lyrical = { features = ["ros-lyrical"], solve-group = "ros-lyrical" }
 
 [tool.pixi.feature.py-310.dependencies]
 python = "~=3.10.0"
 [tool.pixi.feature.py-314.dependencies]
 python = "~=3.14.0"
-[tool.pixi.feature.ros-kilted.dependencies]
-ros-kilted-ros-core = ">=0.12.0,<0.13"
-ros-kilted-rosbag2 = ">=0.32.0,<0.33"
-ros-kilted-tf2-ros = ">=0.41.6,<0.42"
-ros-kilted-tf2-ros-py = ">=0.41.6,<0.42"
+
+[tool.pixi.feature.ros-lyrical]
+channels = ["https://prefix.dev/robostack-lyrical"]
+[tool.pixi.feature.ros-lyrical.dependencies]
+ros-lyrical-ros-core = ">=0.13.0,<0.14"
+ros-lyrical-rosbag2 = ">=0.33.3,<0.34"
+ros-lyrical-tf2-ros = ">=0.45.7,<0.46"
+ros-lyrical-tf2-ros-py = ">=0.45.7,<0.46"
 
 [tool.pixi.tasks]
 fmt = "black ."
@@ -122,9 +125,9 @@ test = "pytest -sv"
 release = "sh .ci/release.sh"
 
 [tool.pixi.dependencies]
-pip = ">=25.3,<26"
-mypy = ">=1.19.1,<2"
-black = ">=26.1.0,<27"
-pytest = ">=9.0.2,<10"
+pip = ">=26.1.2,<27"
+mypy = ">=2.1.0,<3"
+black = ">=26.5.1,<27"
+pytest = ">=9.1.1,<10"
 ipython = ">=8.37.0,<10"
-hatch = ">=1.16.2,<2"
+hatch = ">=1.17.0,<2"

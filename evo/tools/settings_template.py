@@ -223,6 +223,10 @@ DEFAULT_SETTINGS_DICT_DOC = {
         9876,
         "Port for the Rerun viewer gRPC proxy."
     ),
+    "rerun_base_url": (
+        "rerun+http://127.0.0.1",
+        "Rerun viewer/server URL without port and path."
+    ),
     "ros2_bag_storage_plugin": (
         "mcap",
         "ROS 2 bag storage plugin to use when writing files ('mcap' or 'sqlite3')."

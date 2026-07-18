@@ -16,7 +16,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         
       - name: docker build
         run: docker build . --file Dockerfile.ros-lyrical
@@ -40,10 +40,10 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
           
@@ -70,6 +70,49 @@ jobs:
           pip install pytest
           pytest -sv
 
+  test-rerun-integration:
+    name: Test Rerun integration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+ 
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: 3.14
+
+      - name: Install and configure package and dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+          evo_config show --brief --no_color
+
+      - name: Install Rerun
+        run: |
+          pip install rerun-sdk
+          rerun analytics disable
+
+      - name: Start Rerun gRPC server
+        id: rerun-grpc-server
+        background: true
+        run: rerun --serve-grpc
+
+      - name: Disable rerun_spawn setting
+        run: evo_config set rerun_spawn false
+
+      - name: Rerun integration smoke tests
+        # TODO: make this a proper test script.
+        run: |
+          cd test/data
+          evo_traj tum fr2_desk_groundtruth.txt fr2_desk_ORB.txt -v --rerun
+          evo_ape tum fr2_desk_groundtruth.txt fr2_desk_ORB.txt -v --rerun
+          evo_rpe tum fr2_desk_groundtruth.txt fr2_desk_ORB.txt -v --rerun --save_results /tmp/result
+          evo_res /tmp/result -v --rerun
+      
+      - name: Stop Rerun gRPC server
+        cancel: rerun-grpc-server
+
   build:
     name: Build Package
     runs-on: ubuntu-latest
@@ -77,10 +120,10 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.x'
           
@@ -90,7 +133,7 @@ jobs:
           hatch build
           
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: python-package-distributions
           path: dist/

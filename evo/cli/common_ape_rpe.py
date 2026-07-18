@@ -386,10 +386,7 @@ def send_result_to_rerun(
     logger.debug(SEP)
     logger.debug("Sending data to Rerun.")
     rr.init(evo_app_name, recording_id=args.rerun_rec_id)
-    rr.spawn(port=SETTINGS.rerun_viewer_port)
-    client = ViewerClient(
-        url=f"rerun+http://127.0.0.1:{SETTINGS.rerun_viewer_port}/proxy"
-    )
+    client: ViewerClient = revo.connect_or_spawn()
 
     result_df = pandas_bridge.result_to_df(result)
     table_df = (

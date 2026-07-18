@@ -8,6 +8,7 @@ from typing import Sequence
 
 import rerun as rr
 from rerun.datatypes import Float64ArrayLike, Float32ArrayLike, Rgba32ArrayLike
+from rerun.experimental import ViewerClient
 
 import numpy as np
 import matplotlib.cm
@@ -35,6 +36,22 @@ def _check_rerun_version(min_version: str) -> None:
 # Minimum required Rerun version.
 # Update also pyproject.toml when bumping this.
 _check_rerun_version("0.34.0")
+
+
+def connect_or_spawn(
+    base_url: str = SETTINGS.rerun_base_url,
+    port: int = SETTINGS.rerun_viewer_port,
+    spawn: bool = SETTINGS.rerun_spawn,
+) -> ViewerClient:
+    """
+    Connect to / spawn Rerun and return a ViewerClient.
+    """
+    url = f"{base_url}:{port}/proxy"
+    if spawn:
+        rr.spawn(port=port)
+    else:
+        rr.connect_grpc(url=url)
+    return ViewerClient.connect(url=url)
 
 
 @dataclass

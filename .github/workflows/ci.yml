@@ -92,6 +92,7 @@ jobs:
         run: pip install rerun-sdk
 
       - name: Start Rerun gRPC server
+        id: rerun-grpc-server
         background: true
         run: rerun --serve-grpc
 
@@ -103,6 +104,9 @@ jobs:
           evo_ape tum fr2_desk_groundtruth.txt fr2_desk_ORB.txt --rerun
           evo_rpe tum fr2_desk_groundtruth.txt fr2_desk_ORB.txt --rerun --save_results /tmp/result
           evo_res /tmp/result --rerun
+      
+      - name: Stop Rerun gRPC server
+        cancel: rerun-grpc-server
 
   build:
     name: Build Package

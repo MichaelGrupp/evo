@@ -96,6 +96,9 @@ jobs:
         background: true
         run: rerun --serve-grpc
 
+      - name: Disable rerun_spawn setting
+        run: evo_config set rerun_spawn false
+
       - name: Rerun integration smoke tests
         # TODO: make this a proper test script.
         run: |

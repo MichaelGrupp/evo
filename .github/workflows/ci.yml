@@ -105,10 +105,10 @@ jobs:
         # TODO: make this a proper test script.
         run: |
           cd test/data
-          evo_traj tum fr2_desk_groundtruth.txt fr2_desk_ORB.txt --rerun
-          evo_ape tum fr2_desk_groundtruth.txt fr2_desk_ORB.txt --rerun
-          evo_rpe tum fr2_desk_groundtruth.txt fr2_desk_ORB.txt --rerun --save_results /tmp/result
-          evo_res /tmp/result --rerun
+          evo_traj tum fr2_desk_groundtruth.txt fr2_desk_ORB.txt -v --rerun
+          evo_ape tum fr2_desk_groundtruth.txt fr2_desk_ORB.txt -v --rerun
+          evo_rpe tum fr2_desk_groundtruth.txt fr2_desk_ORB.txt -v --rerun --save_results /tmp/result
+          evo_res /tmp/result -v --rerun
       
       - name: Stop Rerun gRPC server
         cancel: rerun-grpc-server

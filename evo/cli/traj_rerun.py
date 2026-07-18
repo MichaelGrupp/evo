@@ -60,7 +60,7 @@ def send_bundle_to_rerun(
     rr.init("evo_traj", recording_id=args.rerun_rec_id)
     rr.spawn(port=SETTINGS.rerun_viewer_port)
     client = ViewerClient(
-        addr=f"rerun+http://127.0.0.1:{SETTINGS.rerun_viewer_port}/proxy"
+        url=f"rerun+http://127.0.0.1:{SETTINGS.rerun_viewer_port}/proxy"
     )
 
     # Send statistics table first (dedicated view, not part of visualization blueprint).

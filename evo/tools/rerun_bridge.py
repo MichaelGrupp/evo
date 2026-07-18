@@ -32,8 +32,9 @@ def _check_rerun_version(min_version: str) -> None:
         )
 
 
-# Minimum required Rerun version:
-_check_rerun_version("0.31.2")
+# Minimum required Rerun version.
+# Update also pyproject.toml when bumping this.
+_check_rerun_version("0.34.0")
 
 
 @dataclass

@@ -388,7 +388,7 @@ def send_result_to_rerun(
     rr.init(evo_app_name, recording_id=args.rerun_rec_id)
     rr.spawn(port=SETTINGS.rerun_viewer_port)
     client = ViewerClient(
-        addr=f"rerun+http://127.0.0.1:{SETTINGS.rerun_viewer_port}/proxy"
+        url=f"rerun+http://127.0.0.1:{SETTINGS.rerun_viewer_port}/proxy"
     )
 
     result_df = pandas_bridge.result_to_df(result)

@@ -26452,7 +26452,7 @@ packages:
   - seaborn>=0.9
   - contextily ; extra == 'geo'
   - pyqt6 ; extra == 'gui'
-  - rerun-sdk>=0.28.0 ; extra == 'rerun'
+  - rerun-sdk>=0.34.0 ; extra == 'rerun'
   requires_python: '>=3.10'
 - pypi: https://files.pythonhosted.org/packages/04/59/a639c0e136441ee91a65b56fdf89e5d075927e7a09c559d1b0f5276577db/fonttools-4.63.0-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
   name: fonttools

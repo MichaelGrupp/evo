@@ -63,7 +63,7 @@ dependencies = [
 [project.optional-dependencies]
 gui = ["PyQt6"]
 geo = ["contextily"]
-rerun = ["rerun-sdk>=0.28.0"]
+rerun = ["rerun-sdk>=0.34.0"]  # Update also rerun_bridge.py when bumping this.
 
 
 [project.scripts]

@@ -317,10 +317,7 @@ def send_to_rerun(
     logger.debug(SEP)
     logger.debug("Sending data to Rerun.")
     rr.init(evo_app_name, recording_id=args.rerun_rec_id)
-    rr.spawn(port=SETTINGS.rerun_viewer_port)
-    client = ViewerClient(
-        url=f"rerun+http://127.0.0.1:{SETTINGS.rerun_viewer_port}/proxy"
-    )
+    client: ViewerClient = revo.connect_or_spawn()
 
     # Send a combined stats table.
     stats_table = df.loc["stats"].T.join(df.loc["info"].T).reset_index()

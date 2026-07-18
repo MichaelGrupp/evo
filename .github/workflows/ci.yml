@@ -89,7 +89,9 @@ jobs:
           evo_config show --brief --no_color
 
       - name: Install Rerun
-        run: pip install rerun-sdk
+        run: |
+          pip install rerun-sdk
+          rerun analytics disable
 
       - name: Start Rerun gRPC server
         id: rerun-grpc-server

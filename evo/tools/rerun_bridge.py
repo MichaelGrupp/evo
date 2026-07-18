@@ -43,6 +43,9 @@ def connect_or_spawn(
     port: int = SETTINGS.rerun_viewer_port,
     spawn: bool = SETTINGS.rerun_spawn,
 ) -> ViewerClient:
+    """
+    Connect to / spawn Rerun and return a ViewerClient.
+    """
     url = f"{base_url}:{port}/proxy"
     if spawn:
         rr.spawn(port=port)

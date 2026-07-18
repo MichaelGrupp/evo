@@ -70,6 +70,40 @@ jobs:
           pip install pytest
           pytest -sv
 
+  test-rerun-integration:
+    name: Test Rerun integration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+ 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.14
+
+      - name: Install and configure package and dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+          evo_config show --brief --no_color
+
+      - name: Install Rerun
+        run: pip install rerun-sdk
+
+      - name: Start Rerun gRPC server
+        background: true
+        run: rerun --serve-grpc
+
+      - name: Rerun integration smoke tests
+        # TODO: make this a proper test script.
+        run: |
+          cd test/data
+          evo_traj tum fr2_desk_groundtruth.txt fr2_desk_ORB.txt --rerun
+          evo_ape tum fr2_desk_groundtruth.txt fr2_desk_ORB.txt --rerun
+          evo_rpe tum fr2_desk_groundtruth.txt fr2_desk_ORB.txt --rerun --save_results /tmp/result
+          evo_res /tmp/result --rerun
+
   build:
     name: Build Package
     runs-on: ubuntu-latest

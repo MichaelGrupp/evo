@@ -624,7 +624,7 @@ class PoseTrajectory3D(PosePath3D, object):
                 }
             )
         except TrajectoryException as error:
-            logger.error(f"Failed to compute all trajectory stats: {error}")
+            logger.warning(f"Failed to compute all trajectory stats: {error}")
         return stats
 
 

@@ -135,7 +135,7 @@ def send_bundle_to_rerun(
                     labelname="v (m/s)",
                 )
             except TrajectoryException as error:
-                logger.error(
+                logger.warning(
                     f"Can't send speeds of 'reference' to Rerun: {error}"
                 )
 
@@ -186,7 +186,7 @@ def send_bundle_to_rerun(
                     labelname="v (m/s)",
                 )
             except TrajectoryException as error:
-                logger.error(
+                logger.warning(
                     f"Can't send speeds of '{to_compact_name(name, args)}' to Rerun: {error}"
                 )
 

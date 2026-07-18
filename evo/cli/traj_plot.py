@@ -141,7 +141,7 @@ def plot_trajectories(
                     start_timestamp=start_time,
                 )
             except trajectory.TrajectoryException as error:
-                logger.error(
+                logger.warning(
                     f"Can't plot speeds of {short_traj_name}: {error}"
                 )
     elif args.plot_relative_time:

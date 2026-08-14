@@ -150,4 +150,12 @@ def run_demo() -> None:
 
 
 if __name__ == "__main__":
+    import os
+
     run_demo()
+
+    # The following is only relevant for CI tests of this script.
+    if "_RERUN_TEST_FORCE_SAVE" in os.environ:
+        rec = rr.get_data_recording()
+        assert rec is not None  # noqa
+        rec.flush()

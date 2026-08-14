@@ -76,7 +76,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
- 
+        with:
+          lfs: true
+
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
@@ -112,6 +114,18 @@ jobs:
       
       - name: Stop Rerun gRPC server
         cancel: rerun-grpc-server
+
+      - name: Rerun example smoke test
+        env:
+          # Makes the Rerun SDK dump to a file instead of spawning a viewer window.
+          # (script uses a manual `rr.init` where the evo `rerun_spawn` setting has no effect)
+          _RERUN_TEST_FORCE_SAVE: /tmp/rerun_example.rrd
+        # TODO: make this an `rrd compare` to a baseline.
+        # Requires an option in comparison to tolerate small float inaccuracies,
+        # as the script computes metrics and stats on the fly.
+        run: |
+          python examples/rerun_example/rerun_example.py
+          rerun rrd verify /tmp/rerun_example.rrd
 
   build:
     name: Build Package

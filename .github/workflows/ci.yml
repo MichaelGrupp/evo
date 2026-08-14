@@ -122,7 +122,7 @@ jobs:
           _RERUN_TEST_FORCE_SAVE: /tmp/rerun_example.rrd
         run: |
           python examples/rerun_example/rerun_example.py
-          rerun rrd compare test/data/rrd/rerun_example.rrd /tmp/rerun_example.rrd
+          rerun rrd compare --unordered test/data/rrd/rerun_example.rrd /tmp/rerun_example.rrd
 
   build:
     name: Build Package

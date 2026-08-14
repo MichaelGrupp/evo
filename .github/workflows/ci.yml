@@ -113,6 +113,15 @@ jobs:
       - name: Stop Rerun gRPC server
         cancel: rerun-grpc-server
 
+      - name: Rerun example smoke test
+        env:
+          # Makes the Rerun SDK dump to a file instead of spawning a viewer window.
+          # (script uses a manual `rr.init` where the evo `rerun_spawn` setting has no effect)
+          _RERUN_TEST_FORCE_SAVE: /tmp/rerun_example.rrd
+        run: |
+          python examples/rerun_example/rerun_example.py
+          rerun rrd compare test/data/rrd/rerun_example.rrd /tmp/rerun_example.rrd
+
   build:
     name: Build Package
     runs-on: ubuntu-latest

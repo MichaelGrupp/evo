@@ -62,6 +62,17 @@ POSES_4 = [
 
 
 class TestFilterPairsByPath(unittest.TestCase):
+    def test_consecutive_pairs_include_initial_segment(self):
+        """Consecutive path pairs start at the first pose."""
+        poses = [
+            lie.se3(np.eye(3), np.array([0, 0, position]))
+            for position in range(5)
+        ]
+        id_pairs = filters.filter_pairs_by_path(
+            poses, delta=2.0, all_pairs=False
+        )
+        self.assertEqual(id_pairs, [(0, 2), (2, 4)])
+
     def test_poses1_all_pairs(self):
         target_path = 1.0
         tol = 0.0

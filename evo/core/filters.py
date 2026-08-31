@@ -92,6 +92,8 @@ def filter_pairs_by_path(
         ids = [0]
         previous_pose = poses[0]
         current_path = 0.0
+        # The first pose is always included, so we iterate over the remaining range
+        # (with start=1 ensuring that we keep the original indices of the full slice).
         for i, current_pose in enumerate(poses[1:], start=1):
             current_path += float(
                 np.linalg.norm(current_pose[:3, 3] - previous_pose[:3, 3])

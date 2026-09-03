@@ -502,6 +502,59 @@ class PoseTrajectory3D(PosePath3D, object):
         )[0]
         self.reduce_to_ids(ids)
 
+    def interpolate(
+        self,
+        timestamps: np.ndarray,
+        extrapolate: bool = False,
+    ) -> "PoseTrajectory3D":
+        """
+        Interpolates the trajectory at the given timestamps using linear
+        interpolation for the positions and spherical linear interpolation
+        (slerp) for the orientations.
+
+        :param timestamps: timestamps at which to interpolate the poses
+        :param extrapolate: if False (default), timestamps outside of the
+                            trajectory's time range are clamped to the first
+                            or last pose; if True, the first/last segment is
+                            used to extrapolate linearly (positions) and via
+                            slerp (orientations)
+        :return: a new PoseTrajectory3D with the interpolated poses
+        """
+        if self.num_poses < 2:
+            raise TrajectoryException(
+                "can't interpolate a trajectory with less than two poses"
+            )
+        timestamps = np.asarray(timestamps, dtype=float)
+        if timestamps.ndim == 0:
+            timestamps = timestamps.reshape(1)
+
+        # Index of the first pose with a timestamp >= the requested one.
+        idx = np.searchsorted(self.timestamps, timestamps, side="left")
+        idx = np.clip(idx, 1, self.num_poses - 1)
+
+        t_prev = self.timestamps[idx - 1]
+        t_next = self.timestamps[idx]
+        dt = t_next - t_prev
+        frac = (timestamps - t_prev) / np.where(dt > 0.0, dt, 1.0)
+        frac = np.where(dt > 0.0, frac, 0.0)
+        if not extrapolate:
+            frac = np.clip(frac, 0.0, 1.0)
+
+        xyz = self.positions_xyz[idx - 1] + frac[:, None] * (
+            self.positions_xyz[idx] - self.positions_xyz[idx - 1]
+        )
+
+        quat_wxyz = self.orientations_quat_wxyz
+        quats = [
+            tr.quaternion_slerp(
+                quat_wxyz[idx[i] - 1], quat_wxyz[idx[i]], float(frac[i])
+            )
+            for i in range(len(timestamps))
+        ]
+        return PoseTrajectory3D(
+            xyz, np.array(quats), timestamps, meta=self.meta
+        )
+
     def split_time_gaps(
         self, dt: float
     ) -> typing.Sequence["PoseTrajectory3D"]:

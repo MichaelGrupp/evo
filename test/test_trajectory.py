@@ -26,6 +26,7 @@ import numpy as np
 
 import helpers
 from evo.core import trajectory
+from evo.core import transformations as tr
 from evo.core import lie_algebra as lie
 from evo.core.trajectory import PosePath3D, PoseTrajectory3D
 from evo.core.geometry import GeometryException
@@ -318,6 +319,74 @@ class TestPoseTrajectory3D(unittest.TestCase):
         self.assertEqual(len(splits), 2)
         self.assertEqual(splits[0].num_poses, 2)
         self.assertEqual(splits[1].num_poses, 1)
+
+    def _linear_trajectory(self, length=5):
+        """
+        Helper: a straight-line trajectory with constant identity
+        orientation and unit timestamps, used for interpolation tests.
+        """
+        timestamps = np.arange(length, dtype=float)
+        xyz = np.stack(
+            [np.zeros(length), np.zeros(length), timestamps], axis=1
+        )
+        quat_wxyz = np.tile(np.array([1.0, 0.0, 0.0, 0.0]), (length, 1))
+        return PoseTrajectory3D(xyz, quat_wxyz, timestamps)
+
+    def test_interpolate_midpoints(self):
+        traj = self._linear_trajectory(5)
+        stamps = np.array([0.5, 1.5, 2.5, 3.5])
+        interp = traj.interpolate(stamps)
+        self.assertEqual(interp.num_poses, 4)
+        self.assertTrue(np.allclose(interp.timestamps, stamps))
+        # Linear interpolation of z positions.
+        self.assertTrue(np.allclose(interp.positions_xyz[:, 2], stamps))
+
+    def test_interpolate_exact_timestamps(self):
+        traj = self._linear_trajectory(5)
+        stamps = np.array([0.0, 2.0, 4.0])
+        interp = traj.interpolate(stamps)
+        self.assertTrue(
+            np.allclose(interp.positions_xyz, traj.positions_xyz[[0, 2, 4]])
+        )
+        self.assertTrue(
+            np.allclose(
+                interp.orientations_quat_wxyz,
+                traj.orientations_quat_wxyz[[0, 2, 4]],
+            )
+        )
+
+    def test_interpolate_clamps_out_of_range(self):
+        traj = self._linear_trajectory(5)
+        interp = traj.interpolate(np.array([-1.0, 5.0]))
+        # Without extrapolation, out-of-range stamps clamp to first/last pose.
+        self.assertTrue(
+            np.allclose(interp.positions_xyz, traj.positions_xyz[[0, 4]])
+        )
+
+    def test_interpolate_extrapolates(self):
+        traj = self._linear_trajectory(5)
+        interp = traj.interpolate(np.array([5.0]), extrapolate=True)
+        # Extrapolated z position follows the line: z = timestamp.
+        self.assertAlmostEqual(interp.positions_xyz[0, 2], 5.0)
+
+    def test_interpolate_preserves_unit_quaternions(self):
+        timestamps = np.arange(5, dtype=float)
+        quat_wxyz = np.array(
+            [
+                tr.quaternion_from_euler(0.0, 0.0, i * np.pi / 8.0)
+                for i in range(5)
+            ]
+        )
+        traj = PoseTrajectory3D(np.zeros((5, 3)), quat_wxyz, timestamps)
+        interp = traj.interpolate(np.array([0.5, 2.5]))
+        for q in interp.orientations_quat_wxyz:
+            self.assertAlmostEqual(np.linalg.norm(q), 1.0, places=9)
+
+    def test_interpolate_single_pose_raises(self):
+        traj = self._linear_trajectory(5)
+        traj.reduce_to_ids([0])
+        with self.assertRaises(trajectory.TrajectoryException):
+            traj.interpolate(np.array([0.5]))
 
 
 class TestTrajectoryAlignment(unittest.TestCase):

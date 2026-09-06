@@ -24,11 +24,11 @@ from typing import Callable, Dict, Optional, Sequence, cast
 import numpy as np
 
 from evo import EvoException
-from evo.core import sync
 from evo.core.trajectory import (
     Plane,
     PosePath3D,
     PoseTrajectory3D,
+    SyncMethod,
     merge,
 )
 
@@ -145,11 +145,16 @@ class TrajectoryBundle:
                 )
             traj.timestamps += offset
 
-    def sync(self, max_diff: float = 0.01) -> None:
+    def sync(
+        self,
+        max_diff: float = 0.01,
+        sync_method: SyncMethod = SyncMethod.nearest_time,
+    ) -> None:
         """
         Associate trajectories with the reference by timestamps.
         Populates synced_refs with the per-trajectory matched reference.
         :param max_diff: maximum timestamp difference for sync
+        :param sync_method: SyncMethod to use for the synchronization
         """
         if not self.ref_traj:
             raise TrajectoryBundleException(
@@ -166,14 +171,8 @@ class TrajectoryBundle:
                     "Reference doesn't have timestamps" " - can't sync."
                 )
             logger.debug(f"Syncing {name} with reference.")
-            ref_traj_tmp, self.trajectories[name] = (
-                sync.associate_trajectories(
-                    self.ref_traj,
-                    traj,
-                    max_diff=max_diff,
-                    first_name="reference",
-                    snd_name=name,
-                )
+            ref_traj_tmp, self.trajectories[name] = self.ref_traj.sync_with(
+                traj, sync_method=sync_method, max_diff=max_diff
             )
             self.synced_refs[name] = ref_traj_tmp
 

@@ -51,6 +51,18 @@ class Plane(Enum):
     YZ = "yz"
 
 
+@unique
+class SyncMethod(Enum):
+    """
+    Methods for synchronizing two trajectories in time.
+    """
+
+    # Associate poses with the closest matching timestamps, see evo.core.sync.
+    nearest_time = "nearest_time"
+    # Resample the denser trajectory at the timestamps of the sparser one.
+    interpolation = "interpolation"
+
+
 class PosePath3D(object):
     """
     just a path, no temporal information
@@ -562,6 +574,116 @@ class PoseTrajectory3D(PosePath3D, object):
         return PoseTrajectory3D(
             xyz, np.array(quats), timestamps, meta=self.meta, name=self.name
         )
+
+    def _sliced(
+        self, ids: typing.Sequence[int] | np.ndarray
+    ) -> "PoseTrajectory3D":
+        """
+        :param ids: list of index values to keep
+        :return: a new PoseTrajectory3D with only the poses of these indices
+        """
+        return PoseTrajectory3D(
+            self.positions_xyz[ids],
+            self.orientations_quat_wxyz[ids],
+            self.timestamps[ids],
+            meta=self.meta,
+        )
+
+    def sync_with(
+        self,
+        other: "PoseTrajectory3D",
+        sync_method: SyncMethod = SyncMethod.nearest_time,
+        max_diff: float = 0.01,
+        offset_2: float = 0.0,
+    ) -> tuple["PoseTrajectory3D", "PoseTrajectory3D"]:
+        """
+        Synchronizes this trajectory with another one in time, so that both
+        have the same number of poses at (approximately) equal timestamps.
+        Doesn't modify the trajectories, synced copies are returned.
+
+        :param other: the other trajectory to sync with
+        :param sync_method: SyncMethod to use for the synchronization
+        :param max_diff: max. allowed absolute time difference for associating
+        :param offset_2: optional time offset of the other trajectory
+        :return: synced copies of (self, other)
+        """
+        if not isinstance(other, PoseTrajectory3D):
+            raise TrajectoryException(
+                "trajectories must be PoseTrajectory3D objects"
+            )
+        if sync_method is SyncMethod.nearest_time:
+            # Imported here because the sync module imports this module.
+            from evo.core import sync
+
+            return sync.associate_trajectories(
+                self, other, max_diff=max_diff, offset_2=offset_2
+            )
+        if sync_method is SyncMethod.interpolation:
+            return self._sync_by_interpolation(
+                other, max_diff=max_diff, offset_2=offset_2
+            )
+        raise TrajectoryException(f"unknown sync method: {sync_method}")
+
+    def _sync_by_interpolation(
+        self,
+        other: "PoseTrajectory3D",
+        max_diff: float = 0.01,
+        offset_2: float = 0.0,
+    ) -> tuple["PoseTrajectory3D", "PoseTrajectory3D"]:
+        """
+        Synchronizes two trajectories by interpolating the denser one at the
+        timestamps of the sparser one, see sync_with().
+        """
+        # Imported here because the sync module imports this module.
+        from evo.core import sync
+
+        # Interpolate the trajectory that has more poses at the timestamps of
+        # the sparser one - this way no poses of the sparser one are lost.
+        second_denser = other.num_poses > self.num_poses
+        traj_sparse = self if second_denser else other
+        traj_dense = other if second_denser else self
+        sparse_name = traj_sparse.name or "sparser trajectory"
+        dense_name = traj_dense.name or "denser trajectory"
+        max_pairs = traj_sparse.num_poses
+
+        # Associate with the same tolerance as the nearest-time method, so
+        # that we don't interpolate poses in time ranges without actual data
+        # (e.g. gaps of the denser trajectory).
+        # Only the matched timestamps of the sparser trajectory are kept, but
+        # in contrast to the nearest-time method, the poses of the denser
+        # trajectory are interpolated exactly at them instead of snapping to
+        # the closest ones.
+        ids, _ = sync.matching_time_indices(
+            traj_sparse.timestamps,
+            traj_dense.timestamps,
+            max_diff,
+            offset_2 if second_denser else -offset_2,
+        )
+        if len(ids) == 0:
+            raise TrajectoryException(
+                f"found no matching timestamps between {sparse_name} and "
+                f"{dense_name} with max. time diff {max_diff} (s) "
+                f"and time offset {offset_2} (s)"
+            )
+        traj_sparse = traj_sparse._sliced(ids)
+
+        # The time offset is only used for the association, both trajectories
+        # keep their own time frame. Therefore the interpolation timestamps
+        # have to be converted to the time frame of the denser trajectory.
+        traj_dense = traj_dense.interpolate(
+            traj_sparse.timestamps + (-offset_2 if second_denser else offset_2)
+        )
+
+        logger.debug(
+            f"Interpolated {dense_name} at {len(ids)} of max. "
+            f"{max_pairs} matching timestamps of {sparse_name} "
+            f"with max. time diff.: {max_diff} (s) "
+            f"and time offset: {offset_2} (s)."
+        )
+
+        if second_denser:
+            return traj_sparse, traj_dense
+        return traj_dense, traj_sparse
 
     def split_time_gaps(
         self, dt: float

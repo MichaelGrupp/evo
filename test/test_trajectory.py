@@ -395,6 +395,30 @@ class TestPoseTrajectory3D(unittest.TestCase):
         for q in interp.orientations_quat_wxyz:
             self.assertAlmostEqual(np.linalg.norm(q), 1.0, places=9)
 
+    def test_sync_with_interpolation(self):
+        sparse = self._linear_trajectory(5)
+        stamps = np.arange(0.0, 4.5, 0.5)
+        dense = PoseTrajectory3D(
+            np.stack(
+                [np.zeros(len(stamps)), np.zeros(len(stamps)), stamps], axis=1
+            ),
+            np.tile(np.array([1.0, 0.0, 0.0, 0.0]), (len(stamps), 1)),
+            stamps,
+        )
+        synced_sparse, synced_dense = sparse.sync_with(
+            dense, sync_method=trajectory.SyncMethod.interpolation
+        )
+        # The denser trajectory is resampled at the timestamps of the sparser
+        # one, which is kept as it is.
+        self.assertEqual(synced_sparse.num_poses, sparse.num_poses)
+        self.assertEqual(synced_dense.num_poses, sparse.num_poses)
+        self.assertTrue(
+            np.allclose(synced_dense.timestamps, sparse.timestamps)
+        )
+        self.assertTrue(
+            np.allclose(synced_dense.positions_xyz, sparse.positions_xyz)
+        )
+
     def test_interpolate_single_pose_raises(self):
         traj = self._linear_trajectory(5)
         traj.reduce_to_ids([0])

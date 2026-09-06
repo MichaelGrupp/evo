@@ -22,8 +22,8 @@ import argparse
 import logging
 
 import evo.cli.common_ape_rpe as common
-from evo.core import metrics, sync
-from evo.core.trajectory import PoseTrajectory3D, Plane
+from evo.core import metrics
+from evo.core.trajectory import PoseTrajectory3D, Plane, SyncMethod
 from evo.main_rpe import rpe
 from evo.tools import file_interface, log
 from evo.tools.settings import SETTINGS
@@ -70,12 +70,15 @@ def run(args: argparse.Namespace) -> None:
             if args.t_end:
                 logger.info(f"Using time range end: {args.t_end}s")
             traj_ref.reduce_to_time_range(args.t_start, args.t_end)
-        logger.debug("Synchronizing trajectories...")
-        traj_ref, traj_est = sync.associate_trajectories(
-            traj_ref,
+        sync_method = SyncMethod(args.sync_method)
+        logger.debug(
+            f"Synchronizing trajectories ({sync_method.value} method)..."
+        )
+        traj_ref, traj_est = traj_ref.sync_with(
             traj_est,
-            args.t_max_diff,
-            args.t_offset,
+            sync_method=sync_method,
+            max_diff=args.t_max_diff,
+            offset_2=args.t_offset,
         )
 
     result = rpe(

@@ -71,8 +71,8 @@ def associate_trajectories(
     traj_2: PoseTrajectory3D,
     max_diff: float = 0.01,
     offset_2: float = 0.0,
-    first_name: str = "first trajectory",
-    snd_name: str = "second trajectory",
+    first_name: str | None = None,
+    snd_name: str | None = None,
 ) -> TrajectoryPair:
     """
     Synchronizes two trajectories by matching their timestamps.
@@ -80,14 +80,19 @@ def associate_trajectories(
     :param traj_2: trajectory.PoseTrajectory3D object of second trajectory
     :param max_diff: max. allowed absolute time difference for associating
     :param offset_2: optional time offset of second trajectory
-    :param first_name: name of first trajectory for verbose logging
-    :param snd_name: name of second trajectory for verbose/debug logging
+    :param first_name: optional name of first trajectory for verbose logging,
+                       defaults to the name of the trajectory
+    :param snd_name: optional name of second trajectory for verbose/debug
+                     logging, defaults to the name of the trajectory
     :return: traj_1, traj_2 (synchronized)
     """
     if not isinstance(traj_1, PoseTrajectory3D) or not isinstance(
         traj_2, PoseTrajectory3D
     ):
         raise SyncException("trajectories must be PoseTrajectory3D objects")
+
+    first_name = first_name or traj_1.name or "first trajectory"
+    snd_name = snd_name or traj_2.name or "second trajectory"
 
     snd_longer = len(traj_2.timestamps) > len(traj_1.timestamps)
     traj_long = copy.deepcopy(traj_2) if snd_longer else copy.deepcopy(traj_1)

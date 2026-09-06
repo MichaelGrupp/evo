@@ -77,6 +77,15 @@ class TestTumFile(MockFileTestCase):
         self.assertTrue(traj_in.check())
         self.assertTrue(traj_out == traj_in)
 
+    def test_name_from_file(self):
+        traj_out = helpers.fake_trajectory(10, 0.1)
+        with tempfile.NamedTemporaryFile(suffix=".tum") as tmp_file:
+            file_interface.write_tum_trajectory_file(tmp_file.name, traj_out)
+            traj_in = file_interface.read_tum_trajectory_file(tmp_file.name)
+            self.assertEqual(traj_in.name, tmp_file.name)
+        # In-memory buffers have no file name.
+        self.assertIsNone(file_interface.name_from_file(io.StringIO()))
+
     @MockFileTestCase.run_and_clear
     def test_trailing_delim(self):
         self.mock_file.write("0 0 0 0 0 0 0 1 ")
@@ -179,6 +188,7 @@ class TestBagFile(MockFileTestCase):
             self.assertTrue(traj_in.check())
             self.assertTrue(traj_out == traj_in)
             self.assertEqual(traj_in.meta["frame_id"], "map")
+            self.assertEqual(traj_in.name, "/test")
 
 
 class TestResultFile(MockFileTestCase):

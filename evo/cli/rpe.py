@@ -76,8 +76,6 @@ def run(args: argparse.Namespace) -> None:
             traj_est,
             args.t_max_diff,
             args.t_offset,
-            first_name=ref_name,
-            snd_name=est_name,
         )
 
     result = rpe(

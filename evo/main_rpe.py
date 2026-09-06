@@ -35,6 +35,7 @@ def rpe(
     traj_ref: PosePath3D,
     traj_est: PosePath3D,
     pose_relation: metrics.PoseRelation,
+    *,
     delta: float,
     delta_unit: metrics.Unit,
     rel_delta_tol: float = 0.1,
@@ -44,14 +45,15 @@ def rpe(
     correct_scale: bool = False,
     n_to_align: int = -1,
     align_origin: bool = False,
-    ref_name: str = "reference",
-    est_name: str = "estimate",
     support_loop: bool = False,
     change_unit: metrics.Unit | None = None,
     project_to_plane: Plane | None = None,
 ) -> Result:
     if align and align_origin:
         raise ValueError("align and align_origin can't be used simultaneously")
+
+    ref_name = traj_ref.name or "reference"
+    est_name = traj_est.name or "estimate"
 
     # Align the trajectories.
     only_scale = correct_scale and not align

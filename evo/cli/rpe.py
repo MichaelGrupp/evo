@@ -44,7 +44,7 @@ def run(args: argparse.Namespace) -> None:
         logger.debug(f"main_parser config:\n{parser_str}")
     logger.debug(SEP)
 
-    traj_ref, traj_est, ref_name, est_name = common.load_trajectories(args)
+    traj_ref, traj_est = common.load_trajectories(args)
     pose_relation = common.get_pose_relation(args)
     delta_unit = common.get_delta_unit(args)
     change_unit = metrics.Unit(args.change_unit) if args.change_unit else None
@@ -91,8 +91,6 @@ def run(args: argparse.Namespace) -> None:
         correct_scale=args.correct_scale,
         n_to_align=args.n_to_align,
         align_origin=args.align_origin,
-        ref_name=ref_name,
-        est_name=est_name,
         change_unit=change_unit,
         project_to_plane=plane,
     )
@@ -111,15 +109,14 @@ def run(args: argparse.Namespace) -> None:
             args,
             result,
             traj_ref,
-            result.trajectories[est_name],
+            traj_est,
             traj_ref_full=traj_ref_full,
         )
 
     if args.save_results:
         logger.debug(SEP)
         if not SETTINGS.save_traj_in_zip:
-            del result.trajectories[ref_name]
-            del result.trajectories[est_name]
+            result.trajectories.clear()
         file_interface.save_res_file(
             args.save_results, result, confirm_overwrite=not args.no_warnings
         )

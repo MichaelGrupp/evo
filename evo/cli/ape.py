@@ -23,7 +23,8 @@ import logging
 
 import evo.cli.common_ape_rpe as common
 from evo.core import metrics
-from evo.core.trajectory import PoseTrajectory3D, Plane, SyncMethod
+from evo.core.sync import SyncMethod
+from evo.core.trajectory import PoseTrajectory3D, Plane
 from evo.main_ape import ape
 from evo.tools import file_interface, log
 from evo.tools.settings import SETTINGS

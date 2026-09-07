@@ -32,10 +32,7 @@ import evo.core.geometry as geometry
 from evo.core import lie_algebra as lie
 from evo.core import filters
 from evo.core.pose_cache import PoseCache
-
-if typing.TYPE_CHECKING:
-    # Imported for type annotations only, the sync module imports this module.
-    from evo.core import sync
+from evo.core.sync_method import SyncMethod
 
 logger = logging.getLogger(__name__)
 
@@ -571,7 +568,7 @@ class PoseTrajectory3D(PosePath3D, object):
         self,
         other: "PoseTrajectory3D",
         *,
-        sync_method: "sync.SyncMethod | None" = None,
+        sync_method: SyncMethod = SyncMethod.nearest_time,
         max_diff: float = 0.01,
         offset_2: float = 0.0,
     ) -> tuple["PoseTrajectory3D", "PoseTrajectory3D"]:
@@ -581,8 +578,7 @@ class PoseTrajectory3D(PosePath3D, object):
         Doesn't modify the trajectories, synced copies are returned.
 
         :param other: the other trajectory to sync with
-        :param sync_method: sync.SyncMethod to use for the synchronization,
-                            defaults to nearest-time association
+        :param sync_method: SyncMethod to use for the synchronization
         :param max_diff: max. allowed absolute time difference for associating
         :param offset_2: optional time offset of the other trajectory
         :return: synced copies of (self, other)
@@ -593,7 +589,7 @@ class PoseTrajectory3D(PosePath3D, object):
         return sync.associate_trajectories(
             self,
             other,
-            sync_method=sync_method or sync.SyncMethod.nearest_time,
+            sync_method=sync_method,
             max_diff=max_diff,
             offset_2=offset_2,
         )

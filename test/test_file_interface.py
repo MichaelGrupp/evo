@@ -79,6 +79,9 @@ class TestTumFile(MockFileTestCase):
         self.assertTrue(traj_out == traj_in)
 
     def test_name_from_file(self):
+        """
+        Checks that a trajectory is named after the file it's loaded from.
+        """
         traj_out = helpers.fake_trajectory(10, 0.1)
         with tempfile.TemporaryDirectory() as tmp_dir:
             file_path = Path(tmp_dir) / "test.tum"

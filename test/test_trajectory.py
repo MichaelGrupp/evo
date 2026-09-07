@@ -333,6 +333,9 @@ class TestPoseTrajectory3D(unittest.TestCase):
         return PoseTrajectory3D(xyz, quat_wxyz, timestamps)
 
     def test_name_is_preserved(self):
+        """
+        Checks that trajectories derived from a named one inherit its name.
+        """
         traj = self._linear_trajectory(5)
         self.assertIsNone(traj.name)
         traj.name = "test"

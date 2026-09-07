@@ -22,6 +22,7 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 import io
 import tempfile
 import unittest
+from pathlib import Path
 
 import numpy as np
 from rosbags.rosbag1 import Reader as Rosbag1Reader, Writer as Rosbag1Writer
@@ -79,10 +80,11 @@ class TestTumFile(MockFileTestCase):
 
     def test_name_from_file(self):
         traj_out = helpers.fake_trajectory(10, 0.1)
-        with tempfile.NamedTemporaryFile(suffix=".tum") as tmp_file:
-            file_interface.write_tum_trajectory_file(tmp_file.name, traj_out)
-            traj_in = file_interface.read_tum_trajectory_file(tmp_file.name)
-            self.assertEqual(traj_in.name, tmp_file.name)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            file_path = Path(tmp_dir) / "test.tum"
+            file_interface.write_tum_trajectory_file(file_path, traj_out)
+            traj_in = file_interface.read_tum_trajectory_file(file_path)
+            self.assertEqual(traj_in.name, str(file_path))
         # In-memory buffers have no file name.
         self.assertIsNone(file_interface.name_from_file(io.StringIO()))
 

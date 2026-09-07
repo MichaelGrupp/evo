@@ -24,11 +24,11 @@ from typing import Callable, Dict, Optional, Sequence, cast
 import numpy as np
 
 from evo import EvoException
+from evo.core.sync import SyncMethod
 from evo.core.trajectory import (
     Plane,
     PosePath3D,
     PoseTrajectory3D,
-    SyncMethod,
     merge,
 )
 

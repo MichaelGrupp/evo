@@ -29,7 +29,8 @@ from natsort import natsorted
 
 import evo.core.lie_algebra as lie
 from evo.core import trajectory
-from evo.core.trajectory import Plane, SyncMethod
+from evo.core.sync import SyncMethod
+from evo.core.trajectory import Plane
 from evo.core.trajectory_bundle import TrajectoryBundle
 from evo.tools import file_interface, log
 from evo.tools.settings import SETTINGS

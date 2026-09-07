@@ -25,6 +25,7 @@ import copy
 import numpy as np
 
 import helpers
+from evo.core import sync
 from evo.core import trajectory
 from evo.core import transformations as tr
 from evo.core import lie_algebra as lie
@@ -396,6 +397,9 @@ class TestPoseTrajectory3D(unittest.TestCase):
             self.assertAlmostEqual(np.linalg.norm(q), 1.0, places=9)
 
     def test_sync_with_interpolation(self):
+        """
+        Checks the sync.SyncMethod.interpolation option of sync_with().
+        """
         sparse = self._linear_trajectory(5)
         stamps = np.arange(0.0, 4.5, 0.5)
         dense = PoseTrajectory3D(
@@ -406,7 +410,7 @@ class TestPoseTrajectory3D(unittest.TestCase):
             stamps,
         )
         synced_sparse, synced_dense = sparse.sync_with(
-            dense, sync_method=trajectory.SyncMethod.interpolation
+            dense, sync_method=sync.SyncMethod.interpolation
         )
         # The denser trajectory is resampled at the timestamps of the sparser
         # one, which is kept as it is.

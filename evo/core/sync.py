@@ -21,11 +21,11 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
 import copy
 import logging
-from enum import Enum, unique
 
 import numpy as np
 
 from evo import EvoException
+from evo.core.sync_method import SyncMethod
 from evo.core.trajectory import PoseTrajectory3D
 
 logger = logging.getLogger(__name__)
@@ -37,18 +37,6 @@ class SyncException(EvoException):
 
 MatchingIndices = tuple[list[int], list[int]]
 TrajectoryPair = tuple[PoseTrajectory3D, PoseTrajectory3D]
-
-
-@unique
-class SyncMethod(Enum):
-    """
-    Methods for synchronizing two trajectories in time.
-    """
-
-    # Associate poses with the closest matching timestamps.
-    nearest_time = "nearest_time"
-    # Resample the denser trajectory at the timestamps of the sparser one.
-    interpolation = "interpolation"
 
 
 def matching_time_indices(

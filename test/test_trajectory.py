@@ -332,6 +332,19 @@ class TestPoseTrajectory3D(unittest.TestCase):
         quat_wxyz = np.tile(np.array([1.0, 0.0, 0.0, 0.0]), (length, 1))
         return PoseTrajectory3D(xyz, quat_wxyz, timestamps)
 
+    def test_name_is_preserved(self):
+        """
+        Checks that trajectories derived from a named one inherit its name.
+        """
+        traj = self._linear_trajectory(5)
+        self.assertIsNone(traj.name)
+        traj.name = "test"
+        self.assertEqual(traj.interpolate(np.array([0.5])).name, "test")
+        self.assertTrue(
+            all(s.name == "test" for s in traj.split_time_gaps(0.5))
+        )
+        self.assertEqual(copy.deepcopy(traj).name, "test")
+
     def test_interpolate_midpoints(self):
         traj = self._linear_trajectory(5)
         stamps = np.array([0.5, 1.5, 2.5, 3.5])

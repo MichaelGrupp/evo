@@ -38,7 +38,10 @@ SEP = "-" * 80  # separator line
 
 def load_trajectories(
     args: argparse.Namespace,
-) -> tuple[PosePath3D, PosePath3D, str, str]:
+) -> tuple[PosePath3D, PosePath3D]:
+    """
+    Loads the reference and estimate trajectory of the CLI arguments.
+    """
     from evo.tools import file_interface
 
     traj_ref: PosePath3D | PoseTrajectory3D
@@ -47,15 +50,12 @@ def load_trajectories(
     if args.subcommand == "tum":
         traj_ref = file_interface.read_tum_trajectory_file(args.ref_file)
         traj_est = file_interface.read_tum_trajectory_file(args.est_file)
-        ref_name, est_name = args.ref_file, args.est_file
     elif args.subcommand == "kitti":
         traj_ref = file_interface.read_kitti_poses_file(args.ref_file)
         traj_est = file_interface.read_kitti_poses_file(args.est_file)
-        ref_name, est_name = args.ref_file, args.est_file
     elif args.subcommand == "euroc":
         traj_ref = file_interface.read_euroc_csv_trajectory(args.state_gt_csv)
         traj_est = file_interface.read_tum_trajectory_file(args.est_file)
-        ref_name, est_name = args.state_gt_csv, args.est_file
     elif args.subcommand in ("bag", "bag2", "mcap"):
         logger.debug("Opening bag file " + args.bag)
         if not Path(args.bag).exists():
@@ -78,13 +78,12 @@ def load_trajectories(
             traj_est = file_interface.read_bag_trajectory(
                 bag, args.est_topic, cache_tf_tree=True
             )
-            ref_name, est_name = args.ref_topic, args.est_topic
         finally:
             bag.close()
     else:
         raise KeyError(f"unknown sub-command: {args.subcommand}")
 
-    return traj_ref, traj_est, ref_name, est_name
+    return traj_ref, traj_est
 
 
 def get_pose_relation(args: argparse.Namespace) -> PoseRelation:

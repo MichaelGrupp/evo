@@ -400,7 +400,9 @@ class TfCache(object):
                 while time <= latest_time:
                     timestamps.append(time)
                     time = time + step
-        return self.lookup_trajectory(parent, child, timestamps)
+        trajectory = self.lookup_trajectory(parent, child, timestamps)
+        trajectory.name = identifier
+        return trajectory
 
 
 __instance: DefaultDict[int, TfCache] = defaultdict(lambda: TfCache())

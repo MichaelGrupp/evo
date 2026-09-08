@@ -105,6 +105,19 @@ def csv_read_matrix(file_path: PathStrHandle, delim=",", comment_str="#"):
     return mat
 
 
+def name_from_file(file_path: PathStrHandle) -> str | None:
+    """
+    Derives the name of a trajectory from the file it's loaded from.
+    :param file_path: file path (or file handle)
+    :return: the file path, or None if it can't be determined
+    """
+    if hasattr(file_path, "read"):  # if file handle
+        name = getattr(file_path, "name", None)
+        # Not all file handles have a usable name (e.g. io.StringIO).
+        return name if isinstance(name, str) else None
+    return str(file_path)
+
+
 def read_tum_trajectory_file(file_path: PathStrHandle) -> PoseTrajectory3D:
     """
     parses trajectory file in TUM format (timestamp tx ty tz qx qy qz qw)
@@ -130,7 +143,7 @@ def read_tum_trajectory_file(file_path: PathStrHandle) -> PoseTrajectory3D:
         logger.debug(
             f"Loaded {len(stamps)} stamps and poses from: {file_path}"
         )
-    return PoseTrajectory3D(xyz, quat, stamps)
+    return PoseTrajectory3D(xyz, quat, stamps, name=name_from_file(file_path))
 
 
 def write_tum_trajectory_file(
@@ -186,7 +199,7 @@ def read_kitti_poses_file(file_path: PathStrHandle) -> PosePath3D:
     # fmt: on
     if not hasattr(file_path, "read"):  # if not file handle
         logger.debug(f"Loaded {len(poses)} poses from: {file_path}")
-    return PosePath3D(poses_se3=poses)
+    return PosePath3D(poses_se3=poses, name=name_from_file(file_path))
 
 
 def write_kitti_poses_file(
@@ -229,7 +242,7 @@ def read_euroc_csv_trajectory(file_path: PathStrHandle) -> PoseTrajectory3D:
     xyz = mat[:, 1:4]  # n x 3
     quat = mat[:, 4:8]  # n x 4
     logger.debug(f"Loaded {len(stamps)} stamps and poses from: {file_path}")
-    return PoseTrajectory3D(xyz, quat, stamps)
+    return PoseTrajectory3D(xyz, quat, stamps, name=name_from_file(file_path))
 
 
 def _get_xyz_quat_from_transform_stamped(
@@ -398,6 +411,7 @@ def read_bag_trajectory(
         np.array(quat),
         np.array(stamps),
         meta={"frame_id": frame_id},
+        name=topic,
     )
 
 

@@ -63,12 +63,15 @@ class PosePath3D(object):
         orientations_quat_wxyz: np.ndarray | None = None,
         poses_se3: typing.Sequence[np.ndarray] | None = None,
         meta: dict | None = None,
+        name: str | None = None,
     ):
         """
         :param positions_xyz: nx3 list of x,y,z positions
         :param orientations_quat_wxyz: nx4 list of quaternions (w,x,y,z format)
         :param poses_se3: list of SE(3) poses
         :param meta: optional metadata
+        :param name: optional name of the data source, e.g. a file path or a
+                     topic. Used as label in logging and other output.
         """
         self._cache = PoseCache(
             positions_xyz=positions_xyz,
@@ -78,6 +81,7 @@ class PosePath3D(object):
         if self._cache.num_poses == 0:
             raise TrajectoryException("pose data is empty")
         self.meta = {} if meta is None else meta
+        self.name = name
         self._projected = False
 
     def __str__(self) -> str:
@@ -353,7 +357,10 @@ class PosePath3D(object):
             return [self]
         jumps = self._jumps(dist)
         return [
-            PosePath3D(poses_se3=self.poses_se3[jumps[i] : jumps[i + 1]])
+            PosePath3D(
+                poses_se3=self.poses_se3[jumps[i] : jumps[i + 1]],
+                name=self.name,
+            )
             for i in range(len(jumps) - 1)
         ]
 
@@ -417,12 +424,13 @@ class PoseTrajectory3D(PosePath3D, object):
         timestamps: np.ndarray | None = None,
         poses_se3: typing.Sequence[np.ndarray] | None = None,
         meta: dict | None = None,
+        name: str | None = None,
     ):
         """
         :param timestamps: optional nx1 list of timestamps
         """
         super(PoseTrajectory3D, self).__init__(
-            positions_xyz, orientations_quat_wxyz, poses_se3, meta
+            positions_xyz, orientations_quat_wxyz, poses_se3, meta, name
         )
         # this is a bit ugly...
         if timestamps is None:
@@ -552,7 +560,7 @@ class PoseTrajectory3D(PosePath3D, object):
             for i in range(len(timestamps))
         ]
         return PoseTrajectory3D(
-            xyz, np.array(quats), timestamps, meta=self.meta
+            xyz, np.array(quats), timestamps, meta=self.meta, name=self.name
         )
 
     def split_time_gaps(
@@ -573,6 +581,7 @@ class PoseTrajectory3D(PosePath3D, object):
             PoseTrajectory3D(
                 timestamps=self.timestamps[gaps[i] : gaps[i + 1]],
                 poses_se3=self.poses_se3[gaps[i] : gaps[i + 1]],
+                name=self.name,
             )
             for i in range(len(gaps) - 1)
         ]
@@ -592,6 +601,7 @@ class PoseTrajectory3D(PosePath3D, object):
             PoseTrajectory3D(
                 timestamps=self.timestamps[jumps[i] : jumps[i + 1]],
                 poses_se3=self.poses_se3[jumps[i] : jumps[i + 1]],
+                name=self.name,
             )
             for i in range(len(jumps) - 1)
         ]
@@ -616,6 +626,7 @@ class PoseTrajectory3D(PosePath3D, object):
             PoseTrajectory3D(
                 timestamps=self.timestamps[jumps[i] : jumps[i + 1]],
                 poses_se3=self.poses_se3[jumps[i] : jumps[i + 1]],
+                name=self.name,
             )
             for i in range(len(jumps) - 1)
         ]

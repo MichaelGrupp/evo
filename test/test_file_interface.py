@@ -22,6 +22,7 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 import io
 import tempfile
 import unittest
+from pathlib import Path
 
 import numpy as np
 from rosbags.rosbag1 import Reader as Rosbag1Reader, Writer as Rosbag1Writer
@@ -76,6 +77,19 @@ class TestTumFile(MockFileTestCase):
         self.assertIsInstance(traj_in, PoseTrajectory3D)
         self.assertTrue(traj_in.check())
         self.assertTrue(traj_out == traj_in)
+
+    def test_name_from_file(self):
+        """
+        Checks that a trajectory is named after the file it's loaded from.
+        """
+        traj_out = helpers.fake_trajectory(10, 0.1)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            file_path = Path(tmp_dir) / "test.tum"
+            file_interface.write_tum_trajectory_file(file_path, traj_out)
+            traj_in = file_interface.read_tum_trajectory_file(file_path)
+            self.assertEqual(traj_in.name, str(file_path))
+        # In-memory buffers have no file name.
+        self.assertIsNone(file_interface.name_from_file(io.StringIO()))
 
     @MockFileTestCase.run_and_clear
     def test_trailing_delim(self):
@@ -179,6 +193,7 @@ class TestBagFile(MockFileTestCase):
             self.assertTrue(traj_in.check())
             self.assertTrue(traj_out == traj_in)
             self.assertEqual(traj_in.meta["frame_id"], "map")
+            self.assertEqual(traj_in.name, "/test")
 
 
 class TestResultFile(MockFileTestCase):

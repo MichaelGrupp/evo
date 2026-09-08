@@ -280,6 +280,17 @@ def parser() -> argparse.ArgumentParser:
             help="constant timestamp offset for data association",
         )
         trajectory_parser.add_argument(
+            "--sync_method",
+            type=str,
+            default="nearest_time",
+            choices=["nearest_time", "interpolation"],
+            help="method for the time synchronization of the trajectories: "
+            "nearest_time associates poses with the closest matching "
+            "timestamps (see --t_max_diff), "
+            "interpolation resamples the denser trajectory at the timestamps "
+            "of the sparser one",
+        )
+        trajectory_parser.add_argument(
             "--t_start",
             type=float,
             default=None,

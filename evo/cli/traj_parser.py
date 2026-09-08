@@ -71,6 +71,17 @@ def parser() -> argparse.ArgumentParser:
         type=float,
     )
     algo_opts.add_argument(
+        "--sync_method",
+        help="method for the time synchronization of the trajectories: "
+        "nearest_time associates poses with the closest matching timestamps "
+        "(see --t_max_diff), "
+        "interpolation resamples the denser trajectory at the timestamps of "
+        "the sparser one",
+        default="nearest_time",
+        choices=["nearest_time", "interpolation"],
+        type=str,
+    )
+    algo_opts.add_argument(
         "--merge",
         help="merge the trajectories in a single trajectory",
         action="store_true",

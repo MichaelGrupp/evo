@@ -29,6 +29,7 @@ from natsort import natsorted
 
 import evo.core.lie_algebra as lie
 from evo.core import trajectory
+from evo.core.sync import SyncMethod
 from evo.core.trajectory import Plane
 from evo.core.trajectory_bundle import TrajectoryBundle
 from evo.tools import file_interface, log
@@ -372,7 +373,10 @@ def run(args):
             bundle.mark_synced()
         else:
             logger.debug(SEP)
-            bundle.sync(max_diff=args.t_max_diff)
+            bundle.sync(
+                max_diff=args.t_max_diff,
+                sync_method=SyncMethod(args.sync_method),
+            )
         if args.align or args.correct_scale:
             logger.debug(SEP)
             bundle.align(

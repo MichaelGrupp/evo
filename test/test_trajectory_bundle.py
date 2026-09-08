@@ -25,6 +25,7 @@ import unittest
 import numpy as np
 
 import helpers
+from evo.core.sync import SyncMethod
 from evo.core.trajectory import Plane
 from evo.core.trajectory_bundle import (
     TrajectoryBundle,
@@ -128,6 +129,24 @@ class TestTrajectoryBundle(unittest.TestCase):
         self.bundle.sync(max_diff=0.02)
         self.assertTrue(self.bundle.synced)
         self.assertIn("a", self.bundle.synced_refs)
+
+    def test_sync_interpolation(self):
+        """
+        Checks the sync.SyncMethod.interpolation option of the bundle sync.
+        """
+        # Reference is denser, so it gets interpolated at the timestamps
+        # of the trajectory.
+        ref = helpers.fake_trajectory(20, 0.05)
+        traj = helpers.fake_trajectory(10, 0.1)
+        self.bundle.add("a", traj)
+        self.bundle.add_reference(ref)
+        self.bundle.sync(sync_method=SyncMethod.interpolation)
+        self.assertTrue(self.bundle.synced)
+        self.assertEqual(self.bundle.trajectories["a"].num_poses, 10)
+        self.assertEqual(self.bundle.synced_refs["a"].num_poses, 10)
+        np.testing.assert_allclose(
+            self.bundle.synced_refs["a"].timestamps, traj.timestamps
+        )
 
     def test_sync_no_ref_raises(self):
         self.bundle.add("a", helpers.fake_trajectory(10, 0.1))

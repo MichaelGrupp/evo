@@ -246,6 +246,14 @@ A few "inoffical" scripts for special use-cases are collected  in the `contrib/`
 
 ---
 
+## Showcase
+
+Projects and evaluations that use evo. If you published a benchmark or evaluation that uses evo, feel free to add it here via pull request.
+
+- **[FusionCore](https://github.com/manankharwar/fusioncore)** — a ROS 2 UKF for IMU + wheel odometry + GPS fusion, benchmarked against `robot_localization` on the NCLT dataset using `evo_ape` / `evo_rpe`. See the [benchmark configs and reproduction instructions](https://github.com/manankharwar/fusioncore/tree/main/fusioncore_datasets).
+
+---
+
 ## Contributing
 
 Patches are welcome, preferably as pull requests.

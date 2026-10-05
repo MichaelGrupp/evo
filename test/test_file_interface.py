@@ -23,6 +23,7 @@ import io
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import numpy as np
 from rosbags.rosbag1 import Reader as Rosbag1Reader, Writer as Rosbag1Writer
@@ -31,7 +32,7 @@ from rosbags.rosbag2 import Reader as Rosbag2Reader, Writer as Rosbag2Writer
 import helpers
 import evo.core.lie_algebra as lie
 from evo.core.result import Result
-from evo.core.trajectory import PosePath3D, PoseTrajectory3D
+from evo.core.trajectory import PosePath3D, PoseTrajectory3D, merge
 from evo.tools import file_interface
 from evo.tools.settings import SETTINGS
 
@@ -167,6 +168,58 @@ class TestKittiFile(MockFileTestCase):
 class TestBagFile(MockFileTestCase):
     def __init__(self, *args, **kwargs):
         super(TestBagFile, self).__init__(io.BytesIO(), *args, **kwargs)
+
+    def test_read_trajectory_single_pass(self):
+        """Read both bag formats once while preserving the first frame."""
+        for reader_t in [Rosbag1Reader, Rosbag2Reader]:
+            with (
+                self.subTest(reader=reader_t),
+                tempfile.TemporaryDirectory() as tmp,
+            ):
+                bag_path = Path(tmp) / "trajectory.bag"
+                if reader_t is Rosbag1Reader:
+                    writer = Rosbag1Writer(bag_path)
+                else:
+                    writer = Rosbag2Writer(
+                        bag_path, version=SETTINGS.ros2_bag_format_version
+                    )
+                trajectory = helpers.fake_trajectory(10, 0.1)
+                with writer:
+                    file_interface.write_bag_trajectory(
+                        writer, trajectory, "/test", frame_id=""
+                    )
+                    # The first message's empty frame must not be replaced by
+                    # a later, nonempty frame on the same topic.
+                    later_trajectory = helpers.fake_trajectory(10, 0.1)
+                    later_trajectory.timestamps += 10.0
+                    with patch.object(
+                        writer,
+                        "add_connection",
+                        return_value=writer.connections[0],
+                    ):
+                        file_interface.write_bag_trajectory(
+                            writer, later_trajectory, "/test", frame_id="map"
+                        )
+                with reader_t(bag_path) as reader:
+                    with patch.object(
+                        reader, "messages", wraps=reader.messages
+                    ) as messages:
+                        loaded = file_interface.read_bag_trajectory(
+                            reader, "/test"
+                        )
+                    messages.assert_called_once()
+                self.assertEqual(loaded.meta["frame_id"], "")
+                self.assertEqual(loaded.name, "/test")
+                self.assertEqual(loaded, merge([trajectory, later_trajectory]))
+                with reader_t(bag_path) as reader:
+                    with patch.object(
+                        reader, "messages", return_value=iter(())
+                    ):
+                        with self.assertRaisesRegex(
+                            file_interface.FileInterfaceException,
+                            "no messages for topic '/test' in bag",
+                        ):
+                            file_interface.read_bag_trajectory(reader, "/test")
 
     def test_write_read_integrity(self):
         for reader_t in [Rosbag1Reader, Rosbag2Reader]:

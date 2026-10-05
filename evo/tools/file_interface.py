@@ -373,6 +373,7 @@ def read_bag_trajectory(
         get_xyz_quat = _get_xyz_quat_from_pose_or_odometry_msg
 
     stamps, xyz, quat = [], [], []
+    frame_id = None
 
     if isinstance(reader, Rosbag1Reader):
         typestore = get_typestore(Stores.ROS1_NOETIC)
@@ -386,6 +387,9 @@ def read_bag_trajectory(
             msg = typestore.deserialize_ros1(rawdata, connection.msgtype)
         else:
             msg = typestore.deserialize_cdr(rawdata, connection.msgtype)
+        frame_id = (
+            msg.header.frame_id if frame_id is None else frame_id  # type: ignore
+        )
         # Use the header timestamps (converted to seconds).
         # Note: msg/stamp is a rosbags type here, not native ROS.
         t = msg.header.stamp  # type: ignore
@@ -396,16 +400,10 @@ def read_bag_trajectory(
 
     logger.debug(f"Loaded {len(stamps)} {msg_type} messages of topic: {topic}")
 
-    # fmt: off
-        # fmt: off
-    (connection, _, rawdata) = list(reader.messages(connections=connections))[0]  # type: ignore
-    # fmt: on
-    # fmt: on
-    if isinstance(reader, Rosbag1Reader):
-        first_msg = typestore.deserialize_ros1(rawdata, connection.msgtype)
-    else:
-        first_msg = typestore.deserialize_cdr(rawdata, connection.msgtype)
-    frame_id = first_msg.header.frame_id  # type: ignore
+    if frame_id is None:
+        raise FileInterfaceException(
+            "no messages for topic '" + topic + "' in bag"
+        )
     return PoseTrajectory3D(
         np.array(xyz),
         np.array(quat),

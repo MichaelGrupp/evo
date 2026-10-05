@@ -387,9 +387,6 @@ def read_bag_trajectory(
             msg = typestore.deserialize_ros1(rawdata, connection.msgtype)
         else:
             msg = typestore.deserialize_cdr(rawdata, connection.msgtype)
-        frame_id = (
-            msg.header.frame_id if frame_id is None else frame_id  # type: ignore
-        )
         # Use the header timestamps (converted to seconds).
         # Note: msg/stamp is a rosbags type here, not native ROS.
         t = msg.header.stamp  # type: ignore
@@ -397,13 +394,20 @@ def read_bag_trajectory(
         xyz_t, quat_t = get_xyz_quat(msg)
         xyz.append(xyz_t)
         quat.append(quat_t)
+        frame_id = (
+            msg.header.frame_id if frame_id is None else frame_id  # type: ignore
+        )
 
-    logger.debug(f"Loaded {len(stamps)} {msg_type} messages of topic: {topic}")
-
-    if frame_id is None:
+    if (num_msgs := len(stamps)) > 0:
+        logger.debug(
+            f"Loaded {num_msgs} {msg_type} messages of topic: {topic}"
+        )
+    else:
+        # Container formats like MCAP can advertise a topic with 0 messages.
         raise FileInterfaceException(
             "no messages for topic '" + topic + "' in bag"
         )
+
     return PoseTrajectory3D(
         np.array(xyz),
         np.array(quat),

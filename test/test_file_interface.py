@@ -170,6 +170,7 @@ class TestBagFile(MockFileTestCase):
         super(TestBagFile, self).__init__(io.BytesIO(), *args, **kwargs)
 
     def test_read_trajectory_single_pass(self):
+        """Read both bag formats once while preserving the first frame."""
         for reader_t in [Rosbag1Reader, Rosbag2Reader]:
             with (
                 self.subTest(reader=reader_t),

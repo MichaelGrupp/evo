@@ -387,8 +387,9 @@ def read_bag_trajectory(
             msg = typestore.deserialize_ros1(rawdata, connection.msgtype)
         else:
             msg = typestore.deserialize_cdr(rawdata, connection.msgtype)
-        if frame_id is None:
-            frame_id = msg.header.frame_id  # type: ignore
+        frame_id = (
+            msg.header.frame_id if frame_id is None else frame_id  # type: ignore
+        )
         # Use the header timestamps (converted to seconds).
         # Note: msg/stamp is a rosbags type here, not native ROS.
         t = msg.header.stamp  # type: ignore

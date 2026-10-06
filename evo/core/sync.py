@@ -59,12 +59,39 @@ def matching_time_indices(
     stamps_2 = copy.deepcopy(stamps_2)
     stamps_2 += offset_2
     for index_1, stamp_1 in enumerate(stamps_1):
-        diffs = np.abs(stamps_2 - stamp_1)
-        index_2 = int(np.argmin(diffs))
-        if diffs[index_2] <= max_diff:
+        # Skip stamps that are outside the range of stamps_2 +/- max_diff
+        if (
+            stamp_1 < stamps_2[0] - max_diff
+            or stamp_1 > stamps_2[-1] + max_diff
+        ):
+            continue
+
+        # Find the closest timestamp in stamps_2 to stamp_1
+        index_ub = np.searchsorted(stamps_2, stamp_1, side="right")
+        index_ub = (
+            index_ub[0] if isinstance(index_ub, np.ndarray) else index_ub
+        )
+
+        # Determine the index of the closest timestamp in stamps_2
+        if index_ub < len(stamps_2):
+            index_2 = index_ub
+        else:
+            index_2 = len(stamps_2) - 1
+
+        # Calculate the time differences between stamp_1 and the closest timestamps in stamps_2
+        diff_ub = stamps_2[index_2] - stamp_1
+        diff_lb = (
+            stamp_1 - stamps_2[index_2 - 1] if index_2 > 0 else float("inf")
+        )
+
+        # Check if the time differences are within the allowed max_diff and select the closest match
+        if diff_ub <= max_diff and diff_ub <= diff_lb:
             matching_indices_1.append(index_1)
             matching_indices_2.append(index_2)
-    assert len(matching_indices_1) == len(matching_indices_2)  # nosec B101
+        elif diff_lb <= max_diff and diff_lb < diff_ub:
+            matching_indices_1.append(index_1)
+            matching_indices_2.append(index_2 - 1)
+
     return matching_indices_1, matching_indices_2
 
 

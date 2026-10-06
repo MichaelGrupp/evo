@@ -58,6 +58,19 @@ def matching_time_indices(
     matching_indices_2 = []
     stamps_2 = copy.deepcopy(stamps_2)
     stamps_2 += offset_2
+    # Binary search requires ordered target timestamps. Preserve the existing
+    # linear search for unordered inputs instead of silently losing matches.
+    time_diffs = np.diff(stamps_2)
+    if not np.all(time_diffs >= 0):
+        for index_1, stamp_1 in enumerate(stamps_1):
+            diffs = np.abs(stamps_2 - stamp_1)
+            index_2 = int(np.argmin(diffs))
+            if diffs[index_2] <= max_diff:
+                matching_indices_1.append(index_1)
+                matching_indices_2.append(index_2)
+        return matching_indices_1, matching_indices_2
+
+    has_duplicates = np.any(time_diffs == 0)
     for index_1, stamp_1 in enumerate(stamps_1):
         # Skip stamps that are outside the range of stamps_2 +/- max_diff
         if (
@@ -85,12 +98,17 @@ def matching_time_indices(
         )
 
         # Check if the time differences are within the allowed max_diff and select the closest match
-        if diff_ub <= max_diff and diff_ub <= diff_lb:
-            matching_indices_1.append(index_1)
-            matching_indices_2.append(index_2)
-        elif diff_lb <= max_diff and diff_lb < diff_ub:
-            matching_indices_1.append(index_1)
-            matching_indices_2.append(index_2 - 1)
+        if diff_ub <= max_diff and diff_ub < diff_lb:
+            index_best = index_2
+        elif diff_lb <= max_diff and diff_lb <= diff_ub:
+            index_best = index_2 - 1
+        else:
+            continue
+        # np.argmin returns the first index when distances are tied.
+        if has_duplicates:
+            index_best = np.searchsorted(stamps_2, stamps_2[index_best])
+        matching_indices_1.append(index_1)
+        matching_indices_2.append(int(index_best))
 
     return matching_indices_1, matching_indices_2
 

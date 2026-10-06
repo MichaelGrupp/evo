@@ -28,6 +28,24 @@ from evo.core import sync
 
 
 class TestMatchingTimeIndices(unittest.TestCase):
+    def test_equidistant_match_uses_first_index(self):
+        matches = sync.matching_time_indices(
+            np.array([0.005]), np.array([0.0, 0.01]), max_diff=0.006
+        )
+        self.assertEqual(matches, ([0], [0]))
+
+    def test_matching_unsorted_timestamps(self):
+        matches = sync.matching_time_indices(
+            np.array([0.0]), np.array([1.0, 0.0, 2.0])
+        )
+        self.assertEqual(matches, ([0], [1]))
+
+    def test_duplicate_match_uses_first_index(self):
+        matches = sync.matching_time_indices(
+            np.array([1.0]), np.array([1.0, 1.0, 2.0])
+        )
+        self.assertEqual(matches, ([0], [0]))
+
     def test_correct_positive_offset(self):
         stamps_1 = helpers.fake_timestamps(10, 0.1, start_time=0.0)
         stamps_2 = helpers.fake_timestamps(10, 0.1, start_time=0.5)

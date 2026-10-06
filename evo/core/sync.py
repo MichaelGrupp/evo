@@ -81,9 +81,6 @@ def matching_time_indices(
 
         # Find the closest timestamp in stamps_2 to stamp_1
         index_ub = np.searchsorted(stamps_2, stamp_1, side="right")
-        index_ub = (
-            index_ub[0] if isinstance(index_ub, np.ndarray) else index_ub
-        )
 
         # Determine the index of the closest timestamp in stamps_2
         if index_ub < len(stamps_2):
@@ -104,12 +101,16 @@ def matching_time_indices(
             index_best = index_2 - 1
         else:
             continue
+
         # np.argmin returns the first index when distances are tied.
         if has_duplicates:
-            index_best = np.searchsorted(stamps_2, stamps_2[index_best])
+            # It is enough to search in the range from the beginning of stamps_2 to index_best + 1,
+            # because the best match is guaranteed to be in that range.
+            index_best = np.searchsorted(
+                stamps_2[0 : index_best + 1], stamps_2[index_best], side="left"
+            )
         matching_indices_1.append(index_1)
         matching_indices_2.append(int(index_best))
-
     return matching_indices_1, matching_indices_2
 
 

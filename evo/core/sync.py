@@ -58,8 +58,7 @@ def matching_time_indices(
     matching_indices_2 = []
     stamps_2 = copy.deepcopy(stamps_2)
     stamps_2 += offset_2
-    # Binary search requires ordered target timestamps. Preserve the existing
-    # linear search for unordered inputs instead of silently losing matches.
+    # Fall back to linear search if timestamps are not monotonically increasing.
     time_diffs = np.diff(stamps_2)
     if not np.all(time_diffs >= 0):
         for index_1, stamp_1 in enumerate(stamps_1):

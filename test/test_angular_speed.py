@@ -10,7 +10,9 @@ from evo.core.trajectory import calc_angular_speed, TrajectoryException
 def test_angular_speed_is_shortest_relative_angle(angles, degrees):
     poses = [np.eye(4), np.eye(4)]
     for pose, angle in zip(poses, angles):
-        pose[:3, :3] = Rotation.from_euler("z", angle, degrees=True).as_matrix()
+        pose[:3, :3] = Rotation.from_euler(
+            "z", angle, degrees=True
+        ).as_matrix()
     expected = (
         Rotation.from_matrix(poses[0][:3, :3]).inv()
         * Rotation.from_matrix(poses[1][:3, :3])

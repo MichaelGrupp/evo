@@ -763,9 +763,9 @@ def calc_angular_speed(
         raise TrajectoryException(
             "bad timestamps: " + str(t_1) + " & " + str(t_2)
         )
-    angle_1 = lie.so3_log(p_1[:3, :3], degrees)
-    angle_2 = lie.so3_log(p_2[:3, :3], degrees)
-    return (angle_2 - angle_1) / (t_2 - t_1)
+    relative_rotation = lie.relative_so3(p_1[:3, :3], p_2[:3, :3])
+    angle = lie.so3_log_angle(relative_rotation, degrees=degrees)
+    return angle / (t_2 - t_1)
 
 
 def xyz_quat_wxyz_to_se3_poses(

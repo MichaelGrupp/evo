@@ -65,7 +65,8 @@ def umeyama_alignment(
 
     # SVD (text betw. eq. 38 and 39)
     u, d, v = np.linalg.svd(cov_xy)
-    if np.count_nonzero(d > np.finfo(d.dtype).eps) < m - 1:
+    rank_tolerance = d[0] * max(cov_xy.shape) * np.finfo(d.dtype).eps
+    if np.count_nonzero(d > rank_tolerance) < m - 1:
         raise GeometryException(
             "Degenerate covariance rank, " "Umeyama alignment is not possible"
         )

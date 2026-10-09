@@ -744,48 +744,6 @@ def calc_speed(
     return float(np.linalg.norm(xyz_2 - xyz_1) / (t_2 - t_1))
 
 
-def calc_angular_speed(
-    p_1: np.ndarray,
-    p_2: np.ndarray,
-    t_1: float,
-    t_2: float,
-    degrees: bool = False,
-) -> float:
-    """
-    :param p_1: pose at timestamp 1
-    :param p_2: pose at timestamp 2
-    :param t_1: timestamp 1
-    :param t_2: timestamp 2
-    :param degrees: set to True to return deg/s
-    :return: speed in rad/s
-    """
-    if (t_2 - t_1) <= 0:
-        raise TrajectoryException(
-            "bad timestamps: " + str(t_1) + " & " + str(t_2)
-        )
-    angle_1 = lie.so3_log(p_1[:3, :3], degrees)
-    angle_2 = lie.so3_log(p_2[:3, :3], degrees)
-    return (angle_2 - angle_1) / (t_2 - t_1)
-
-
-def xyz_quat_wxyz_to_se3_poses(
-    xyz: np.ndarray, quat: np.ndarray
-) -> typing.Sequence[np.ndarray]:
-    poses = [
-        lie.se3(lie.so3_from_se3(tr.quaternion_matrix(quat)), xyz)
-        for quat, xyz in zip(quat, xyz)
-    ]
-    return poses
-
-
-def se3_poses_to_xyz_quat_wxyz(
-    poses: typing.Sequence[np.ndarray],
-) -> tuple[np.ndarray, np.ndarray]:
-    xyz = np.array([pose[:3, 3] for pose in poses])
-    quat_wxyz = np.array([tr.quaternion_from_matrix(pose) for pose in poses])
-    return xyz, quat_wxyz
-
-
 def merge(trajectories: typing.Sequence[PoseTrajectory3D]) -> PoseTrajectory3D:
     """
     Merges multiple trajectories into a single, timestamp-sorted one.

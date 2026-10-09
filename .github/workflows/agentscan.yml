@@ -1,0 +1,33 @@
+name: AgentScan
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+  issues:
+    types:
+      - opened
+
+jobs:
+  agentscan:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
+      contents: read
+    steps:
+      - name: AgentScan
+        uses: MatteoGabriele/agentscan-action@v2.5.0
+        with:
+          scan-pull-requests: true
+          scan-issues: true
+          label-automation: "caution - rogue robots 🤖"
+          label-mixed: "uncanny valley 🥸" 
+          auto-close: false
+          comment-on-organic: false
+          honeypot: true
+          # Default Honeypot greetings are a bit lengthy
+          # https://github.com/MatteoGabriele/agentscan-action/blob/main/src/honeypot.ts
+          message-honeypot: "Thanks for the {type}, @{username}!"
+          message-honeypot-first-time: "Welcome, @{username} — thanks for opening your first {type} here!"

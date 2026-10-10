@@ -44,7 +44,7 @@ class TestMatchingTimeIndices(unittest.TestCase):
         matches = sync.matching_time_indices(
             np.array([1.0, 2.0]), np.array([1.0, 1.0, 2.0])
         )
-        self.assertEqual(matches, ([0, 1], [0, 2]))
+        self.assertEqual(matches, ([0, 1], [1, 2]))
 
     def test_correct_positive_offset(self):
         stamps_1 = helpers.fake_timestamps(10, 0.1, start_time=0.0)

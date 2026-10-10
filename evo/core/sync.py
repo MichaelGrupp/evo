@@ -58,13 +58,48 @@ def matching_time_indices(
     matching_indices_2 = []
     stamps_2 = copy.deepcopy(stamps_2)
     stamps_2 += offset_2
+    # Fall back to linear search if timestamps are not monotonically increasing.
+    time_diffs = np.diff(stamps_2)
+    if not np.all(time_diffs >= 0):
+        for index_1, stamp_1 in enumerate(stamps_1):
+            diffs = np.abs(stamps_2 - stamp_1)
+            index_2 = int(np.argmin(diffs))
+            if diffs[index_2] <= max_diff:
+                matching_indices_1.append(index_1)
+                matching_indices_2.append(index_2)
+        return matching_indices_1, matching_indices_2
+
     for index_1, stamp_1 in enumerate(stamps_1):
-        diffs = np.abs(stamps_2 - stamp_1)
-        index_2 = int(np.argmin(diffs))
-        if diffs[index_2] <= max_diff:
-            matching_indices_1.append(index_1)
-            matching_indices_2.append(index_2)
-    assert len(matching_indices_1) == len(matching_indices_2)  # nosec B101
+        # Skip stamps that are outside the range of stamps_2 +/- max_diff
+        if (
+            stamp_1 < stamps_2[0] - max_diff
+            or stamp_1 > stamps_2[-1] + max_diff
+        ):
+            continue
+
+        # Find the insertion index at which stamp_1 would be closest to a value in stamps_2
+        index_2 = np.searchsorted(stamps_2, stamp_1, side="right")
+
+        # Clamp an out-of-range insertion index.
+        if index_2 >= len(stamps_2):
+            index_2 = len(stamps_2) - 1
+
+        # Calculate the time differences between stamp_1 and the closest timestamps in stamps_2
+        diff_ub = stamps_2[index_2] - stamp_1
+        diff_lb = (
+            stamp_1 - stamps_2[index_2 - 1] if index_2 > 0 else float("inf")
+        )
+
+        # Check if the time differences are within the allowed max_diff and select the closest match
+        if diff_ub <= max_diff and diff_ub < diff_lb:
+            index_best = index_2
+        elif diff_lb <= max_diff and diff_lb <= diff_ub:
+            index_best = index_2 - 1
+        else:
+            continue
+
+        matching_indices_1.append(index_1)
+        matching_indices_2.append(int(index_best))
     return matching_indices_1, matching_indices_2
 
 

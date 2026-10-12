@@ -40,7 +40,7 @@ class TestMatchingTimeIndices(unittest.TestCase):
         )
         self.assertEqual(matches, ([0], [1]))
 
-    def test_duplicate_match_uses_first_index(self):
+    def test_duplicate_match(self):
         matches = sync.matching_time_indices(
             np.array([1.0, 2.0]), np.array([1.0, 1.0, 2.0])
         )

@@ -5,8 +5,8 @@ from pathlib import Path
 # https://docs.python.org/3/howto/logging.html#library-config
 from logging import NullHandler
 
-if sys.version_info < (3, 10):
-    raise Exception("evo requires Python 3.10 or higher.")
+if sys.version_info < (3, 11):
+    raise Exception("evo requires Python 3.11 or higher.")
 
 logging.getLogger(__name__).addHandler(NullHandler())
 

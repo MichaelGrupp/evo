@@ -51,7 +51,7 @@ evo has several advantages over other public benchmarking tools:
 
 Installation is easy-peasy if you're familiar with this: https://xkcd.com/1987/#
 
-The latest version of evo supports **Python 3.10+**.
+The latest version of evo supports **Python 3.11+**.
 
 Please use `pip` only in a proper environment (e.g. `uv`/`uvx`, `pipx`, `venv`, Pixi or a classic [virtual environment](https://github.com/MichaelGrupp/evo/blob/master/doc/install_in_virtualenv.md)).
 > ⚠️ ☠️☠️☠️ ⚠️

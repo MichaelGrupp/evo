@@ -393,7 +393,7 @@ def run(args):
         tf_path = args.transform_left or args.transform_right
         transform = file_interface.load_transform(tf_path)
         if args.invert_transform:
-            transform = lie.se3_inverse(transform)
+            transform = lie.sim3_inverse(transform)
         logger.debug(SEP)
         logger.debug(
             f"Applying a {tf_type}-multiplicative transformation:"

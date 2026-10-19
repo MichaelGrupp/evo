@@ -19,7 +19,9 @@ along with evo. If not, see <http://www.gnu.org/licenses/>.
 
 import json
 import os
-import subprocess
+
+# The CLI test launches only the current interpreter with generated inputs.
+import subprocess  # nosec B404
 import sys
 from pathlib import Path
 
@@ -30,6 +32,75 @@ from evo.core import lie_algebra as lie
 from evo.core import transformations as tr
 from evo.core.trajectory import PoseTrajectory3D
 from evo.tools import file_interface
+
+
+def _write_trajectory(path: Path) -> PoseTrajectory3D:
+    """Write three poses with differing rotations and return the trajectory."""
+    trajectory = PoseTrajectory3D(
+        positions_xyz=np.array([[1, 2, 3], [2, 2, 3], [2, 3, 3]]),
+        orientations_quat_wxyz=np.array(
+            [
+                tr.quaternion_from_euler(0.2 * i, 0.1 * i, 0.3 * i)
+                for i in range(3)
+            ]
+        ),
+        timestamps=np.array([0.0, 1.0, 2.0]),
+    )
+    file_interface.write_tum_trajectory_file(path, trajectory)
+    return trajectory
+
+
+def _write_transform(path: Path, scale: float) -> np.ndarray:
+    """Write a scaled, rotated, translated transform in the requested format."""
+    quaternion = tr.quaternion_from_euler(0, 0, np.pi / 2)
+    rotation = tr.quaternion_matrix(quaternion)[:3, :3]
+    translation = np.array([10.0, -4.0, 2.0])
+    transform = lie.sim3(rotation, translation, scale)
+    if path.suffix == ".json":
+        data = dict(zip(("x", "y", "z"), translation.tolist()))
+        data.update(zip(("qw", "qx", "qy", "qz"), quaternion.tolist()))
+        data["scale"] = scale
+        path.write_text(json.dumps(data))
+    elif path.suffix == ".txt":
+        np.savetxt(path, transform)
+    else:
+        np.save(path, transform)
+    return transform
+
+
+def _run_traj(
+    directory: Path, transform_path: Path, right_mul: bool, invert: bool
+) -> None:
+    """Run the real CLI with isolated settings and report any process failure."""
+    command = [
+        sys.executable,
+        "-c",
+        "from evo.cli.entry_points import traj; traj()",
+        "tum",
+        str(directory / "trajectory.txt"),
+        "--transform_right" if right_mul else "--transform_left",
+        str(transform_path),
+        "--save_as_tum",
+        "--no_warnings",
+    ]
+    if invert:
+        command.append("--invert_transform")
+    home = directory / "home"
+    home.mkdir()
+    try:
+        # No shell or external input: arguments are constants and fixture paths.
+        subprocess.run(  # nosec B603
+            command,
+            cwd=directory,
+            env={**os.environ, "HOME": str(home), "USERPROFILE": str(home)},
+            shell=False,
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+    except subprocess.CalledProcessError as error:
+        pytest.fail(error.stdout + error.stderr)
 
 
 @pytest.mark.parametrize("scale", [0.5, 1.0, 2.0])
@@ -43,58 +114,11 @@ def test_transform(
     right_mul: bool,
     invert: bool,
 ) -> None:
-    positions = np.array([[1, 2, 3], [2, 2, 3], [2, 3, 3]])
-    quaternions = np.array(
-        [tr.quaternion_from_euler(0.2 * i, 0.1 * i, 0.3 * i) for i in range(3)]
-    )
-    trajectory = PoseTrajectory3D(
-        positions_xyz=positions,
-        orientations_quat_wxyz=quaternions,
-        timestamps=np.array([0.0, 1.0, 2.0]),
-    )
-    trajectory_path = tmp_path / "trajectory.txt"
-    file_interface.write_tum_trajectory_file(trajectory_path, trajectory)
-
-    quaternion = tr.quaternion_from_euler(0, 0, np.pi / 2)
-    rotation = tr.quaternion_matrix(quaternion)[:3, :3]
-    translation = np.array([10.0, -4.0, 2.0])
-    transform = lie.sim3(rotation, translation, scale)
+    """Check exported poses against direct matrix multiplication and inversion."""
+    trajectory = _write_trajectory(tmp_path / "trajectory.txt")
     transform_path = tmp_path / f"transform.{file_format}"
-    if file_format == "json":
-        data = dict(zip(("x", "y", "z"), translation.tolist()))
-        data.update(zip(("qw", "qx", "qy", "qz"), quaternion.tolist()))
-        data["scale"] = scale
-        transform_path.write_text(json.dumps(data))
-    elif file_format == "txt":
-        np.savetxt(transform_path, transform)
-    else:
-        np.save(transform_path, transform)
-
-    command = [
-        sys.executable,
-        "-c",
-        "from evo.cli.entry_points import traj; traj()",
-        "tum",
-        str(trajectory_path),
-        "--transform_right" if right_mul else "--transform_left",
-        str(transform_path),
-        "--save_as_tum",
-        "--no_warnings",
-    ]
-    if invert:
-        command.append("--invert_transform")
-    home = tmp_path / "home"
-    home.mkdir()
-    completed = subprocess.run(
-        command,
-        cwd=tmp_path,
-        env={**os.environ, "HOME": str(home), "USERPROFILE": str(home)},
-        capture_output=True,
-        text=True,
-        timeout=30,
-    )
-    assert completed.returncode == 0, completed.stdout + completed.stderr
-
+    transform = _write_transform(transform_path, scale)
+    _run_traj(tmp_path, transform_path, right_mul, invert)
     result = file_interface.read_tum_trajectory_file(
         tmp_path / "trajectory.tum"
     )
@@ -113,4 +137,4 @@ def test_transform(
         np.linalg.norm(result.orientations_quat_wxyz, axis=1), 1.0, atol=1e-12
     )
     valid, details = result.check()
-    assert valid, details
+    np.testing.assert_equal(valid, True, err_msg=str(details))

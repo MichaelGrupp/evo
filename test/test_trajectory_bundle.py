@@ -205,10 +205,25 @@ class TestTrajectoryBundle(unittest.TestCase):
             original_positions,
         )
 
+    def test_project_synced_references(self):
+        for method in SyncMethod:
+            with self.subTest(sync_method=method):
+                ref = helpers.fake_trajectory(10, 0.1)
+                traj = copy.deepcopy(ref)
+                traj.reduce_to_ids([0, 2, 4, 6, 8])
+                bundle = TrajectoryBundle({"a": traj}, ref)
+                bundle.sync(sync_method=method)
+                bundle.project(Plane.XY)
+                np.testing.assert_allclose(
+                    bundle.synced_refs["a"].poses_se3,
+                    bundle.trajectories["a"].poses_se3,
+                )
+
     def test_project(self):
         traj = helpers.fake_path(10)
         self.bundle.add("a", traj)
         self.bundle.add_reference(helpers.fake_path(10))
+        self.bundle.mark_synced()
         self.bundle.project(Plane.XY)
         np.testing.assert_array_equal(
             self.bundle.trajectories["a"].positions_xyz[:, 2], 0.0

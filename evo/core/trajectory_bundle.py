@@ -249,3 +249,6 @@ class TrajectoryBundle:
             traj.project(plane)
         if self.ref_traj:
             self.ref_traj.project(plane)
+        for ref in self.synced_refs.values():
+            if ref is not self.ref_traj:
+                ref.project(plane)

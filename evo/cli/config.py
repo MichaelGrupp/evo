@@ -78,7 +78,7 @@ def log_info_dict_json(
     colored: bool = True,
     parameter_subset: typing.Sequence[str] | None = None,
 ) -> None:
-    if parameter_subset:
+    if parameter_subset is not None:
         data = {
             key: value
             for key, value in data.items()
@@ -103,6 +103,25 @@ def show(
 ) -> None:
     with open(config_path) as config_file:
         log_info_dict_json(json.load(config_file), colored, parameter_subset)
+
+
+def match_parameters(
+    patterns: typing.Sequence[str], available: typing.Iterable[str]
+) -> list[str]:
+    """Resolve exact names or partial parameter-name prefixes."""
+    available = list(available)
+    matched: set[str] = set()
+    for pattern in patterns:
+        if pattern in available:
+            matches = {pattern}
+        else:
+            matches = {
+                parameter
+                for parameter in available
+                if parameter.startswith(pattern)
+            }
+        matched.update(matches)
+    return [parameter for parameter in available if parameter in matched]
 
 
 def merge_json_union(
@@ -266,6 +285,7 @@ To save the configuration, specify -o / --output.
 
 def main() -> None:
     import argcomplete
+    from argcomplete.completers import ChoicesCompleter
 
     basic_desc = "crappy configuration tool"
     lic = "(c) evo authors"
@@ -297,11 +317,13 @@ def main() -> None:
         help="show diff compared to default settings",
         action="store_true",
     )
-    show_parser.add_argument(
+    show_params = show_parser.add_argument(
         "params",
-        choices=list(DEFAULT_SETTINGS_DICT.keys()),
         nargs=argparse.REMAINDER,
-        help="parameters to show",
+        help="parameters to show (exact names or partial prefixes)",
+    )
+    show_params.completer = ChoicesCompleter(
+        {parameter: "" for parameter in DEFAULT_SETTINGS_DICT}
     )
 
     set_parser = sub_parsers.add_parser(
@@ -372,6 +394,10 @@ def main() -> None:
             config = args.config
 
     if args.subcommand == "show":
+        if args.params:
+            params = match_parameters(args.params, DEFAULT_SETTINGS_DICT)
+        else:
+            params = None
         if args.diff:
             with open(config) as config_file:
                 current = json.load(config_file)
@@ -389,14 +415,12 @@ def main() -> None:
                 for parameter, value_and_doc in sorted(
                     DEFAULT_SETTINGS_DICT_DOC.items()
                 )
-                if (not args.params or parameter in args.params)
+                if (params is None or parameter in params)
             )
             logger.info(doc_str)
             logger.info(f"{SEP}\n{config}\n{SEP}")
         if not args.diff:
-            show(
-                config, colored=not args.no_color, parameter_subset=args.params
-            )
+            show(config, colored=not args.no_color, parameter_subset=params)
             if config == settings.DEFAULT_PATH and not args.brief:
                 logger.info(
                     SEP + "\nSee text above for parameter descriptions."

@@ -28,7 +28,7 @@ import sys
 import typing
 
 import colorama
-from colorama import Fore, Style
+from colorama import Style
 from pygments import highlight, lexers, formatters
 
 from evo import EvoException
@@ -317,12 +317,13 @@ def main() -> None:
         help="show diff compared to default settings",
         action="store_true",
     )
-    show_params = show_parser.add_argument(
+    show_params: argparse.Action = show_parser.add_argument(
         "params",
         nargs=argparse.REMAINDER,
         help="parameters to show (exact names or partial prefixes)",
     )
-    show_params.completer = ChoicesCompleter(
+    # completer attr is added by argcomplete
+    show_params.completer = ChoicesCompleter(  # type: ignore[attr-defined]
         {parameter: "" for parameter in DEFAULT_SETTINGS_DICT}
     )
 

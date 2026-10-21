@@ -27269,23 +27269,23 @@ packages:
 - pypi: ./
   name: evo
   requires_dist:
-  - argcomplete>=3.7.2,<4
-  - colorama
-  - matplotlib>=3.11.2,<4
-  - natsort>=8.4.0,<9
-  - numexpr>=2.14.2,<3
-  - numpy>=2.4.6,<3
+  - argcomplete
+  - colorama>=0.3
+  - matplotlib>=3.6.0
+  - natsort
+  - numexpr>=2.7.3
+  - numpy>=1.18.5
   - packaging
-  - pandas>=3.0.6,<4
-  - pillow>=12.3.0,<13
+  - pandas
+  - pillow
   - pygments
-  - pyyaml>=6.0.3,<7
-  - rosbags>=0.11.7,<0.12
-  - scipy>=1.17.1,<2
-  - seaborn>=0.13.2,<0.14
+  - pyyaml
+  - rosbags>=0.11.1,!=0.11.6
+  - scipy>=1.2
+  - seaborn>=0.9
   - contextily ; extra == 'geo'
   - pyqt6 ; extra == 'gui'
-  - rerun-sdk ; extra == 'rerun'
+  - rerun-sdk>=0.34.0 ; extra == 'rerun'
   requires_python: '>=3.11'
 - pypi: https://files.pythonhosted.org/packages/02/03/74fe2a4cb3817d94d86402f2506554130a2f01414e299b5a843e5a8a957f/numpy-2.4.6-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
   name: numpy

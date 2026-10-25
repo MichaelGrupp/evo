@@ -10,8 +10,8 @@ This package provides executables and a small library for handling, evaluating a
 
 Supported trajectory formats:
 
-* 'TUM' trajectory files
-* 'KITTI' pose files
+* 'TUM' trajectory files (`timestamp tx ty tz qx qy qz qw` with timestamps in seconds)
+* 'KITTI' pose files (`r11 r12 r13 tx r21 r22 r23 ty r31 r32 r33 tz` per line)
 * 'EuRoC MAV' (.csv groundtruth and TUM trajectory file)
 * ROS and ROS2 bagfile with `geometry_msgs/PoseStamped`, `geometry_msgs/TransformStamped`, `geometry_msgs/PoseWithCovarianceStamped`, `geometry_msgs/PointStamped` or `nav_msgs/Odometry` topics or [TF messages](https://github.com/MichaelGrupp/evo/wiki/Formats#bag---ros-bagfile)
 
@@ -170,11 +170,11 @@ There are some example trajectories in the source folder in `test/data`.
   evo_ape kitti KITTI_00_gt.txt KITTI_00_ORB.txt -va --plot --plot_mode xz --save_results results/ORB.zip
   ```
 
-  <a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_demo_ORB_raw.png" target="_blank">
-    <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_demo_ORB_raw.png" alt="evo" height="200" border="5" />
-  </a>
   <a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_demo_ORB_map.png" target="_blank">
     <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_demo_ORB_map.png" alt="evo" height="200" border="5" />
+  </a>
+  <a href="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_demo_ORB_raw.png" target="_blank">
+    <img src="https://raw.githubusercontent.com/MichaelGrupp/evo/master/doc/assets/ape_demo_ORB_raw.png" alt="evo" height="200" border="5" />
   </a>
 
   *Second trajectory (S-PTAM):*

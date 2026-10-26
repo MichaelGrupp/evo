@@ -77,3 +77,37 @@ class TestMergeResult(unittest.TestCase):
         r2.add_stats({"foo": 1.0, "bar": 2.0})
         with self.assertRaises(result.ResultException):
             result.merge_results([r1, r2])
+
+    def test_merge_strategy_average_with_different_key_order(self):
+        r1 = result.Result()
+        r1.add_np_array("error_array", np.array([1.0, 2.0, 3.0]))
+        r1.add_np_array("alignment_transformation_sim3", np.eye(4))
+        r2 = result.Result()
+        r2.add_np_array("alignment_transformation_sim3", np.eye(4))
+        r2.add_np_array("error_array", np.array([3.0, 4.0, 5.0]))
+
+        merged = result.merge_results([r1, r2])
+
+        np.testing.assert_array_equal(
+            merged.np_arrays["error_array"], np.array([2.0, 3.0, 4.0])
+        )
+        np.testing.assert_array_equal(
+            merged.np_arrays["alignment_transformation_sim3"], np.eye(4)
+        )
+
+    def test_merge_strategy_append_with_different_key_order(self):
+        r1 = result.Result()
+        r1.add_np_array("first", np.array([1.0, 2.0]))
+        r1.add_np_array("second", np.array([3.0, 4.0, 5.0]))
+        r2 = result.Result()
+        r2.add_np_array("second", np.array([6.0, 7.0]))
+        r2.add_np_array("first", np.array([8.0, 9.0, 10.0]))
+
+        merged = result.merge_results([r1, r2])
+
+        np.testing.assert_array_equal(
+            merged.np_arrays["first"], np.array([1.0, 2.0, 8.0, 9.0, 10.0])
+        )
+        np.testing.assert_array_equal(
+            merged.np_arrays["second"], np.array([3.0, 4.0, 5.0, 6.0, 7.0])
+        )

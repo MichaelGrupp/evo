@@ -103,8 +103,11 @@ def merge_results(results: typing.Sequence[Result]) -> Result:
 
     # Determine merge strategy:
     strategy = "average"
-    length_lists = [[a.size for a in r.np_arrays.values()] for r in results]
-    if not all(a == b for a, b in zip(length_lists, length_lists[1:])):
+    array_sizes = [
+        {key: array.size for key, array in r.np_arrays.items()}
+        for r in results
+    ]
+    if not all(a == b for a, b in zip(array_sizes, array_sizes[1:])):
         logger.warning("Appending raw value arrays due to different lengths.")
         strategy = "append"
     else:

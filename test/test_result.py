@@ -79,6 +79,7 @@ class TestMergeResult(unittest.TestCase):
             result.merge_results([r1, r2])
 
     def test_merge_strategy_average_with_different_key_order(self):
+        """Average matching arrays regardless of dictionary insertion order."""
         r1 = result.Result()
         r1.add_np_array("error_array", np.array([1.0, 2.0, 3.0]))
         r1.add_np_array("alignment_transformation_sim3", np.eye(4))
@@ -96,6 +97,7 @@ class TestMergeResult(unittest.TestCase):
         )
 
     def test_merge_strategy_append_with_different_key_order(self):
+        """Append different-sized arrays regardless of key insertion order."""
         r1 = result.Result()
         r1.add_np_array("first", np.array([1.0, 2.0]))
         r1.add_np_array("second", np.array([3.0, 4.0, 5.0]))

@@ -127,7 +127,7 @@ class PE(Metric):
 
         if self.unit in LENGTH_UNITS and new_unit in LENGTH_UNITS:
             # Convert first to meters, then to the final length unit.
-            self.error *= (
+            self.error = self.error * (
                 METER_SCALE_FACTORS[self.unit] / METER_SCALE_FACTORS[new_unit]
             )
         elif self.unit is Unit.radians and new_unit is Unit.degrees:

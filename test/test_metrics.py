@@ -27,6 +27,8 @@ from evo.core.units import Unit
 
 
 class TestChangeUnit(unittest.TestCase):
+    """Check that unit conversions preserve previously returned results."""
+
     def test_length_conversion_preserves_existing_results(self):
         """A result's errors must keep the unit of its label and statistics."""
         orientations = np.tile([1.0, 0.0, 0.0, 0.0], (3, 1))

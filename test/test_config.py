@@ -25,14 +25,14 @@ class TestGenerate(unittest.TestCase):
         )
 
     def test_flags_and_strings(self):
-        """Keep ordinary short flags, long flags and string values unchanged."""
+        """Parse short flags, long flags and string values."""
         self.assertEqual(
             config.generate(["--align", "-v", "--plot_mode", "xz", "--plot"]),
             {"align": True, "v": True, "plot_mode": "xz", "plot": True},
         )
 
     def test_invalid_number_remains_an_option(self):
-        """Retain the existing treatment of nonnumeric hyphenated tokens."""
+        """Parse nonnumeric hyphenated tokens as option names."""
         self.assertEqual(
             config.generate(["--align", "-1e", "value", "--plot"]),
             {"align": True, "1e": "value", "plot": True},

@@ -215,17 +215,19 @@ def generate(arg_list: typing.Sequence[str]) -> dict[str, typing.Any]:
     data: dict[str, typing.Any] = {}
     max_idx = len(arg_list) - 1
     for i, arg in enumerate(arg_list):
-        if arg.startswith("-"):
+        if arg.startswith("-") and not is_number(arg):
             arg = arg[1:] if not arg.startswith("--") else arg[2:]
             if (
-                i + 1 <= max_idx and arg_list[i + 1].startswith("-")
+                i + 1 <= max_idx
+                and arg_list[i + 1].startswith("-")
+                and not is_number(arg_list[i + 1])
             ) or i + 1 > max_idx:
                 data[arg] = True  # just a boolean flag
             else:
                 values: list[typing.Any] = []
                 for j in range(i + 1, max_idx + 1):
                     value = arg_list[j]
-                    if value.startswith("-"):
+                    if value.startswith("-") and not is_number(value):
                         break
                     values.append(float(value) if is_number(value) else value)
                 if len(values) == 1:

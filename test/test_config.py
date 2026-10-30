@@ -1,18 +1,23 @@
 """Tests for command-line configuration generation."""
 
+import io
 import json
-import subprocess
+import logging
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from evo.cli import ape_parser, config, entry_points
 from evo.tools.file_interface import load_res_file
 
 
 class TestGenerate(unittest.TestCase):
+    """Check numeric arguments and compatibility of generated CLI configs."""
+
     def test_negative_numbers(self):
+        """Keep signed numeric tokens as values rather than option names."""
         for token in ("-1", "-0.1", "-.5", "-1e-3", "-2E+2", "-0"):
             with self.subTest(token=token):
                 self.assertEqual(
@@ -21,31 +26,44 @@ class TestGenerate(unittest.TestCase):
                 )
 
     def test_mixed_numeric_list(self):
+        """Preserve numeric lists until a real option begins."""
         self.assertEqual(
             config.generate(["--values", "1", "-2", "3e-4", "-5e-6", "-v"]),
             {"values": [1.0, -2.0, 3e-4, -5e-6], "v": True},
         )
 
     def test_flags_and_strings(self):
+        """Keep ordinary short flags, long flags and string values unchanged."""
         self.assertEqual(
             config.generate(["--align", "-v", "--plot_mode", "xz", "--plot"]),
             {"align": True, "v": True, "plot_mode": "xz", "plot": True},
         )
 
     def test_invalid_number_remains_an_option(self):
+        """Retain the existing treatment of nonnumeric hyphenated tokens."""
         self.assertEqual(
             config.generate(["--align", "-1e", "value", "--plot"]),
             {"align": True, "1e": "value", "plot": True},
         )
 
     def test_cli_config_preserves_time_offset(self):
-        with tempfile.TemporaryDirectory() as tmp:
+        """Generate a config through the CLI and use it to synchronize APE."""
+        logger = logging.getLogger("evo")
+        with (
+            tempfile.TemporaryDirectory() as tmp,
+            patch.object(sys, "stdout", io.StringIO()),
+            patch.object(sys, "stderr", io.StringIO()),
+            patch.object(logger, "handlers", list(logger.handlers)),
+            patch.object(logger, "level", logger.level),
+            patch.object(logger, "propagate", logger.propagate),
+            patch.object(config.colorama, "init"),
+        ):
             output = Path(tmp) / "ape.json"
-            subprocess.run(
+            with patch.object(
+                sys,
+                "argv",
                 [
-                    sys.executable,
-                    "-c",
-                    "from evo.cli.config import main; main()",
+                    "evo_config",
                     "generate",
                     "--no_color",
                     "-o",
@@ -54,10 +72,8 @@ class TestGenerate(unittest.TestCase):
                     "-0.1",
                     "--align",
                 ],
-                check=True,
-                capture_output=True,
-                text=True,
-            )
+            ):
+                config.main()
             self.assertEqual(
                 json.loads(output.read_text()),
                 {"t_offset": -0.1, "align": True},
@@ -83,11 +99,11 @@ class TestGenerate(unittest.TestCase):
                     for i, xyz in enumerate(positions)
                 )
             )
-            subprocess.run(
+            with patch.object(
+                sys,
+                "argv",
                 [
-                    sys.executable,
-                    "-c",
-                    "from evo.cli.entry_points import ape; ape()",
+                    "evo_ape",
                     "tum",
                     str(reference),
                     str(estimate),
@@ -96,8 +112,6 @@ class TestGenerate(unittest.TestCase):
                     "--save_results",
                     str(result),
                 ],
-                check=True,
-                capture_output=True,
-                text=True,
-            )
+            ):
+                entry_points.ape()
             self.assertAlmostEqual(load_res_file(result).stats["rmse"], 0.0)

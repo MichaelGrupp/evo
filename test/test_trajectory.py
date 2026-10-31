@@ -521,6 +521,121 @@ class TestStateTrajectory3D(unittest.TestCase):
         traj.timestamps[0] = 666
         self.assertFalse(traj.check()[0])
 
+    @staticmethod
+    def _constant_velocity_trajectory(num_poses=10, dt=0.5):
+        """
+        Straight-line motion, so the velocities must always match the
+        finite differences of the positions.
+        """
+        velocity = np.array([1.0, -2.0, 0.5])
+        stamps = np.arange(num_poses) * dt
+        xyz = np.array([0.3, 0.1, -0.2]) + stamps[:, None] * velocity
+        quats = np.tile([1.0, 0.0, 0.0, 0.0], (num_poses, 1))
+        return StateTrajectory3D(
+            xyz, quats, np.tile(velocity, (num_poses, 1)), stamps
+        )
+
+    def assert_velocities_match_positions(self, traj):
+        finite_diff = np.diff(traj.positions_xyz, axis=0) / np.diff(
+            traj.timestamps
+        )[:, None]
+        np.testing.assert_allclose(traj.velocities_xyz[:-1], finite_diff)
+
+    def test_transform_rotates_velocities(self):
+        traj = helpers.fake_state_trajectory(5, 1)
+        original = copy.deepcopy(traj)
+        r = lie.so3_exp(np.array([0.0, 0.0, np.pi / 2]))
+        traj.transform(lie.se3(r, np.array([5.0, -3.0, 1.0])))
+        # Rotation of 90° around z: (x, y, z) -> (-y, x, z).
+        expected = np.column_stack(
+            [
+                -original.velocities_xyz[:, 1],
+                original.velocities_xyz[:, 0],
+                original.velocities_xyz[:, 2],
+            ]
+        )
+        np.testing.assert_allclose(traj.velocities_xyz, expected, atol=1e-12)
+
+    def test_transform_sim3_keeps_velocities_consistent(self):
+        traj = self._constant_velocity_trajectory()
+        traj.transform(lie.sim3(lie.random_so3(), np.array([1, 2, 3]), 2.5))
+        self.assert_velocities_match_positions(traj)
+
+    def test_transform_right_mul_keeps_velocities(self):
+        traj = helpers.fake_state_trajectory(5, 1)
+        original = copy.deepcopy(traj)
+        traj.transform(lie.random_se3(), right_mul=True)
+        np.testing.assert_array_equal(
+            traj.velocities_xyz, original.velocities_xyz
+        )
+
+    def test_scale(self):
+        traj = self._constant_velocity_trajectory()
+        traj.scale(3.0)
+        np.testing.assert_allclose(
+            traj.velocities_xyz[0], [3.0, -6.0, 1.5]
+        )
+        self.assert_velocities_match_positions(traj)
+
+    def test_align_with_scale(self):
+        """
+        Aligning a rotated, translated and scaled copy back onto the
+        reference must also bring the velocities back.
+        """
+        traj_ref = self._constant_velocity_trajectory()
+        # Positions on a straight line are degenerate for Umeyama,
+        # so bend the path a little (velocities don't need to match here).
+        traj_ref = StateTrajectory3D(
+            traj_ref.positions_xyz + np.random.rand(traj_ref.num_poses, 3),
+            traj_ref.orientations_quat_wxyz,
+            traj_ref.velocities_xyz,
+            traj_ref.timestamps,
+        )
+        sim3 = lie.sim3(lie.random_so3(), np.array([1, 2, 3]), 0.4)
+        traj_est = copy.deepcopy(traj_ref)
+        traj_est.transform(sim3)
+        # Set the expected misaligned velocities by hand, so this test
+        # doesn't depend on transform() being correct.
+        traj_est.velocities_xyz = traj_ref.velocities_xyz @ sim3[:3, :3].T
+        traj_est.align(traj_ref, correct_scale=True)
+        np.testing.assert_allclose(
+            traj_est.velocities_xyz, traj_ref.velocities_xyz, atol=1e-9
+        )
+
+    def test_align_origin(self):
+        traj_ref = self._constant_velocity_trajectory()
+        se3 = lie.random_se3()
+        traj_est = copy.deepcopy(traj_ref)
+        traj_est.transform(se3)
+        traj_est.velocities_xyz = traj_ref.velocities_xyz @ se3[:3, :3].T
+        traj_est.align_origin(traj_ref)
+        np.testing.assert_allclose(
+            traj_est.velocities_xyz, traj_ref.velocities_xyz, atol=1e-9
+        )
+
+    def test_projection(self):
+        for plane, null_dim in zip(trajectory.Plane, [2, 1, 0]):
+            with self.subTest(plane=plane):
+                traj = helpers.fake_state_trajectory(5, 1)
+                original = copy.deepcopy(traj)
+                traj.project(plane)
+                np.testing.assert_array_equal(
+                    traj.velocities_xyz[:, null_dim], 0
+                )
+                kept_dims = [d for d in range(3) if d != null_dim]
+                np.testing.assert_array_equal(
+                    traj.velocities_xyz[:, kept_dims],
+                    original.velocities_xyz[:, kept_dims],
+                )
+
+    def test_projection_twice_keeps_velocities(self):
+        traj = helpers.fake_state_trajectory(5, 1)
+        traj.project(trajectory.Plane.XY)
+        projected = traj.velocities_xyz.copy()
+        with self.assertRaises(trajectory.TrajectoryException):
+            traj.project(trajectory.Plane.XZ)
+        np.testing.assert_array_equal(traj.velocities_xyz, projected)
+
     def test_init_velocities_from_list(self):
         traj = StateTrajectory3D(
             poses_se3=helpers.random_se3_list(2),

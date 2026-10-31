@@ -791,6 +791,40 @@ class StateTrajectory3D(PoseTrajectory3D):
             )
         return valid, details
 
+    def transform(
+        self, t: np.ndarray, right_mul: bool = False, propagate: bool = False
+    ) -> None:
+        """
+        apply a left or right multiplicative transformation to the whole path
+        Velocities are in the world frame, so a left-multiplied transformation
+        rotates (and for Sim(3), scales) them. A right-multiplied one changes
+        only the body frame and leaves them unchanged.
+        :param t: a 4x4 transformation matrix (e.g. SE(3) or Sim(3))
+        :param right_mul: whether to apply it right-multiplicative or not
+        :param propagate: whether to propagate drift with RHS transformations
+        """
+        super(StateTrajectory3D, self).transform(t, right_mul, propagate)
+        if not right_mul:
+            # Row-wise v' = sR @ v, with sR the upper-left 3x3 block of t.
+            self.velocities_xyz = self.velocities_xyz @ t[:3, :3].T
+
+    def scale(self, s: float) -> None:
+        """
+        apply a scaling to the whole path, including the velocities
+        :param s: scale factor
+        """
+        super(StateTrajectory3D, self).scale(s)
+        self.velocities_xyz = self.velocities_xyz * s
+
+    def project(self, plane: Plane) -> None:
+        """
+        Projects the poses and the velocities into a plane.
+        :param plane: desired plane into which the poses will be projected
+        """
+        super(StateTrajectory3D, self).project(plane)
+        null_dim = {Plane.XY: 2, Plane.XZ: 1, Plane.YZ: 0}[plane]
+        self.velocities_xyz[:, null_dim] = 0
+
     def reduce_to_ids(self, ids: typing.Sequence[int] | np.ndarray) -> None:
         """
         Reduce the poses, timestamps and velocities to the ones specified in ids

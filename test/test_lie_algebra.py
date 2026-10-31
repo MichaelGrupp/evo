@@ -139,6 +139,36 @@ class TestSim3(unittest.TestCase):
         self.assertAlmostEqual(s, lie.sim3_scale(p))
 
 
+class TestSE23(unittest.TestCase):
+    def test_se23_layout(self):
+        r = lie.random_so3()
+        t = np.array([1.0, 2.0, 3.0])
+        v = np.array([4.0, 5.0, 6.0])
+        p = lie.se23(r, t, v)
+        self.assertEqual(p.shape, (5, 5))
+        self.assertTrue(np.allclose(p[:3, :3], r))
+        self.assertTrue(np.allclose(p[:3, 3], t))
+        self.assertTrue(np.allclose(p[:3, 4], v))
+        self.assertTrue(np.allclose(p[3:, :], np.eye(5)[3:, :]))
+
+    def test_se23_default_is_identity(self):
+        self.assertTrue(np.allclose(lie.se23(), np.eye(5)))
+
+    def test_se23_inverse(self):
+        p = lie.se23(lie.random_so3(), np.random.rand(3), np.random.rand(3))
+        p_inv = lie.se23_inverse(p)
+        self.assertTrue(np.allclose(p_inv, np.linalg.inv(p)))
+        self.assertTrue(np.allclose(p_inv.dot(p), np.eye(5)))
+        self.assertTrue(np.allclose(p.dot(p_inv), np.eye(5)))
+
+    def test_relative_se23(self):
+        a = lie.se23(lie.random_so3(), np.random.rand(3), np.random.rand(3))
+        b = lie.se23(lie.random_so3(), np.random.rand(3), np.random.rand(3))
+        a_to_b = lie.relative_se23(a, b)
+        self.assertTrue(np.allclose(a.dot(a_to_b), b))
+        self.assertTrue(np.allclose(lie.relative_se23(a, a), np.eye(5)))
+
+
 if __name__ == "__main__":
     """
     benchmarks

@@ -737,13 +737,23 @@ class StateTrajectory3D(PoseTrajectory3D):
             meta: dict | None = None,
             name: str | None = None):
         """
-        :param timestamps: optional nx1 list of timestamps
+        :param velocities_xyz: nx3 list of x,y,z linear velocities
+        :param timestamps: nx1 list of timestamps
         """
         super(StateTrajectory3D, self).__init__(
             positions_xyz, orientations_quat_wxyz, timestamps, poses_se3, meta, name
         )
 
-        self.velocities_xyz = np.array(velocities_xyz)
+        if velocities_xyz is None:
+            raise TrajectoryException("no velocities provided")
+
+        self.velocities_xyz = np.array(velocities_xyz, dtype=float)
+        expected_shape = (self.num_poses, 3)
+        if self.velocities_xyz.shape != expected_shape:
+            raise TrajectoryException(
+                f"velocities_xyz must have shape {expected_shape}, "
+                f"got {self.velocities_xyz.shape}"
+            )
 
     def reduce_to_ids(self, ids: typing.Sequence[int] | np.ndarray) -> None:
         """

@@ -435,6 +435,31 @@ class TestPoseTrajectory3D(unittest.TestCase):
 
 
 class TestStateTrajectory3D(unittest.TestCase):
+    def test_init_missing_velocities(self):
+        with self.assertRaises(trajectory.TrajectoryException):
+            StateTrajectory3D(
+                poses_se3=helpers.random_se3_list(3), timestamps=[0, 1, 2]
+            )
+
+    def test_init_wrong_velocity_shape(self):
+        for bad_shape in [(7, 3), (3, 2), (3,), (3, 3, 1)]:
+            with self.subTest(shape=bad_shape):
+                with self.assertRaises(trajectory.TrajectoryException):
+                    StateTrajectory3D(
+                        poses_se3=helpers.random_se3_list(3),
+                        velocities_xyz=np.zeros(bad_shape),
+                        timestamps=[0, 1, 2],
+                    )
+
+    def test_init_velocities_from_list(self):
+        traj = StateTrajectory3D(
+            poses_se3=helpers.random_se3_list(2),
+            velocities_xyz=[[1, 2, 3], [4, 5, 6]],
+            timestamps=[0, 1],
+        )
+        self.assertEqual(traj.velocities_xyz.shape, (2, 3))
+        self.assertEqual(traj.velocities_xyz.dtype, float)
+
     def test_reduce_to_ids(self):
         traj = helpers.fake_state_trajectory(10, 1)
         original = copy.deepcopy(traj)

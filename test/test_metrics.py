@@ -32,6 +32,7 @@ from evo.core.units import Unit
 
 
 def state_trajectory(poses_se3, velocities_xyz):
+    """StateTrajectory3D from the given poses and velocities, at 10 Hz."""
     n = len(poses_se3)
     return StateTrajectory3D(
         poses_se3=poses_se3,
@@ -61,26 +62,33 @@ def paper_ase_errors(traj_ref, traj_est):
 
 
 class TestASE(unittest.TestCase):
+    """Tests for the absolute state error (ASE) metric."""
+
     def setUp(self):
         np.random.seed(42)
         self.traj_ref = helpers.fake_state_trajectory(50, 0.1)
         self.traj_est = helpers.fake_state_trajectory(50, 0.1)
 
     def test_identical_trajectories_have_zero_error(self):
+        """
+        Identical trajectories give zero error and identity error matrices.
+        """
         ase = metrics.ASE()
         ase.process_data((self.traj_ref, copy.deepcopy(self.traj_ref)))
         self.assertEqual(len(ase.error), self.traj_ref.num_poses)
         self.assertTrue(np.allclose(ase.error, 0.0))
-        for E in ase.E:
-            self.assertTrue(np.allclose(E, np.eye(5)))
+        for error in ase.E:
+            self.assertTrue(np.allclose(error, np.eye(5)))
 
     def test_matches_paper_definition(self):
+        """The errors match Eq. 9 & 10 of the paper (see paper_ase_errors)."""
         ase = metrics.ASE()
         ase.process_data((self.traj_ref, self.traj_est))
         expected = paper_ase_errors(self.traj_ref, self.traj_est)
         self.assertTrue(np.allclose(ase.error, expected))
 
     def test_rmse_matches_paper_definition(self):
+        """The RMSE statistic matches the paper's definition."""
         ase = metrics.ASE()
         ase.process_data((self.traj_ref, self.traj_est))
         expected = paper_ase_errors(self.traj_ref, self.traj_est)
@@ -90,8 +98,10 @@ class TestASE(unittest.TestCase):
         )
 
     def test_position_and_velocity_offset(self):
-        # Same rotations, positions and velocities shifted by world-frame
-        # offsets: ||E - I||_F = sqrt(|dp|^2 + |dv|^2) for every pose.
+        """
+        Same rotations, positions and velocities shifted by world-frame
+        offsets: ||E - I||_F = sqrt(|dp|^2 + |dv|^2) for every pose.
+        """
         dp = np.array([0.1, -0.2, 0.3])
         dv = np.array([1.0, 0.5, -2.0])
         poses_est = []
@@ -108,8 +118,10 @@ class TestASE(unittest.TestCase):
         self.assertTrue(np.allclose(ase.error, expected))
 
     def test_rotation_offset(self):
-        # Pure rotation error of angle theta at the origin with zero velocity:
-        # ||R - I||_F = 2 * sqrt(2) * |sin(theta / 2)|.
+        """
+        Pure rotation error of angle theta at the origin with zero velocity:
+        ||R - I||_F = 2 * sqrt(2) * |sin(theta / 2)|.
+        """
         theta = 0.3
         r = lie.so3_exp(np.array([0.0, 0.0, theta]))
         traj_ref = state_trajectory([np.eye(4)], np.zeros((1, 3)))
@@ -120,8 +132,10 @@ class TestASE(unittest.TestCase):
         self.assertAlmostEqual(ase.error[0], expected)
 
     def test_velocity_error_is_detected(self):
-        # Poses are identical, so APE on the full transformation is zero,
-        # but ASE must still see the velocity error.
+        """
+        Poses are identical, so APE on the full transformation is zero,
+        but ASE must still see the velocity error.
+        """
         traj_est = state_trajectory(
             self.traj_ref.poses_se3, self.traj_ref.velocities_xyz + 1.0
         )
@@ -134,6 +148,7 @@ class TestASE(unittest.TestCase):
         self.assertTrue(np.allclose(ase.error, np.sqrt(3.0)))
 
     def test_reduces_to_ape_without_velocities(self):
+        """With zero velocities, ASE equals APE on the full transformation."""
         zero_v = np.zeros((self.traj_ref.num_poses, 3))
         traj_ref = state_trajectory(self.traj_ref.poses_se3, zero_v)
         traj_est = state_trajectory(self.traj_est.poses_se3, zero_v)
@@ -144,9 +159,11 @@ class TestASE(unittest.TestCase):
         self.assertTrue(np.allclose(ase.error, ape.error))
 
     def test_invariant_to_common_world_transform(self):
-        # The metric is left-invariant: moving both trajectories by the same
-        # SE(3) transform (which also rotates the world-frame velocities)
-        # must not change the error.
+        """
+        The metric is left-invariant: moving both trajectories by the same
+        SE(3) transform (which also rotates the world-frame velocities)
+        must not change the error.
+        """
         ase = metrics.ASE()
         ase.process_data((self.traj_ref, self.traj_est))
         error_before = ase.error.copy()
@@ -160,9 +177,11 @@ class TestASE(unittest.TestCase):
         self.assertTrue(np.allclose(ase.error, error_before))
 
     def test_zero_error_after_sim3_alignment(self):
-        # The estimate is the reference seen through a Sim(3) transform.
-        # After Umeyama alignment with scale (as in the paper, Sec. IV-C),
-        # the error must vanish, including the velocity part.
+        """
+        The estimate is the reference seen through a Sim(3) transform.
+        After Umeyama alignment with scale (as in the paper, Sec. IV-C),
+        the error must vanish, including the velocity part.
+        """
         traj_est = copy.deepcopy(self.traj_ref)
         traj_est.scale(0.5)
         traj_est.transform(lie.random_se3())
@@ -175,6 +194,9 @@ class TestASE(unittest.TestCase):
         self.assertTrue(np.allclose(ase.error, 0.0, atol=1e-6))
 
     def test_result(self):
+        """
+        get_result() has the unit-less label, the title, errors and stats.
+        """
         ase = metrics.ASE()
         ase.process_data((self.traj_ref, self.traj_est))
         result = ase.get_result("ref", "est")
@@ -188,21 +210,25 @@ class TestASE(unittest.TestCase):
             self.assertIn(stat.value, result.stats)
 
     def test_unit_conversion_not_supported(self):
+        """ASE is unit-less, so change_unit() must raise."""
         ase = metrics.ASE()
         ase.process_data((self.traj_ref, self.traj_est))
         with self.assertRaises(metrics.MetricsException):
             ase.change_unit(Unit.meters)
 
     def test_mismatched_lengths(self):
+        """Trajectories with different numbers of poses are rejected."""
         traj_est = helpers.fake_state_trajectory(10, 0.1)
         with self.assertRaises(metrics.MetricsException):
             metrics.ASE().process_data((self.traj_ref, traj_est))
 
     def test_wrong_data_tuple(self):
+        """A data tuple without both trajectories is rejected."""
         with self.assertRaises(metrics.MetricsException):
             metrics.ASE().process_data((self.traj_ref,))
 
     def test_requires_state_trajectories(self):
+        """Inputs without velocities (PoseTrajectory3D) are rejected."""
         traj = helpers.fake_trajectory(50, 0.1)
         with self.assertRaises(metrics.MetricsException):
             metrics.ASE().process_data((traj, self.traj_est))

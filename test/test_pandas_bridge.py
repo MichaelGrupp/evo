@@ -48,6 +48,7 @@ class TrajectoryDataframeTest(unittest.TestCase):
         self.assertIsInstance(output, trajectory.PosePath3D)
 
     def test_state_trajectory_columns(self):
+        """The velocities of a StateTrajectory3D become vx, vy, vz columns."""
         df = pandas_bridge.trajectory_to_df(self.state_trajectory)
         np.testing.assert_array_equal(
             df[["vx", "vy", "vz"]].to_numpy(),
@@ -55,6 +56,7 @@ class TrajectoryDataframeTest(unittest.TestCase):
         )
 
     def test_explicit_type_drops_velocities(self):
+        """Converting back as a PoseTrajectory3D drops the velocities."""
         df = pandas_bridge.trajectory_to_df(self.state_trajectory)
         output = pandas_bridge.df_to_trajectory(
             df, as_type=trajectory.PoseTrajectory3D
@@ -62,6 +64,9 @@ class TrajectoryDataframeTest(unittest.TestCase):
         self.assertIs(type(output), trajectory.PoseTrajectory3D)
 
     def test_explicit_state_type_without_velocities(self):
+        """
+        A StateTrajectory3D can't be made from a DataFrame without velocities.
+        """
         df = pandas_bridge.trajectory_to_df(self.trajectory)
         with self.assertRaises(ValueError):
             pandas_bridge.df_to_trajectory(

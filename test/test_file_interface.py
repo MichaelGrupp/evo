@@ -276,6 +276,8 @@ class TestResultFile(MockFileTestCase):
 
 
 class TestEurocFile(unittest.TestCase):
+    """Tests for reading EuRoC ground truth CSV files."""
+
     # First two rows of test/data/V102_groundtruth.csv (17 columns).
     CSV = (
         "#timestamp, p_RS_R_x [m], p_RS_R_y [m], p_RS_R_z [m], q_RS_w [], "
@@ -292,6 +294,7 @@ class TestEurocFile(unittest.TestCase):
     )
 
     def test_read_without_velocities(self):
+        """By default, the velocity columns are ignored."""
         traj = file_interface.read_euroc_csv_trajectory(io.StringIO(self.CSV))
         self.assertIs(type(traj), PoseTrajectory3D)
         self.assertEqual(traj.num_poses, 2)
@@ -300,6 +303,9 @@ class TestEurocFile(unittest.TestCase):
         )
 
     def test_read_with_velocities(self):
+        """
+        with_velocities=True reads a StateTrajectory3D with the velocities.
+        """
         traj = file_interface.read_euroc_csv_trajectory(
             io.StringIO(self.CSV), with_velocities=True
         )
@@ -317,6 +323,7 @@ class TestEurocFile(unittest.TestCase):
         )
 
     def test_read_with_velocities_too_few_columns(self):
+        """with_velocities=True fails on a file without velocity columns."""
         # Only timestamp, position and orientation: enough for poses only.
         csv = "0,1,2,3,1,0,0,0\n1,1,2,3,1,0,0,0\n"
         file_interface.read_euroc_csv_trajectory(io.StringIO(csv))

@@ -48,8 +48,11 @@ def fake_trajectory(length, timestamp_distance, start_time=0.0):
 
 
 def fake_state_trajectory(length, timestamp_distance, start_time=0.0):
-    # Row i of the velocities is [i, 10 * i, 100 * i] so that tests can tell
-    # which original index a row came from after reducing.
+    """
+    Random state trajectory whose velocity row i is [i, 10 * i, 100 * i],
+    so that tests can tell which original index a row came from after
+    reducing.
+    """
     ids = np.arange(length, dtype=float)
     return StateTrajectory3D(
         poses_se3=random_se3_list(length),

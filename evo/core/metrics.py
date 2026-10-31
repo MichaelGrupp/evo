@@ -635,4 +635,6 @@ class ASE(PE):
         logger.debug(f"Compared {len(self.E)} absolute pose pairs.")
         logger.debug("Calculating ASE...")
 
-        self.error = np.array([np.linalg.norm(E_i - self.identity) for E_i in self.E])
+        self.error = np.array(
+            [np.linalg.norm(E_i - self.identity) for E_i in self.E]
+        )

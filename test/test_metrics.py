@@ -181,8 +181,9 @@ class TestASE(unittest.TestCase):
         self.assertEqual(ase.unit, Unit.none)
         self.assertEqual(result.info["label"], "ASE (unit-less)")
         self.assertEqual(result.info["title"], str(ase))
-        self.assertTrue(np.array_equal(result.np_arrays["error_array"],
-                                       ase.error))
+        self.assertTrue(
+            np.array_equal(result.np_arrays["error_array"], ase.error)
+        )
         for stat in metrics.StatisticsType:
             self.assertIn(stat.value, result.stats)
 

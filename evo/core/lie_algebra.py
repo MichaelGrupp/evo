@@ -111,6 +111,7 @@ def se3(
     se3[:3, 3] = t
     return se3
 
+
 def se23(
     r: np.ndarray = np.eye(3),
     t: np.ndarray = np.array([0, 0, 0]),
@@ -159,6 +160,7 @@ def se3_inverse(p: np.ndarray) -> np.ndarray:
     t_inv = -r_inv.dot(p[:3, 3])
     return se3(r_inv, t_inv)
 
+
 def se23_inverse(p: np.ndarray) -> np.ndarray:
     """
     :param p: absolute SE2(3) pose
@@ -168,6 +170,7 @@ def se23_inverse(p: np.ndarray) -> np.ndarray:
     t_inv = -r_inv.dot(p[:3, 3])
     v_inv = -r_inv.dot(p[:3, 4])
     return se23(r_inv, t_inv, v_inv)
+
 
 def sim3_scale(a: np.ndarray) -> float:
     """
@@ -245,6 +248,7 @@ def relative_se3(p1: np.ndarray, p2: np.ndarray) -> np.ndarray:
     :return: the relative transformation p1^{⁻1} * p2
     """
     return np.dot(se3_inverse(p1), p2)
+
 
 def relative_se23(p1: np.ndarray, p2: np.ndarray) -> np.ndarray:
     """

@@ -560,6 +560,7 @@ def id_pairs_from_delta(
 
     return id_pairs
 
+
 class ASE(PE):
     """
     ASE: absolute state error
@@ -574,7 +575,7 @@ class ASE(PE):
 
     def __str__(self) -> str:
         title = "ASE w.r.t. full state "
-        title += ("(" + self.unit.value + ")" if self.unit else "")
+        title += "(" + self.unit.value + ")" if self.unit else ""
         return title
 
     @staticmethod
@@ -589,8 +590,7 @@ class ASE(PE):
         return lie.relative_se23(x_t, x_t_star)
 
     @staticmethod
-    def se23_poses(
-            traj: trajectory.StateTrajectory3D) -> list[np.ndarray]:
+    def se23_poses(traj: trajectory.StateTrajectory3D) -> list[np.ndarray]:
         """
         :param traj: a state trajectory with poses and world-frame velocities
         :return: the SE2(3) matrix of each state in traj
@@ -609,16 +609,20 @@ class ASE(PE):
         """
         if len(data) != 2:
             raise MetricsException(
-                "please provide data tuple as: (traj_ref, traj_est)")
+                "please provide data tuple as: (traj_ref, traj_est)"
+            )
         traj_ref, traj_est = data
-        if not all(
-            isinstance(t, trajectory.StateTrajectory3D) for t in data
+        if not (
+            isinstance(traj_ref, trajectory.StateTrajectory3D)
+            and isinstance(traj_est, trajectory.StateTrajectory3D)
         ):
             raise MetricsException(
-                "ASE requires StateTrajectory3D inputs with velocities")
+                "ASE requires StateTrajectory3D inputs with velocities"
+            )
         if traj_ref.num_poses != traj_est.num_poses:
             raise MetricsException(
-                "trajectories must have same number of poses")
+                "trajectories must have same number of poses"
+            )
 
         est_poses_se23 = self.se23_poses(traj_est)
         ref_poses_se23 = self.se23_poses(traj_ref)

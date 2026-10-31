@@ -758,7 +758,12 @@ class StateTrajectory3D(PoseTrajectory3D):
         :param timestamps: nx1 list of timestamps
         """
         super(StateTrajectory3D, self).__init__(
-            positions_xyz, orientations_quat_wxyz, timestamps, poses_se3, meta, name
+            positions_xyz,
+            orientations_quat_wxyz,
+            timestamps,
+            poses_se3,
+            meta,
+            name,
         )
 
         if velocities_xyz is None:

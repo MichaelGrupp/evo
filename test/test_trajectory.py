@@ -536,9 +536,10 @@ class TestStateTrajectory3D(unittest.TestCase):
         )
 
     def assert_velocities_match_positions(self, traj):
-        finite_diff = np.diff(traj.positions_xyz, axis=0) / np.diff(
-            traj.timestamps
-        )[:, None]
+        finite_diff = (
+            np.diff(traj.positions_xyz, axis=0)
+            / np.diff(traj.timestamps)[:, None]
+        )
         np.testing.assert_allclose(traj.velocities_xyz[:-1], finite_diff)
 
     def test_transform_rotates_velocities(self):
@@ -572,9 +573,7 @@ class TestStateTrajectory3D(unittest.TestCase):
     def test_scale(self):
         traj = self._constant_velocity_trajectory()
         traj.scale(3.0)
-        np.testing.assert_allclose(
-            traj.velocities_xyz[0], [3.0, -6.0, 1.5]
-        )
+        np.testing.assert_allclose(traj.velocities_xyz[0], [3.0, -6.0, 1.5])
         self.assert_velocities_match_positions(traj)
 
     def test_align_with_scale(self):

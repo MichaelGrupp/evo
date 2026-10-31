@@ -22,9 +22,9 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 import copy
 import unittest
 
+import helpers
 import numpy as np
 
-import helpers
 from evo.core import lie_algebra as lie
 from evo.core import metrics
 from evo.core.trajectory import StateTrajectory3D
@@ -53,10 +53,10 @@ def paper_ase_errors(traj_ref, traj_est):
         traj_est.poses_se3,
         traj_est.velocities_xyz,
     ):
-        Q = lie.se23(q[:3, :3], q[:3, 3], v_q)
-        P = lie.se23(p[:3, :3], p[:3, 3], v_p)
-        E = np.linalg.inv(Q) @ P
-        errors.append(np.linalg.norm(E - np.eye(5), ord="fro"))
+        truth = lie.se23(q[:3, :3], q[:3, 3], v_q)
+        estimate = lie.se23(p[:3, :3], p[:3, 3], v_p)
+        error = np.linalg.inv(truth) @ estimate
+        errors.append(np.linalg.norm(error - np.eye(5), ord="fro"))
     return np.array(errors)
 
 

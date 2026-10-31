@@ -564,14 +564,15 @@ def id_pairs_from_delta(
 class ASE(PE):
     """
     ASE: absolute state error
-    metric for investigating the global consistency of a state trajectory (position, orientation and linear velocities).
+    metric for investigating the global consistency of a state trajectory
+    (position, orientation and linear velocities).
     """
 
     def __init__(self):
+        super().__init__()  # unit stays Unit.none, the error is dimension-less
+        # This corresponds to the error variable E from the Agrawal paper.
         self.E: list[np.ndarray] = []
-        self.error = np.array([])
-        self.unit = Unit.none  # dimension-less
-        self.I = np.eye(5)
+        self.identity = np.eye(5)
 
     def __str__(self) -> str:
         title = "ASE w.r.t. full state "
@@ -634,4 +635,4 @@ class ASE(PE):
         logger.debug(f"Compared {len(self.E)} absolute pose pairs.")
         logger.debug("Calculating ASE...")
 
-        self.error = np.array([np.linalg.norm(E_i - self.I) for E_i in self.E])
+        self.error = np.array([np.linalg.norm(E_i - self.identity) for E_i in self.E])

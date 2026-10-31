@@ -757,7 +757,7 @@ class StateTrajectory3D(PoseTrajectory3D):
         :param velocities_xyz: nx3 list of x,y,z linear velocities (required)
         :param timestamps: nx1 list of timestamps
         """
-        super(StateTrajectory3D, self).__init__(
+        super().__init__(
             positions_xyz,
             orientations_quat_wxyz,
             timestamps,
@@ -783,7 +783,7 @@ class StateTrajectory3D(PoseTrajectory3D):
             return False
         if not self.num_poses == other.num_poses:
             return False
-        equal = super(StateTrajectory3D, self).__eq__(other)
+        equal = super().__eq__(other)
         equal &= np.allclose(self.velocities_xyz, other.velocities_xyz)
         return bool(equal)
 
@@ -798,7 +798,7 @@ class StateTrajectory3D(PoseTrajectory3D):
         """
         if self.num_poses == 0:
             return True, {}
-        valid, details = super(StateTrajectory3D, self).check()
+        valid, details = super().check()
         expected_shape = (self.num_poses, 3)
         velocities_valid = np.shape(self.velocities_xyz) == expected_shape
         valid &= velocities_valid
@@ -823,7 +823,7 @@ class StateTrajectory3D(PoseTrajectory3D):
         :param right_mul: whether to apply it right-multiplicative or not
         :param propagate: whether to propagate drift with RHS transformations
         """
-        super(StateTrajectory3D, self).transform(t, right_mul, propagate)
+        super().transform(t, right_mul, propagate)
         if not right_mul:
             # Row-wise v' = sR @ v, with sR the upper-left 3x3 block of t.
             self.velocities_xyz = self.velocities_xyz @ t[:3, :3].T
@@ -833,7 +833,7 @@ class StateTrajectory3D(PoseTrajectory3D):
         apply a scaling to the whole path, including the velocities
         :param s: scale factor
         """
-        super(StateTrajectory3D, self).scale(s)
+        super().scale(s)
         self.velocities_xyz = self.velocities_xyz * s
 
     def project(self, plane: Plane) -> None:
@@ -841,7 +841,7 @@ class StateTrajectory3D(PoseTrajectory3D):
         Projects the poses and the velocities into a plane.
         :param plane: desired plane into which the poses will be projected
         """
-        super(StateTrajectory3D, self).project(plane)
+        super().project(plane)
         null_dim = {Plane.XY: 2, Plane.XZ: 1, Plane.YZ: 0}[plane]
         self.velocities_xyz[:, null_dim] = 0
 
@@ -857,9 +857,7 @@ class StateTrajectory3D(PoseTrajectory3D):
         :param extrapolate: see PoseTrajectory3D.interpolate()
         :return: a new StateTrajectory3D with the interpolated states
         """
-        poses = super(StateTrajectory3D, self).interpolate(
-            timestamps, extrapolate
-        )
+        poses = super().interpolate(timestamps, extrapolate)
         _, idx, frac = self._interpolation_weights(timestamps, extrapolate)
         velocities = self.velocities_xyz[idx - 1] + frac[:, None] * (
             self.velocities_xyz[idx] - self.velocities_xyz[idx - 1]
@@ -888,7 +886,7 @@ class StateTrajectory3D(PoseTrajectory3D):
         """
         :return: dictionary with some infos about the trajectory
         """
-        infos = super(StateTrajectory3D, self).get_infos()
+        infos = super().get_infos()
         infos["vel_start (m/s)"] = self.velocities_xyz[0]
         infos["vel_end (m/s)"] = self.velocities_xyz[-1]
         return infos
@@ -901,7 +899,7 @@ class StateTrajectory3D(PoseTrajectory3D):
         """
         if self.num_poses < 2:
             return {}
-        stats = super(StateTrajectory3D, self).get_statistics()
+        stats = super().get_statistics()
         norms = np.linalg.norm(self.velocities_xyz, axis=1)
         stats.update(
             {
@@ -917,7 +915,7 @@ class StateTrajectory3D(PoseTrajectory3D):
         Reduce the poses, timestamps and velocities to the ones specified in ids
         :param ids: list of integer indices
         """
-        super(StateTrajectory3D, self).reduce_to_ids(ids)
+        super().reduce_to_ids(ids)
         self.velocities_xyz = self.velocities_xyz[ids]
 
 

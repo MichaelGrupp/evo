@@ -123,11 +123,11 @@ def se23(
     :param v: 3x1 velocity vector
     :return: SE2(3) transformation matrix
     """
-    se23 = np.eye(5)
-    se23[:3, :3] = r
-    se23[:3, 3] = t
-    se23[:3, 4] = v
-    return se23
+    se_23 = np.eye(5)
+    se_23[:3, :3] = r
+    se_23[:3, 3] = t
+    se_23[:3, 4] = v
+    return se_23
 
 
 def sim3(r: np.ndarray, t: np.ndarray, s: float) -> np.ndarray:

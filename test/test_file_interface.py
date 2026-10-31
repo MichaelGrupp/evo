@@ -25,14 +25,20 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-import numpy as np
-from rosbags.rosbag1 import Reader as Rosbag1Reader, Writer as Rosbag1Writer
-from rosbags.rosbag2 import Reader as Rosbag2Reader, Writer as Rosbag2Writer
-
 import helpers
+import numpy as np
+from rosbags.rosbag1 import Reader as Rosbag1Reader
+from rosbags.rosbag1 import Writer as Rosbag1Writer
+from rosbags.rosbag2 import Reader as Rosbag2Reader
+from rosbags.rosbag2 import Writer as Rosbag2Writer
+
 import evo.core.lie_algebra as lie
 from evo.core.result import Result
-from evo.core.trajectory import PosePath3D, PoseTrajectory3D, merge
+from evo.core.trajectory import (
+    PosePath3D,
+    PoseTrajectory3D,
+    StateTrajectory3D,
+)
 from evo.tools import file_interface
 from evo.tools.settings import SETTINGS
 
@@ -267,6 +273,64 @@ class TestResultFile(MockFileTestCase):
             self.mock_file, load_trajectories=True
         )
         self.assertEqual(result_in, result_out)
+
+
+class TestEurocFile(unittest.TestCase):
+    """Tests for reading EuRoC ground truth CSV files."""
+
+    # First two rows of test/data/V102_groundtruth.csv (17 columns).
+    CSV = (
+        "#timestamp, p_RS_R_x [m], p_RS_R_y [m], p_RS_R_z [m], q_RS_w [], "
+        "q_RS_x [], q_RS_y [], q_RS_z [], v_RS_R_x [m s^-1], "
+        "v_RS_R_y [m s^-1], v_RS_R_z [m s^-1], b_w_RS_S_x [rad s^-1], "
+        "b_w_RS_S_y [rad s^-1], b_w_RS_S_z [rad s^-1], b_a_RS_S_x [m s^-2], "
+        "b_a_RS_S_y [m s^-2], b_a_RS_S_z [m s^-2]\n"
+        "1403715524907143168,0.515356,1.996773,0.971104,0.161996,0.789985,"
+        "-0.205376,0.554528,-0.002276,-0.009616,-0.005214,-0.002153,"
+        "0.020744,0.075806,-0.013337,0.103464,0.093086\n"
+        "1403715524912143104,0.515342,1.996723,0.971077,0.161904,0.790015,"
+        "-0.205283,0.554546,-0.003425,-0.010568,-0.005547,-0.002153,"
+        "0.020744,0.075806,-0.013337,0.103464,0.093086\n"
+    )
+
+    def test_read_without_velocities(self):
+        """By default, the velocity columns are ignored."""
+        traj = file_interface.read_euroc_csv_trajectory(io.StringIO(self.CSV))
+        self.assertIs(type(traj), PoseTrajectory3D)
+        self.assertEqual(traj.num_poses, 2)
+        np.testing.assert_allclose(
+            traj.positions_xyz[0], [0.515356, 1.996773, 0.971104]
+        )
+
+    def test_read_with_velocities(self):
+        """
+        with_velocities=True reads a StateTrajectory3D with the velocities.
+        """
+        traj = file_interface.read_euroc_csv_trajectory(
+            io.StringIO(self.CSV), with_velocities=True
+        )
+        self.assertIsInstance(traj, StateTrajectory3D)
+        self.assertTrue(traj.check()[0])
+        np.testing.assert_allclose(
+            traj.velocities_xyz,
+            [
+                [-0.002276, -0.009616, -0.005214],
+                [-0.003425, -0.010568, -0.005547],
+            ],
+        )
+        np.testing.assert_allclose(
+            traj.timestamps, [1403715524.907143168, 1403715524.912143104]
+        )
+
+    def test_read_with_velocities_too_few_columns(self):
+        """with_velocities=True fails on a file without velocity columns."""
+        # Only timestamp, position and orientation: enough for poses only.
+        csv = "0,1,2,3,1,0,0,0\n1,1,2,3,1,0,0,0\n"
+        file_interface.read_euroc_csv_trajectory(io.StringIO(csv))
+        with self.assertRaises(file_interface.FileInterfaceException):
+            file_interface.read_euroc_csv_trajectory(
+                io.StringIO(csv), with_velocities=True
+            )
 
 
 class TestHasUtf8Bom(unittest.TestCase):

@@ -770,6 +770,27 @@ class StateTrajectory3D(PoseTrajectory3D):
     def __ne__(self, other: object) -> bool:
         return not self == other
 
+    def check(self) -> tuple[bool, dict]:
+        """
+        checks if the poses, timestamps and velocities are valid,
+        i.e. the base checks plus velocities of shape (num_poses, 3)
+        :return: True/False, dictionary with some detailed infos
+        """
+        if self.num_poses == 0:
+            return True, {}
+        valid, details = super(StateTrajectory3D, self).check()
+        expected_shape = (self.num_poses, 3)
+        velocities_valid = np.shape(self.velocities_xyz) == expected_shape
+        valid &= velocities_valid
+        if velocities_valid:
+            details["velocities"] = "ok"
+        else:
+            details["velocities"] = (
+                f"wrong shape {np.shape(self.velocities_xyz)}, "
+                f"expected {expected_shape}"
+            )
+        return valid, details
+
     def reduce_to_ids(self, ids: typing.Sequence[int] | np.ndarray) -> None:
         """
         Reduce the poses, timestamps and velocities to the ones specified in ids

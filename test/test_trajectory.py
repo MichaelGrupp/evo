@@ -497,6 +497,30 @@ class TestStateTrajectory3D(unittest.TestCase):
         self.assertTrue(traj_state != traj_pose)
         self.assertTrue(traj_pose != traj_state)
 
+    def test_check(self):
+        traj = helpers.fake_state_trajectory(10, 1)
+        valid, details = traj.check()
+        self.assertTrue(valid)
+        self.assertEqual(details["velocities"], "ok")
+
+    def test_check_wrong_velocities(self):
+        """
+        The constructor validates the velocities, but they can still be
+        replaced afterwards, which check() has to catch.
+        """
+        for bad_shape in [(7, 3), (10, 2)]:
+            with self.subTest(shape=bad_shape):
+                traj = helpers.fake_state_trajectory(10, 1)
+                traj.velocities_xyz = np.zeros(bad_shape)
+                valid, details = traj.check()
+                self.assertFalse(valid)
+                self.assertNotEqual(details["velocities"], "ok")
+
+    def test_check_still_validates_timestamps(self):
+        traj = helpers.fake_state_trajectory(10, 1)
+        traj.timestamps[0] = 666
+        self.assertFalse(traj.check()[0])
+
     def test_init_velocities_from_list(self):
         traj = StateTrajectory3D(
             poses_se3=helpers.random_se3_list(2),

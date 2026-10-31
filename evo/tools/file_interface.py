@@ -38,7 +38,11 @@ from evo import EvoException
 import evo.core.lie_algebra as lie
 import evo.core.transformations as tr
 from evo.core import result
-from evo.core.trajectory import PosePath3D, PoseTrajectory3D
+from evo.core.trajectory import (
+    PosePath3D,
+    PoseTrajectory3D,
+    StateTrajectory3D,
+)
 from evo.tools import user, tf_id
 from evo.tools._typing import PathStr, PathStrHandle
 
@@ -221,18 +225,24 @@ def write_kitti_poses_file(
         logger.info("Poses saved to: " + file_path)
 
 
-def read_euroc_csv_trajectory(file_path: PathStrHandle) -> PoseTrajectory3D:
+def read_euroc_csv_trajectory(
+    file_path: PathStrHandle, with_velocities: bool = False
+) -> PoseTrajectory3D:
     """
     parses ground truth trajectory from EuRoC MAV state estimate .csv
     :param file_path: <sequence>/mav0/state_groundtruth_estimate0/data.csv
-    :return: trajectory.PoseTrajectory3D object
+    :param with_velocities: set to True to also load the linear velocities
+                            (columns v_RS_R_x/y/z, in the world frame R)
+    :return: trajectory.PoseTrajectory3D object, or a
+             trajectory.StateTrajectory3D if with_velocities is True
     """
     raw_mat = csv_read_matrix(file_path, delim=",", comment_str="#")
+    min_columns = 11 if with_velocities else 8
     error_msg = (
-        "EuRoC format ground truth must have at least 8 entries per row "
-        "and no trailing delimiter at the end of the rows (comma)"
+        f"EuRoC format ground truth must have at least {min_columns} entries "
+        "per row and no trailing delimiter at the end of the rows (comma)"
     )
-    if not raw_mat or (len(raw_mat) > 0 and len(raw_mat[0]) < 8):
+    if not raw_mat or (len(raw_mat) > 0 and len(raw_mat[0]) < min_columns):
         raise FileInterfaceException(error_msg)
     try:
         mat = np.array(raw_mat).astype(float)
@@ -242,6 +252,11 @@ def read_euroc_csv_trajectory(file_path: PathStrHandle) -> PoseTrajectory3D:
     xyz = mat[:, 1:4]  # n x 3
     quat = mat[:, 4:8]  # n x 4
     logger.debug(f"Loaded {len(stamps)} stamps and poses from: {file_path}")
+    if with_velocities:
+        velocities = mat[:, 8:11]  # n x 3
+        return StateTrajectory3D(
+            xyz, quat, velocities, stamps, name=name_from_file(file_path)
+        )
     return PoseTrajectory3D(xyz, quat, stamps, name=name_from_file(file_path))
 
 

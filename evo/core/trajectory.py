@@ -879,6 +879,34 @@ class StateTrajectory3D(PoseTrajectory3D):
             name=self.name,
         )
 
+    def get_infos(self) -> dict:
+        """
+        :return: dictionary with some infos about the trajectory
+        """
+        infos = super(StateTrajectory3D, self).get_infos()
+        infos["vel_start (m/s)"] = self.velocities_xyz[0]
+        infos["vel_end (m/s)"] = self.velocities_xyz[-1]
+        return infos
+
+    def get_statistics(self) -> dict:
+        """
+        :return: dictionary with some statistics of the trajectory.
+                 The "v_*" entries are speeds estimated from the positions,
+                 the "vel_norm_*" entries come from the stored velocities.
+        """
+        if self.num_poses < 2:
+            return {}
+        stats = super(StateTrajectory3D, self).get_statistics()
+        norms = np.linalg.norm(self.velocities_xyz, axis=1)
+        stats.update(
+            {
+                "vel_norm_max (m/s)": float(norms.max()),
+                "vel_norm_min (m/s)": float(norms.min()),
+                "vel_norm_avg (m/s)": float(norms.mean()),
+            }
+        )
+        return stats
+
     def reduce_to_ids(self, ids: typing.Sequence[int] | np.ndarray) -> None:
         """
         Reduce the poses, timestamps and velocities to the ones specified in ids

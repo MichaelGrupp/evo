@@ -20,6 +20,8 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
 
+import numpy as np
+
 import helpers
 from evo.core import trajectory
 from evo.tools import pandas_bridge
@@ -29,9 +31,10 @@ class TrajectoryDataframeTest(unittest.TestCase):
     def setUp(self) -> None:
         self.path = helpers.fake_path(100)
         self.trajectory = helpers.fake_trajectory(100, 0.1)
+        self.state_trajectory = helpers.fake_state_trajectory(100, 0.1)
 
     def test_back_and_forth(self):
-        for input_traj in (self.path, self.trajectory):
+        for input_traj in (self.path, self.trajectory, self.state_trajectory):
             df = pandas_bridge.trajectory_to_df(input_traj)
             output_traj = pandas_bridge.df_to_trajectory(df)
             self.assertIsInstance(output_traj, type(input_traj))
@@ -43,3 +46,24 @@ class TrajectoryDataframeTest(unittest.TestCase):
             df, as_type=trajectory.PosePath3D
         )
         self.assertIsInstance(output, trajectory.PosePath3D)
+
+    def test_state_trajectory_columns(self):
+        df = pandas_bridge.trajectory_to_df(self.state_trajectory)
+        np.testing.assert_array_equal(
+            df[["vx", "vy", "vz"]].to_numpy(),
+            self.state_trajectory.velocities_xyz,
+        )
+
+    def test_explicit_type_drops_velocities(self):
+        df = pandas_bridge.trajectory_to_df(self.state_trajectory)
+        output = pandas_bridge.df_to_trajectory(
+            df, as_type=trajectory.PoseTrajectory3D
+        )
+        self.assertIs(type(output), trajectory.PoseTrajectory3D)
+
+    def test_explicit_state_type_without_velocities(self):
+        df = pandas_bridge.trajectory_to_df(self.trajectory)
+        with self.assertRaises(ValueError):
+            pandas_bridge.df_to_trajectory(
+                df, as_type=trajectory.StateTrajectory3D
+            )

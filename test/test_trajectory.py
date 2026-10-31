@@ -763,6 +763,32 @@ class TestStateTrajectory3D(unittest.TestCase):
         self.assertIs(type(merged), PoseTrajectory3D)
         self.assertEqual(merged.num_poses, 10)
 
+    def test_get_infos(self):
+        traj = helpers.fake_state_trajectory(10, 1)
+        infos = traj.get_infos()
+        np.testing.assert_array_equal(
+            infos["vel_start (m/s)"], traj.velocities_xyz[0]
+        )
+        np.testing.assert_array_equal(
+            infos["vel_end (m/s)"], traj.velocities_xyz[-1]
+        )
+        # The PoseTrajectory3D infos are still there.
+        self.assertIn("duration (s)", infos)
+
+    def test_get_statistics(self):
+        traj = self._constant_velocity_trajectory()
+        stats = traj.get_statistics()
+        speed = np.linalg.norm([1.0, -2.0, 0.5])
+        for key in ("max", "min", "avg"):
+            self.assertAlmostEqual(stats[f"vel_norm_{key} (m/s)"], speed)
+            # On a straight line, the speed from the positions agrees.
+            self.assertAlmostEqual(stats[f"v_{key} (m/s)"], speed)
+
+    def test_get_statistics_single_pose(self):
+        traj = helpers.fake_state_trajectory(10, 1)
+        traj.reduce_to_ids([0])
+        self.assertEqual(traj.get_statistics(), {})
+
     def test_init_velocities_from_list(self):
         traj = StateTrajectory3D(
             poses_se3=helpers.random_se3_list(2),

@@ -636,6 +636,133 @@ class TestStateTrajectory3D(unittest.TestCase):
             traj.project(trajectory.Plane.XZ)
         np.testing.assert_array_equal(traj.velocities_xyz, projected)
 
+    def test_interpolate(self):
+        # fake_state_trajectory velocities are [t, 10t, 100t] at time t.
+        traj = helpers.fake_state_trajectory(10, 1)
+        interpolated = traj.interpolate([0.0, 2.5, 8.75])
+        self.assertIsInstance(interpolated, StateTrajectory3D)
+        np.testing.assert_allclose(
+            interpolated.velocities_xyz,
+            [[0, 0, 0], [2.5, 25, 250], [8.75, 87.5, 875]],
+        )
+        self.assertEqual(interpolated.name, traj.name)
+
+    def test_interpolate_scalar_timestamp(self):
+        traj = helpers.fake_state_trajectory(10, 1)
+        interpolated = traj.interpolate(4.5)
+        np.testing.assert_allclose(
+            interpolated.velocities_xyz, [[4.5, 45, 450]]
+        )
+
+    def test_interpolate_clamps_out_of_range(self):
+        traj = helpers.fake_state_trajectory(10, 1)
+        interpolated = traj.interpolate([-5.0, 20.0])
+        np.testing.assert_allclose(
+            interpolated.velocities_xyz,
+            [traj.velocities_xyz[0], traj.velocities_xyz[-1]],
+        )
+
+    def test_interpolate_extrapolates(self):
+        traj = helpers.fake_state_trajectory(10, 1)
+        interpolated = traj.interpolate([-1.0, 12.0], extrapolate=True)
+        np.testing.assert_allclose(
+            interpolated.velocities_xyz,
+            [[-1, -10, -100], [12, 120, 1200]],
+        )
+
+    def test_sync_with_interpolation(self):
+        """
+        Interpolation sync resamples the longer trajectory, which must
+        keep its velocities.
+        """
+        traj_state = helpers.fake_state_trajectory(10, 1)
+        traj_other = helpers.fake_trajectory(4, 2, start_time=0.5)
+        _, traj_state_synced = sync.associate_trajectories(
+            traj_other,
+            traj_state,
+            sync_method=sync.SyncMethod.interpolation,
+            max_diff=0.6,
+        )
+        self.assertIsInstance(traj_state_synced, StateTrajectory3D)
+        np.testing.assert_allclose(
+            traj_state_synced.velocities_xyz[:, 0],
+            traj_state_synced.timestamps,
+        )
+
+    def assert_segments_keep_velocities(self, segments, original):
+        for segment in segments:
+            self.assertIsInstance(segment, StateTrajectory3D)
+            self.assertTrue(segment.check()[0])
+            self.assertEqual(segment.name, original.name)
+        np.testing.assert_array_equal(
+            np.concatenate([s.velocities_xyz for s in segments]),
+            original.velocities_xyz,
+        )
+
+    def test_split_time_gaps(self):
+        traj = helpers.fake_state_trajectory(5, 1.0)
+        traj.timestamps[2:] += 10.0
+        segments = traj.split_time_gaps(5.0)
+        self.assertEqual([s.num_poses for s in segments], [2, 3])
+        self.assert_segments_keep_velocities(segments, traj)
+
+    def test_split_distance_gaps(self):
+        traj = self._constant_velocity_trajectory(num_poses=6)
+        poses = [p.copy() for p in traj.poses_se3]
+        for pose in poses[3:]:
+            pose[:3, 3] += 100.0
+        traj = StateTrajectory3D(
+            velocities_xyz=traj.velocities_xyz,
+            timestamps=traj.timestamps,
+            poses_se3=poses,
+        )
+        segments = traj.split_distance_gaps(50.0)
+        self.assertEqual([s.num_poses for s in segments], [3, 3])
+        self.assert_segments_keep_velocities(segments, traj)
+
+    def test_split_speed_outliers(self):
+        traj = self._constant_velocity_trajectory(num_poses=6)
+        poses = [p.copy() for p in traj.poses_se3]
+        for pose in poses[4:]:
+            pose[:3, 3] += 100.0
+        traj = StateTrajectory3D(
+            velocities_xyz=traj.velocities_xyz,
+            timestamps=traj.timestamps,
+            poses_se3=poses,
+        )
+        segments = traj.split_speed_outliers(v_max=50.0)
+        self.assertEqual([s.num_poses for s in segments], [4, 2])
+        self.assert_segments_keep_velocities(segments, traj)
+
+    def test_merge(self):
+        traj_1 = helpers.fake_state_trajectory(5, 2.0)  # t = 0, 2, ..., 8
+        traj_2 = helpers.fake_state_trajectory(5, 2.0, start_time=1.0)
+        traj_2.velocities_xyz += 1000.0  # tell the two apart
+        merged = trajectory.merge([traj_1, traj_2])
+        self.assertIsInstance(merged, StateTrajectory3D)
+        self.assertEqual(merged.num_poses, 10)
+        self.assertTrue(merged.check()[0])
+        # Sorted by time, so the rows have to alternate between the inputs.
+        np.testing.assert_array_equal(
+            merged.velocities_xyz[0::2], traj_1.velocities_xyz
+        )
+        np.testing.assert_array_equal(
+            merged.velocities_xyz[1::2], traj_2.velocities_xyz
+        )
+
+    def test_merge_with_pose_trajectory(self):
+        """
+        Only some inputs have velocities, so the result can't have them.
+        """
+        merged = trajectory.merge(
+            [
+                helpers.fake_state_trajectory(5, 2.0),
+                helpers.fake_trajectory(5, 2.0, start_time=1.0),
+            ]
+        )
+        self.assertIs(type(merged), PoseTrajectory3D)
+        self.assertEqual(merged.num_poses, 10)
+
     def test_init_velocities_from_list(self):
         traj = StateTrajectory3D(
             poses_se3=helpers.random_se3_list(2),

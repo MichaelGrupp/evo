@@ -729,15 +729,17 @@ class StateTrajectory3D(PoseTrajectory3D):
     """
 
     def __init__(
-            self, positions_xyz: np.ndarray | None = None,
-            orientations_quat_wxyz: np.ndarray | None = None,
-            velocities_xyz: np.ndarray | None = None,
-            timestamps: np.ndarray | None = None,
-            poses_se3: typing.Sequence[np.ndarray] | None = None,
-            meta: dict | None = None,
-            name: str | None = None):
+        self,
+        positions_xyz: np.ndarray | None = None,
+        orientations_quat_wxyz: np.ndarray | None = None,
+        velocities_xyz: np.ndarray | None = None,
+        timestamps: np.ndarray | None = None,
+        poses_se3: typing.Sequence[np.ndarray] | None = None,
+        meta: dict | None = None,
+        name: str | None = None,
+    ):
         """
-        :param velocities_xyz: nx3 list of x,y,z linear velocities
+        :param velocities_xyz: nx3 list of x,y,z linear velocities (required)
         :param timestamps: nx1 list of timestamps
         """
         super(StateTrajectory3D, self).__init__(
@@ -754,6 +756,19 @@ class StateTrajectory3D(PoseTrajectory3D):
                 f"velocities_xyz must have shape {expected_shape}, "
                 f"got {self.velocities_xyz.shape}"
             )
+
+    def __eq__(self, other: object) -> bool:
+        # A plain PoseTrajectory3D has no velocities, so it's never equal.
+        if not isinstance(other, StateTrajectory3D):
+            return False
+        if not self.num_poses == other.num_poses:
+            return False
+        equal = super(StateTrajectory3D, self).__eq__(other)
+        equal &= np.allclose(self.velocities_xyz, other.velocities_xyz)
+        return bool(equal)
+
+    def __ne__(self, other: object) -> bool:
+        return not self == other
 
     def reduce_to_ids(self, ids: typing.Sequence[int] | np.ndarray) -> None:
         """

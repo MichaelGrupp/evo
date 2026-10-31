@@ -451,6 +451,52 @@ class TestStateTrajectory3D(unittest.TestCase):
                         timestamps=[0, 1, 2],
                     )
 
+    def test_init_positional_args(self):
+        """
+        Positional order is (positions, orientations, velocities, timestamps).
+        """
+        base = helpers.fake_trajectory(4, 1)
+        velocities = np.ones((4, 3))
+        traj = StateTrajectory3D(
+            base.positions_xyz,
+            base.orientations_quat_wxyz,
+            velocities,
+            base.timestamps,
+        )
+        np.testing.assert_array_equal(traj.velocities_xyz, velocities)
+        np.testing.assert_array_equal(traj.timestamps, base.timestamps)
+        np.testing.assert_allclose(traj.positions_xyz, base.positions_xyz)
+
+    def test_equals(self):
+        traj_1 = helpers.fake_state_trajectory(10, 1)
+        traj_1_copy = copy.deepcopy(traj_1)
+        traj_2 = helpers.fake_state_trajectory(15, 1)
+        self.assertTrue(traj_1 == traj_1_copy)
+        self.assertFalse(traj_1 != traj_1_copy)
+        self.assertFalse(traj_1 == traj_2)
+        self.assertTrue(traj_1 != traj_2)
+
+    def test_equals_different_velocities(self):
+        traj_1 = helpers.fake_state_trajectory(10, 1)
+        traj_2 = copy.deepcopy(traj_1)
+        traj_2.velocities_xyz[3] += 1.0
+        self.assertFalse(traj_1 == traj_2)
+        self.assertTrue(traj_1 != traj_2)
+
+    def test_not_equal_to_pose_trajectory(self):
+        """
+        A PoseTrajectory3D with the same poses and timestamps has no
+        velocities, so it must not compare equal, in either direction.
+        """
+        traj_state = helpers.fake_state_trajectory(5, 1)
+        traj_pose = PoseTrajectory3D(
+            poses_se3=traj_state.poses_se3, timestamps=traj_state.timestamps
+        )
+        self.assertFalse(traj_state == traj_pose)
+        self.assertFalse(traj_pose == traj_state)
+        self.assertTrue(traj_state != traj_pose)
+        self.assertTrue(traj_pose != traj_state)
+
     def test_init_velocities_from_list(self):
         traj = StateTrajectory3D(
             poses_se3=helpers.random_se3_list(2),

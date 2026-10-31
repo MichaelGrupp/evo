@@ -21,7 +21,11 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 from evo.core import lie_algebra as lie
-from evo.core.trajectory import PosePath3D, PoseTrajectory3D
+from evo.core.trajectory import (
+    PosePath3D,
+    PoseTrajectory3D,
+    StateTrajectory3D,
+)
 
 
 def random_se3_list(length):
@@ -39,5 +43,16 @@ def fake_path(length):
 def fake_trajectory(length, timestamp_distance, start_time=0.0):
     return PoseTrajectory3D(
         poses_se3=random_se3_list(length),
+        timestamps=fake_timestamps(length, timestamp_distance, start_time),
+    )
+
+
+def fake_state_trajectory(length, timestamp_distance, start_time=0.0):
+    # Row i of the velocities is [i, 10 * i, 100 * i] so that tests can tell
+    # which original index a row came from after reducing.
+    ids = np.arange(length, dtype=float)
+    return StateTrajectory3D(
+        poses_se3=random_se3_list(length),
+        velocities_xyz=np.column_stack([ids, 10 * ids, 100 * ids]),
         timestamps=fake_timestamps(length, timestamp_distance, start_time),
     )

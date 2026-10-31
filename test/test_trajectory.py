@@ -29,7 +29,11 @@ from evo.core import sync
 from evo.core import trajectory
 from evo.core import transformations as tr
 from evo.core import lie_algebra as lie
-from evo.core.trajectory import PosePath3D, PoseTrajectory3D
+from evo.core.trajectory import (
+    PosePath3D,
+    PoseTrajectory3D,
+    StateTrajectory3D,
+)
 from evo.core.geometry import GeometryException
 from evo.core.pose_cache import PoseCacheException
 
@@ -428,6 +432,81 @@ class TestPoseTrajectory3D(unittest.TestCase):
         traj.reduce_to_ids([0])
         with self.assertRaises(trajectory.TrajectoryException):
             traj.interpolate(np.array([0.5]))
+
+
+class TestStateTrajectory3D(unittest.TestCase):
+    def test_reduce_to_ids(self):
+        traj = helpers.fake_state_trajectory(10, 1)
+        original = copy.deepcopy(traj)
+        ids = [0, 2, 7]
+        traj.reduce_to_ids(ids)
+        self.assertIsInstance(traj, StateTrajectory3D)
+        self.assertEqual(traj.num_poses, 3)
+        self.assertEqual(traj.velocities_xyz.shape, (3, 3))
+        np.testing.assert_array_equal(
+            traj.velocities_xyz, original.velocities_xyz[ids]
+        )
+        np.testing.assert_array_equal(
+            traj.timestamps, original.timestamps[ids]
+        )
+        np.testing.assert_allclose(
+            traj.positions_xyz, original.positions_xyz[ids]
+        )
+
+    def test_reduce_to_ids_numpy_array(self):
+        traj = helpers.fake_state_trajectory(10, 1)
+        original = copy.deepcopy(traj)
+        ids = np.array([1, 3, 5])
+        traj.reduce_to_ids(ids)
+        np.testing.assert_array_equal(
+            traj.velocities_xyz, original.velocities_xyz[ids]
+        )
+
+    def test_reduce_to_time_range(self):
+        """
+        reduce_to_time_range goes through reduce_to_ids, so the velocities
+        have to stay aligned with the timestamps.
+        """
+        traj = helpers.fake_state_trajectory(10, 1)
+        traj.reduce_to_time_range(1.2, 7.8)
+        self.assertEqual(traj.num_poses, 6)
+        self.assertEqual(len(traj.velocities_xyz), 6)
+        # Velocity row i of the fake trajectory belongs to timestamp i.
+        np.testing.assert_array_equal(
+            traj.velocities_xyz[:, 0], traj.timestamps
+        )
+
+    def test_reduce_to_empty_time_range(self):
+        traj = helpers.fake_state_trajectory(10, 1)
+        traj.reduce_to_time_range(42, 666)
+        self.assertEqual(traj.num_poses, 0)
+        self.assertEqual(traj.velocities_xyz.shape, (0, 3))
+
+    def test_downsample(self):
+        traj = helpers.fake_state_trajectory(10, 1)
+        traj.downsample(4)
+        self.assertEqual(traj.num_poses, 4)
+        np.testing.assert_array_equal(
+            traj.velocities_xyz[:, 0], traj.timestamps
+        )
+
+    def test_sync_keeps_velocities_aligned(self):
+        """
+        Synchronization makes reduced copies with reduce_to_ids.
+        """
+        traj_state = helpers.fake_state_trajectory(10, 1)
+        traj_other = helpers.fake_trajectory(5, 2)
+        traj_state_synced, _ = sync.associate_trajectories(
+            traj_state, traj_other
+        )
+        self.assertIsInstance(traj_state_synced, StateTrajectory3D)
+        self.assertEqual(traj_state_synced.num_poses, 5)
+        np.testing.assert_array_equal(
+            traj_state_synced.velocities_xyz[:, 0],
+            traj_state_synced.timestamps,
+        )
+        # The input trajectory must not be modified.
+        self.assertEqual(len(traj_state.velocities_xyz), 10)
 
 
 class TestTrajectoryAlignment(unittest.TestCase):

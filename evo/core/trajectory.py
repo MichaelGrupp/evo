@@ -723,26 +723,35 @@ class PoseTrajectory3D(PosePath3D, object):
         return stats
 
 
-class StateTrajectory3D(PoseTrajectory3D, object):
+class StateTrajectory3D(PoseTrajectory3D):
     """
     A PosePath with temporal and velocity information
     """
 
     def __init__(
-            self, positions_xyz: typing.Optional[np.ndarray] = None,
-            orientations_quat_wxyz: typing.Optional[np.ndarray] = None,
-            velocities_xyz: typing.Optional[np.ndarray] = None,
-            timestamps: typing.Optional[np.ndarray] = None,
-            poses_se3: typing.Optional[typing.Sequence[np.ndarray]] = None,
-            meta: typing.Optional[dict] = None):
+            self, positions_xyz: np.ndarray | None = None,
+            orientations_quat_wxyz: np.ndarray | None = None,
+            velocities_xyz: np.ndarray | None = None,
+            timestamps: np.ndarray | None = None,
+            poses_se3: typing.Sequence[np.ndarray] | None = None,
+            meta: dict | None = None,
+            name: str | None = None):
         """
         :param timestamps: optional nx1 list of timestamps
         """
-        super(StateTrajectory3D,
-              self).__init__(positions_xyz, orientations_quat_wxyz, timestamps,
-                             poses_se3, meta)
+        super(StateTrajectory3D, self).__init__(
+            positions_xyz, orientations_quat_wxyz, timestamps, poses_se3, meta, name
+        )
 
         self.velocities_xyz = np.array(velocities_xyz)
+
+    def reduce_to_ids(self, ids: typing.Sequence[int] | np.ndarray) -> None:
+        """
+        Reduce the poses, timestamps and velocities to the ones specified in ids
+        :param ids: list of integer indices
+        """
+        super(StateTrajectory3D, self).reduce_to_ids(ids)
+        self.velocities_xyz = self.velocities_xyz[ids]
 
 
 class Trajectory(PoseTrajectory3D):

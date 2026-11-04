@@ -198,7 +198,6 @@ from __future__ import division, print_function
 import math
 
 import numpy
-from numpy.random import random_sample
 
 __version__ = '2015.07.18'
 __docformat__ = 'restructuredtext en'
@@ -1485,22 +1484,19 @@ def random_quaternion(rand=None):
 
     """
     if rand is None:
-        # fast path: scalar math on Python floats, same values as numpy
-        x, y, z = random_sample(3).tolist()
-        r1 = math.sqrt(1.0 - x)
-        r2 = math.sqrt(x)
-        t1 = math.tau * y
-        t2 = math.tau * z
-        return numpy.array([math.cos(t2) * r2, math.sin(t1) * r1,
-                            math.cos(t1) * r1, math.sin(t2) * r2])
-    assert len(rand) == 3
-    r1 = numpy.sqrt(1.0 - rand[0])
-    r2 = numpy.sqrt(rand[0])
+        # math on Python floats is faster than numpy on single scalars
+        rand = numpy.random.rand(3).tolist()
+        sqrt, sin, cos = math.sqrt, math.sin, math.cos
+    else:
+        assert len(rand) == 3
+        sqrt, sin, cos = numpy.sqrt, numpy.sin, numpy.cos
+    r1 = sqrt(1.0 - rand[0])
+    r2 = sqrt(rand[0])
     pi2 = math.pi * 2.0
     t1 = pi2 * rand[1]
     t2 = pi2 * rand[2]
-    return numpy.array([numpy.cos(t2)*r2, numpy.sin(t1)*r1,
-                        numpy.cos(t1)*r1, numpy.sin(t2)*r2])
+    return numpy.array([cos(t2)*r2, sin(t1)*r1,
+                        cos(t1)*r1, sin(t2)*r2])
 
 
 def random_rotation_matrix(rand=None):

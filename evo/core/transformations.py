@@ -1269,17 +1269,19 @@ def quaternion_matrix(quaternion):
     True
 
     """
-    q = numpy.array(quaternion, dtype=numpy.float64, copy=True)
+    q = numpy.asarray(quaternion, dtype=numpy.float64)
     n = numpy.dot(q, q)
     if n < _EPS:
         return numpy.identity(4)
-    q *= math.sqrt(2.0 / n)
-    q = numpy.outer(q, q)
+    # Scale Python floats instead of an in-place copy of the input array.
+    s = math.sqrt(2.0 / n)
+    q = q.ravel().tolist()
+    w, x, y, z = q[0]*s, q[1]*s, q[2]*s, q[3]*s
     return numpy.array([
-        [1.0-q[2, 2]-q[3, 3],     q[1, 2]-q[3, 0],     q[1, 3]+q[2, 0], 0.0],
-        [    q[1, 2]+q[3, 0], 1.0-q[1, 1]-q[3, 3],     q[2, 3]-q[1, 0], 0.0],
-        [    q[1, 3]-q[2, 0],     q[2, 3]+q[1, 0], 1.0-q[1, 1]-q[2, 2], 0.0],
-        [                0.0,                 0.0,                 0.0, 1.0]])
+        [1.0-y*y-z*z,     x*y-z*w,     x*z+y*w, 0.0],
+        [    x*y+z*w, 1.0-x*x-z*z,     y*z-x*w, 0.0],
+        [    x*z-y*w,     y*z+x*w, 1.0-x*x-y*y, 0.0],
+        [        0.0,         0.0,         0.0, 1.0]])
 
 
 def quaternion_from_matrix(matrix, isprecise=False):
@@ -1484,16 +1486,20 @@ def random_quaternion(rand=None):
 
     """
     if rand is None:
-        rand = numpy.random.rand(3)
+        # Drawn values are finite floats in [0, 1), so the cheap scalar
+        # math functions are safe; user input keeps numpy semantics.
+        rand = numpy.random.rand(3).tolist()
+        sqrt, cos, sin = math.sqrt, math.cos, math.sin
     else:
         assert len(rand) == 3
-    r1 = numpy.sqrt(1.0 - rand[0])
-    r2 = numpy.sqrt(rand[0])
+        sqrt, cos, sin = numpy.sqrt, numpy.cos, numpy.sin
+    r1 = sqrt(1.0 - rand[0])
+    r2 = sqrt(rand[0])
     pi2 = math.pi * 2.0
     t1 = pi2 * rand[1]
     t2 = pi2 * rand[2]
-    return numpy.array([numpy.cos(t2)*r2, numpy.sin(t1)*r1,
-                        numpy.cos(t1)*r1, numpy.sin(t2)*r2])
+    return numpy.array([cos(t2)*r2, sin(t1)*r1,
+                        cos(t1)*r1, sin(t2)*r2])
 
 
 def random_rotation_matrix(rand=None):

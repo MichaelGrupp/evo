@@ -20,6 +20,7 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import io
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -302,7 +303,15 @@ class TestResultFile(MockFileTestCase):
                     result_in = file_interface.load_res_file(
                         buffer, load_trajectories=True
                     )
-                self.assertEqual(set(result_in.trajectories), set(names))
+                # ZipFile normalizes native path separators when saving members.
+                # Keep the backslash case, but compare the names actually stored.
+                result_out.trajectories = {
+                    name.replace(os.sep, "/"): traj
+                    for name, traj in result_out.trajectories.items()
+                }
+                self.assertEqual(
+                    set(result_in.trajectories), set(result_out.trajectories)
+                )
                 self.assertEqual(result_in, result_out)
 
 

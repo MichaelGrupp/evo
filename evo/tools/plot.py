@@ -21,6 +21,7 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 
 import copy
 import os
+import sys
 import collections.abc
 import itertools
 import logging
@@ -55,6 +56,28 @@ logger = logging.getLogger(__name__)
 ListOrArray = typing.Sequence[float] | np.ndarray
 
 
+class PlotException(EvoException):
+    pass
+
+
+def _use_backend(backend: str) -> None:
+    try:
+        mpl.use(backend)
+    except ImportError as error:
+        if backend.lower() != "tkagg":
+            raise
+        python = f"{sys.version_info.major}.{sys.version_info.minor}"
+        raise PlotException(
+            f"The '{backend}' plot backend requires tkinter, which is not "
+            f"available in your Python installation ({error}).\n\nEither:\n\n"
+            "- Use the Qt backend (recommended): 'pip install \"evo[gui]\"' and then "
+            "'evo_config set plot_backend qtagg'.\n"
+            f"- Install tkinter; e.g. on macOS via 'brew install python-tk@{python}', "
+            "or on Debian/Ubuntu via 'sudo apt install python3-tk'.\n"
+            "- Use a different matplotlib backend: 'evo_config set plot_backend …'"
+        ) from error
+
+
 def apply_settings(settings: SettingsContainer = SETTINGS):
     """
     Configure matplotlib and seaborn according to package settings.
@@ -66,9 +89,9 @@ def apply_settings(settings: SettingsContainer = SETTINGS):
         if shell in ("ZMQInteractiveShell", "TerminalInteractiveShell"):
             logger.debug("IPython/Jupyter detected, skipping mpl.use().")
         else:
-            mpl.use(settings.plot_backend)
+            _use_backend(settings.plot_backend)
     except NameError:
-        mpl.use(settings.plot_backend)
+        _use_backend(settings.plot_backend)
 
     if settings.plot_seaborn_enabled:
         # TODO: 'color_codes=False' to work around this bug:
@@ -107,10 +130,6 @@ def color_cycle() -> list:
     based on the seaborn palette configured in SETTINGS.
     """
     return sns.color_palette(SETTINGS.plot_seaborn_palette)
-
-
-class PlotException(EvoException):
-    pass
 
 
 @unique

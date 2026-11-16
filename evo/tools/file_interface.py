@@ -561,7 +561,7 @@ def load_res_file(
                     archive.open(filename, mode="r")
                 ) as traj_buffer:
                     traj = read_tum_trajectory_file(traj_buffer)
-                    name = Path(filename).stem
+                    name = filename.rsplit(".", 1)[0]
                     result_obj.add_trajectory(name, traj)
             kitti_files = [f for f in file_list if f.endswith(".kitti")]
             for filename in kitti_files:
@@ -569,7 +569,7 @@ def load_res_file(
                     archive.open(filename, mode="r")
                 ) as path_buffer:
                     path = read_kitti_poses_file(path_buffer)
-                    name = Path(filename).stem
+                    name = filename.rsplit(".", 1)[0]
                     result_obj.add_trajectory(name, path)
     return result_obj
 

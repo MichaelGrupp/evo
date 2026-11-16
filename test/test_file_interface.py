@@ -20,6 +20,7 @@ along with evo.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import io
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -267,6 +268,51 @@ class TestResultFile(MockFileTestCase):
             self.mock_file, load_trajectories=True
         )
         self.assertEqual(result_in, result_out)
+
+    def test_trajectory_names_with_shared_basename(self):
+        names = (
+            "reference/poses.txt",
+            "estimate/poses.txt",
+            "/robot/poses.txt",
+            "../poses.txt",
+            "./poses.txt",
+            "poses.txt",
+            ".hidden/poses.txt",
+            r"robot\poses.txt",
+        )
+        for trajectory_type in (PoseTrajectory3D, PosePath3D):
+            with self.subTest(trajectory_type=trajectory_type):
+                result_out = Result()
+                result_out.add_info(
+                    {"ref_name": names[0], "est_name": names[1]}
+                )
+                for index, name in enumerate(names):
+                    kwargs = {
+                        "positions_xyz": np.array(
+                            [[index, 0.0, 0.0], [index, 1.0, 0.0]]
+                        ),
+                        "orientations_quat_wxyz": np.array(
+                            [[1.0, 0.0, 0.0, 0.0]] * 2
+                        ),
+                    }
+                    if trajectory_type is PoseTrajectory3D:
+                        kwargs["timestamps"] = np.array([0.0, 1.0])
+                    result_out.add_trajectory(name, trajectory_type(**kwargs))
+                with io.BytesIO() as buffer:
+                    file_interface.save_res_file(buffer, result_out)
+                    result_in = file_interface.load_res_file(
+                        buffer, load_trajectories=True
+                    )
+                # ZipFile normalizes native path separators when saving members.
+                # Keep the backslash case, but compare the names actually stored.
+                result_out.trajectories = {
+                    name.replace(os.sep, "/"): traj
+                    for name, traj in result_out.trajectories.items()
+                }
+                self.assertEqual(
+                    set(result_in.trajectories), set(result_out.trajectories)
+                )
+                self.assertEqual(result_in, result_out)
 
 
 class TestHasUtf8Bom(unittest.TestCase):

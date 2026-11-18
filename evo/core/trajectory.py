@@ -23,14 +23,15 @@ import logging
 import typing
 from enum import Enum, unique
 from functools import cached_property
+from itertools import pairwise
 
 import numpy as np
 
-from evo import EvoException
-import evo.core.transformations as tr
 import evo.core.geometry as geometry
-from evo.core import lie_algebra as lie
+import evo.core.transformations as tr
+from evo import EvoException
 from evo.core import filters
+from evo.core import lie_algebra as lie
 from evo.core.pose_cache import PoseCache
 from evo.core.sync_method import SyncMethod
 
@@ -529,6 +530,34 @@ class PoseTrajectory3D(PosePath3D, object):
                             slerp (orientations)
         :return: a new PoseTrajectory3D with the interpolated poses
         """
+        timestamps, idx, frac = self._interpolation_weights(
+            timestamps, extrapolate
+        )
+
+        xyz = self.positions_xyz[idx - 1] + frac[:, None] * (
+            self.positions_xyz[idx] - self.positions_xyz[idx - 1]
+        )
+
+        quat_wxyz = self.orientations_quat_wxyz
+        quats = [
+            tr.quaternion_slerp(
+                quat_wxyz[idx[i] - 1], quat_wxyz[idx[i]], float(frac[i])
+            )
+            for i in range(len(timestamps))
+        ]
+        return PoseTrajectory3D(
+            xyz, np.array(quats), timestamps, meta=self.meta, name=self.name
+        )
+
+    def _interpolation_weights(
+        self, timestamps: np.ndarray, extrapolate: bool
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        For each requested timestamp, finds the pair of poses to interpolate
+        between and the fraction of the way from the first to the second.
+        :return: (timestamps as 1D float array, index of the second pose of
+                 each pair, fraction)
+        """
         if self.num_poses < 2:
             raise TrajectoryException(
                 "can't interpolate a trajectory with less than two poses"
@@ -548,21 +577,29 @@ class PoseTrajectory3D(PosePath3D, object):
         frac = np.where(dt > 0.0, frac, 0.0)
         if not extrapolate:
             frac = np.clip(frac, 0.0, 1.0)
+        return timestamps, idx, frac
 
-        xyz = self.positions_xyz[idx - 1] + frac[:, None] * (
-            self.positions_xyz[idx] - self.positions_xyz[idx - 1]
-        )
-
-        quat_wxyz = self.orientations_quat_wxyz
-        quats = [
-            tr.quaternion_slerp(
-                quat_wxyz[idx[i] - 1], quat_wxyz[idx[i]], float(frac[i])
-            )
-            for i in range(len(timestamps))
-        ]
+    def _segment(self, start: int, end: int) -> "PoseTrajectory3D":
+        """
+        :return: a new trajectory with the poses in [start, end)
+        """
         return PoseTrajectory3D(
-            xyz, np.array(quats), timestamps, meta=self.meta, name=self.name
+            timestamps=self.timestamps[start:end],
+            poses_se3=self.poses_se3[start:end],
+            name=self.name,
         )
+
+    def _split_at(
+        self, bounds: np.ndarray
+    ) -> typing.Sequence["PoseTrajectory3D"]:
+        """
+        :param bounds: ascending indices, starting with 0 and ending with
+                       num_poses; segment i covers [bounds[i], bounds[i + 1])
+        """
+        return [
+            self._segment(int(start), int(end))
+            for start, end in pairwise(bounds)
+        ]
 
     def sync_with(
         self,
@@ -608,14 +645,7 @@ class PoseTrajectory3D(PosePath3D, object):
         if len(gaps) == 0:
             return [self]
         gaps = np.concatenate([[0], gaps + 1, [self.num_poses]])
-        return [
-            PoseTrajectory3D(
-                timestamps=self.timestamps[gaps[i] : gaps[i + 1]],
-                poses_se3=self.poses_se3[gaps[i] : gaps[i + 1]],
-                name=self.name,
-            )
-            for i in range(len(gaps) - 1)
-        ]
+        return self._split_at(gaps)
 
     def split_distance_gaps(
         self, dist: float
@@ -627,15 +657,7 @@ class PoseTrajectory3D(PosePath3D, object):
         """
         if self.num_poses < 2:
             return [self]
-        jumps = self._jumps(dist)
-        return [
-            PoseTrajectory3D(
-                timestamps=self.timestamps[jumps[i] : jumps[i + 1]],
-                poses_se3=self.poses_se3[jumps[i] : jumps[i + 1]],
-                name=self.name,
-            )
-            for i in range(len(jumps) - 1)
-        ]
+        return self._split_at(self._jumps(dist))
 
     def split_speed_outliers(
         self, v_max: float
@@ -653,14 +675,7 @@ class PoseTrajectory3D(PosePath3D, object):
         if len(outliers) == 0:
             return [self]
         jumps = np.concatenate([[0], outliers + 1, [self.num_poses]])
-        return [
-            PoseTrajectory3D(
-                timestamps=self.timestamps[jumps[i] : jumps[i + 1]],
-                poses_se3=self.poses_se3[jumps[i] : jumps[i + 1]],
-                name=self.name,
-            )
-            for i in range(len(jumps) - 1)
-        ]
+        return self._split_at(jumps)
 
     def check(self) -> tuple[bool, dict]:
         if self.num_poses == 0:
@@ -723,6 +738,187 @@ class PoseTrajectory3D(PosePath3D, object):
         return stats
 
 
+class StateTrajectory3D(PoseTrajectory3D):
+    """
+    A PosePath with temporal and velocity information
+    """
+
+    def __init__(
+        self,
+        positions_xyz: np.ndarray | None = None,
+        orientations_quat_wxyz: np.ndarray | None = None,
+        velocities_xyz: np.ndarray | None = None,
+        timestamps: np.ndarray | None = None,
+        poses_se3: typing.Sequence[np.ndarray] | None = None,
+        meta: dict | None = None,
+        name: str | None = None,
+    ):
+        """
+        :param velocities_xyz: nx3 list of x,y,z linear velocities (required)
+        :param timestamps: nx1 list of timestamps
+        """
+        super().__init__(
+            positions_xyz,
+            orientations_quat_wxyz,
+            timestamps,
+            poses_se3,
+            meta,
+            name,
+        )
+
+        if velocities_xyz is None:
+            raise TrajectoryException("no velocities provided")
+
+        self.velocities_xyz = np.array(velocities_xyz, dtype=float)
+        expected_shape = (self.num_poses, 3)
+        if self.velocities_xyz.shape != expected_shape:
+            raise TrajectoryException(
+                f"velocities_xyz must have shape {expected_shape}, "
+                f"got {self.velocities_xyz.shape}"
+            )
+
+    def __eq__(self, other: object) -> bool:
+        # A plain PoseTrajectory3D has no velocities, so it's never equal.
+        if not isinstance(other, StateTrajectory3D):
+            return False
+        if not self.num_poses == other.num_poses:
+            return False
+        equal = super().__eq__(other)
+        equal &= np.allclose(self.velocities_xyz, other.velocities_xyz)
+        return bool(equal)
+
+    def __ne__(self, other: object) -> bool:
+        return not self == other
+
+    def check(self) -> tuple[bool, dict]:
+        """
+        checks if the poses, timestamps and velocities are valid,
+        i.e. the base checks plus velocities of shape (num_poses, 3)
+        :return: True/False, dictionary with some detailed infos
+        """
+        if self.num_poses == 0:
+            return True, {}
+        valid, details = super().check()
+        expected_shape = (self.num_poses, 3)
+        velocities_valid = np.shape(self.velocities_xyz) == expected_shape
+        valid &= velocities_valid
+        if velocities_valid:
+            details["velocities"] = "ok"
+        else:
+            details["velocities"] = (
+                f"wrong shape {np.shape(self.velocities_xyz)}, "
+                f"expected {expected_shape}"
+            )
+        return valid, details
+
+    def transform(
+        self, t: np.ndarray, right_mul: bool = False, propagate: bool = False
+    ) -> None:
+        """
+        apply a left or right multiplicative transformation to the whole path
+        Velocities are in the world frame, so a left-multiplied transformation
+        rotates (and for Sim(3), scales) them. A right-multiplied one changes
+        only the body frame and leaves them unchanged.
+        :param t: a 4x4 transformation matrix (e.g. SE(3) or Sim(3))
+        :param right_mul: whether to apply it right-multiplicative or not
+        :param propagate: whether to propagate drift with RHS transformations
+        """
+        super().transform(t, right_mul, propagate)
+        if not right_mul:
+            # Row-wise v' = sR @ v, with sR the upper-left 3x3 block of t.
+            self.velocities_xyz = self.velocities_xyz @ t[:3, :3].T
+
+    def scale(self, s: float) -> None:
+        """
+        apply a scaling to the whole path, including the velocities
+        :param s: scale factor
+        """
+        super().scale(s)
+        self.velocities_xyz = self.velocities_xyz * s
+
+    def project(self, plane: Plane) -> None:
+        """
+        Projects the poses and the velocities into a plane.
+        :param plane: desired plane into which the poses will be projected
+        """
+        super().project(plane)
+        null_dim = {Plane.XY: 2, Plane.XZ: 1, Plane.YZ: 0}[plane]
+        self.velocities_xyz[:, null_dim] = 0
+
+    def interpolate(
+        self,
+        timestamps: np.ndarray,
+        extrapolate: bool = False,
+    ) -> "StateTrajectory3D":
+        """
+        Interpolates the trajectory at the given timestamps, see
+        PoseTrajectory3D.interpolate(). Velocities are interpolated linearly.
+        :param timestamps: timestamps at which to interpolate
+        :param extrapolate: see PoseTrajectory3D.interpolate()
+        :return: a new StateTrajectory3D with the interpolated states
+        """
+        poses = super().interpolate(timestamps, extrapolate)
+        _, idx, frac = self._interpolation_weights(timestamps, extrapolate)
+        velocities = self.velocities_xyz[idx - 1] + frac[:, None] * (
+            self.velocities_xyz[idx] - self.velocities_xyz[idx - 1]
+        )
+        return StateTrajectory3D(
+            poses.positions_xyz,
+            poses.orientations_quat_wxyz,
+            velocities,
+            poses.timestamps,
+            meta=self.meta,
+            name=self.name,
+        )
+
+    def _segment(self, start: int, end: int) -> "StateTrajectory3D":
+        """
+        :return: a new trajectory with the states in [start, end)
+        """
+        return StateTrajectory3D(
+            velocities_xyz=self.velocities_xyz[start:end],
+            timestamps=self.timestamps[start:end],
+            poses_se3=self.poses_se3[start:end],
+            name=self.name,
+        )
+
+    def get_infos(self) -> dict:
+        """
+        :return: dictionary with some infos about the trajectory
+        """
+        infos = super().get_infos()
+        infos["vel_start (m/s)"] = self.velocities_xyz[0]
+        infos["vel_end (m/s)"] = self.velocities_xyz[-1]
+        return infos
+
+    def get_statistics(self) -> dict:
+        """
+        :return: dictionary with some statistics of the trajectory.
+                 The "v_*" entries are speeds estimated from the positions,
+                 the "vel_norm_*" entries come from the stored velocities.
+        """
+        if self.num_poses < 2:
+            return {}
+        stats = super().get_statistics()
+        norms = np.linalg.norm(self.velocities_xyz, axis=1)
+        stats.update(
+            {
+                "vel_norm_max (m/s)": float(norms.max()),
+                "vel_norm_min (m/s)": float(norms.min()),
+                "vel_norm_avg (m/s)": float(norms.mean()),
+            }
+        )
+        return stats
+
+    def reduce_to_ids(self, ids: typing.Sequence[int] | np.ndarray) -> None:
+        """
+        Reduce the poses, timestamps and velocities to the ones specified in ids
+        :param ids: list of integer indices
+        """
+        super().reduce_to_ids(ids)
+        self.velocities_xyz = self.velocities_xyz[ids]
+
+
 class Trajectory(PoseTrajectory3D):
     pass  # TODO compat
 
@@ -748,7 +944,8 @@ def merge(trajectories: typing.Sequence[PoseTrajectory3D]) -> PoseTrajectory3D:
     """
     Merges multiple trajectories into a single, timestamp-sorted one.
     :param trajectories: list of PoseTrajectory3D objects
-    :return: merged PoseTrajectory3D
+    :return: merged StateTrajectory3D if all inputs are StateTrajectory3D,
+             otherwise a merged PoseTrajectory3D (without velocities)
     """
     merged_stamps = np.concatenate([t.timestamps for t in trajectories])
     merged_xyz = np.concatenate([t.positions_xyz for t in trajectories])
@@ -759,4 +956,11 @@ def merge(trajectories: typing.Sequence[PoseTrajectory3D]) -> PoseTrajectory3D:
     merged_stamps = merged_stamps[order]
     merged_xyz = merged_xyz[order]
     merged_quat = merged_quat[order]
+    if all(isinstance(t, StateTrajectory3D) for t in trajectories):
+        merged_velocities = np.concatenate(
+            [t.velocities_xyz for t in trajectories]  # type: ignore[attr-defined]
+        )[order]
+        return StateTrajectory3D(
+            merged_xyz, merged_quat, merged_velocities, merged_stamps
+        )
     return PoseTrajectory3D(merged_xyz, merged_quat, merged_stamps)

@@ -31,9 +31,9 @@ import numpy as np
 
 from evo import EvoException
 from evo.core import filters, trajectory
-from evo.core.result import Result
 from evo.core import lie_algebra as lie
-from evo.core.units import Unit, ANGLE_UNITS, LENGTH_UNITS, METER_SCALE_FACTORS
+from evo.core.result import Result
+from evo.core.units import ANGLE_UNITS, LENGTH_UNITS, METER_SCALE_FACTORS, Unit
 
 if sys.version_info[0] >= 3 and sys.version_info[1] >= 4:
     ABC = abc.ABC
@@ -559,3 +559,82 @@ def id_pairs_from_delta(
     )
 
     return id_pairs
+
+
+class ASE(PE):
+    """
+    ASE: absolute state error
+    metric for investigating the global consistency of a state trajectory
+    (position, orientation and linear velocities).
+    """
+
+    def __init__(self):
+        super().__init__()  # unit stays Unit.none, the error is dimension-less
+        # This corresponds to the error variable E from the Agrawal paper.
+        self.E: list[np.ndarray] = []
+        self.identity = np.eye(5)
+
+    def __str__(self) -> str:
+        title = "ASE w.r.t. full state "
+        title += "(" + self.unit.value + ")" if self.unit else ""
+        return title
+
+    @staticmethod
+    def ase_base(x_t: np.ndarray, x_t_star: np.ndarray) -> np.ndarray:
+        """
+        Computes the absolute error pose for a single SE2(3) pose pair
+        following the notation of the Agrawal paper.
+        :param x_t: estimated absolute SE2(3) pose at t
+        :param x_t_star: reference absolute SE2(3) pose at t
+        .:return: the delta pose
+        """
+        return lie.relative_se23(x_t, x_t_star)
+
+    @staticmethod
+    def se23_poses(traj: trajectory.StateTrajectory3D) -> list[np.ndarray]:
+        """
+        :param traj: a state trajectory with poses and world-frame velocities
+        :return: the SE2(3) matrix of each state in traj
+        """
+        return [
+            lie.se23(p[:3, :3], p[:3, 3], v)
+            for p, v in zip(traj.poses_se3, traj.velocities_xyz)
+        ]
+
+    def process_data(self, data: PathPair) -> None:
+        """
+        Calculates the ASE on a batch of SE2(3) poses from trajectories.
+        :param data: tuple (traj_ref, traj_est) with:
+        traj_ref: reference evo.trajectory.StateTrajectory3D
+        traj_est: estimated evo.trajectory.StateTrajectory3D
+        """
+        if len(data) != 2:
+            raise MetricsException(
+                "please provide data tuple as: (traj_ref, traj_est)"
+            )
+        traj_ref, traj_est = data
+        if not (
+            isinstance(traj_ref, trajectory.StateTrajectory3D)
+            and isinstance(traj_est, trajectory.StateTrajectory3D)
+        ):
+            raise MetricsException(
+                "ASE requires StateTrajectory3D inputs with velocities"
+            )
+        if traj_ref.num_poses != traj_est.num_poses:
+            raise MetricsException(
+                "trajectories must have same number of poses"
+            )
+
+        est_poses_se23 = self.se23_poses(traj_est)
+        ref_poses_se23 = self.se23_poses(traj_ref)
+
+        self.E = [
+            self.ase_base(x_t, x_t_star)
+            for x_t, x_t_star in zip(est_poses_se23, ref_poses_se23)
+        ]
+        logger.debug(f"Compared {len(self.E)} absolute pose pairs.")
+        logger.debug("Calculating ASE...")
+
+        self.error = np.array(
+            [np.linalg.norm(E_i - self.identity) for E_i in self.E]
+        )

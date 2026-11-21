@@ -181,36 +181,71 @@ class TestPosePath3D(unittest.TestCase):
 
     def test_projection(self):
         """
-        Checks that projection into a plane modifies the poses correctly.
+        Checks that projection preserves rotations within the target plane.
         """
         for plane, null_dim in zip(trajectory.Plane, [2, 1, 0]):
-            path = helpers.fake_path(length=1)
             axis = np.zeros(3)
             axis[null_dim] = 1
-            angle = path.get_orientations_euler("sxyz")[0][null_dim]
+            rotations = [
+                lie.so3_exp(np.deg2rad(angle) * axis)
+                for angle in (-179, -120, -90, 0, 90, 120, 179)
+            ]
+            poses = [lie.se3(rotation, np.ones(3)) for rotation in rotations]
+            path = PosePath3D(poses_se3=poses)
 
             path.project(plane)
-            # Position value has to be zero outside of the plane.
-            self.assertEqual(path.poses_se3[0][null_dim][3], 0)
-            self.assertEqual(path.positions_xyz[0][null_dim], 0)
-            # Rotation has to be angle around the nulled dimension's axis.
+
+            expected_positions = np.ones((len(poses), 3))
+            expected_positions[:, null_dim] = 0
+            self.assertTrue(
+                np.allclose(path.positions_xyz, expected_positions)
+            )
+            for pose, rotation in zip(path.poses_se3, rotations):
+                self.assertTrue(np.allclose(pose[:3, :3], rotation))
+            plane_axes = [dim for dim in range(3) if dim != null_dim]
             self.assertTrue(
                 np.allclose(
-                    lie.so3_log(lie.so3_from_se3(path.poses_se3[0])),
-                    angle * axis,
+                    path.orientations_quat_wxyz[:, np.add(plane_axes, 1)],
+                    0,
                 )
             )
-            # Quaternion has to be zero around the plane's basis vectors.
-            quat_wxyz = path.orientations_quat_wxyz[0]
-            if plane == trajectory.Plane.XY:
-                self.assertAlmostEqual(quat_wxyz[1], 0)  # x
-                self.assertAlmostEqual(quat_wxyz[2], 0)  # y
-            elif plane == trajectory.Plane.XZ:
-                self.assertAlmostEqual(quat_wxyz[1], 0)  # x
-                self.assertAlmostEqual(quat_wxyz[3], 0)  # z
-            elif plane == trajectory.Plane.YZ:
-                self.assertAlmostEqual(quat_wxyz[2], 0)  # y
-                self.assertAlmostEqual(quat_wxyz[3], 0)  # z
+
+            projected_again = PosePath3D(
+                poses_se3=[pose.copy() for pose in path.poses_se3]
+            )
+            projected_again.project(plane)
+            self.assertTrue(
+                np.allclose(projected_again.poses_se3, path.poses_se3)
+            )
+
+    def test_projection_discards_out_of_plane_rotation(self):
+        for plane, null_dim in zip(trajectory.Plane, [2, 1, 0]):
+            rotation_axis = np.zeros(3)
+            rotation_axis[(null_dim + 1) % 3] = 1
+            rotation = lie.so3_exp(np.deg2rad(180) * rotation_axis)
+            path = PosePath3D(poses_se3=[lie.se3(rotation)])
+
+            path.project(plane)
+
+            self.assertTrue(np.allclose(path.poses_se3[0], np.eye(4)))
+
+    def test_projection_near_out_of_plane_singularity(self):
+        for plane, null_dim in zip(trajectory.Plane, [2, 1, 0]):
+            normal = np.zeros(3)
+            normal[null_dim] = 1
+            rotation_axis = np.zeros(3)
+            rotation_axis[(null_dim + 1) % 3] = 1
+            expected = lie.so3_exp(np.deg2rad(120) * normal)
+            rotation = lie.so3_exp(np.deg2rad(179.999) * rotation_axis).dot(
+                expected
+            )
+            path = PosePath3D(poses_se3=[lie.se3(rotation)])
+
+            path.project(plane)
+
+            self.assertTrue(
+                np.allclose(path.poses_se3[0][:3, :3], expected, atol=1e-6)
+            )
 
     def test_split_distance_gaps(self):
         """

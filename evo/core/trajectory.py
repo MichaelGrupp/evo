@@ -221,13 +221,16 @@ class PosePath3D(object):
         # Project poses and rotations (forcing to angle around normal).
         rotation_axis = np.zeros(3)
         rotation_axis[null_dim] = 1
+        # Choose (i, j, normal) as a right-handed basis.
+        i, j = ((1, 2), (2, 0), (0, 1))[null_dim]
         for pose in self._cache.poses_se3:
             pose[null_dim, 3] = 0
-            angle_axis = (
-                rotation_axis
-                * tr.euler_from_matrix(pose[:3, :3], "sxyz")[null_dim]
+            rotation = pose[:3, :3]
+            angle = np.arctan2(
+                rotation[j, i] - rotation[i, j],
+                rotation[i, i] + rotation[j, j],
             )
-            pose[:3, :3] = lie.so3_exp(angle_axis)
+            pose[:3, :3] = lie.so3_exp(rotation_axis * angle)
 
         # Poses were mutated in place; cached xyz/quat must be re-derived.
         self._cache.invalidate_xyz_quat()

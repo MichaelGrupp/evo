@@ -555,13 +555,16 @@ def load_res_file(
                 name = Path(filename).stem
                 result_obj.add_np_array(name, array)
         if load_trajectories:
+            # Strip only the format suffix added by save_res_file() so the
+            # original trajectory name / path is preserved.
             tum_files = [f for f in file_list if f.endswith(".tum")]
             for filename in tum_files:
                 with io.TextIOWrapper(
                     archive.open(filename, mode="r")
                 ) as traj_buffer:
                     traj = read_tum_trajectory_file(traj_buffer)
-                    name = Path(filename).stem
+                    name = filename.removesuffix(".tum")
+                    traj.name = name
                     result_obj.add_trajectory(name, traj)
             kitti_files = [f for f in file_list if f.endswith(".kitti")]
             for filename in kitti_files:
@@ -569,7 +572,8 @@ def load_res_file(
                     archive.open(filename, mode="r")
                 ) as path_buffer:
                     path = read_kitti_poses_file(path_buffer)
-                    name = Path(filename).stem
+                    name = filename.removesuffix(".kitti")
+                    path.name = name
                     result_obj.add_trajectory(name, path)
     return result_obj
 

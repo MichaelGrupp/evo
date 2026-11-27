@@ -210,18 +210,30 @@ class TestPosePath3D(unittest.TestCase):
             axis = np.zeros(3)
             axis[null_dim] = 1
             angle = path.get_orientations_euler("sxyz")[0][null_dim]
+            x_axis = path.poses_se3[0][:3, 0].copy()
 
             path.project(plane)
             # Position value has to be zero outside of the plane.
             self.assertEqual(path.poses_se3[0][null_dim][3], 0)
             self.assertEqual(path.positions_xyz[0][null_dim], 0)
-            # Rotation has to be angle around the nulled dimension's axis.
-            self.assertTrue(
-                np.allclose(
-                    lie.so3_log(lie.so3_from_se3(path.poses_se3[0])),
-                    angle * axis,
+            if plane == trajectory.Plane.XZ:
+                # The x-axis has to point along the original x-axis
+                # projected into the plane.
+                x_axis[null_dim] = 0
+                self.assertTrue(
+                    np.allclose(
+                        path.poses_se3[0][:3, 0],
+                        x_axis / np.linalg.norm(x_axis),
+                    )
                 )
-            )
+            else:
+                # Rotation has to be angle around the nulled dimension's axis.
+                self.assertTrue(
+                    np.allclose(
+                        lie.so3_log(lie.so3_from_se3(path.poses_se3[0])),
+                        angle * axis,
+                    )
+                )
             # Quaternion has to be zero around the plane's basis vectors.
             quat_wxyz = path.orientations_quat_wxyz[0]
             if plane == trajectory.Plane.XY:
@@ -233,6 +245,56 @@ class TestPosePath3D(unittest.TestCase):
             elif plane == trajectory.Plane.YZ:
                 self.assertAlmostEqual(quat_wxyz[2], 0)  # y
                 self.assertAlmostEqual(quat_wxyz[3], 0)  # z
+
+    def test_projection_full_angle_range(self):
+        """
+        Checks that rotations around the plane normal are preserved over the
+        full range of [-180, 180] degrees.
+        """
+        angles_deg = (-180, -179, -120, -90, 0, 90, 120, 179, 180)
+        for plane, null_dim in zip(trajectory.Plane, [2, 1, 0]):
+            axis = np.zeros(3)
+            axis[null_dim] = 1
+            rotations = [
+                lie.so3_exp(np.deg2rad(angle) * axis) for angle in angles_deg
+            ]
+            path = PosePath3D(poses_se3=[lie.se3(r) for r in rotations])
+            path.project(plane)
+            for angle, pose, rotation in zip(
+                angles_deg, path.poses_se3, rotations
+            ):
+                with self.subTest(plane=plane, angle_deg=angle):
+                    self.assertTrue(np.allclose(pose[:3, :3], rotation))
+
+    def test_projection_xz_mixed_rotation(self):
+        """
+        Checks XZ projection of rotations that are not purely around Y.
+        The projected rotation is the one around Y that points the x-axis
+        in the same direction as the original x-axis, viewed in XZ.
+        """
+
+        def rot(axis: str, angle_deg: float) -> np.ndarray:
+            vector = {"x": [1, 0, 0], "y": [0, 1, 0], "z": [0, 0, 1]}[axis]
+            return lie.so3_exp(np.deg2rad(angle_deg) * np.array(vector))
+
+        # Rotation around Y, followed by a local rotation around Z.
+        # The Z rotation tilts the x-axis out of XZ, so the Y angle is kept,
+        # unless it exceeds 90 degrees and turns the x-axis around.
+        cases = [
+            # (Y, Z) in degrees, expected Y angle after projection.
+            ((120, 60), 120),
+            ((30, 120), -150),  # Turned around: 30 + 180.
+        ]
+        for (y, z), expected_y in cases:
+            with self.subTest(y=y, z=z):
+                rotation = rot("y", y) @ rot("z", z)
+                path = PosePath3D(poses_se3=[lie.se3(rotation)])
+                path.project(trajectory.Plane.XZ)
+                self.assertTrue(
+                    np.allclose(
+                        path.poses_se3[0][:3, :3], rot("y", expected_y)
+                    )
+                )
 
     def test_split_distance_gaps(self):
         """

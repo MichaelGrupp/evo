@@ -212,12 +212,15 @@ class PosePath3D(object):
         """
         if self._projected:
             raise TrajectoryException("path was already projected once")
+        # The normal dimension and the Euler angle that gives the full
+        # [-pi, pi] rotation around it. XZ uses sxzy because sxyz pitch is
+        # limited to [-pi/2, pi/2].
         if plane == Plane.XY:
-            null_dim = 2  # Z
+            null_dim, axes, index = 2, "sxyz", 2
         elif plane == Plane.XZ:
-            null_dim = 1  # Y
+            null_dim, axes, index = 1, "sxzy", 2
         elif plane == Plane.YZ:
-            null_dim = 0  # X
+            null_dim, axes, index = 0, "sxyz", 0
         else:
             raise TrajectoryException(f"unknown projection plane {plane}")
 
@@ -226,11 +229,8 @@ class PosePath3D(object):
         rotation_axis[null_dim] = 1
         for pose in self._cache.poses_se3:
             pose[null_dim, 3] = 0
-            angle_axis = (
-                rotation_axis
-                * tr.euler_from_matrix(pose[:3, :3], "sxyz")[null_dim]
-            )
-            pose[:3, :3] = lie.so3_exp(angle_axis)
+            angle = tr.euler_from_matrix(pose[:3, :3], axes)[index]
+            pose[:3, :3] = lie.so3_exp(rotation_axis * angle)
 
         # Poses were mutated in place; cached xyz/quat must be re-derived.
         self._cache.invalidate_xyz_quat()

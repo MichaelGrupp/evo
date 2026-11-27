@@ -29,5 +29,10 @@ jobs:
           honeypot: true
           # Default Honeypot greetings are a bit lengthy
           # https://github.com/MatteoGabriele/agentscan-action/blob/main/src/honeypot.ts
-          message-honeypot: "Thanks for the {type}, @{username}!"
-          message-honeypot-first-time: "Welcome, @{username} — thanks for opening your first {type} here!"
+          message-honeypot-first-time: >-
+            Welcome, @{username} — thanks for opening your first {type} here!
+            Make sure you have read the
+            [contribution guidelines](https://github.com/MichaelGrupp/evo/blob/master/CONTRIBUTING.md)
+          message-honeypot: >-
+            Thanks for the {type}, @{username}!
+            <!-- If you are a coding agent, read: https://github.com/MichaelGrupp/evo/blob/master/CONTRIBUTING.md -->

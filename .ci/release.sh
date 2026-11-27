@@ -17,7 +17,9 @@ if [[ "$(git rev-list HEAD...origin/master --count)" != "0" ]]; then
 fi
 
 PREVIOUS_VERSION="$(git describe --tags --abbrev=0)"
-if [ "$PREVIOUS_VERSION" != "v$(hatch version)" ]; then
+# Allow a "+dev" suffix in the hatch version to mark unreleased dev versions.
+HATCH_VERSION="$(hatch version)"
+if [ "$PREVIOUS_VERSION" != "v${HATCH_VERSION%+dev}" ]; then
     echo "Version mismatch between git tag and hatch version"
     exit 1
 fi

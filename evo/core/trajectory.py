@@ -100,11 +100,11 @@ class PosePath3D(object):
                 for p1, p2 in zip(self.poses_se3, other.poses_se3)
             ]
         )
-        equal &= np.allclose(
-            self.orientations_quat_wxyz, other.orientations_quat_wxyz
-        ) or np.allclose(
-            self.orientations_quat_wxyz, -other.orientations_quat_wxyz
-        )
+        # q and -q describe the same rotation, so the sign is compared per pose.
+        quats_1 = self.orientations_quat_wxyz
+        quats_2 = other.orientations_quat_wxyz
+        signs = np.where(np.sum(quats_1 * quats_2, axis=1) < 0.0, -1.0, 1.0)
+        equal &= np.allclose(quats_1, signs[:, np.newaxis] * quats_2)
         equal &= np.allclose(self.positions_xyz, other.positions_xyz)
         return equal
 

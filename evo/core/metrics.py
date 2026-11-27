@@ -213,7 +213,7 @@ class RPE(PE):
         all_pairs: bool = False,
         pairs_from_reference: bool = False,
     ):
-        if delta < 0:
+        if delta <= 0:
             raise MetricsException("delta must be a positive number")
         if (
             delta_unit == Unit.frames

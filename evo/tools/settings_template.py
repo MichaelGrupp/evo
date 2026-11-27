@@ -44,6 +44,10 @@ DEFAULT_SETTINGS_DICT_DOC = {
         ("Whether to write a global logfile to the home folder.\n"
          "Run 'evo pkg --logfile' to see the logfile location.")
     ),
+    "compress_result_files": (
+        True,
+        "Compress the contents of result zip files (evo_ape/evo_rpe --save_results)."
+    ),
     "console_logging_format": (
         "%(message)s",
         "Format string for the logging module (affects only console output)."

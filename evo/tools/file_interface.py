@@ -480,7 +480,9 @@ def write_bag_trajectory(
 def save_res_file(
     zip_path: PathStrHandle,
     result_obj: result.Result,
+    *,
     confirm_overwrite: bool = False,
+    compress: bool = True,
 ) -> None:
     """
     save results to a zip file that can be deserialized with load_res_file()
@@ -488,6 +490,7 @@ def save_res_file(
     :param result_obj: evo.core.result.Result instance
     :param confirm_overwrite: whether to require user interaction
            to overwrite existing files
+    :param compress: whether to deflate-compress the zip file contents
     """
     if isinstance(zip_path, (str, Path)):
         logger.debug("Saving results to %s...", zip_path)
@@ -495,7 +498,8 @@ def save_res_file(
             zip_path
         ):
             return
-    with zipfile.ZipFile(zip_path, "w") as archive:
+    compression = zipfile.ZIP_DEFLATED if compress else zipfile.ZIP_STORED
+    with zipfile.ZipFile(zip_path, "w", compression=compression) as archive:
         archive.writestr("info.json", json.dumps(result_obj.info))
         archive.writestr("stats.json", json.dumps(result_obj.stats))
         for name, array in result_obj.np_arrays.items():

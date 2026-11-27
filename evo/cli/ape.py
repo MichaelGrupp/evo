@@ -116,5 +116,8 @@ def run(args: argparse.Namespace) -> None:
         if not SETTINGS.save_traj_in_zip:
             result.trajectories.clear()
         file_interface.save_res_file(
-            args.save_results, result, confirm_overwrite=not args.no_warnings
+            args.save_results,
+            result,
+            confirm_overwrite=not args.no_warnings,
+            compress=SETTINGS.compress_result_files,
         )

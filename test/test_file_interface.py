@@ -270,9 +270,16 @@ class TestResultFile(MockFileTestCase):
         self.assertEqual(result_in, result_out)
 
     def test_trajectory_names_with_shared_basename(self):
+        """
+        Checks that full trajectory names/paths (including names with a shared
+        basename or format-matching extensions) are preserved across result
+        archive save/load round-trips.
+        """
         names = (
             "reference/poses.txt",
             "estimate/poses.txt",
+            "reference/poses.tum",
+            "reference/poses.kitti",
             "/robot/poses.txt",
             "../poses.txt",
             "./poses.txt",
@@ -286,18 +293,13 @@ class TestResultFile(MockFileTestCase):
                 result_out.add_info(
                     {"ref_name": names[0], "est_name": names[1]}
                 )
-                for index, name in enumerate(names):
-                    kwargs = {
-                        "positions_xyz": np.array(
-                            [[index, 0.0, 0.0], [index, 1.0, 0.0]]
-                        ),
-                        "orientations_quat_wxyz": np.array(
-                            [[1.0, 0.0, 0.0, 0.0]] * 2
-                        ),
-                    }
-                    if trajectory_type is PoseTrajectory3D:
-                        kwargs["timestamps"] = np.array([0.0, 1.0])
-                    result_out.add_trajectory(name, trajectory_type(**kwargs))
+                for name in names:
+                    traj = (
+                        helpers.fake_trajectory(10, 0.1)
+                        if trajectory_type is PoseTrajectory3D
+                        else helpers.fake_path(10)
+                    )
+                    result_out.add_trajectory(name, traj)
                 with io.BytesIO() as buffer:
                     file_interface.save_res_file(buffer, result_out)
                     result_in = file_interface.load_res_file(
@@ -312,6 +314,8 @@ class TestResultFile(MockFileTestCase):
                 self.assertEqual(
                     set(result_in.trajectories), set(result_out.trajectories)
                 )
+                for name, traj in result_in.trajectories.items():
+                    self.assertEqual(traj.name, name)
                 self.assertEqual(result_in, result_out)
 
 

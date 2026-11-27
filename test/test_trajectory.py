@@ -98,6 +98,28 @@ class TestPosePath3D(unittest.TestCase):
         )
         self.assertEqual(path_1, path_2)
 
+    def test_equals_equivalent_quaternion_mixed_signs(self):
+        """
+        Checks that paths are equal when only some of the quaternions
+        are flipped (q = -q per pose).
+        """
+        path_1 = helpers.fake_path(10)
+        signs = np.ones((path_1.num_poses, 1))
+        signs[::2] = -1
+        path_2 = PosePath3D(
+            path_1.positions_xyz, path_1.orientations_quat_wxyz * signs
+        )
+        self.assertEqual(path_1, path_2)
+
+    def test_not_equals_different_quaternion(self):
+        path_1 = helpers.fake_path(10)
+        quats = path_1.orientations_quat_wxyz.copy()
+        quats[3] = tr.quaternion_multiply(
+            quats[3], tr.quaternion_about_axis(0.1, [0, 0, 1])
+        )
+        path_2 = PosePath3D(path_1.positions_xyz, quats)
+        self.assertNotEqual(path_1, path_2)
+
     def test_reduce_to_ids(self):
         path = helpers.fake_path(10)
         path_reduced = copy.deepcopy(path)

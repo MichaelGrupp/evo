@@ -27,7 +27,11 @@ import numpy as np
 import pandas as pd
 
 from evo.core import result
-from evo.core.trajectory import PosePath3D, PoseTrajectory3D
+from evo.core.trajectory import (
+    PosePath3D,
+    PoseTrajectory3D,
+    StateTrajectory3D,
+)
 from evo.tools import file_interface, user
 from evo.tools.settings import SETTINGS
 
@@ -49,6 +53,10 @@ def trajectory_to_df(traj: PosePath3D) -> pd.DataFrame:
         "qy": traj.orientations_quat_wxyz[:, 2],
         "qz": traj.orientations_quat_wxyz[:, 3],
     }
+    if isinstance(traj, StateTrajectory3D):
+        poses_dict["vx"] = traj.velocities_xyz[:, 0]
+        poses_dict["vy"] = traj.velocities_xyz[:, 1]
+        poses_dict["vz"] = traj.velocities_xyz[:, 2]
     if isinstance(traj, PoseTrajectory3D):
         index = traj.timestamps
     else:
@@ -62,13 +70,28 @@ def df_to_trajectory(
     """
     :param df: DataFrame created with trajectory_to_df()
     :param as_type: Explicit output type, otherwise derived from the data.
-                    Either PosePath3D or PoseTrajectory3D.
+                    Either PosePath3D, PoseTrajectory3D or StateTrajectory3D.
+                    Without it, a DataFrame with velocity columns (vx, vy, vz)
+                    becomes a StateTrajectory3D.
     """
     quat_wxyz = df[["qw", "qx", "qy", "qz"]].to_numpy()
     positions_xyz = df[["x", "y", "z"]].to_numpy()
     if as_type is PosePath3D or df.index.dtype == np.int_:
         return PosePath3D(positions_xyz, quat_wxyz)
     timestamps = df.index.to_numpy()
+    velocity_columns = ["vx", "vy", "vz"]
+    has_velocities = set(velocity_columns) <= set(df.columns)
+    if as_type is StateTrajectory3D or (as_type is None and has_velocities):
+        if not has_velocities:
+            raise ValueError(
+                f"StateTrajectory3D requires the columns {velocity_columns}"
+            )
+        return StateTrajectory3D(
+            positions_xyz,
+            quat_wxyz,
+            df[velocity_columns].to_numpy(),
+            timestamps,
+        )
     return PoseTrajectory3D(positions_xyz, quat_wxyz, timestamps)
 
 

@@ -112,6 +112,24 @@ def se3(
     return se3
 
 
+def se23(
+    r: np.ndarray = np.eye(3),
+    t: np.ndarray = np.array([0, 0, 0]),
+    v: np.ndarray = np.array([0, 0, 0]),
+) -> np.ndarray:
+    """
+    :param r: SO(3) rotation matrix
+    :param t: 3x1 translation vector
+    :param v: 3x1 velocity vector
+    :return: SE2(3) transformation matrix
+    """
+    se_23 = np.eye(5)
+    se_23[:3, :3] = r
+    se_23[:3, 3] = t
+    se_23[:3, 4] = v
+    return se_23
+
+
 def sim3(r: np.ndarray, t: np.ndarray, s: float) -> np.ndarray:
     """
     :param r: SO(3) rotation matrix
@@ -141,6 +159,17 @@ def se3_inverse(p: np.ndarray) -> np.ndarray:
     r_inv = p[:3, :3].transpose()
     t_inv = -r_inv.dot(p[:3, 3])
     return se3(r_inv, t_inv)
+
+
+def se23_inverse(p: np.ndarray) -> np.ndarray:
+    """
+    :param p: absolute SE2(3) pose
+    :return: the inverted pose
+    """
+    r_inv = p[:3, :3].transpose()
+    t_inv = -r_inv.dot(p[:3, 3])
+    v_inv = -r_inv.dot(p[:3, 4])
+    return se23(r_inv, t_inv, v_inv)
 
 
 def sim3_scale(a: np.ndarray) -> float:
@@ -219,6 +248,14 @@ def relative_se3(p1: np.ndarray, p2: np.ndarray) -> np.ndarray:
     :return: the relative transformation p1^{⁻1} * p2
     """
     return np.dot(se3_inverse(p1), p2)
+
+
+def relative_se23(p1: np.ndarray, p2: np.ndarray) -> np.ndarray:
+    """
+    :param p1, p2: SE2(3) matrices
+    :return: the relative transformation p1^{⁻1} * p2
+    """
+    return np.dot(se23_inverse(p1), p2)
 
 
 def random_so3() -> np.ndarray:

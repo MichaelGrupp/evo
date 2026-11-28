@@ -65,10 +65,10 @@ def run(args: argparse.Namespace) -> None:
         traj_est, PoseTrajectory3D
     ):
         logger.debug(SEP)
-        if args.t_start or args.t_end:
-            if args.t_start:
+        if args.t_start is not None or args.t_end is not None:
+            if args.t_start is not None:
                 logger.info(f"Using time range start: {args.t_start}s")
-            if args.t_end:
+            if args.t_end is not None:
                 logger.info(f"Using time range end: {args.t_end}s")
             traj_ref.reduce_to_time_range(args.t_start, args.t_end)
         sync_method = SyncMethod(args.sync_method)
